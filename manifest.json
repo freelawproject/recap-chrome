@@ -1,0 +1,21 @@
+{
+  "manifest_version": 2,
+  "name": "RECAP viewer for Chrome",
+  "description": "When a PACER document is available for free from the RECAP project, this adds a handy link to get the free copy.",
+  "version": "1.0",
+  "permissions": [
+    "http://recapextension.org/"
+  ],
+  "background": {
+    "scripts": ["utils.js", "background.js"]
+  },
+  "content_scripts": [{
+    "matches": ["*://*.uscourts.gov/*"],
+    "include_globs": ["*://ecf.*"],
+    "js": ["utils.js", "content.js"],
+    "run_at": "document_end"
+  }],
+  "web_accessible_resources": [
+    "recap-32x32.png"
+  ]
+}
