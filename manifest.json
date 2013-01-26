@@ -4,15 +4,16 @@
   "description": "When a PACER document is available for free from the RECAP project, this adds a handy link to get the free copy.",
   "version": "1.0",
   "permissions": [
+    "http://dev.recapextension.org/",
     "http://recapextension.org/"
   ],
   "background": {
-    "scripts": ["utils.js", "background.js"]
+    "scripts": ["utils.js", "recap.js", "background.js"]
   },
   "content_scripts": [{
     "matches": ["*://*.uscourts.gov/*"],
     "include_globs": ["*://ecf.*"],
-    "js": ["utils.js", "content.js"],
+    "js": ["utils.js", "recap.js", "content.js"],
     "run_at": "document_end"
   }],
   "web_accessible_resources": [

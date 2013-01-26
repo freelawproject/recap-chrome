@@ -22,13 +22,13 @@
 var links = document.body.getElementsByTagName('a');
 var urls = [];
 for (var i = 0; i < links.length; i++) {
-  if (links[i].href.match(/\/doc1\/\d+/)) {
+  if (recap.isDocumentUrl(links[i].href)) {
     urls.push(links[i].href);
   }
 }
 if (urls.length) {
   // Ask the server whether any of these documents are available from RECAP.
-  callBackgroundPage('queryUrls', urls, function (result) {
+  callBackgroundPage('getMetadataForUrls', urls, function (result) {
     // When we get a reply, update all the links that have documents available.
     for (var i = 0; i < links.length; i++) {
       if (links[i].href in result) {

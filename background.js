@@ -19,25 +19,5 @@
 
 
 provideFunctions({
-  // Asks RECAP whether it has the specified documents available for download.
-  // The "urls" argument should be an array of PACER document URLs, all from
-  // the same court.  The result will be a dictionary that maps each URL with
-  // an existing RECAP document to a {timestamp: ..., filename: ...} object,
-  // where the "timestamp" field contains not a timestamp but a date in yucky
-  // mm/dd/yy format, and the "filename" field contains not a filename but a
-  // URL at which the document can be downloaded from the Internet Archive.
-  queryUrls: function (urls, callback) {
-    // The server API only lets us specify one court for all the URLs, so we
-    // pick the court based on the first URL and assume the rest are the same.
-    var match = (urls[0] || '').match(/(\w+)\.uscourts\.gov/);
-    if (match) {
-      jsonRequest(
-          'http://recapextension.org/recap/query/',
-          'json=' + JSON.stringify({"court": match[1], "urls": urls}),
-          callback
-      );
-    } else {
-      callback(null);
-    }
-  }
+  getMetadataForUrls: recap.getMetadataForUrls
 });
