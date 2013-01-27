@@ -19,5 +19,6 @@
 
 
 provideFunctions({
-  getMetadataForUrls: recap.getMetadataForUrls
+  getMetadataForCase: recap.getMetadataForCase,
+  getMetadataForDocuments: recap.getMetadataForDocuments
 });

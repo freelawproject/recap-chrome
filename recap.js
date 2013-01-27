@@ -38,22 +38,48 @@ recap = {
 
   // Asks RECAP what it knows about the specified documents.  "urls" should be
   // an array of PACER document URLs, all from the same court.  The callback
-  // will be called with a dictionary that maps each URL with an existing RECAP
-  // document to a {filename: ..., timestamp: ...} object, where the "filename"
+  // will be called with a dictionary that maps each of the URLs that exist in
+  // RECAP to a {filename: ..., timestamp: ...} object, where the "filename"
   // field contains not a filename but a URL at which the document can be
   // downloaded from the Internet Archive, and the "timestamp" field contains
   // not a timestamp but a date in yucky mm/dd/yy format.
-  getMetadataForUrls: function (urls, callback) {
-    // The server API only lets us specify one court for all the URLs, so we
+  getMetadataForDocuments: function (urls, callback) {
+    // The server API takes just one "court" parameter for all the URLs, so we
     // pick the court based on the first URL and assume the rest are the same.
     var court = recap.getCourtFromUrl(urls[0]);
     if (court) {
-      var json = JSON.stringify({"court": court, "urls": urls});
+      var json = JSON.stringify({court: court, urls: urls});
       jsonRequest(recap.SERVER_ROOT + '/query/',
                   'json=' + encodeURIComponent(json),
 		  function (result) { callback(result || {}); });
     } else {
       callback({});
     }
+  },
+
+  // Asks RECAP what it knows about the specified case.  If RECAP has a docket
+  // page for the case, the callback will be called with a {docket_url: ...,
+  // timestamp: ...} object, where the "docket_url" field gives the URL at
+  // which the docket page can be downloaded from the Internet Archive, and
+  // the "timestamp" field contains a date in yucky mm/dd/yy format.
+  getMetadataForCase: function (court, caseNumber, callback) {
+    var json = JSON.stringify({court: court, casenum: caseNumber});
+    jsonRequest(recap.SERVER_ROOT + '/query_cases/',
+                'json=' + encodeURIComponent(json),
+                function (result) { callback(result || null); });
+  },
+
+  // Returns true if the given URL is a page for querying the list of documents
+  // in a docket (i.e. the "Docket Sheet" or "History/Documents" query page).
+  isDocketQueryUrl: function (url) {
+    var match = (url || '').match(/.*\/([^?]*)/);
+    var baseName = match ? match[1] : '';
+    return baseName === 'DktRpt.pl' || baseName === 'HistDocQry.pl';
+  },
+
+  // Given a URL that satisfies isDocketQueryUrl, returns its PACER case number.
+  getDocketQueryCaseNumber: function (url) {
+    var match = url.match(/\?(\d+)$/);
+    return match ? match[1] : null;
   }
 };
