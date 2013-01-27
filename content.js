@@ -33,7 +33,7 @@ if (recap.isDocketQueryUrl(url)) {
           title: 'Docket is available for free from RECAP.',
           href: result.docket_url
         }).append(
-          $('<img/>', {src: chrome.extension.getURL('recap-32x32.png')})
+          $('<img/>', {src: chrome.extension.getURL('icon-16.png')})
         ).append(
           ' Get this docket as of ' + result.timestamp + ' for free from RECAP.'
         )
@@ -64,7 +64,7 @@ if (urls.length) {
           title: 'Available for free from RECAP.',
           href: result[links[i].href].filename
         }).append(
-          $('<img/>').attr({src: chrome.extension.getURL('recap-32x32.png')})
+          $('<img/>').attr({src: chrome.extension.getURL('icon-16.png')})
         ).insertAfter(links[i]);
       }
     }

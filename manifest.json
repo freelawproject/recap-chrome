@@ -17,7 +17,7 @@
     "run_at": "document_end"
   }],
   "web_accessible_resources": [
-    "recap-32x32.png",
+    "icon-16.png",
     "style.css"
   ]
 }
