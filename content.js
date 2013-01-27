@@ -26,7 +26,7 @@ var court = recap.getCourtFromUrl(url);
 if (recap.isDocketQueryUrl(url)) {
   callBackgroundPage('getMetadataForCase', court,
                      recap.getDocketQueryCaseNumber(url), function (result) {
-    if (result) {
+    if (result && result.docket_url) {
       // Insert a RECAP download link at the bottom of the form.
       $('<div class="recap-docket"/>').append(
         $('<a/>', {
@@ -35,7 +35,7 @@ if (recap.isDocketQueryUrl(url)) {
         }).append(
           $('<img/>', {src: chrome.extension.getURL('recap-32x32.png')})
         ).append(
-          ' Get the docket as of ' + result.timestamp + ' for free from RECAP.'
+          ' Get this docket as of ' + result.timestamp + ' for free from RECAP.'
         )
       ).append(
         $('<br><small>Note that archived dockets may be out of date.</small>')

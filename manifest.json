@@ -8,11 +8,11 @@
     "http://recapextension.org/"
   ],
   "background": {
-    "scripts": ["jquery.min.js", "utils.js", "recap.js", "background.js"]
+    "scripts": ["utils.js", "recap.js", "background.js"]
   },
   "content_scripts": [{
     "matches": ["*://*.uscourts.gov/*"],
-    "include_globs": ["*://ecf.*"],
+    "include_globs": ["*://ecf.*", "*://ecf-train.*", "*://pacer.*"],
     "js": ["jquery.min.js", "utils.js", "recap.js", "content.js"],
     "run_at": "document_end"
   }],
