@@ -8,15 +8,16 @@
     "http://recapextension.org/"
   ],
   "background": {
-    "scripts": ["utils.js", "recap.js", "background.js"]
+    "scripts": ["jquery.min.js", "utils.js", "recap.js", "background.js"]
   },
   "content_scripts": [{
     "matches": ["*://*.uscourts.gov/*"],
     "include_globs": ["*://ecf.*"],
-    "js": ["utils.js", "recap.js", "content.js"],
+    "js": ["jquery.min.js", "utils.js", "recap.js", "content.js"],
     "run_at": "document_end"
   }],
   "web_accessible_resources": [
-    "recap-32x32.png"
+    "recap-32x32.png",
+    "style.css"
   ]
 }

@@ -1,0 +1,14 @@
+.recap-docket {
+  background: #fff;
+  padding: 6px;
+  margin: 1em;
+  border: 1px solid #aaa;
+}
+.recap-document {
+  padding: 0 0 0 4px;
+}
+.recap-docket img, .recap-document img {
+  margin: 0 0 -2px 0;
+  width: 16px;
+  height: 16px;
+}

@@ -78,3 +78,11 @@ function jsonRequest(url, data, callback) {
   xhr.open(data === null ? 'GET' : 'POST', url);
   xhr.send(data);
 }
+
+// Loads a stylesheet from a CSS file in the extension into the current page.
+function loadStylesheet(path) {
+  var link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = chrome.extension.getURL(path);
+  document.getElementsByTagName('head')[0].appendChild(link);
+}

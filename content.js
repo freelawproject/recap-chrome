@@ -18,34 +18,28 @@
 // Content script to run when the DOM finishes loading (at "document_end").
 
 
+loadStylesheet('style.css');
+
 // If this is a docket query page, ask RECAP whether it has the docket page.
 var url = window.location.href;
 var court = recap.getCourtFromUrl(url);
 if (recap.isDocketQueryUrl(url)) {
-  var caseNumber = recap.getDocketQueryCaseNumber(url);
-  callBackgroundPage('getMetadataForCase', court, caseNumber, function (result) {
+  callBackgroundPage('getMetadataForCase', court,
+                     recap.getDocketQueryCaseNumber(url), function (result) {
     if (result) {
-      // Make a RECAP download button...
-      var recapButton = document.createElement('img');
-      recapButton.src = chrome.extension.getURL('recap-32x32.png');
-      recapButton.style.marginBottom = '-2px';
-      recapButton.style.paddingLeft = '4px';
-      recapButton.style.width = '16px';
-      recapButton.style.height = '16px';
-
-      // ...link it to the free docket page from RECAP...
-      var span = document.createElement('span');
-      span.innerText =
-          ' Get the docket as of ' + result.timestamp + ' for free from RECAP.';
-      var recapLink = document.createElement('a');
-      recapLink.href = result.docket_url;
-      recapLink.title = 'Docket is available for free from RECAP.';
-      recapLink.appendChild(recapButton);
-      recapLink.appendChild(span);
-
-      // ...and insert the link just after the reset button.
-      var resetButton = document.getElementsByName('reset')[0];
-      resetButton.parentNode.parentNode.appendChild(recapLink);
+      // Insert a RECAP download link at the bottom of the form.
+      $('<div class="recap-docket"/>').append(
+        $('<a/>', {
+          title: 'Docket is available for free from RECAP.',
+          href: result.docket_url
+        }).append(
+          $('<img/>', {src: chrome.extension.getURL('recap-32x32.png')})
+        ).append(
+          ' Get the docket as of ' + result.timestamp + ' for free from RECAP.'
+        )
+      ).append(
+        $('<br><small>Note that archived dockets may be out of date.</small>')
+      ).appendTo($('form'));
     }
   });
 }
@@ -64,22 +58,14 @@ if (urls.length) {
     // When we get a reply, update all the links that have documents available.
     for (var i = 0; i < links.length; i++) {
       if (links[i].href in result) {
-        // Make a RECAP download button...
-        var recapButton = document.createElement('img');
-        recapButton.src = chrome.extension.getURL('recap-32x32.png');
-        recapButton.style.marginBottom = '-2px';
-        recapButton.style.paddingLeft = '4px';
-        recapButton.style.width = '16px';
-        recapButton.style.height = '16px';
-
-        // ...link it to the free copy of the document from RECAP...
-        var recapLink = document.createElement('a');
-        recapLink.href = result[links[i].href].filename;
-        recapLink.title = 'Available for free from RECAP.';
-        recapLink.appendChild(recapButton);
-
-        // ...and insert the button just after the original link.
-        links[i].parentNode.insertBefore(recapLink, links[i].nextSibling);
+        // Insert a RECAP button just after the original link.
+        $('<a/>', {
+          'class': 'recap-document',
+          title: 'Available for free from RECAP.',
+          href: result[links[i].href].filename
+        }).append(
+          $('<img/>').attr({src: chrome.extension.getURL('recap-32x32.png')})
+        ).insertAfter(links[i]);
       }
     }
   });
