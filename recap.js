@@ -17,6 +17,7 @@
 // -------------------------------------------------------------------------
 // Abstraction of the RECAP service.  All browser+UI-independent code goes here.
 
+
 recap = {
   SERVER_ROOT: 'http://recapextension.org/recap',
 
@@ -32,7 +33,7 @@ recap = {
   // Returns true if this is a page for downloading a single document.
   isSingleDocumentPage: function (url, document) {
     var inputs = document.getElementsByTagName('input');
-    return url.match(/\/doc1\/\d+/) && inputs.length > 0 &&
+    return url.match(/\/doc1\/\d+/) && inputs.length &&
         inputs[inputs.length - 1].value === 'View Document';
   },
 
@@ -44,12 +45,12 @@ recap = {
   },
 
   // If this is a page for viewing a PDF document, return the URL to the PDF
-  // document (an one-time download link).
-  getPdfUrlFromViewPage: function (document) {
+  // document (a one-time download link).
+  getPdfIframeFromPage: function (document) {
     var iframes = document.getElementsByTagName('iframe');
-    for (var i = 0; i < iframes.length; i++) {
-      if (iframes[i].src.replace(/\?.*/, '').match(/\/show_temp\.pl$/)) {
-        return iframes[i].src;
+    if (iframes.length) {
+      if (iframes[0].src.replace(/\?.*/, '').match(/\/show_temp\.pl$/)) {
+        return iframes[0];
       }
     }
   },

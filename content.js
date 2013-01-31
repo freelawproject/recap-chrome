@@ -18,8 +18,6 @@
 // Content script to run when the DOM finishes loading (run_at: "document_end").
 
 
-loadStylesheet('style.css');
-
 var url = window.location.href;
 var court = recap.getCourtFromUrl(url);
 

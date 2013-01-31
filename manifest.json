@@ -13,11 +13,11 @@
   "content_scripts": [{
     "matches": ["*://*.uscourts.gov/*"],
     "include_globs": ["*://ecf.*", "*://ecf-train.*", "*://pacer.*"],
+    "css": ["style.css"],
     "js": ["jquery.min.js", "utils.js", "recap.js", "content.js"],
     "run_at": "document_end"
   }],
   "web_accessible_resources": [
-    "icon-16.png",
-    "style.css"
+    "icon-16.png"
   ]
 }
