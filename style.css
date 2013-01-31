@@ -1,13 +1,13 @@
-.recap-docket {
+.recap-banner {
   background: #fff;
   padding: 6px;
   margin: 1em;
   border: 1px solid #aaa;
 }
-.recap-document {
+.recap-inline {
   padding: 0 0 0 4px;
 }
-.recap-docket img, .recap-document img {
+.recap-banner img, .recap-inline img {
   margin: 0 0 -2px 0;
   width: 16px;
   height: 16px;

@@ -29,11 +29,34 @@ recap = {
     }
   },
 
+  // Returns true if this is a page for downloading a single document.
+  isSingleDocumentPage: function (url, document) {
+    var inputs = document.getElementsByTagName('input');
+    return url.match(/\/doc1\/\d+/) && inputs.length > 0 &&
+        inputs[inputs.length - 1].value === 'View Document';
+  },
+
   // Returns the court identifier for a given URL, or null if not a PACER site.
   getCourtFromUrl: function (url) {
     var match = (url || '').toLowerCase().match(
         /^\w+:\/\/(ecf|ecf-train|pacer)\.(\w+)\.uscourts\.gov\//);
     return match ? match[2] : null;
+  },
+
+  // If this is a page for viewing a PDF document, return the URL to the PDF
+  // document (an one-time download link).
+  getPdfUrlFromViewPage: function (document) {
+    var iframes = document.getElementsByTagName('iframe');
+    for (var i = 0; i < iframes.length; i++) {
+      if (iframes[i].src.replace(/\?.*/, '').match(/\/show_temp\.pl$/)) {
+        return iframes[i].src;
+      }
+    }
+  },
+
+  // Returns the document ID for a document view page.
+  getDocumentIdFromUrl: function (url) {
+    return (url || '').match(/\/doc1\/(\d+)$/)[1];
   },
 
   // Asks RECAP what it knows about the specified documents.  "urls" should be
@@ -57,6 +80,18 @@ recap = {
     }
   },
 
+  // Returns true if the given URL is a page for querying the list of documents
+  // in a docket (i.e. the "Docket Sheet" or "History/Documents" query page).
+  isDocketQueryPage: function (url) {
+    return url.replace(/\?.*/, '').match(/\/(DktRpt|HistDocQry)\.pl$/);
+  },
+
+  // Given a URL that satisfies isDocketQueryUrl, returns its PACER case number.
+  getDocketQueryCaseNumber: function (url) {
+    var match = url.match(/\?(\d+)$/);
+    return match ? match[1] : null;
+  },
+
   // Asks RECAP what it knows about the specified case.  If RECAP has a docket
   // page for the case, the callback will be called with a {docket_url: ...,
   // timestamp: ...} object, where the "docket_url" field gives the URL at
@@ -67,19 +102,5 @@ recap = {
     jsonRequest(recap.SERVER_ROOT + '/query_cases/',
                 'json=' + encodeURIComponent(json),
                 function (result) { callback(result || null); });
-  },
-
-  // Returns true if the given URL is a page for querying the list of documents
-  // in a docket (i.e. the "Docket Sheet" or "History/Documents" query page).
-  isDocketQueryUrl: function (url) {
-    var match = (url || '').match(/.*\/([^?]*)/);
-    var baseName = match ? match[1] : '';
-    return baseName === 'DktRpt.pl' || baseName === 'HistDocQry.pl';
-  },
-
-  // Given a URL that satisfies isDocketQueryUrl, returns its PACER case number.
-  getDocketQueryCaseNumber: function (url) {
-    var match = url.match(/\?(\d+)$/);
-    return match ? match[1] : null;
   }
 };

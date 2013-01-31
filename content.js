@@ -15,20 +15,21 @@
 // RECAP for Chrome.  If not, see: http://www.gnu.org/licenses/
 
 // -------------------------------------------------------------------------
-// Content script to run when the DOM finishes loading (at "document_end").
+// Content script to run when the DOM finishes loading (run_at: "document_end").
 
 
 loadStylesheet('style.css');
 
-// If this is a docket query page, ask RECAP whether it has the docket page.
 var url = window.location.href;
 var court = recap.getCourtFromUrl(url);
-if (recap.isDocketQueryUrl(url)) {
+
+// If this is a docket query page, ask RECAP whether it has the docket page.
+if (recap.isDocketQueryPage(url)) {
   callBackgroundPage('getMetadataForCase', court,
                      recap.getDocketQueryCaseNumber(url), function (result) {
     if (result && result.docket_url) {
       // Insert a RECAP download link at the bottom of the form.
-      $('<div class="recap-docket"/>').append(
+      $('<div class="recap-banner"/>').append(
         $('<a/>', {
           title: 'Docket is available for free from RECAP.',
           href: result.docket_url
@@ -39,6 +40,25 @@ if (recap.isDocketQueryUrl(url)) {
         )
       ).append(
         $('<br><small>Note that archived dockets may be out of date.</small>')
+      ).appendTo($('form'));
+    }
+  });
+}
+
+// If this page offers a single document, ask RECAP whether it has the document.
+if (recap.isSingleDocumentPage(url, document)) {
+  callBackgroundPage('getMetadataForDocuments', [url], function (result) {
+    if (result && result[url]) {
+      // Insert a RECAP download link at the bottom of the form.
+      $('<div class="recap-banner"/>').append(
+        $('<a/>', {
+          title: 'Document is available for free from RECAP.',
+          href: result[url].filename
+        }).append(
+          $('<img/>', {src: chrome.extension.getURL('icon-16.png')})
+        ).append(
+          ' Get this document for free from RECAP.'
+        )
       ).appendTo($('form'));
     }
   });
@@ -60,7 +80,7 @@ if (urls.length) {
       if (links[i].href in result) {
         // Insert a RECAP button just after the original link.
         $('<a/>', {
-          'class': 'recap-document',
+          'class': 'recap-inline',
           title: 'Available for free from RECAP.',
           href: result[links[i].href].filename
         }).append(
