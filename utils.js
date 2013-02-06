@@ -80,7 +80,7 @@ function httpRequest(url, postData, responseType, callback) {
           } catch (e) { }
         }
       }
-      callback(type, result);
+      callback && callback(type, result);
     }
   };
   xhr.open(postData === null ? 'GET' : 'POST', url);

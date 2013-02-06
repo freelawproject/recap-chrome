@@ -31,6 +31,15 @@ recap = {
     }
   },
 
+  // Returns true if a URL looks like a show_doc link that needs conversion.
+  isShowDocUrl: function (url) {
+    if (url.match(/\/cgi-bin\/show_doc/)) {
+      if (recap.getCourtFromUrl(url)) {
+        return true;
+      }
+    }
+  },
+
   // Returns true if this is a page for downloading a single document.
   isSingleDocumentPage: function (url, document) {
     var inputs = document.getElementsByTagName('input');
@@ -84,14 +93,22 @@ recap = {
 
   // Returns true if the given URL is a page for querying the list of documents
   // in a docket (i.e. the "Docket Sheet" or "History/Documents" query page).
-  isDocketQueryPage: function (url) {
-    return url.replace(/\?.*/, '').match(/\/(DktRpt|HistDocQry)\.pl$/);
+  isDocketQueryPageUrl: function (url) {
+    // The part after the "?" is all digits.
+    return url.match(/\/(DktRpt|HistDocQry)\.pl\?\d+$/);
   },
 
-  // Given a URL that satisfies isDocketQueryUrl, returns its PACER case number.
+  // Given a URL that satisfies isDocketQueryPageUrl, gets its case number.
   getDocketQueryCaseNumber: function (url) {
     var match = url.match(/\?(\d+)$/);
     return match ? match[1] : null;
+  },
+
+  // Returns true if the given URL is a docket display page (i.e. the page
+  // after submitting the "Docket Sheet" or "History/Documents" query page).
+  isDocketPageUrl: function (url) {
+    // The part after the "?" has hyphens in it.
+    return url.match(/\/(DktRpt|HistDocQry)\.pl\?\w+-[\w-]+$/);
   },
 
   // Asks RECAP what it knows about the specified case.  If RECAP has a docket
@@ -116,11 +133,6 @@ recap = {
                 function (type, text) { callback(text || null); });
   },
 
-  isDocketPage: function (url, document) {
-    return recap.isDocketQueryPage(url) &&
-      recap.isDocketQueryPage(document.referrer);
-  },
-
   uploadDocket: function (court, casenum, name, type, html, callback) {
     var formData = new FormData();
     formData.append('court', court);
@@ -129,5 +141,17 @@ recap = {
     formData.append('data', new Blob([html], {type: type}), name);
     httpRequest(recap.SERVER_ROOT + '/upload/', formData, 'text',
                 function (type, text) { callback(text || null); });
+  },
+
+  postMetadata: function (court, docid, casenum, de_seq_num, dm_id, docnum) {
+    var formData = new FormData();
+    formData.append('court', court);
+    formData.append('docid', docid);
+    formData.append('casenum', casenum);
+    formData.append('de_seq_num', de_seq_num);
+    formData.append('dm_id', dm_id);
+    formData.append('docnum', docnum);
+    formData.append('add_case_info', 'true');
+    httpRequest(recap.SERVER_ROOT + '/adddocmeta/', formData, 'text', null);
   }
 };

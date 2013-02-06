@@ -22,7 +22,7 @@ var url = window.location.href;
 var court = recap.getCourtFromUrl(url);
 
 // If this is a docket query page, ask RECAP whether it has the docket page.
-if (recap.isDocketQueryPage(url)) {
+if (recap.isDocketQueryPageUrl(url)) {
   callBackgroundPage('getMetadataForCase', court,
                      recap.getDocketQueryCaseNumber(url), function (result) {
     if (result && result.docket_url) {
@@ -43,7 +43,8 @@ if (recap.isDocketQueryPage(url)) {
   });
 }
 
-if (recap.isDocketPage(url, document)) {
+// If this is a docket page, upload it to RECAP.
+if (recap.isDocketPageUrl(url)) {
   var casenum = recap.getDocketQueryCaseNumber(document.referrer);
   recap.uploadDocket(court, casenum, 'DktRpt.html', 'text/html',
                      document.documentElement.innerHTML, function (text) {
@@ -82,6 +83,21 @@ var urls = [];
 for (var i = 0; i < links.length; i++) {
   if (recap.isDocumentUrl(links[i].href)) {
     urls.push(links[i].href);
+  }
+  if (recap.isShowDocUrl(links[i].href)) {
+    (function (id) {
+      links[i].addEventListener('mouseover', function () {
+        var url = '/cgi-bin/document_link.pl?' + id;
+        httpRequest(url, null, 'text', function (type, text) {
+          var docid = text.match(/\d+$/)[0];
+          var casenum = id.match(/KcaseidV([^K]+)/)[1];
+          var de_seq_num = id.match(/Kde_seq_numV([^K]+)/)[1];
+          var dm_id = id.match(/Kdm_idV([^K]+)/)[1];
+          var docnum = id.match(/Kdoc_numV([^K]+)/)[1];
+          recap.postMetadata(court, docid, casenum, de_seq_num, dm_id, docnum);
+        });
+      });
+    })(links[i].id);
   }
 }
 if (urls.length) {
