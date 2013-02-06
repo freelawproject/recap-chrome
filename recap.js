@@ -106,13 +106,28 @@ recap = {
                 function (type, object) { callback(object || null); });
   },
 
-  uploadFile: function (court, path, name, type, blob, callback) {
+  uploadDocument: function (court, path, name, type, blob, callback) {
     var formData = new FormData();
     formData.append('court', court);
     formData.append('url', path);
     formData.append('mimetype', type);
     formData.append('data', blob, name);
-    httpRequest(recap.SERVER_ROOT + '/upload/', formData, 'json',
-                function (type, object) { callback(object || null); });
+    httpRequest(recap.SERVER_ROOT + '/upload/', formData, 'text',
+                function (type, text) { callback(text || null); });
+  },
+
+  isDocketPage: function (url, document) {
+    return recap.isDocketQueryPage(url) &&
+      recap.isDocketQueryPage(document.referrer);
+  },
+
+  uploadDocket: function (court, casenum, name, type, html, callback) {
+    var formData = new FormData();
+    formData.append('court', court);
+    formData.append('casenum', casenum);
+    formData.append('mimetype', type);
+    formData.append('data', new Blob([html], {type: type}), name);
+    httpRequest(recap.SERVER_ROOT + '/upload/', formData, 'text',
+                function (type, text) { callback(text || null); });
   }
 };

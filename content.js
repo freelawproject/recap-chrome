@@ -43,6 +43,20 @@ if (recap.isDocketQueryPage(url)) {
   });
 }
 
+if (recap.isDocketPage(url, document)) {
+  var casenum = recap.getDocketQueryCaseNumber(document.referrer);
+  recap.uploadDocket(court, casenum, 'DktRpt.html', 'text/html',
+                     document.documentElement.innerHTML, function (text) {
+    if (text && text.match(/successfully parsed/i)) {
+      callBackgroundPage('showNotification', 'RECAP upload',
+                         'Docket uploaded to the public archive.', null);
+    } else {
+      callBackgroundPage('showNotification', 'RECAP problem',
+                         'Docket was not accepted by RECAP: ' + text, null);
+    }
+  });
+}
+
 // If this page offers a single document, ask RECAP whether it has the document.
 if (recap.isSingleDocumentPage(url, document)) {
   callBackgroundPage('getMetadataForDocuments', [url], function (result) {
@@ -154,13 +168,13 @@ if (recap.isSingleDocumentPage(url, document)) {
 
         // Upload the file to RECAP.
         var name = docPath.match(/[^\/]+$/)[0] + '.pdf';
-        recap.uploadFile(court, docPath, name, type, blob, function (result) {
-          if (result.message && result.message.match(/uploaded/i)) {
+        recap.uploadDocument(court, docPath, name, type, blob, function (text) {
+          if (text && text.match(/uploaded/i)) {
             callBackgroundPage('showNotification', 'RECAP upload',
                                'PDF uploaded to the public archive.', null);
           } else {
             callBackgroundPage('showNotification', 'RECAP problem',
-                               'PDF was not accepted by RECAP.', null);
+                               'PDF was not accepted by RECAP: ' + text, null);
           }
         });
       });
