@@ -88,3 +88,82 @@ if (urls.length) {
     }
   });
 }
+
+// If this page offers a single document, intercept navigation to the document
+// view page.  The "View Document" button calls the goDLS() function, which
+// creates a <form> element and calls submit() on it, so we hook into submit().
+if (recap.isSingleDocumentPage(url, document)) {
+  // Monkey-patch the <form> prototype so that its submit() method sends a
+  // message to this content script instead of submitting the form.  To do this
+  // in the page context instead of this script's, we inject a <script> element.
+  var script = document.createElement('script');
+  script.innerText =
+      'document.createElement("form").__proto__.submit = function () {' +
+      '  this.id = "form" + new Date().getTime();' +
+      '  window.postMessage({id: this.id}, "*");' +
+      '};';
+  document.body.appendChild(script);
+
+  // When we receive the message from the above submit method, submit the form
+  // via XHR and modify the received document before showing it in the browser.
+  window.addEventListener('message', function (event) {
+    // Save a copy of the page source, altered so that the "View Document"
+    // button goes forward in the history instead of resubmitting the form.
+    var originalSubmit = document.forms[0].getAttribute('onsubmit');
+    document.forms[0].setAttribute(
+        'onsubmit', 'history.forward(); return false;');
+    var previousPageHtml = document.documentElement.innerHTML;
+    document.forms[0].setAttribute('onsubmit', originalSubmit);
+    var docPath = window.location.pathname;
+    
+    // Now do the form request to get to the view page.
+    $('body').css('cursor', 'wait');
+    var form = document.getElementById(event.data.id);
+    httpRequest(form.action, new FormData(form), '', function (type, html) {
+      // Find the <iframe> URL in the document view page.
+      var match = html.match(/([^]*?)<iframe[^>]*src="(.*?)"([^]*)/);
+      if (!match) {
+        document.documentElement.innerHTML = html;
+        return;
+      }
+
+      // Show the page with a blank <iframe> while waiting for the download.
+      document.documentElement.innerHTML =
+        match[1] + '<iframe src="about:blank"' + match[3];
+
+      // Download the file from the <iframe> URL.
+      var doc = httpRequest(match[2], null, 'arraybuffer', function (type, ab) {
+        // For unknown reasons, if we get a Blob directly from the XHR with
+        // responseType 'blob', the Blob doesn't upload below.  But if we get
+        // an ArrayBuffer and then convert it to a Blob, the upload works.
+        var blob = new Blob([new Uint8Array(ab)], {type: type});
+        var blobUrl = URL.createObjectURL(blob);
+
+        // Make the Back button redisplay the previous page.
+        window.onpopstate = function(event) {
+          if (event.state.content) {
+            document.documentElement.innerHTML = event.state.content;
+          }
+        };
+        history.replaceState({content: previousPageHtml});
+
+        // Display the page with the downloaded file in the <iframe>.
+        html = match[1] + '<iframe src="' + blobUrl + '"' + match[3];
+        document.documentElement.innerHTML = html;
+        history.pushState({content: html});
+
+        // Upload the file to RECAP.
+        var name = docPath.match(/[^\/]+$/)[0] + '.pdf';
+        recap.uploadFile(court, docPath, name, type, blob, function (result) {
+          if (result.message && result.message.match(/uploaded/i)) {
+            callBackgroundPage('showNotification', 'RECAP upload',
+                               'PDF uploaded to the public archive.', null);
+          } else {
+            callBackgroundPage('showNotification', 'RECAP problem',
+                               'PDF was not accepted by RECAP.', null);
+          }
+        });
+      });
+    });
+  }, false);
+}

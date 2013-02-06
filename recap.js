@@ -15,11 +15,12 @@
 // RECAP for Chrome.  If not, see: http://www.gnu.org/licenses/
 
 // -------------------------------------------------------------------------
-// Abstraction of the RECAP service.  All browser+UI-independent code goes here.
+// Abstraction of the RECAP server APIs and the PACER website.  All the code
+// in this file should be browser-independent.
 
 
 recap = {
-  SERVER_ROOT: 'http://recapextension.org/recap',
+  SERVER_ROOT: 'http://dev.recapextension.org/recap',
 
   // Returns true if a URL looks like that of a document that could be in RECAP.
   isDocumentUrl: function (url) {
@@ -73,9 +74,9 @@ recap = {
     var court = recap.getCourtFromUrl(urls[0]);
     if (court) {
       var json = JSON.stringify({court: court, urls: urls});
-      jsonRequest(recap.SERVER_ROOT + '/query/',
-                  'json=' + encodeURIComponent(json),
-		  function (result) { callback(result || {}); });
+      httpRequest(recap.SERVER_ROOT + '/query/',
+                  'json=' + encodeURIComponent(json), 'json',
+		  function (type, object) { callback(object || {}); });
     } else {
       callback({});
     }
@@ -100,8 +101,18 @@ recap = {
   // the "timestamp" field contains a date in yucky mm/dd/yy format.
   getMetadataForCase: function (court, caseNumber, callback) {
     var json = JSON.stringify({court: court, casenum: caseNumber});
-    jsonRequest(recap.SERVER_ROOT + '/query_cases/',
-                'json=' + encodeURIComponent(json),
-                function (result) { callback(result || null); });
+    httpRequest(recap.SERVER_ROOT + '/query_cases/',
+                'json=' + encodeURIComponent(json), 'json',
+                function (type, object) { callback(object || null); });
+  },
+
+  uploadFile: function (court, path, name, type, blob, callback) {
+    var formData = new FormData();
+    formData.append('court', court);
+    formData.append('url', path);
+    formData.append('mimetype', type);
+    formData.append('data', blob, name);
+    httpRequest(recap.SERVER_ROOT + '/upload/', formData, 'json',
+                function (type, object) { callback(object || null); });
   }
 };

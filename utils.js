@@ -45,7 +45,7 @@ function provideFunctions(functions) {
 // to the rest of the arguments in the definition passed to provideFunctions.
 function callBackgroundPage(verb, varargs) {
   var args = Array.prototype.slice.call(arguments, 1);
-  var callback = args.pop();
+  var callback = args.pop() || function () {};
   chrome.extension.sendMessage({verb: verb, args: args}, callback);
 }
 
@@ -55,26 +55,34 @@ function callBackgroundPage(verb, varargs) {
 // to the rest of the arguments in the definition passed to provideFunctions.
 function callContentScript(tabId, verb, varargs) {
   var args = Array.prototype.slice.call(arguments, 2);
-  var callback = args.pop();
+  var callback = args.pop() || function () {};
   chrome.tabs.sendMessage(tabId, {verb: verb, args: args}, callback);
 }
 
-// Makes an XHR to the given URL, calling the callback with the JSON-parsed
-// result or with null on error.  Uses GET if 'data' is null, POST otherwise.
-// For this to work, the URL must be allowed by "permissions" in manifest.json.
-function jsonRequest(url, data, callback) {
+// Makes an XHR to the given URL, calling a callback with the returned content
+// type and response (interpreted according to responseType).  See XHR2 spec
+// for details on responseType and response.  Uses GET if postData is null or
+// POST otherwise.  postData can be any type accepted by XMLHttpRequest.send().
+function httpRequest(url, postData, responseType, callback) {
+  var type = null;
   var result = null;
-  xhr = new XMLHttpRequest();
+  var xhr = new XMLHttpRequest();
+  // WebKit doesn't support responseType 'json' yet, but probably will soon.
+  xhr.responseType = responseType === 'json' ? 'text' : responseType;
   xhr.onreadystatechange = function() {
     if (xhr.readyState === 4) {
       if (xhr.status === 200) {
-        try {
-          result = JSON.parse(xhr.responseText);
-        } catch (e) { }
+        type = xhr.getResponseHeader('Content-Type');
+        result = xhr.response;
+        if (responseType === 'json') {
+          try {
+            result = JSON.parse(result);
+          } catch (e) { }
+        }
       }
-      callback(result);
+      callback(type, result);
     }
   };
-  xhr.open(data === null ? 'GET' : 'POST', url);
-  xhr.send(data);
+  xhr.open(postData === null ? 'GET' : 'POST', url);
+  xhr.send(postData);
 }

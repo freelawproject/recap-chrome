@@ -20,5 +20,8 @@
 
 provideFunctions({
   getMetadataForCase: recap.getMetadataForCase,
-  getMetadataForDocuments: recap.getMetadataForDocuments
+  getMetadataForDocuments: recap.getMetadataForDocuments,
+  showNotification: function (title, message, callback) {
+    webkitNotifications.createNotification(null, title, message).show();
+  }
 });

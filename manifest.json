@@ -5,7 +5,9 @@
   "version": "1.0",
   "permissions": [
     "http://dev.recapextension.org/",
-    "http://recapextension.org/"
+    "http://recapextension.org/",
+    "*://*.uscourts.gov/",
+    "notifications"
   ],
   "background": {
     "scripts": ["utils.js", "recap.js", "background.js"]
