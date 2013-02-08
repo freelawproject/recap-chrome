@@ -160,7 +160,8 @@ if (pacer.isSingleDocumentPage(url, document)) {
       // both cases uniformly: either way we have an HTML page with an <iframe>
       // in it, which is handled by showPdfPage (defined below).
       if (type === 'application/pdf') {
-        showPdfPage('<iframe src="' + URL.createObjectURL(blob) +
+        showPdfPage('<style>body { margin: 0; } iframe { border: none; }' +
+                    '</style><iframe src="' + URL.createObjectURL(blob) +
                     '" width="100%" height="100%"></iframe>');
       } else {
         var reader = new FileReader();
