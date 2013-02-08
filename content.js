@@ -135,65 +135,86 @@ if (recap.isSingleDocumentPage(url, document)) {
   document.body.appendChild(script);
 
   // When we receive the message from the above submit method, submit the form
-  // via XHR and modify the received document before showing it in the browser.
+  // via XHR so we can get the document before the browser does.
   window.addEventListener('message', function (event) {
     // Save a copy of the page source, altered so that the "View Document"
     // button goes forward in the history instead of resubmitting the form.
     var originalSubmit = document.forms[0].getAttribute('onsubmit');
-    document.forms[0].setAttribute(
-        'onsubmit', 'history.forward(); return false;');
+    document.forms[0].setAttribute('onsubmit', 'history.forward(); return !1;');
     var previousPageHtml = document.documentElement.innerHTML;
     document.forms[0].setAttribute('onsubmit', originalSubmit);
-    var docPath = window.location.pathname;
+    var path = window.location.pathname;
     
-    // Now do the form request to get to the view page.
+    // Now do the form request to get to the view page.  Some PACER sites will
+    // return an HTML page containing an <iframe> that loads the PDF document;
+    // others just return the PDF document.  As we don't know whether we'll get
+    // HTML (text) or PDF (binary), we ask for an ArrayBuffer and convert later.
     $('body').css('cursor', 'wait');
     var form = document.getElementById(event.data.id);
-    httpRequest(form.action, new FormData(form), '', function (type, html) {
-      // Find the <iframe> URL in the document view page.
-      var match = html.match(/([^]*?)<iframe[^>]*src="(.*?)"([^]*)/);
-      if (!match) {
-        document.documentElement.innerHTML = html;
-        return;
+    var data = new FormData(form);
+    httpRequest(form.action, data, 'arraybuffer', function (type, ab) {
+      var blob = new Blob([new Uint8Array(ab)], {type: type});
+      // If we got a PDF, we wrap it in a simple HTML page.  This lets us treat
+      // both cases uniformly: either way we have an HTML page with an <iframe>
+      // in it, which is handled by showPdfPage (defined below).
+      if (type === 'application/pdf') {
+        showPdfPage('<iframe src="' + URL.createObjectURL(blob) +
+                    '" width="100%" height="100%"></iframe>');
+      } else {
+        var reader = new FileReader();
+        reader.onload = function() { showPdfPage(reader.result); };
+        reader.readAsText(blob);  // convert blob to HTML text
       }
 
-      // Show the page with a blank <iframe> while waiting for the download.
-      document.documentElement.innerHTML =
-        match[1] + '<iframe src="about:blank"' + match[3];
+      // Given the HTML for a page with an <iframe> in it, downloads the PDF
+      // document in the iframe, displays it in the browser, and also uploads
+      // the PDF document to RECAP.
+      function showPdfPage(html) {
+        // Find the <iframe> URL in the HTML string.
+        var match = html.match(/([^]*?)<iframe[^>]*src="(.*?)"([^]*)/);
+        if (!match) {
+          document.documentElement.innerHTML = html;
+          return;
+        }
 
-      // Download the file from the <iframe> URL.
-      var doc = httpRequest(match[2], null, 'arraybuffer', function (type, ab) {
-        // For unknown reasons, if we get a Blob directly from the XHR with
-        // responseType 'blob', the Blob doesn't upload below.  But if we get
-        // an ArrayBuffer and then convert it to a Blob, the upload works.
-        var blob = new Blob([new Uint8Array(ab)], {type: type});
-        var blobUrl = URL.createObjectURL(blob);
+        // Show the page with a blank <iframe> while waiting for the download.
+        document.documentElement.innerHTML =
+          match[1] + '<iframe src="about:blank"' + match[3];
 
-        // Make the Back button redisplay the previous page.
-        window.onpopstate = function(event) {
-          if (event.state.content) {
-            document.documentElement.innerHTML = event.state.content;
-          }
-        };
-        history.replaceState({content: previousPageHtml});
+        // Download the file from the <iframe> URL.
+        httpRequest(match[2], null, 'arraybuffer', function (type, ab) {
+          // For unknown reasons, if we get a Blob directly from the XHR with
+          // responseType 'blob', the Blob doesn't upload below.  But if we get
+          // an ArrayBuffer and then convert it to a Blob, the upload works.
+          var blob = new Blob([new Uint8Array(ab)], {type: type});
+          var blobUrl = URL.createObjectURL(blob);
 
-        // Display the page with the downloaded file in the <iframe>.
-        html = match[1] + '<iframe src="' + blobUrl + '"' + match[3];
-        document.documentElement.innerHTML = html;
-        history.pushState({content: html});
+          // Make the Back button redisplay the previous page.
+          window.onpopstate = function(event) {
+            if (event.state.content) {
+              document.documentElement.innerHTML = event.state.content;
+            }
+          };
+          history.replaceState({content: previousPageHtml});
 
-        // Upload the file to RECAP.
-        var name = docPath.match(/[^\/]+$/)[0] + '.pdf';
-        recap.uploadDocument(court, docPath, name, type, blob, function (text) {
-          if (text && text.match(/uploaded/i)) {
-            callBackgroundPage('showNotification', 'RECAP upload',
-                               'PDF uploaded to the public archive.', null);
-          } else {
-            callBackgroundPage('showNotification', 'RECAP problem',
-                               'PDF was not accepted by RECAP: ' + text, null);
-          }
+          // Display the page with the downloaded file in the <iframe>.
+          html = match[1] + '<iframe src="' + blobUrl + '"' + match[3];
+          document.documentElement.innerHTML = html;
+          history.pushState({content: html});
+
+          // Upload the file to RECAP.
+          var name = path.match(/[^\/]+$/)[0] + '.pdf';
+          recap.uploadDocument(court, path, name, type, blob, function (text) {
+            if (text && text.match(/uploaded/i)) {
+              callBackgroundPage('showNotification', 'RECAP upload',
+                                 'PDF uploaded to the public archive.', null);
+            } else {
+              callBackgroundPage('showNotification', 'RECAP problem',
+                                 'PDF not accepted by RECAP: ' + text, null);
+            }
+          });
         });
-      });
+      };
     });
   }, false);
 }
