@@ -15,60 +15,11 @@
 // RECAP for Chrome.  If not, see: http://www.gnu.org/licenses/
 
 // -------------------------------------------------------------------------
-// Abstraction of the RECAP server APIs and the PACER website.  All the code
-// in this file should be browser-independent.
+// Abstraction of the RECAP server APIs.  This file is browser-independent.
 
 
 recap = {
   SERVER_ROOT: 'http://dev.recapextension.org/recap',
-
-  // Returns true if a URL looks like that of a document that could be in RECAP.
-  isDocumentUrl: function (url) {
-    if (url.match(/\/doc1\/\d+/) || url.match(/\/cgi-bin\/show_doc/)) {
-      if (recap.getCourtFromUrl(url)) {
-        return true;
-      }
-    }
-  },
-
-  // Returns true if a URL looks like a show_doc link that needs conversion.
-  isShowDocUrl: function (url) {
-    if (url.match(/\/cgi-bin\/show_doc/)) {
-      if (recap.getCourtFromUrl(url)) {
-        return true;
-      }
-    }
-  },
-
-  // Returns true if this is a page for downloading a single document.
-  isSingleDocumentPage: function (url, document) {
-    var inputs = document.getElementsByTagName('input');
-    return url.match(/\/doc1\/\d+/) && inputs.length &&
-        inputs[inputs.length - 1].value === 'View Document';
-  },
-
-  // Returns the court identifier for a given URL, or null if not a PACER site.
-  getCourtFromUrl: function (url) {
-    var match = (url || '').toLowerCase().match(
-        /^\w+:\/\/(ecf|ecf-train|pacer)\.(\w+)\.uscourts\.gov\//);
-    return match ? match[2] : null;
-  },
-
-  // If this is a page for viewing a PDF document, return the URL to the PDF
-  // document (a one-time download link).
-  getPdfIframeFromPage: function (document) {
-    var iframes = document.getElementsByTagName('iframe');
-    if (iframes.length) {
-      if (iframes[0].src.replace(/\?.*/, '').match(/\/show_temp\.pl$/)) {
-        return iframes[0];
-      }
-    }
-  },
-
-  // Returns the document ID for a document view page.
-  getDocumentIdFromUrl: function (url) {
-    return (url || '').match(/\/doc1\/(\d+)$/)[1];
-  },
 
   // Asks RECAP what it knows about the specified documents.  "urls" should be
   // an array of PACER document URLs, all from the same court.  The callback
@@ -80,7 +31,7 @@ recap = {
   getMetadataForDocuments: function (urls, callback) {
     // The server API takes just one "court" parameter for all the URLs, so we
     // pick the court based on the first URL and assume the rest are the same.
-    var court = recap.getCourtFromUrl(urls[0]);
+    var court = pacer.getCourtFromUrl(urls[0]);
     if (court) {
       var json = JSON.stringify({court: court, urls: urls});
       httpRequest(recap.SERVER_ROOT + '/query/',
@@ -89,26 +40,6 @@ recap = {
     } else {
       callback({});
     }
-  },
-
-  // Returns true if the given URL is a page for querying the list of documents
-  // in a docket (i.e. the "Docket Sheet" or "History/Documents" query page).
-  isDocketQueryPageUrl: function (url) {
-    // The part after the "?" is all digits.
-    return url.match(/\/(DktRpt|HistDocQry)\.pl\?\d+$/);
-  },
-
-  // Given a URL that satisfies isDocketQueryPageUrl, gets its case number.
-  getDocketQueryCaseNumber: function (url) {
-    var match = url.match(/\?(\d+)$/);
-    return match ? match[1] : null;
-  },
-
-  // Returns true if the given URL is a docket display page (i.e. the page
-  // after submitting the "Docket Sheet" or "History/Documents" query page).
-  isDocketPageUrl: function (url) {
-    // The part after the "?" has hyphens in it.
-    return url.match(/\/(DktRpt|HistDocQry)\.pl\?\w+-[\w-]+$/);
   },
 
   // Asks RECAP what it knows about the specified case.  If RECAP has a docket

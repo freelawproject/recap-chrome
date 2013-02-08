@@ -10,13 +10,13 @@
     "notifications"
   ],
   "background": {
-    "scripts": ["utils.js", "recap.js", "background.js"]
+    "scripts": ["utils.js", "pacer.js", "recap.js", "background.js"]
   },
   "content_scripts": [{
     "matches": ["*://*.uscourts.gov/*"],
     "include_globs": ["*://ecf.*", "*://ecf-train.*", "*://pacer.*"],
     "css": ["style.css"],
-    "js": ["jquery.min.js", "utils.js", "recap.js", "content.js"],
+    "js": ["jquery.min.js", "utils.js", "pacer.js", "recap.js", "content.js"],
     "run_at": "document_end"
   }],
   "web_accessible_resources": [

@@ -19,12 +19,12 @@
 
 
 var url = window.location.href;
-var court = recap.getCourtFromUrl(url);
+var court = pacer.getCourtFromUrl(url);
 
 // If this is a docket query page, ask RECAP whether it has the docket page.
-if (recap.isDocketQueryPageUrl(url)) {
+if (pacer.isDocketQueryUrl(url)) {
   callBackgroundPage('getMetadataForCase', court,
-                     recap.getDocketQueryCaseNumber(url), function (result) {
+                     pacer.getCaseNumberFromUrl(url), function (result) {
     if (result && result.docket_url) {
       // Insert a RECAP download link at the bottom of the form.
       $('<div class="recap-banner"/>').append(
@@ -44,22 +44,24 @@ if (recap.isDocketQueryPageUrl(url)) {
 }
 
 // If this is a docket page, upload it to RECAP.
-if (recap.isDocketPageUrl(url)) {
-  var casenum = recap.getDocketQueryCaseNumber(document.referrer);
-  recap.uploadDocket(court, casenum, 'DktRpt.html', 'text/html',
-                     document.documentElement.innerHTML, function (text) {
-    if (text && text.match(/successfully parsed/i)) {
-      callBackgroundPage('showNotification', 'RECAP upload',
-                         'Docket uploaded to the public archive.', null);
-    } else {
-      callBackgroundPage('showNotification', 'RECAP problem',
-                         'Docket was not accepted by RECAP: ' + text, null);
-    }
-  });
+if (pacer.isDocketDisplayUrl(url)) {
+  var casenum = pacer.getCaseNumberFromUrl(document.referrer);
+  if (casenum) {
+    recap.uploadDocket(court, casenum, 'DktRpt.html', 'text/html',
+                       document.documentElement.innerHTML, function (text) {
+      if (text && text.match(/successfully parsed/i)) {
+        callBackgroundPage('showNotification', 'RECAP upload',
+                           'Docket uploaded to the public archive.', null);
+      } else {
+        callBackgroundPage('showNotification', 'RECAP problem',
+                           'Docket not accepted by RECAP: ' + text, null);
+      }
+    });
+  }
 }
 
 // If this page offers a single document, ask RECAP whether it has the document.
-if (recap.isSingleDocumentPage(url, document)) {
+if (pacer.isSingleDocumentPage(url, document)) {
   callBackgroundPage('getMetadataForDocuments', [url], function (result) {
     if (result && result[url]) {
       // Insert a RECAP download link at the bottom of the form.
@@ -81,10 +83,10 @@ if (recap.isSingleDocumentPage(url, document)) {
 var links = document.body.getElementsByTagName('a');
 var urls = [];
 for (var i = 0; i < links.length; i++) {
-  if (recap.isDocumentUrl(links[i].href)) {
+  if (pacer.isDocumentUrl(links[i].href)) {
     urls.push(links[i].href);
   }
-  if (recap.isShowDocUrl(links[i].href)) {
+  if (pacer.isConvertibleDocumentUrl(links[i].href)) {
     (function (id) {
       links[i].addEventListener('mouseover', function () {
         var url = '/cgi-bin/document_link.pl?' + id;
@@ -122,7 +124,7 @@ if (urls.length) {
 // If this page offers a single document, intercept navigation to the document
 // view page.  The "View Document" button calls the goDLS() function, which
 // creates a <form> element and calls submit() on it, so we hook into submit().
-if (recap.isSingleDocumentPage(url, document)) {
+if (pacer.isSingleDocumentPage(url, document)) {
   // Monkey-patch the <form> prototype so that its submit() method sends a
   // message to this content script instead of submitting the form.  To do this
   // in the page context instead of this script's, we inject a <script> element.
