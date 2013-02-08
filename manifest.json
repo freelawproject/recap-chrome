@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
-  "name": "RECAP viewer for Chrome",
-  "description": "When a PACER document is available for free from the RECAP project, this adds a handy link to get the free copy.",
-  "version": "1.0",
+  "name": "RECAP for Chrome",
+  "description": "A free extension for Chrome that improves the experience of using PACER, the electronic public access system for the U. S. Federal District and Bankruptcy Courts.  When you have RECAP installed, it contributes documents to a public archive hosted by the Internet Archive and shows you when free documents are available from the archive.",
+  "version": "0.1",
   "permissions": [
     "http://dev.recapextension.org/",
     "http://recapextension.org/",
