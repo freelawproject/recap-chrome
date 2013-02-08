@@ -22,6 +22,9 @@ provideFunctions({
   getMetadataForCase: recap.getMetadataForCase,
   getMetadataForDocuments: recap.getMetadataForDocuments,
   showNotification: function (title, message, callback) {
-    webkitNotifications.createNotification(null, title, message).show();
+    var notification = webkitNotifications.createNotification(
+      chrome.extension.getURL('icon-32.png'), title, message);
+    notification.show();
+    setTimeout(function () { notification.cancel(); }, 5000);
   }
 });

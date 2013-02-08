@@ -20,6 +20,7 @@
     "run_at": "document_end"
   }],
   "web_accessible_resources": [
-    "icon-16.png"
+    "icon-16.png",
+    "icon-32.png"
   ]
 }
