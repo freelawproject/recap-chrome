@@ -87,19 +87,14 @@ for (var i = 0; i < links.length; i++) {
     urls.push(links[i].href);
   }
   if (pacer.isConvertibleDocumentUrl(links[i].href)) {
-    (function (id) {
-      links[i].addEventListener('mouseover', function () {
-        var url = '/cgi-bin/document_link.pl?' + id;
-        httpRequest(url, null, 'text', function (type, text) {
-          var docid = text.match(/\d+$/)[0];
-          var casenum = id.match(/KcaseidV([^K]+)/)[1];
-          var de_seq_num = id.match(/Kde_seq_numV([^K]+)/)[1];
-          var dm_id = id.match(/Kdm_idV([^K]+)/)[1];
-          var docnum = id.match(/Kdoc_numV([^K]+)/)[1];
-          recap.postMetadata(court, docid, casenum, de_seq_num, dm_id, docnum);
-        });
-      });
-    })(links[i].id);
+    links[i].addEventListener('mouseover', function () {
+      pacer.convertDocumentUrl(
+        this.href,
+        function (url, docid, caseid, de_seq_num, dm_id, doc_num) {
+          recap.postMetadata(court, docid, caseid, de_seq_num, dm_id, doc_num);
+        }
+      );
+    });
   }
 }
 if (urls.length) {

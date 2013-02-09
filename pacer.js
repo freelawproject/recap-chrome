@@ -37,6 +37,22 @@ pacer = {
     }
   },
 
+  // Converts a show_doc-style URL into a doc1-style URL, calling the callback
+  // with the arguments (doc1_url, docid, caseid, de_seq_num, dm_id, doc_num).
+  convertDocumentUrl: function (url, callback) {
+    var query = url.match(/\?.*/)[0];
+    var params = {};
+    // The parameters only contain digits, so we don't need to unescape.
+    query.replace(/([^=?&]+)=([^&]*)/g, function (p, k, v) { params[k] = v; });
+    // PACER uses a crazy query string encoding with "K" and "V" as delimiters.
+    httpRequest('/cgi-bin/document_link.pl?document' +
+                query.replace(/[?&]/g, 'K').replace(/=/g, 'V'),
+                null, 'text', function (type, text) {
+      callback(text, pacer.getDocumentIdFromUrl(text),
+               params.caseid, params.de_seq_num, params.dm_id, params.doc_num);
+    });
+  },
+
   // Returns true if this is a page for downloading a single document.
   isSingleDocumentPage: function (url, document) {
     var inputs = document.getElementsByTagName('input');
