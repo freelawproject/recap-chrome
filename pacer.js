@@ -19,6 +19,13 @@
 
 
 pacer = {
+  // Returns the court identifier for a given URL, or null if not a PACER site.
+  getCourtFromUrl: function (url) {
+    var match = (url || '').toLowerCase().match(
+        /^\w+:\/\/(ecf|ecf-train|pacer)\.(\w+)\.uscourts\.gov\//);
+    return match ? match[2] : null;
+  },
+
   // Returns true if the given URL looks like a link to a PACER document.
   isDocumentUrl: function (url) {
     if (url.match(/\/doc1\/\d+/) || url.match(/\/cgi-bin\/show_doc/)) {
@@ -60,11 +67,12 @@ pacer = {
         inputs[inputs.length - 1].value === 'View Document';
   },
 
-  // Returns the court identifier for a given URL, or null if not a PACER site.
-  getCourtFromUrl: function (url) {
-    var match = (url || '').toLowerCase().match(
-        /^\w+:\/\/(ecf|ecf-train|pacer)\.(\w+)\.uscourts\.gov\//);
-    return match ? match[2] : null;
+  // Returns true if this is a "Document Selection Menu" page (a list of the
+  // attachments for a particular document).
+  isDocumentMenuPage: function (url, document) {
+    var inputs = document.getElementsByTagName('input');
+    return url.match(/\/doc1\/\d+/) && inputs.length &&
+        inputs[inputs.length - 1].value === 'Download All';
   },
 
   // Returns true if the URL is for the form for querying the list of documents
@@ -85,6 +93,11 @@ pacer = {
   isDocketDisplayUrl: function (url) {
     // The part after the "?" has hyphens in it.
     return url.match(/\/(DktRpt|HistDocQry)\.pl\?\w+-[\w-]+$/);
+  },
+
+  // Gets the last path component of a URL.
+  getBaseNameFromUrl: function (url) {
+    return url.replace(/\?.*/, '').replace(/.*\//, '');
   },
 
   // Returns the document ID for a document view page.

@@ -21,6 +21,18 @@
 recap = {
   SERVER_ROOT: 'http://dev.recapextension.org/recap',
 
+  // Asks RECAP what it knows about the specified case.  If RECAP has a docket
+  // page for the case, the callback will be called with a {docket_url: ...,
+  // timestamp: ...} object, where the "docket_url" field gives the URL at
+  // which the docket page can be downloaded from the Internet Archive, and
+  // the "timestamp" field contains a date in yucky mm/dd/yy format.
+  getMetadataForCase: function (court, caseNumber, callback) {
+    var json = JSON.stringify({court: court, casenum: caseNumber});
+    httpRequest(recap.SERVER_ROOT + '/query_cases/',
+                'json=' + encodeURIComponent(json), 'json',
+                function (type, object) { callback(object || null); });
+  },
+
   // Asks RECAP what it knows about the specified documents.  "urls" should be
   // an array of PACER document URLs, all from the same court.  The callback
   // will be called with a dictionary that maps each of the URLs that exist in
@@ -42,38 +54,7 @@ recap = {
     }
   },
 
-  // Asks RECAP what it knows about the specified case.  If RECAP has a docket
-  // page for the case, the callback will be called with a {docket_url: ...,
-  // timestamp: ...} object, where the "docket_url" field gives the URL at
-  // which the docket page can be downloaded from the Internet Archive, and
-  // the "timestamp" field contains a date in yucky mm/dd/yy format.
-  getMetadataForCase: function (court, caseNumber, callback) {
-    var json = JSON.stringify({court: court, casenum: caseNumber});
-    httpRequest(recap.SERVER_ROOT + '/query_cases/',
-                'json=' + encodeURIComponent(json), 'json',
-                function (type, object) { callback(object || null); });
-  },
-
-  uploadDocument: function (court, path, name, type, blob, callback) {
-    var formData = new FormData();
-    formData.append('court', court);
-    formData.append('url', path);
-    formData.append('mimetype', type);
-    formData.append('data', blob, name);
-    httpRequest(recap.SERVER_ROOT + '/upload/', formData, 'text',
-                function (type, text) { callback(text || null); });
-  },
-
-  uploadDocket: function (court, casenum, name, type, html, callback) {
-    var formData = new FormData();
-    formData.append('court', court);
-    formData.append('casenum', casenum);
-    formData.append('mimetype', type);
-    formData.append('data', new Blob([html], {type: type}), name);
-    httpRequest(recap.SERVER_ROOT + '/upload/', formData, 'text',
-                function (type, text) { callback(text || null); });
-  },
-
+  // Sends metadata about a document to the RECAP server.
   postMetadata: function (court, docid, casenum, de_seq_num, dm_id, docnum) {
     var formData = new FormData();
     formData.append('court', court);
@@ -84,5 +65,39 @@ recap = {
     formData.append('docnum', docnum);
     formData.append('add_case_info', 'true');
     httpRequest(recap.SERVER_ROOT + '/adddocmeta/', formData, 'text', null);
+  },
+
+  // Uploads an HTML docket to the RECAP server.
+  uploadDocket: function (court, casenum, filename, type, html, callback) {
+    var formData = new FormData();
+    formData.append('court', court);
+    formData.append('casenum', casenum);
+    formData.append('mimetype', type);
+    formData.append('data', new Blob([html], {type: type}), filename);
+    httpRequest(recap.SERVER_ROOT + '/upload/', formData, 'text',
+                function (type, text) { callback(text || null); });
+  },
+
+  // Uploads a "Document Selection Menu" page to the RECAP server.
+  uploadDocumentMenu: function (court, filename, type, html, callback) {
+    var formData = new FormData();
+    formData.append('court', court);
+    formData.append('mimetype', type);
+    formData.append('data', new Blob([html], {type: type}), filename);
+    httpRequest(recap.SERVER_ROOT + '/upload/', formData, 'text',
+                function (type, text) { callback(text || null); });
+  },
+
+  // Uploads a PDF document to RECAP, calling the callback with the text of
+  // the RECAP server's response.  We can't parse the response as JSON because
+  // it's sometimes JSON and sometimes a plain message string.
+  uploadDocument: function (court, path, filename, type, blob, callback) {
+    var formData = new FormData();
+    formData.append('court', court);
+    formData.append('url', path);  // should be a doc1-style path
+    formData.append('mimetype', type);
+    formData.append('data', blob, filename);
+    httpRequest(recap.SERVER_ROOT + '/upload/', formData, 'text',
+                function (type, text) { callback(text || null); });
   }
 };

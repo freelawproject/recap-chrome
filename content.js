@@ -46,8 +46,9 @@ if (pacer.isDocketQueryUrl(url)) {
 // If this is a docket page, upload it to RECAP.
 if (pacer.isDocketDisplayUrl(url)) {
   var casenum = pacer.getCaseNumberFromUrl(document.referrer);
+  var filename = pacer.getBaseNameFromUrl(url).replace('.pl', '.html');
   if (casenum) {
-    recap.uploadDocket(court, casenum, 'DktRpt.html', 'text/html',
+    recap.uploadDocket(court, casenum, filename, 'text/html',
                        document.documentElement.innerHTML, function (text) {
       if (text && text.match(/successfully parsed/i)) {
         callBackgroundPage('showNotification', 'RECAP upload',
@@ -58,6 +59,21 @@ if (pacer.isDocketDisplayUrl(url)) {
       }
     });
   }
+}
+
+// If this is a document's menu of attachments, upload it to RECAP.
+if (pacer.isDocumentMenuPage(url, document)) {
+  var filename = window.location.pathname;
+  recap.uploadDocumentMenu(court, filename, 'text/html',
+                           document.documentElement.innerHTML, function (text) {
+    if (text && text.match(/successfully parsed/i)) {
+      callBackgroundPage('showNotification', 'RECAP upload',
+                         'Menu uploaded to the public archive.', null);
+    } else {
+      callBackgroundPage('showNotification', 'RECAP problem',
+                         'Menu not accepted by RECAP: ' + text, null);
+    }
+  });
 }
 
 // If this page offers a single document, ask RECAP whether it has the document.
@@ -75,43 +91,6 @@ if (pacer.isSingleDocumentPage(url, document)) {
           ' Get this document for free from RECAP.'
         )
       ).appendTo($('form'));
-    }
-  });
-}
-
-// Scan the document for all the links and collect the URLs we care about.
-var links = document.body.getElementsByTagName('a');
-var urls = [];
-for (var i = 0; i < links.length; i++) {
-  if (pacer.isDocumentUrl(links[i].href)) {
-    urls.push(links[i].href);
-  }
-  if (pacer.isConvertibleDocumentUrl(links[i].href)) {
-    links[i].addEventListener('mouseover', function () {
-      pacer.convertDocumentUrl(
-        this.href,
-        function (url, docid, caseid, de_seq_num, dm_id, doc_num) {
-          recap.postMetadata(court, docid, caseid, de_seq_num, dm_id, doc_num);
-        }
-      );
-    });
-  }
-}
-if (urls.length) {
-  // Ask the server whether any of these documents are available from RECAP.
-  callBackgroundPage('getMetadataForDocuments', urls, function (result) {
-    // When we get a reply, update all the links that have documents available.
-    for (var i = 0; i < links.length; i++) {
-      if (links[i].href in result) {
-        // Insert a RECAP button just after the original link.
-        $('<a/>', {
-          'class': 'recap-inline',
-          title: 'Available for free from RECAP.',
-          href: result[links[i].href].filename
-        }).append(
-          $('<img/>').attr({src: chrome.extension.getURL('icon-16.png')})
-        ).insertAfter(links[i]);
-      }
     }
   });
 }
@@ -215,4 +194,41 @@ if (pacer.isSingleDocumentPage(url, document)) {
       };
     });
   }, false);
+}
+
+// Scan the document for all the links and collect the URLs we care about.
+var links = document.body.getElementsByTagName('a');
+var urls = [];
+for (var i = 0; i < links.length; i++) {
+  if (pacer.isDocumentUrl(links[i].href)) {
+    urls.push(links[i].href);
+  }
+  if (pacer.isConvertibleDocumentUrl(links[i].href)) {
+    links[i].addEventListener('mouseover', function () {
+      pacer.convertDocumentUrl(
+        this.href,
+        function (url, docid, caseid, de_seq_num, dm_id, doc_num) {
+          recap.postMetadata(court, docid, caseid, de_seq_num, dm_id, doc_num);
+        }
+      );
+    });
+  }
+}
+if (urls.length) {
+  // Ask the server whether any of these documents are available from RECAP.
+  callBackgroundPage('getMetadataForDocuments', urls, function (result) {
+    // When we get a reply, update all the links that have documents available.
+    for (var i = 0; i < links.length; i++) {
+      if (links[i].href in result) {
+        // Insert a RECAP button just after the original link.
+        $('<a/>', {
+          'class': 'recap-inline',
+          title: 'Available for free from RECAP.',
+          href: result[links[i].href].filename
+        }).append(
+          $('<img/>').attr({src: chrome.extension.getURL('icon-16.png')})
+        ).insertAfter(links[i]);
+      }
+    }
+  });
 }
