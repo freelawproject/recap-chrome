@@ -18,6 +18,28 @@
 // Detection of PACER pages and URLs.  This file is browser-independent.
 
 
+// PACER websites are structured like this:
+//
+// Case query form
+//  |
+//  `--> Main menu for a particular case
+//        |
+//        |--> Docket query form ---.
+//        |                         |
+//        `--> History query form --|
+//                                  |
+//                                  '--> List of documents (*)
+//                                        |
+//                                        |--> List of attachments
+//                                        |    associated with a document
+//                                        |     |
+//                                        `-----'--> Single document page
+//                                                    |
+//                                                    '--> PDF view page (*)
+//
+// Pages marked (*) cost money.  The "Single document page" is a page that
+// tells you how much a document will cost before you get to view the PDF.
+
 pacer = {
   // Returns the court identifier for a given URL, or null if not a PACER site.
   getCourtFromUrl: function (url) {

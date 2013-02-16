@@ -67,7 +67,8 @@ recap = {
     httpRequest(recap.SERVER_ROOT + '/adddocmeta/', formData, 'text', null);
   },
 
-  // Uploads an HTML docket to the RECAP server.
+  // Uploads an HTML docket to the RECAP server, calling the callback with
+  // the text of the RECAP server's response.
   uploadDocket: function (court, casenum, filename, type, html, callback) {
     var formData = new FormData();
     formData.append('court', court);
@@ -78,7 +79,8 @@ recap = {
                 function (type, text) { callback(text || null); });
   },
 
-  // Uploads a "Document Selection Menu" page to the RECAP server.
+  // Uploads a "Document Selection Menu" page to the RECAP server, calling
+  // the callback with the text of the RECAP server's response.
   uploadDocumentMenu: function (court, filename, type, html, callback) {
     var formData = new FormData();
     formData.append('court', court);

@@ -21,6 +21,8 @@
 provideFunctions({
   getMetadataForCase: recap.getMetadataForCase,
   getMetadataForDocuments: recap.getMetadataForDocuments,
+
+  // Shows a desktop notification for a few seconds.
   showNotification: function (title, message, callback) {
     var notification = webkitNotifications.createNotification(
       chrome.extension.getURL('icon-32.png'), title, message);

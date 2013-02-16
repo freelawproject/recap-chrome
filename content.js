@@ -15,7 +15,7 @@
 // RECAP for Chrome.  If not, see: http://www.gnu.org/licenses/
 
 // -------------------------------------------------------------------------
-// Content script to run when the DOM finishes loading (run_at: "document_end").
+// Content script to run when DOM finishes loading (run_at: "document_end").
 
 
 var url = window.location.href;
