@@ -81,7 +81,7 @@ recap = {
 
   // Uploads a "Document Selection Menu" page to the RECAP server, calling
   // the callback with the text of the RECAP server's response.
-  uploadDocumentMenu: function (court, filename, type, html, callback) {
+  uploadAttachmentMenu: function (court, filename, type, html, callback) {
     var formData = new FormData();
     formData.append('court', court);
     formData.append('mimetype', type);

@@ -28,10 +28,10 @@
 //        |                         |
 //        `--> History query form --|
 //                                  |
-//                                  '--> List of documents (*)
+//                                  '--> Docket, i.e. list of documents (*)
 //                                        |
-//                                        |--> List of attachments
-//                                        |    associated with a document
+//                                        |--> Attachment menu page for a
+//                                        |    particular document
 //                                        |     |
 //                                        `-----'--> Single document page
 //                                                    |
@@ -82,21 +82,6 @@ pacer = {
     });
   },
 
-  // Returns true if this is a page for downloading a single document.
-  isSingleDocumentPage: function (url, document) {
-    var inputs = document.getElementsByTagName('input');
-    return url.match(/\/doc1\/\d+/) && inputs.length &&
-        inputs[inputs.length - 1].value === 'View Document';
-  },
-
-  // Returns true if this is a "Document Selection Menu" page (a list of the
-  // attachments for a particular document).
-  isDocumentMenuPage: function (url, document) {
-    var inputs = document.getElementsByTagName('input');
-    return url.match(/\/doc1\/\d+/) && inputs.length &&
-        inputs[inputs.length - 1].value === 'Download All';
-  },
-
   // Returns true if the URL is for the form for querying the list of documents
   // in a docket (i.e. the "Docket Sheet" or "History/Documents" query page).
   isDocketQueryUrl: function (url) {
@@ -117,13 +102,28 @@ pacer = {
     return url.match(/\/(DktRpt|HistDocQry)\.pl\?\w+-[\w-]+$/);
   },
 
-  // Gets the last path component of a URL.
-  getBaseNameFromUrl: function (url) {
-    return url.replace(/\?.*/, '').replace(/.*\//, '');
+  // Returns true if this is a "Document Selection Menu" page (a list of the
+  // attachments for a particular document).
+  isAttachmentMenuPage: function (url, document) {
+    var inputs = document.getElementsByTagName('input');
+    return url.match(/\/doc1\/\d+/) && inputs.length &&
+        inputs[inputs.length - 1].value === 'Download All';
+  },
+
+  // Returns true if this is a page for downloading a single document.
+  isSingleDocumentPage: function (url, document) {
+    var inputs = document.getElementsByTagName('input');
+    return url.match(/\/doc1\/\d+/) && inputs.length &&
+        inputs[inputs.length - 1].value === 'View Document';
   },
 
   // Returns the document ID for a document view page.
   getDocumentIdFromUrl: function (url) {
     return (url || '').match(/\/doc1\/(\d+)$/)[1];
+  },
+
+  // Gets the last path component of a URL.
+  getBaseNameFromUrl: function (url) {
+    return url.replace(/\?.*/, '').replace(/.*\//, '');
   }
 };

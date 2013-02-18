@@ -46,8 +46,8 @@ if (pacer.isDocketQueryUrl(url)) {
 // If this is a docket page, upload it to RECAP.
 if (pacer.isDocketDisplayUrl(url)) {
   var casenum = pacer.getCaseNumberFromUrl(document.referrer);
-  var filename = pacer.getBaseNameFromUrl(url).replace('.pl', '.html');
   if (casenum) {
+    var filename = pacer.getBaseNameFromUrl(url).replace('.pl', '.html');
     recap.uploadDocket(court, casenum, filename, 'text/html',
                        document.documentElement.innerHTML, function (text) {
       if (text && text.match(/successfully parsed/i)) {
@@ -62,10 +62,10 @@ if (pacer.isDocketDisplayUrl(url)) {
 }
 
 // If this is a document's menu of attachments, upload it to RECAP.
-if (pacer.isDocumentMenuPage(url, document)) {
-  var filename = window.location.pathname;
-  recap.uploadDocumentMenu(court, filename, 'text/html',
-                           document.documentElement.innerHTML, function (text) {
+if (pacer.isAttachmentMenuPage(url, document)) {
+  recap.uploadAttachmentMenu(court, window.location.pathname, 'text/html',
+                             document.documentElement.innerHTML,
+                             function (text) {
     if (text && text.match(/successfully parsed/i)) {
       callBackgroundPage('showNotification', 'RECAP upload',
                          'Menu uploaded to the public archive.', null);
