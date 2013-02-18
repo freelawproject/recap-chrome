@@ -127,7 +127,8 @@ pacer = {
     return url.replace(/\?.*/, '').replace(/.*\//, '');
   },
 
-  // West-style court name abbreviations, keyed by PACER court identifier.
+  // These are all the supported PACER court identifiers, together with their
+  // West-style court name abbreviations.
   COURT_ABBREVS: {
     'akb': 'Bankr.D.Alaska',
     'akd': 'D.Alaska',
@@ -318,6 +319,23 @@ pacer = {
     'wvsb': 'Bankr.S.D.W.Va.',
     'wvsd': 'S.D.W.Va.',
     'wyb': 'Bankr.D.Wyo.',
-    'wyd': 'D.Wyo.',
+    'wyd': 'D.Wyo.'
+  },
+
+  // PACER court identifiers that aren't supported by this Chrome extension.
+  UNSUPPORTED_COURTS: {
+    'ca1': 1,
+    'ca2': 1,
+    'ca3': 1,
+    'ca4': 1,
+    'ca5': 1,
+    'ca6': 1,
+    'ca7': 1,
+    'ca8': 1,
+    'ca9': 1,
+    'ca10': 1,
+    'ca11': 1,
+    'cadc': 1,
+    'cafc': 1
   }
 };
