@@ -43,37 +43,41 @@ if (pacer.isDocketQueryUrl(url)) {
   });
 }
 
-// If this is a docket page, upload it to RECAP.
-if (pacer.isDocketDisplayUrl(url)) {
-  var casenum = pacer.getCaseNumberFromUrl(document.referrer);
-  if (casenum) {
-    var filename = pacer.getBaseNameFromUrl(url).replace('.pl', '.html');
-    recap.uploadDocket(court, casenum, filename, 'text/html',
-                       document.documentElement.innerHTML, function (text) {
+if (!(history.state && history.state.uploaded)) {
+  // If this is a docket page, upload it to RECAP.
+  if (pacer.isDocketDisplayUrl(url)) {
+    var casenum = pacer.getCaseNumberFromUrl(document.referrer);
+    if (casenum) {
+      var filename = pacer.getBaseNameFromUrl(url).replace('.pl', '.html');
+      recap.uploadDocket(court, casenum, filename, 'text/html',
+                         document.documentElement.innerHTML, function (text) {
+        if (text && text.match(/successfully parsed/i)) {
+          history.replaceState({uploaded: 1});
+          callBackgroundPage('showNotification', 'RECAP upload',
+                             'Docket uploaded to the public archive.', null);
+        } else {
+          callBackgroundPage('showNotification', 'RECAP problem',
+                             'Docket not accepted by RECAP: ' + text, null);
+        }
+      });
+    }
+  }
+  
+  // If this is a document's menu of attachments, upload it to RECAP.
+  if (pacer.isAttachmentMenuPage(url, document)) {
+    recap.uploadAttachmentMenu(court, window.location.pathname, 'text/html',
+                               document.documentElement.innerHTML,
+                               function (text) {
       if (text && text.match(/successfully parsed/i)) {
+        history.replaceState({uploaded: 1});
         callBackgroundPage('showNotification', 'RECAP upload',
-                           'Docket uploaded to the public archive.', null);
+                           'Menu uploaded to the public archive.', null);
       } else {
         callBackgroundPage('showNotification', 'RECAP problem',
-                           'Docket not accepted by RECAP: ' + text, null);
+                           'Menu not accepted by RECAP: ' + text, null);
       }
     });
   }
-}
-
-// If this is a document's menu of attachments, upload it to RECAP.
-if (pacer.isAttachmentMenuPage(url, document)) {
-  recap.uploadAttachmentMenu(court, window.location.pathname, 'text/html',
-                             document.documentElement.innerHTML,
-                             function (text) {
-    if (text && text.match(/successfully parsed/i)) {
-      callBackgroundPage('showNotification', 'RECAP upload',
-                         'Menu uploaded to the public archive.', null);
-    } else {
-      callBackgroundPage('showNotification', 'RECAP problem',
-                         'Menu not accepted by RECAP: ' + text, null);
-    }
-  });
 }
 
 // If this page offers a single document, ask RECAP whether it has the document.
