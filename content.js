@@ -200,7 +200,18 @@ if (PACER.isSingleDocumentPage(url, document)) {
   
           // Upload the file to RECAP.
           var name = path.match(/[^\/]+$/)[0] + '.pdf';
-          var bytes = Array.apply(null, new Uint8Array(ab));
+
+          // We can't pass an ArrayBuffer or Blob directly in a message to the
+          // background page, so we have to convert to a regular array.  But
+          // Array.apply() causes a "maximum call stack size exceeded" error
+          // for buffers of only 300k, so we have to go through this ridiculous
+          // circumlocution of breaking up the buffer into chunks.
+          var chunks = [];
+          for (var i = 0; i < ab.byteLength; i += 100000) {
+            length = Math.min(100000, ab.byteLength - i);
+            chunks.push(Array.apply(null, new Uint8Array(ab, i, length)));
+          }
+          var bytes = [].concat.apply([], chunks);
           recap.uploadDocument(court, path, name, type, bytes, function (ok) {
             if (ok) {
               notifier.showNotification(
