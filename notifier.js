@@ -15,9 +15,18 @@
 // RECAP for Chrome.  If not, see: http://www.gnu.org/licenses/
 
 // -------------------------------------------------------------------------
-// Background page script.
+// Desktop notification service.
 
 
-exportInstance(Pacer);
-exportInstance(Recap);
-exportInstance(Notifier);
+function Notifier() {
+  return {
+    // Shows a desktop notification for a few seconds.
+    showNotification: function (title, message, cb) {
+      var notification = webkitNotifications.createNotification(
+        chrome.extension.getURL('icon-32.png'), title, message);
+      notification.show();
+      setTimeout(function () { notification.cancel(); }, 5000);
+      cb();
+    }
+  };
+}

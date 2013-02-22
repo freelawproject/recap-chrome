@@ -15,48 +15,58 @@
 // RECAP for Chrome.  If not, see: http://www.gnu.org/licenses/
 
 // -------------------------------------------------------------------------
-// Utilities for use in background pages and content scripts.
+// Browser-specific utilities for use in background pages and content scripts.
 
 
-// Makes functions in a background page callable from a content script or vice
-// versa, using the message system.  Each function should take a callback as
-// its last argument and call the callback with its result.  For example:
+// Makes a singleton instance in a background page callable from a content
+// script, using Chrome's message system.  The constructor should be a named
+// no-argument function that returns an object whose methods all take a
+// callback (cb) as the last argument and call the callback with the return
+// value (rv).  Arguments and return values must be JSON-serializable values
+// (due to the restrictions of Chrome's message system).  For example:
 //
 // In background page:
-//   provideFunctions({add: function (x, y, callback) { callback(x + y); }});
-// In content script:
-//   callBackgroundPage('square', 3, 5, alert);
+//   function Counter() {
+//     var count = 0;
+//     return {inc: function (amount, cb) { cb(count += amount); }};
+//   }
+//   exportInstance(Counter);
 //
 // In content script:
-//   provideFunctions({add: function (x, y, callback) { callback(x + y); }});
-// In background page:
-//   callContentScript(1, 'square', 3, 5, alert);
-function provideFunctions(functions) {
-  chrome.extension.onMessage.addListener(function (request, sender, callback) {
-    var func = functions[request.verb];
-    func && func.apply(null, request.args.concat([callback]));
-    return true;
+//   var counter = importInstance(Counter);
+//   counter.inc(6, function (rv) { alert('count is ' + rv); });
+function exportInstance(constructor) {
+  var name = constructor.name;  // function name is used to identify the service
+  var instance = new constructor();
+  chrome.extension.onMessage.addListener(function (request, sender, cb) {
+    if (request.name === name) {
+      var pack = function () { cb(Array.prototype.slice.apply(arguments)); };
+      instance[request.verb].apply(instance, request.args.concat([pack]));
+      return true;  // allow cb to be called after listener returns
+    }
   });
-}
+};
 
-// Calls a function provided by a background page, from within a content script.
-// The first argument is the function name, the last is a callback to be called
-// with the result, and the rest of the arguments in between should correspond
-// to the rest of the arguments in the definition passed to provideFunctions.
-function callBackgroundPage(verb, varargs) {
-  var args = Array.prototype.slice.call(arguments, 1);
-  var callback = args.pop() || function () {};
-  chrome.extension.sendMessage({verb: verb, args: args}, callback);
-}
-
-// Calls a function provided by a content script, from within a background page.
-// The first two arguments are the tab ID and function name, the last is a
-// callback for the result, and the rest of the arguments should correspond to
-// to the rest of the arguments in the definition passed to provideFunctions.
-function callContentScript(tabId, verb, varargs) {
-  var args = Array.prototype.slice.call(arguments, 2);
-  var callback = args.pop() || function () {};
-  chrome.tabs.sendMessage(tabId, {verb: verb, args: args}, callback);
+// Gets an object that corresponds to the instance exported by exportInstance.
+// Calling methods on this object in a content script will invoke the methods
+// on a singleton instance of the constructor the background page.  All calls
+// must provide a callback function or null as the last argument.  The
+// constructor should be the same one passed to exportInstance.
+function importInstance(constructor) {
+  var name = constructor.name;
+  var sender = {};
+  for (var verb in new constructor()) {
+    (function (verb) {
+      sender[verb] = function () {
+        var args = Array.prototype.slice.call(arguments, 0, -1);
+        var cb = arguments[arguments.length - 1] || function () {};
+        var unpack = function (results) { cb.apply(null, results); };
+        chrome.extension.sendMessage(
+          {name: name, verb: verb, args: args}, unpack);
+      };
+    })(verb);
+  }
+  return sender;
 }
 
 // Makes an XHR to the given URL, calling a callback with the returned content
@@ -69,7 +79,7 @@ function httpRequest(url, postData, responseType, callback) {
   var xhr = new XMLHttpRequest();
   // WebKit doesn't support responseType 'json' yet, but probably will soon.
   xhr.responseType = responseType === 'json' ? 'text' : responseType;
-  xhr.onreadystatechange = function() {
+  xhr.onreadystatechange = function () {
     if (xhr.readyState === 4) {
       if (xhr.status === 200) {
         type = xhr.getResponseHeader('Content-Type');

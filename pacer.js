@@ -15,7 +15,7 @@
 // RECAP for Chrome.  If not, see: http://www.gnu.org/licenses/
 
 // -------------------------------------------------------------------------
-// Detection of PACER pages and URLs.  This file is browser-independent.
+// Abstraction of PACER site and services.  This file is browser-independent.
 
 
 // PACER websites are structured like this:
@@ -40,7 +40,8 @@
 // Pages marked (*) cost money.  The "Single document page" is a page that
 // tells you how much a document will cost before you get to view the PDF.
 
-pacer = {
+// Public constants and pure functions (functions with no side effects).
+PACER = {
   // Returns the court identifier for a given URL, or null if not a PACER site.
   getCourtFromUrl: function (url) {
     var match = (url || '').toLowerCase().match(
@@ -51,7 +52,7 @@ pacer = {
   // Returns true if the given URL looks like a link to a PACER document.
   isDocumentUrl: function (url) {
     if (url.match(/\/doc1\/\d+/) || url.match(/\/cgi-bin\/show_doc/)) {
-      if (pacer.getCourtFromUrl(url)) {
+      if (PACER.getCourtFromUrl(url)) {
         return true;
       }
     }
@@ -60,26 +61,10 @@ pacer = {
   // Returns true if a URL looks like a show_doc link that needs conversion.
   isConvertibleDocumentUrl: function (url) {
     if (url.match(/\/cgi-bin\/show_doc/)) {
-      if (pacer.getCourtFromUrl(url)) {
+      if (PACER.getCourtFromUrl(url)) {
         return true;
       }
     }
-  },
-
-  // Converts a show_doc-style URL into a doc1-style URL, calling the callback
-  // with the arguments (doc1_url, docid, caseid, de_seq_num, dm_id, doc_num).
-  convertDocumentUrl: function (url, callback) {
-    var query = url.match(/\?.*/)[0];
-    var params = {};
-    // The parameters only contain digits, so we don't need to unescape.
-    query.replace(/([^=?&]+)=([^&]*)/g, function (p, k, v) { params[k] = v; });
-    // PACER uses a crazy query string encoding with "K" and "V" as delimiters.
-    httpRequest('/cgi-bin/document_link.pl?document' +
-                query.replace(/[?&]/g, 'K').replace(/=/g, 'V'),
-                null, 'text', function (type, text) {
-      callback(text, pacer.getDocumentIdFromUrl(text),
-               params.caseid, params.de_seq_num, params.dm_id, params.doc_num);
-    });
   },
 
   // Returns true if the URL is for the form for querying the list of documents
@@ -117,9 +102,15 @@ pacer = {
         inputs[inputs.length - 1].value === 'View Document';
   },
 
-  // Returns the document ID for a document view page.
+  // Returns the document ID for a document view page or single-document page.
   getDocumentIdFromUrl: function (url) {
-    return (url || '').match(/\/doc1\/(\d+)$/)[1];
+    var match = (url || '').match(/\/doc1\/(\d+)$/);
+    if (match) {
+      // Some PACER sites use the fourth digit of the docid to flag whether
+      // the user has been shown a receipt page.  We don't care about that,
+      // so we always set the fourth digit to 0 when getting a document ID.
+      return match[1].slice(0, 3) + '0' + match[1].slice(4);
+    }
   },
 
   // Gets the last path component of a URL.
@@ -338,4 +329,26 @@ pacer = {
     'cadc': 1,
     'cafc': 1
   }
+};
+
+// Public impure functions (functions with side effects).
+function Pacer() {
+  return {
+    // Converts a show_doc URL into a doc1-style URL, calling the callback with
+    // the arguments (doc1_url, docid, caseid, de_seq_num, dm_id, doc_num).
+    convertDocumentUrl: function (url, callback) {
+      var schemeHost = url.match(/^\w+:\/\/[^\/]+/)[0];
+      var query = url.match(/\?.*/)[0];
+      var data = {};
+      // The parameters only contain digits, so we don't need to unescape.
+      query.replace(/([^=?&]+)=([^&]*)/g, function (p, k, v) { data[k] = v; });
+      // PACER uses a crazy query encoding with "K" and "V" as delimiters.
+      query = query.replace(/[?&]/g, 'K').replace(/=/g, 'V');
+      httpRequest(schemeHost + '/cgi-bin/document_link.pl?document' + query,
+                  null, 'text', function (type, text) {
+        callback(text, PACER.getDocumentIdFromUrl(text),
+                 data.caseid, data.de_seq_num, data.dm_id, data.doc_num);
+      });
+    }
+  };
 };

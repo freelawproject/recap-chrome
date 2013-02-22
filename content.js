@@ -18,13 +18,17 @@
 // Content script to run when DOM finishes loading (run_at: "document_end").
 
 
+var pacer = importInstance(Pacer);
+var recap = importInstance(Recap);
+var notifier = importInstance(Notifier);
+
 var url = window.location.href;
-var court = pacer.getCourtFromUrl(url);
+var court = PACER.getCourtFromUrl(url);
 
 // If this is a docket query page, ask RECAP whether it has the docket page.
-if (pacer.isDocketQueryUrl(url)) {
-  callBackgroundPage('getMetadataForCase', court,
-                     pacer.getCaseNumberFromUrl(url), function (result) {
+if (PACER.isDocketQueryUrl(url)) {
+  recap.getAvailabilityForDocket(
+    court, PACER.getCaseNumberFromUrl(url), function (result) {
     if (result && result.docket_url) {
       // Insert a RECAP download link at the bottom of the form.
       $('<div class="recap-banner"/>').append(
@@ -45,44 +49,38 @@ if (pacer.isDocketQueryUrl(url)) {
 
 if (!(history.state && history.state.uploaded)) {
   // If this is a docket page, upload it to RECAP.
-  if (pacer.isDocketDisplayUrl(url)) {
-    var casenum = pacer.getCaseNumberFromUrl(document.referrer);
+  if (PACER.isDocketDisplayUrl(url)) {
+    var casenum = PACER.getCaseNumberFromUrl(document.referrer);
     if (casenum) {
-      var filename = pacer.getBaseNameFromUrl(url).replace('.pl', '.html');
+      var filename = PACER.getBaseNameFromUrl(url).replace('.pl', '.html');
       recap.uploadDocket(court, casenum, filename, 'text/html',
-                         document.documentElement.innerHTML, function (text) {
-        if (text && text.match(/successfully parsed/i)) {
+                         document.documentElement.innerHTML, function (ok) {
+        if (ok) {
           history.replaceState({uploaded: 1});
-          callBackgroundPage('showNotification', 'RECAP upload',
-                             'Docket uploaded to the public archive.', null);
-        } else {
-          callBackgroundPage('showNotification', 'RECAP problem',
-                             'Docket not accepted by RECAP: ' + text, null);
+          notifier.showNotification(
+            'RECAP upload', 'Docket uploaded to the public archive.', null);
         }
       });
     }
   }
   
   // If this is a document's menu of attachments, upload it to RECAP.
-  if (pacer.isAttachmentMenuPage(url, document)) {
-    recap.uploadAttachmentMenu(court, window.location.pathname, 'text/html',
-                               document.documentElement.innerHTML,
-                               function (text) {
-      if (text && text.match(/successfully parsed/i)) {
+  if (PACER.isAttachmentMenuPage(url, document)) {
+    recap.uploadAttachmentMenu(
+      court, window.location.pathname, 'text/html',
+      document.documentElement.innerHTML, function (ok) {
+      if (ok) {
         history.replaceState({uploaded: 1});
-        callBackgroundPage('showNotification', 'RECAP upload',
-                           'Menu uploaded to the public archive.', null);
-      } else {
-        callBackgroundPage('showNotification', 'RECAP problem',
-                           'Menu not accepted by RECAP: ' + text, null);
+        notifier.showNotification(
+          'RECAP upload', 'Menu page uploaded to the public archive.', null);
       }
     });
   }
 }
 
 // If this page offers a single document, ask RECAP whether it has the document.
-if (pacer.isSingleDocumentPage(url, document)) {
-  callBackgroundPage('getMetadataForDocuments', [url], function (result) {
+if (PACER.isSingleDocumentPage(url, document)) {
+  recap.getAvailabilityForDocuments([url], function (result) {
     if (result && result[url]) {
       // Insert a RECAP download link at the bottom of the form.
       $('<div class="recap-banner"/>').append(
@@ -102,7 +100,7 @@ if (pacer.isSingleDocumentPage(url, document)) {
 // If this page offers a single document, intercept navigation to the document
 // view page.  The "View Document" button calls the goDLS() function, which
 // creates a <form> element and calls submit() on it, so we hook into submit().
-if (pacer.isSingleDocumentPage(url, document)) {
+if (PACER.isSingleDocumentPage(url, document)) {
   // Monkey-patch the <form> prototype so that its submit() method sends a
   // message to this content script instead of submitting the form.  To do this
   // in the page context instead of this script's, we inject a <script> element.
@@ -123,6 +121,7 @@ if (pacer.isSingleDocumentPage(url, document)) {
     document.forms[0].setAttribute('onsubmit', 'history.forward(); return !1;');
     var previousPageHtml = document.documentElement.innerHTML;
     document.forms[0].setAttribute('onsubmit', originalSubmit);
+    var docid = PACER.getDocumentIdFromUrl(window.location.href);
     var path = window.location.pathname;
     
     // Now do the form request to get to the view page.  Some PACER sites will
@@ -179,19 +178,33 @@ if (pacer.isSingleDocumentPage(url, document)) {
           history.replaceState({content: previousPageHtml});
 
           // Display the page with the downloaded file in the <iframe>.
-          html = match[1] + '<iframe src="' + blobUrl + '"' + match[3];
-          document.documentElement.innerHTML = html;
-          history.pushState({content: html});
-
+          recap.getDocumentMetadata(
+            docid, function (caseid, officialcasenum, docnum, subdocnum) {
+            var filename1 = 'gov.uscourts.' + court + '.' + caseid +
+              '.' + docnum + '.' + (subdocnum || '0') + '.pdf';
+            var filename2 = PACER.COURT_ABBREVS[court] + '_' +
+              (officialcasenum || caseid) +
+              '_' + docnum + '_' + (subdocnum || '0') + '.pdf';
+            var downloadLink = '<div id="recap-download" class="initial">' +
+              '<a href="' + blobUrl + '" download="' + filename1 + '">' +
+              'Save as ' + filename1 + '</a>' +
+              '<a href="' + blobUrl + '" download="' + filename2 + '">' +
+              'Save as ' + filename2 + '</a></div>';
+            html = match[1] + downloadLink + '<iframe onload="' +
+              'setTimeout(function() {' +
+              "  document.getElementById('recap-download').className = '';" +
+              '}, 7500)" src="' + blobUrl + '"' + match[3];
+            document.documentElement.innerHTML = html;
+            history.pushState({content: html});
+          });
+  
           // Upload the file to RECAP.
           var name = path.match(/[^\/]+$/)[0] + '.pdf';
-          recap.uploadDocument(court, path, name, type, blob, function (text) {
-            if (text && text.match(/uploaded/i)) {
-              callBackgroundPage('showNotification', 'RECAP upload',
-                                 'PDF uploaded to the public archive.', null);
-            } else {
-              callBackgroundPage('showNotification', 'RECAP problem',
-                                 'PDF not accepted by RECAP: ' + text, null);
+          var bytes = Array.apply(null, new Uint8Array(ab));
+          recap.uploadDocument(court, path, name, type, bytes, function (ok) {
+            if (ok) {
+              notifier.showNotification(
+                'RECAP upload', 'PDF uploaded to the public archive.', null);
             }
           });
         });
@@ -204,23 +217,24 @@ if (pacer.isSingleDocumentPage(url, document)) {
 var links = document.body.getElementsByTagName('a');
 var urls = [];
 for (var i = 0; i < links.length; i++) {
-  if (pacer.isDocumentUrl(links[i].href)) {
+  if (PACER.isDocumentUrl(links[i].href)) {
     urls.push(links[i].href);
   }
-  if (pacer.isConvertibleDocumentUrl(links[i].href)) {
-    links[i].addEventListener('mouseover', function () {
+  links[i].addEventListener('mouseover', function () {
+    if (PACER.isConvertibleDocumentUrl(this.href)) {
       pacer.convertDocumentUrl(
         this.href,
-        function (url, docid, caseid, de_seq_num, dm_id, doc_num) {
-          recap.postMetadata(court, docid, caseid, de_seq_num, dm_id, doc_num);
+        function (url, docid, caseid, de_seq_num, dm_id, docnum) {
+          recap.uploadMetadata(
+            court, docid, caseid, de_seq_num, dm_id, docnum, null);
         }
       );
-    });
-  }
+    }
+  });
 }
 if (urls.length) {
   // Ask the server whether any of these documents are available from RECAP.
-  callBackgroundPage('getMetadataForDocuments', urls, function (result) {
+  recap.getAvailabilityForDocuments(urls, function (result) {
     // When we get a reply, update all the links that have documents available.
     for (var i = 0; i < links.length; i++) {
       if (links[i].href in result) {
