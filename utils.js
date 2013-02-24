@@ -18,25 +18,50 @@
 // Browser-specific utilities for use in background pages and content scripts.
 
 
-// Makes a singleton instance in a background page callable from a content
-// script, using Chrome's message system.  The constructor should be a named
-// no-argument function that returns an object whose methods all take a
-// callback (cb) as the last argument and call the callback with the return
-// value (rv).  Arguments and return values must be JSON-serializable values
-// (due to the restrictions of Chrome's message system).  For example:
+// In Chrome, content scripts can only communicate with background pages using
+// message passing (see http://developer.chrome.com/extensions/messaging.html).
+// Sometimes the content script needs to call into a background page in order
+// to persist data from page to page or to use certain permissions, so for
+// convenience we wrap the message-passing machinery using a pair of functions,
+// exportInstance() and importInstance().  Here's how to use them:
 //
-// In background page:
+// 1. Write a service by defining a no-argument constructor function.  The
+//    name of the function identifies the service.  The function should return
+//    an object whose methods all take a callback (cb) as the last argument and
+//    call the callback with the return value (rv).  Only JSON-serializable
+//    values can be passed as arguments and return values of the methods.
+//
+// 2. Include the service in both the background page and the content script
+//    (i.e. in manifest.json, the service's JS file should appear in both the
+//    background: {scripts: [...]} and content_scripts: {js: [...]} lists).
+//
+// 3. In the background page, call exportInstance on the constructor).  This
+//    creates a instance that will serve requests from the content script.
+//    Only one singleton instance can be exported.
+//
+// 4. In the content script, call importInstance on the same constructor to get
+//    an object.  Then call methods on the object, always passing a callback
+//    function or null as the last argument.
+//
+// Here's an example.
+//
+// Service definition:
 //   function Counter() {
 //     var count = 0;
 //     return {inc: function (amount, cb) { cb(count += amount); }};
 //   }
+//
+// In the background page:
 //   exportInstance(Counter);
 //
-// In content script:
+// In the content script:
 //   var counter = importInstance(Counter);
 //   counter.inc(6, function (rv) { alert('count is ' + rv); });
+
+// Makes a singleton instance in a background page callable from a content
+// script, using Chrome's message system.  See above for details.
 function exportInstance(constructor) {
-  var name = constructor.name;  // function name is used to identify the service
+  var name = constructor.name;  // function name identifies the service
   var instance = new constructor();
   chrome.extension.onMessage.addListener(function (request, sender, cb) {
     if (request.name === name) {
@@ -45,13 +70,10 @@ function exportInstance(constructor) {
       return true;  // allow cb to be called after listener returns
     }
   });
-};
+}
 
-// Gets an object that corresponds to the instance exported by exportInstance.
-// Calling methods on this object in a content script will invoke the methods
-// on a singleton instance of the constructor the background page.  All calls
-// must provide a callback function or null as the last argument.  The
-// constructor should be the same one passed to exportInstance.
+// Gets an object that can be used in a content script to invoke methods on an
+// instance exported from the background page.  See above for details.  
 function importInstance(constructor) {
   var name = constructor.name;
   var sender = {};

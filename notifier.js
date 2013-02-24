@@ -18,6 +18,7 @@
 // Desktop notification service.
 
 
+// Public impure functions.  (See utils.js for details on defining services.)
 function Notifier() {
   return {
     // Shows a desktop notification for a few seconds.

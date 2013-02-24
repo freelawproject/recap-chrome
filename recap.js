@@ -18,10 +18,7 @@
 // Abstraction of the RECAP server APIs.  This file is browser-independent.
 
 
-// Public constants and pure functions (functions with no side effects).
-RECAP = {};
-
-// Public impure functions (functions with side effects).
+// Public impure functions.  (See utils.js for details on defining services.)
 function Recap() {
   var SERVER_ROOT = 'http://dev.recapextension.org/recap';
   var caseMeta = {}; // key: casenum, value: {officialcasenum: o}

@@ -40,7 +40,9 @@
 // Pages marked (*) cost money.  The "Single document page" is a page that
 // tells you how much a document will cost before you get to view the PDF.
 
-// Public constants and pure functions (functions with no side effects).
+// Public constants and pure functions.  As these are pure, they can be freely
+// called from anywhere; by convention we use an ALL_CAPS name to allude to
+// the purity (const-ness) of this object's contents.
 PACER = {
   // Returns the court identifier for a given URL, or null if not a PACER site.
   getCourtFromUrl: function (url) {
@@ -331,7 +333,7 @@ PACER = {
   }
 };
 
-// Public impure functions (functions with side effects).
+// Public impure functions.  (See utils.js for details on defining services.)
 function Pacer() {
   return {
     // Converts a show_doc URL into a doc1-style URL, calling the callback with
