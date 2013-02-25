@@ -163,12 +163,6 @@ if (PACER.isSingleDocumentPage(url, document)) {
 
         // Download the file from the <iframe> URL.
         httpRequest(match[2], null, 'arraybuffer', function (type, ab) {
-          // For unknown reasons, if we get a Blob directly from the XHR with
-          // responseType 'blob', the Blob doesn't upload below.  But if we get
-          // an ArrayBuffer and then convert it to a Blob, the upload works.
-          var blob = new Blob([new Uint8Array(ab)], {type: type});
-          var blobUrl = URL.createObjectURL(blob);
-
           // Make the Back button redisplay the previous page.
           window.onpopstate = function(event) {
             if (event.state.content) {
@@ -178,6 +172,8 @@ if (PACER.isSingleDocumentPage(url, document)) {
           history.replaceState({content: previousPageHtml});
 
           // Display the page with the downloaded file in the <iframe>.
+          var blob = new Blob([new Uint8Array(ab)], {type: type});
+          var blobUrl = URL.createObjectURL(blob);
           recap.getDocumentMetadata(
             docid, function (caseid, officialcasenum, docnum, subdocnum) {
             var filename1 = 'gov.uscourts.' + court + '.' + caseid +
@@ -198,20 +194,10 @@ if (PACER.isSingleDocumentPage(url, document)) {
             history.pushState({content: html});
           });
   
-          // Upload the file to RECAP.
+          // Upload the file to RECAP.  We can't pass an ArrayBuffer directly
+          // to the background page, so we have to convert to a regular array.
           var name = path.match(/[^\/]+$/)[0] + '.pdf';
-
-          // We can't pass an ArrayBuffer or Blob directly in a message to the
-          // background page, so we have to convert to a regular array.  But
-          // Array.apply() causes a "maximum call stack size exceeded" error
-          // for buffers of only 300k, so we have to go through this ridiculous
-          // circumlocution of breaking up the buffer into chunks.
-          var chunks = [];
-          for (var i = 0; i < ab.byteLength; i += 100000) {
-            length = Math.min(100000, ab.byteLength - i);
-            chunks.push(Array.apply(null, new Uint8Array(ab, i, length)));
-          }
-          var bytes = [].concat.apply([], chunks);
+          var bytes = arrayBufferToArray(ab);
           recap.uploadDocument(court, path, name, type, bytes, function (ok) {
             if (ok) {
               notifier.showNotification(
