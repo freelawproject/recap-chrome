@@ -18,6 +18,16 @@
 // Background page script.
 
 
+// Set options to their default values.
+chrome.storage.sync.get('options', function (items) {
+  if (!items.options) {
+    chrome.storage.sync.set({options: {
+      upload_notification: true
+    }});
+  }
+});
+
+// Make services callable from content scripts.
+exportInstance(Notifier);
 exportInstance(Pacer);
 exportInstance(Recap);
-exportInstance(Notifier);

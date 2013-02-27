@@ -47,6 +47,14 @@ if (PACER.isDocketQueryUrl(url)) {
   });
 }
 
+function showUploadNotification(message) {
+  chrome.storage.sync.get('options', function (items) {
+    if (items.options.upload_notification) {
+      notifier.showNotification('RECAP upload', message, null);
+    }
+  });
+}
+
 if (!(history.state && history.state.uploaded)) {
   // If this is a docket page, upload it to RECAP.
   if (PACER.isDocketDisplayUrl(url)) {
@@ -57,8 +65,7 @@ if (!(history.state && history.state.uploaded)) {
                          document.documentElement.innerHTML, function (ok) {
         if (ok) {
           history.replaceState({uploaded: 1});
-          notifier.showNotification(
-            'RECAP upload', 'Docket uploaded to the public archive.', null);
+          showUploadNotification('Docket uploaded to the public archive.');
         }
       });
     }
@@ -71,8 +78,7 @@ if (!(history.state && history.state.uploaded)) {
       document.documentElement.innerHTML, function (ok) {
       if (ok) {
         history.replaceState({uploaded: 1});
-        notifier.showNotification(
-          'RECAP upload', 'Menu page uploaded to the public archive.', null);
+        showUploadNotification('Menu page uploaded to the public archive.');
       }
     });
   }
@@ -200,8 +206,7 @@ if (PACER.isSingleDocumentPage(url, document)) {
           var bytes = arrayBufferToArray(ab);
           recap.uploadDocument(court, path, name, type, bytes, function (ok) {
             if (ok) {
-              notifier.showNotification(
-                'RECAP upload', 'PDF uploaded to the public archive.', null);
+              showUploadNotification('PDF uploaded to the public archive.');
             }
           });
         });

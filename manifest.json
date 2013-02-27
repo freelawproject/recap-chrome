@@ -7,7 +7,8 @@
     "http://dev.recapextension.org/",
     "http://recapextension.org/",
     "*://*.uscourts.gov/",
-    "notifications"
+    "notifications",
+    "storage"
   ],
   "background": {
     "scripts": [
@@ -32,6 +33,7 @@
     ],
     "run_at": "document_end"
   }],
+  "options_page": "options.html",
   "web_accessible_resources": [
     "icon-16.png",
     "icon-32.png"
