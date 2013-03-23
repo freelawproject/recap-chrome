@@ -120,6 +120,16 @@ PACER = {
     return url.replace(/\?.*/, '').replace(/.*\//, '');
   },
 
+  // Given document.cookie, returns true if the user is logged in to PACER.
+  hasValidLoginCookie: function (cookieString) {
+    var cookies = {};
+    cookieString.replace(/\s*([^=;]+)=([^;]*)/g, function (match, name, value) {
+      cookies[name.trim()] = value.trim();
+    });
+    var pacerCookie = cookies['PacerUser'] || cookies['PacerSession'];
+    return pacerCookie && !pacerCookie.match(/unvalidated/);
+  },
+
   // These are all the supported PACER court identifiers, together with their
   // West-style court name abbreviations.
   COURT_ABBREVS: {

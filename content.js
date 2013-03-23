@@ -18,12 +18,16 @@
 // Content script to run when DOM finishes loading (run_at: "document_end").
 
 
+var notifier = importInstance(Notifier);
+var toolbar_button = importInstance(ToolbarButton);
 var pacer = importInstance(Pacer);
 var recap = importInstance(Recap);
-var notifier = importInstance(Notifier);
 
 var url = window.location.href;
 var court = PACER.getCourtFromUrl(url);
+
+toolbar_button.setPacerLoginStatus(
+  PACER.hasValidLoginCookie(document.cookie), null);
 
 // If this is a docket query page, ask RECAP whether it has the docket page.
 if (PACER.isDocketQueryUrl(url)) {

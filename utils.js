@@ -28,8 +28,8 @@
 // 1. Write a service by defining a no-argument constructor function.  The
 //    name of the function identifies the service.  The function should return
 //    an object whose methods all take a callback (cb) as the last argument and
-//    call the callback with the return value (rv).  Only JSON-serializable
-//    values can be passed as arguments and return values of the methods.
+//    call the callback with the return value (rv).  All arguments and return
+//    values must be JSON-serializable.  The caller's tab is provided as cb.tab.
 //
 // 2. Include the service in both the background page and the content script
 //    (i.e. in manifest.json, the service's JS file should appear in both the
@@ -66,6 +66,7 @@ function exportInstance(constructor) {
   chrome.extension.onMessage.addListener(function (request, sender, cb) {
     if (request.name === name) {
       var pack = function () { cb(Array.prototype.slice.apply(arguments)); };
+      pack.tab = sender.tab;
       instance[request.verb].apply(instance, request.args.concat([pack]));
       return true;  // allow cb to be called after listener returns
     }
@@ -82,6 +83,7 @@ function importInstance(constructor) {
       sender[verb] = function () {
         var args = Array.prototype.slice.call(arguments, 0, -1);
         var cb = arguments[arguments.length - 1] || function () {};
+        typeof cb === 'function' || throw 'Last argument is not a callback';
         var unpack = function (results) { cb.apply(null, results); };
         chrome.extension.sendMessage(
           {name: name, verb: verb, args: args}, unpack);

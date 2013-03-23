@@ -15,20 +15,23 @@
 // RECAP for Chrome.  If not, see: http://www.gnu.org/licenses/
 
 // -------------------------------------------------------------------------
-// Background page script.
+// Toolbar button for RECAP (or "browser action" in Chrome parlance).
 
 
-// Set options to their default values.
-chrome.storage.sync.get('options', function (items) {
-  if (!items.options) {
-    chrome.storage.sync.set({options: {
-      upload_notification: true
-    }});
-  }
-});
-
-// Make services callable from content scripts.
-exportInstance(Notifier);
-exportInstance(ToolbarButton);
-exportInstance(Pacer);
-exportInstance(Recap);
+// Public impure functions.  (See utils.js for details on defining services.)
+function ToolbarButton() {
+  return {
+    // Updates the button to show whether the user is logged in to PACER.
+    setPacerLoginStatus: function (loggedIn, cb) {
+      chrome.browserAction.setTitle({
+        title: 'RECAP: ' + (loggedIn ? '' : 'not ') + 'logged in to PACER',
+        tabId: cb.tab.id
+      });
+      chrome.browserAction.setIcon({
+        path: loggedIn ? 'icon-32.png' : 'grey-32.png',
+        tabId: cb.tab.id
+      });
+      cb();
+    }
+  };
+}

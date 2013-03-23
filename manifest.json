@@ -14,6 +14,7 @@
     "scripts": [
       "utils.js",
       "notifier.js",
+      "toolbar_button.js",
       "pacer.js",
       "recap.js",
       "background.js"
@@ -27,14 +28,22 @@
       "jquery.min.js",
       "utils.js",
       "notifier.js",
+      "toolbar_button.js",
       "pacer.js",
       "recap.js",
       "content.js"
     ],
     "run_at": "document_end"
   }],
+  "browser_action": {
+    "default_icon": "grey-32.png",
+    "default_title": "RECAP: not logged in",
+    "default_popup": "options.html"
+  },
   "options_page": "options.html",
   "web_accessible_resources": [
+    "grey-16.png",
+    "grey-32.png",
     "icon-16.png",
     "icon-32.png"
   ]
