@@ -4,12 +4,10 @@
 // RECAP for Chrome is free software: you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
 // Software Foundation, either version 3 of the License, or (at your option)
-// any later version.
-// 
-// RECAP for Chrome is distributed in the hope that it will be useful, but
-// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-// or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-// for more details.
+// any later version.  RECAP for Chrome is distributed in the hope that it will
+// be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+// Public License for more details.
 // 
 // You should have received a copy of the GNU General Public License along with
 // RECAP for Chrome.  If not, see: http://www.gnu.org/licenses/
@@ -83,7 +81,9 @@ function importInstance(constructor) {
       sender[verb] = function () {
         var args = Array.prototype.slice.call(arguments, 0, -1);
         var cb = arguments[arguments.length - 1] || function () {};
-        typeof cb === 'function' || throw 'Last argument is not a callback';
+        if (typeof cb !== 'function') {
+          throw 'Service invocation error: last argument is not a callback';
+        }
         var unpack = function (results) { cb.apply(null, results); };
         chrome.extension.sendMessage(
           {name: name, verb: verb, args: args}, unpack);
