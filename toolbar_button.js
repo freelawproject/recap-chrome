@@ -18,17 +18,36 @@
 
 // Public impure functions.  (See utils.js for details on defining services.)
 function ToolbarButton() {
+  // A flag for each tab indicating whether the user is logged in to PACER.
+  var tabStatus = {};
+  var tabListenerAdded = false;
+
   return {
-    // Updates the button to show whether the user is logged in to PACER.
+    // Updates PACER login status of the given tab.
     setPacerLoginStatus: function (loggedIn, cb) {
-      chrome.browserAction.setTitle({
-        title: 'RECAP: ' + (loggedIn ? '' : 'not ') + 'logged in to PACER',
-        tabId: cb.tab.id
-      });
-      chrome.browserAction.setIcon({
-        path: loggedIn ? 'icon-32.png' : 'grey-32.png',
-        tabId: cb.tab.id
-      });
+      // Updates the button's appearance to reflect the tab's login status.
+      var updateTab = function (id) {
+        var message = (tabStatus[id] ? '' : 'not ') + 'logged in to PACER';
+        chrome.browserAction.setTitle({
+          title: 'RECAP: ' + message,
+          tabId: id
+        });
+        chrome.browserAction.setIcon({
+          path: tabStatus[id] ? 'icon-32.png' : 'grey-32.png',
+          tabId: id
+        });
+      };
+      // Chrome resets the toolbar button on navigation, so we have to keep
+      // reapplying the button title and icon or it will revert to the default.
+      if (!tabListenerAdded) {
+        chrome.tabs.onUpdated.addListener(function (tabId, details, tab) {
+          updateTab(tabId);
+        });
+        tabListenerAdded = true;
+      }
+      // Record the status of the tab, then update the toolbar button.
+      tabStatus[cb.tab.id] = loggedIn;
+      updateTab(cb.tab.id);
       cb();
     }
   };

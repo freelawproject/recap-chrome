@@ -37,7 +37,7 @@
   }],
   "browser_action": {
     "default_icon": "grey-32.png",
-    "default_title": "RECAP: not logged in",
+    "default_title": "RECAP: not logged in to PACER",
     "default_popup": "options.html"
   },
   "options_page": "options.html",
