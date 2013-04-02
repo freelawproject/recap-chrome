@@ -1,6 +1,6 @@
 <title>RECAP options</title>
 <style>
-body { font-family: helvetica, arial; font-size: 13px; width: 12em; margin: 0; }
+body { font-family: helvetica, arial; font-size: 13px; width: 16em; margin: 0; }
 h1 { font-size: 13px; }
 .item { width: 100%; height: 18px; padding: 4px; }
 .item:hover { background: #bcf; }
@@ -15,13 +15,22 @@ input { vertical-align: middle; }
     About RECAP
   </div>
 </a>
-<label for="upload_notification"
-  title="Pop up a message whenever RECAP uploads a file to the public archive">
+<label for="status_notifications"
+  title="Show RECAP's status whenever you log into or out of PACER">
   <div class="item">
     <span class="icon">
-      <input id="upload_notification" type="checkbox">
+      <input id="status_notifications" type="checkbox">
     </span>
-    Notify on upload
+    RECAP status notifications
+  </div>
+</label>
+<label for="upload_notifications"
+  title="Show a message whenever RECAP uploads a file to the public archive">
+  <div class="item">
+    <span class="icon">
+      <input id="upload_notifications" type="checkbox">
+    </span>
+    File upload notifications
   </div>
 </label>
 

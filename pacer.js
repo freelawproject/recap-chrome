@@ -119,13 +119,18 @@ PACER = {
   },
 
   // Given document.cookie, returns true if the user is logged in to PACER.
-  hasValidLoginCookie: function (cookieString) {
+  hasPacerCookie: function (cookieString) {
     var cookies = {};
     cookieString.replace(/\s*([^=;]+)=([^;]*)/g, function (match, name, value) {
       cookies[name.trim()] = value.trim();
     });
     var pacerCookie = cookies['PacerUser'] || cookies['PacerSession'];
     return pacerCookie && !pacerCookie.match(/unvalidated/);
+  },
+
+  // Returns true if the given court identifier is for an appellate court.
+  isAppellateCourt: function (court) {
+    return PACER.APPELLATE_COURTS[court];
   },
 
   // These are all the supported PACER court identifiers, together with their
@@ -323,8 +328,8 @@ PACER = {
     'wyd': 'D.Wyo.'
   },
 
-  // PACER court identifiers that aren't supported by this Chrome extension.
-  UNSUPPORTED_COURTS: {
+  // PACER court identifiers for appellate courts.
+  APPELLATE_COURTS: {
     'ca1': 1,
     'ca2': 1,
     'ca3': 1,

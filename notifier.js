@@ -18,14 +18,35 @@
 
 // Public impure functions.  (See utils.js for details on defining services.)
 function Notifier() {
+  var showNotification = function (title, message) {
+    var notification = webkitNotifications.createNotification(
+      chrome.extension.getURL('icon-32.png'), title, message);
+    notification.show();
+    setTimeout(function () { notification.cancel(); }, 5000);
+  };
   return {
     // Shows a desktop notification for a few seconds.
-    showNotification: function (title, message, cb) {
-      var notification = webkitNotifications.createNotification(
-        chrome.extension.getURL('icon-32.png'), title, message);
-      notification.show();
-      setTimeout(function () { notification.cancel(); }, 5000);
-      cb();
-    }
+    show: function (title, message, cb) {
+      showNotification(title, message);
+      cb && cb();
+    },
+    // Shows an upload message if upload notifications are enabled.
+    showUpload: function (message, cb) {
+      chrome.storage.sync.get('options', function (items) {
+        if (items.options.upload_notifications) {
+          showNotification('RECAP upload', message);
+        }
+      });
+      cb && cb();
+    },
+    // Shows a login status message if login status notifications are enabled.
+    showStatus: function (message, cb) {
+      chrome.storage.sync.get('options', function (items) {
+        if (items.options.status_notifications) {
+          showNotification('RECAP status', message);
+        }
+      });
+      cb && cb();
+    },
   };
 }

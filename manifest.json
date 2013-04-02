@@ -8,7 +8,8 @@
     "http://recapextension.org/",
     "*://*.uscourts.gov/",
     "notifications",
-    "storage"
+    "storage",
+    "tabs"
   ],
   "background": {
     "scripts": [
@@ -37,7 +38,7 @@
   }],
   "browser_action": {
     "default_icon": "grey-32.png",
-    "default_title": "RECAP: not logged in to PACER",
+    "default_title": "RECAP: Not at a PACER site",
     "default_popup": "options.html"
   },
   "options_page": "options.html",

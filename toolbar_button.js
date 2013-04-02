@@ -18,37 +18,50 @@
 
 // Public impure functions.  (See utils.js for details on defining services.)
 function ToolbarButton() {
-  // A flag for each tab indicating whether the user is logged in to PACER.
-  var tabStatus = {};
-  var tabListenerAdded = false;
+  var pacerLogin = false;  // true if the user is logged in to PACER
+  var notifier = new Notifier();
+
+  // Updates the toolbar button for a tab to reflect the tab's login status.
+  var updateToolbarButton = function (tab) {
+    var court = PACER.getCourtFromUrl(tab.url);
+    var setTitleIcon = function (title, icon) {
+      chrome.browserAction.setTitle({title: 'RECAP: ' + title, tabId: tab.id});
+      chrome.browserAction.setIcon({path: icon, tabId: tab.id});
+    };
+    if (!court) {
+      setTitleIcon('Not at a PACER site', 'grey-32.png');
+    } else if (PACER.isAppellateCourt(court)) {
+      setTitleIcon('Appellate courts are not supported', 'warning-32.png');
+    } else if (pacerLogin) {
+      setTitleIcon('Logged in to PACER', 'icon-32.png');
+    } else {
+      setTitleIcon('Not logged in to PACER', 'grey-32.png');
+    }
+  };
+
+  // Watches all the tabs so we can update their toolbar buttons on navigation.
+  if (chrome.tabs) {
+    chrome.tabs.onUpdated.addListener(function (tabId, details, tab) {
+      updateToolbarButton(tab);
+    });
+  }
 
   return {
-    // Updates PACER login status of the given tab.
-    setPacerLoginStatus: function (loggedIn, cb) {
-      // Updates the button's appearance to reflect the tab's login status.
-      var updateTab = function (id) {
-        var message = (tabStatus[id] ? '' : 'not ') + 'logged in to PACER';
-        chrome.browserAction.setTitle({
-          title: 'RECAP: ' + message,
-          tabId: id
-        });
-        chrome.browserAction.setIcon({
-          path: tabStatus[id] ? 'icon-32.png' : 'grey-32.png',
-          tabId: id
-        });
-      };
-      // Chrome resets the toolbar button on navigation, so we have to keep
-      // reapplying the button title and icon or it will revert to the default.
-      if (!tabListenerAdded) {
-        chrome.tabs.onUpdated.addListener(function (tabId, details, tab) {
-          updateTab(tabId);
-        });
-        tabListenerAdded = true;
+    // Updates our knowledge of the login status based on the current cookies.
+    updateCookieStatus: function (court, cookies, cb) {
+      if (court) {
+        var newPacerLogin = !!PACER.hasPacerCookie(cookies);
+        if (newPacerLogin != pacerLogin) {
+          notifier.showStatus(newPacerLogin ?
+            'Logged in to PACER' : 'Logged out of PACER', null);
+          pacerLogin = newPacerLogin;
+          chrome.tabs.query({}, function (tabs) {
+            for (var i = 0; i < tabs.length; i++) {
+              updateToolbarButton(tabs[i]);
+            }
+          });
+        }
       }
-      // Record the status of the tab, then update the toolbar button.
-      tabStatus[cb.tab.id] = loggedIn;
-      updateTab(cb.tab.id);
-      cb();
     }
   };
 }

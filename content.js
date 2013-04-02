@@ -24,8 +24,8 @@ var recap = importInstance(Recap);
 var url = window.location.href;
 var court = PACER.getCourtFromUrl(url);
 
-toolbar_button.setPacerLoginStatus(
-  PACER.hasValidLoginCookie(document.cookie), null);
+// Update the toolbar button with knowledge of whether the user is logged in.
+toolbar_button.updateCookieStatus(court, document.cookie, null);
 
 // If this is a docket query page, ask RECAP whether it has the docket page.
 if (PACER.isDocketQueryUrl(url)) {
@@ -49,14 +49,6 @@ if (PACER.isDocketQueryUrl(url)) {
   });
 }
 
-function showUploadNotification(message) {
-  chrome.storage.sync.get('options', function (items) {
-    if (items.options.upload_notification) {
-      notifier.showNotification('RECAP upload', message, null);
-    }
-  });
-}
-
 if (!(history.state && history.state.uploaded)) {
   // If this is a docket page, upload it to RECAP.
   if (PACER.isDocketDisplayUrl(url)) {
@@ -67,7 +59,7 @@ if (!(history.state && history.state.uploaded)) {
                          document.documentElement.innerHTML, function (ok) {
         if (ok) {
           history.replaceState({uploaded: 1});
-          showUploadNotification('Docket uploaded to the public archive.');
+          notifier.showUpload('Docket uploaded to the public archive.', null);
         }
       });
     }
@@ -80,7 +72,7 @@ if (!(history.state && history.state.uploaded)) {
       document.documentElement.innerHTML, function (ok) {
       if (ok) {
         history.replaceState({uploaded: 1});
-        showUploadNotification('Menu page uploaded to the public archive.');
+        notifier.showUpload('Menu page uploaded to the public archive.', null);
       }
     });
   }
@@ -208,7 +200,7 @@ if (PACER.isSingleDocumentPage(url, document)) {
           var bytes = arrayBufferToArray(ab);
           recap.uploadDocument(court, path, name, type, bytes, function (ok) {
             if (ok) {
-              showUploadNotification('PDF uploaded to the public archive.');
+              notifier.showUpload('PDF uploaded to the public archive.', null);
             }
           });
         });

@@ -20,7 +20,8 @@
 chrome.storage.sync.get('options', function (items) {
   if (!items.options) {
     chrome.storage.sync.set({options: {
-      upload_notification: true
+      status_notifications: true,
+      upload_notifications: true
     }});
   }
 });
