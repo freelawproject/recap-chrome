@@ -1,8 +1,8 @@
 <title>RECAP options</title>
 <style>
-body { font-family: helvetica, arial; font-size: 13px; width: 16em; margin: 0; }
+body { font-family: helvetica, arial; font-size: 13px; width: 21em; margin: 0; }
 h1 { font-size: 13px; }
-.item { width: 100%; height: 18px; padding: 4px; }
+.item { width: 100%; height: 18px; padding: 4px; white-space: nowrap; }
 .item:hover { background: #bcf; }
 .icon { display: inline-block; width: 16px; padding-right: 4px; }
 a { outline: none; text-decoration: none; color: inherit; }
@@ -21,7 +21,7 @@ input { vertical-align: middle; }
     <span class="icon">
       <input id="status_notifications" type="checkbox">
     </span>
-    RECAP status notifications
+    Notify when RECAP becomes active
   </div>
 </label>
 <label for="upload_notifications"
@@ -30,7 +30,16 @@ input { vertical-align: middle; }
     <span class="icon">
       <input id="upload_notifications" type="checkbox">
     </span>
-    File upload notifications
+    Notify on file upload
+  </div>
+</label>
+<label for="recap_link_popups"
+  title="Pop up a dialog whenever you click a RECAP link to a free document">
+  <div class="item">
+    <span class="icon">
+      <input id="recap_link_popups" type="checkbox">
+    </span>
+    Confirm before opening free documents
   </div>
 </label>
 

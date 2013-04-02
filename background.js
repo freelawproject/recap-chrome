@@ -20,6 +20,7 @@
 chrome.storage.sync.get('options', function (items) {
   if (!items.options) {
     chrome.storage.sync.set({options: {
+      recap_link_popups: true,
       status_notifications: true,
       upload_notifications: true
     }});

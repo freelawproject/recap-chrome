@@ -18,7 +18,7 @@
 
 // Public impure functions.  (See utils.js for details on defining services.)
 function Recap() {
-  var SERVER_ROOT = 'http://dev.recapextension.org/recap';
+  var SERVER_ROOT = 'http://recapextension.org/recap';
   var caseMeta = {}; // key: casenum, value: {officialcasenum: o}
   var docMeta = {}; // key: docid; value: {casenum: c, docnum: d, subdocnum: s}
 

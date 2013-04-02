@@ -228,21 +228,63 @@ for (var i = 0; i < links.length; i++) {
     }
   });
 }
+
+// Pop up a dialog offering the link to the free cached copy of the document,
+// or just go directly to the free document if popups are turned off.
+function handleClick(url, uploadDate) {
+  chrome.storage.sync.get('options', function (items) {
+    if (!items.options.recap_link_popups) {
+      window.location = url;
+      return;
+    }
+    $('<div id="recap-shade"/>').appendTo($('body'));
+    $('<div class="recap-popup"/>').append(
+      $('<a/>', {
+        'class': 'recap-close-link',
+        href: '#',
+        onclick: 'var d = document; d.body.removeChild(this.parentNode); ' +
+          'd.body.removeChild(d.getElementById("recap-shade")); return false'
+      }).append(
+        '\u00d7'
+      )
+    ).append(
+      $('<a/>', {
+        href: url,
+        onclick: 'var d = document; d.body.removeChild(this.parentNode); ' +
+          'd.body.removeChild(d.getElementById("recap-shade"))'
+      }).append(
+        ' Get this document as of ' + uploadDate + ' for free from RECAP.'
+      )
+    ).append(
+      $('<br><br><small>Note that archived documents may be out of date. ' +
+        'RECAP is not affiliated with the U.S. Courts. The documents ' +
+        'it makes available are voluntarily uploaded by PACER users. ' +
+        'RECAP cannot guarantee the authenticity of documents because the ' +
+        'courts themselves provide no document authentication system.</small>')
+    ).appendTo($('body'));
+  });
+  return false;
+}
+
 if (urls.length) {
   // Ask the server whether any of these documents are available from RECAP.
   recap.getAvailabilityForDocuments(urls, function (result) {
-    // When we get a reply, update all the links that have documents available.
+    // When we get a reply, update all links that have documents available.
     for (var i = 0; i < links.length; i++) {
-      if (links[i].href in result) {
-        // Insert a RECAP button just after the original link.
-        $('<a/>', {
-          'class': 'recap-inline',
-          title: 'Available for free from RECAP.',
-          href: result[links[i].href].filename
-        }).append(
-          $('<img/>').attr({src: chrome.extension.getURL('icon-16.png')})
-        ).insertAfter(links[i]);
-      }
+      (function (info) {
+        if (info) {
+          // Insert a RECAP button just after the original link.
+          $('<a/>', {
+            'class': 'recap-inline',
+            title: 'Available for free from RECAP.',
+            href: info.filename
+          }).click(function () {
+            return handleClick(info.filename, info.timestamp);
+          }).append(
+            $('<img/>').attr({src: chrome.extension.getURL('icon-16.png')})
+          ).insertAfter(links[i]);
+        }
+      })(result[links[i].href]);
     }
   });
 }

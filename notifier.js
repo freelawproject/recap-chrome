@@ -40,10 +40,11 @@ function Notifier() {
       cb && cb();
     },
     // Shows a login status message if login status notifications are enabled.
-    showStatus: function (message, cb) {
+    showStatus: function (active, message, cb) {
       chrome.storage.sync.get('options', function (items) {
         if (items.options.status_notifications) {
-          showNotification('RECAP status', message);
+          showNotification(
+            active ? 'RECAP is active' : 'RECAP is inactive', message);
         }
       });
       cb && cb();

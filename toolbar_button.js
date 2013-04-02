@@ -52,8 +52,8 @@ function ToolbarButton() {
       if (court) {
         var newPacerLogin = !!PACER.hasPacerCookie(cookies);
         if (newPacerLogin != pacerLogin) {
-          notifier.showStatus(newPacerLogin ?
-            'Logged in to PACER' : 'Logged out of PACER', null);
+          notifier.showStatus(newPacerLogin,
+            newPacerLogin ? 'Logged in to PACER' : 'Logged out of PACER', null);
           pacerLogin = newPacerLogin;
           chrome.tabs.query({}, function (tabs) {
             for (var i = 0; i < tabs.length; i++) {
