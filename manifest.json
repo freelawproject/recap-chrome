@@ -4,7 +4,7 @@
   "description": "A free extension for Chrome that improves the experience of using PACER, the electronic public access system for the U. S. Federal District and Bankruptcy Courts.  When you have RECAP installed, it contributes documents to a public archive hosted by the Internet Archive and shows you when free documents are available from the archive.",
   "version": "0.1",
   "permissions": [
-    "http://dev.recapextension.org/",
+    "http://*.recapextension.org/",
     "http://recapextension.org/",
     "*://*.uscourts.gov/",
     "notifications",
