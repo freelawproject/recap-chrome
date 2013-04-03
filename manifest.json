@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "RECAP",
   "description": "RECAP is a free extension that improves the experience of using PACER, the online public access system for the U.S. federal courts.",
-  "version": "0.1.2",
+  "version": "0.8",
   "permissions": [
     "http://*.recapextension.org/",
     "http://recapextension.org/",
