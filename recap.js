@@ -8,7 +8,7 @@
 // be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
 // Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // RECAP for Chrome.  If not, see: http://www.gnu.org/licenses/
 
@@ -18,7 +18,7 @@
 
 // Public impure functions.  (See utils.js for details on defining services.)
 function Recap() {
-  var SERVER_ROOT = 'http://recapextension.org/recap';
+  var SERVER_ROOT = 'https://recapextension.org/recap';
   var caseMeta = {}; // key: casenum, value: {officialcasenum: o}
   var docMeta = {}; // key: docid; value: {casenum: c, docnum: d, subdocnum: s}
 
