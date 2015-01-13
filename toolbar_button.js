@@ -8,7 +8,7 @@
 // be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
 // Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // RECAP for Chrome.  If not, see: http://www.gnu.org/licenses/
 
@@ -29,13 +29,13 @@ function ToolbarButton() {
       chrome.browserAction.setIcon({path: icon, tabId: tab.id});
     };
     if (!court) {
-      setTitleIcon('Not at a PACER site', 'grey-32.png');
+      setTitleIcon('Not at a PACER site', 'images/grey-32.png');
     } else if (PACER.isAppellateCourt(court)) {
-      setTitleIcon('Appellate courts are not supported', 'warning-32.png');
+      setTitleIcon('Appellate courts are not supported', 'images/warning-32.png');
     } else if (pacerLogin) {
-      setTitleIcon('Logged in to PACER', 'icon-32.png');
+      setTitleIcon('Logged in to PACER', 'images/icon-32.png');
     } else {
-      setTitleIcon('Not logged in to PACER', 'grey-32.png');
+      setTitleIcon('Not logged in to PACER', 'images/grey-32.png');
     }
   };
 

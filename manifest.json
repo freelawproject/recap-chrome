@@ -37,17 +37,17 @@
     "run_at": "document_end"
   }],
   "browser_action": {
-    "default_icon": "grey-32.png",
+    "default_icon": "images/grey-32.png",
     "default_title": "RECAP: Not at a PACER site",
     "default_popup": "options.html"
   },
   "options_page": "options.html",
   "web_accessible_resources": [
-    "grey-16.png",
-    "grey-32.png",
-    "icon-16.png",
-    "icon-32.png",
-    "warning-16.png",
-    "warning-32.png"
+    "images/grey-16.png",
+    "images/grey-32.png",
+    "images/icon-16.png",
+    "images/icon-32.png",
+    "images/warning-16.png",
+    "images/warning-32.png"
   ]
 }

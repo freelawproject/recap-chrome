@@ -8,7 +8,7 @@
 // be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
 // Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // RECAP for Chrome.  If not, see: http://www.gnu.org/licenses/
 
@@ -20,7 +20,7 @@
 function Notifier() {
   var showNotification = function (title, message) {
     var notification = webkitNotifications.createNotification(
-      chrome.extension.getURL('icon-32.png'), title, message);
+      chrome.extension.getURL('images/icon-32.png'), title, message);
     notification.show();
     setTimeout(function () { notification.cancel(); }, 5000);
   };
@@ -48,6 +48,6 @@ function Notifier() {
         }
       });
       cb && cb();
-    },
+    }
   };
 }

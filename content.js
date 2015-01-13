@@ -8,7 +8,7 @@
 // be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
 // Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // RECAP for Chrome.  If not, see: http://www.gnu.org/licenses/
 
@@ -38,7 +38,7 @@ if (PACER.isDocketQueryUrl(url)) {
           title: 'Docket is available for free from RECAP.',
           href: result.docket_url
         }).append(
-          $('<img/>', {src: chrome.extension.getURL('icon-16.png')})
+          $('<img/>', {src: chrome.extension.getURL('images/icon-16.png')})
         ).append(
           ' Get this docket as of ' + result.timestamp + ' for free from RECAP.'
         )
@@ -64,7 +64,7 @@ if (!(history.state && history.state.uploaded)) {
       });
     }
   }
-  
+
   // If this is a document's menu of attachments, upload it to RECAP.
   if (PACER.isAttachmentMenuPage(url, document)) {
     recap.uploadAttachmentMenu(
@@ -88,7 +88,7 @@ if (PACER.isSingleDocumentPage(url, document)) {
           title: 'Document is available for free from RECAP.',
           href: result[url].filename
         }).append(
-          $('<img/>', {src: chrome.extension.getURL('icon-16.png')})
+          $('<img/>', {src: chrome.extension.getURL('images/icon-16.png')})
         ).append(
           ' Get this document for free from RECAP.'
         )
@@ -123,7 +123,7 @@ if (PACER.isSingleDocumentPage(url, document)) {
     document.forms[0].setAttribute('onsubmit', originalSubmit);
     var docid = PACER.getDocumentIdFromUrl(window.location.href);
     var path = window.location.pathname;
-    
+
     // Now do the form request to get to the view page.  Some PACER sites will
     // return an HTML page containing an <iframe> that loads the PDF document;
     // others just return the PDF document.  As we don't know whether we'll get
@@ -193,7 +193,7 @@ if (PACER.isSingleDocumentPage(url, document)) {
             document.documentElement.innerHTML = html;
             history.pushState({content: html});
           });
-  
+
           // Upload the file to RECAP.  We can't pass an ArrayBuffer directly
           // to the background page, so we have to convert to a regular array.
           var name = path.match(/[^\/]+$/)[0] + '.pdf';
@@ -204,7 +204,7 @@ if (PACER.isSingleDocumentPage(url, document)) {
             }
           });
         });
-      };
+      }
     });
   }, false);
 }
@@ -281,7 +281,7 @@ if (urls.length) {
           }).click(function () {
             return handleClick(info.filename, info.timestamp);
           }).append(
-            $('<img/>').attr({src: chrome.extension.getURL('icon-16.png')})
+            $('<img/>').attr({src: chrome.extension.getURL('images/icon-16.png')})
           ).insertAfter(links[i]);
         }
       })(result[links[i].href]);
