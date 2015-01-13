@@ -29,13 +29,25 @@ function ToolbarButton() {
       chrome.browserAction.setIcon({path: icon, tabId: tab.id});
     };
     if (!court) {
-      setTitleIcon('Not at a PACER site', 'images/grey-32.png');
+      setTitleIcon('Not at a PACER site', {
+        '19': 'images/grey-19.png',
+        '38': 'images/grey-38.png'
+      });
     } else if (PACER.isAppellateCourt(court)) {
-      setTitleIcon('Appellate courts are not supported', 'images/warning-32.png');
+      setTitleIcon('Appellate courts are not supported', {
+        '19': 'images/warning-19.png',
+        '38': 'images/warning-38.png'
+      });
     } else if (pacerLogin) {
-      setTitleIcon('Logged in to PACER', 'images/icon-32.png');
+      setTitleIcon('Logged in to PACER', {
+        '19': 'images/icon-19.png',
+        '38': 'images/icon-38.png'
+      });
     } else {
-      setTitleIcon('Not logged in to PACER', 'images/grey-32.png');
+      setTitleIcon('Not logged in to PACER', {
+        '19': 'images/grey-19.png',
+        '38': 'images/grey-38.png'
+      });
     }
   };
 
