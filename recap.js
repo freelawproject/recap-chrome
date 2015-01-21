@@ -40,9 +40,12 @@ function Recap() {
     // the "timestamp" field contains a date in yucky mm/dd/yy format.
     getAvailabilityForDocket: function (court, caseNumber, cb) {
       var json = JSON.stringify({court: court, casenum: caseNumber});
-      httpRequest(SERVER_ROOT + '/query_cases/',
-                  'json=' + encodeURIComponent(json), 'json',
-                  function (type, object) { cb(object || null); });
+      httpRequest(
+        SERVER_ROOT + '/query_cases/',
+        'json=' + encodeURIComponent(json),
+        'json',
+        function (type, object) {cb(object || null); }
+      );
     },
 
     // Asks RECAP whether it has the specified documents.  "urls" should be an
@@ -58,9 +61,11 @@ function Recap() {
       var court = PACER.getCourtFromUrl(urls[0]);
       if (court) {
         var json = JSON.stringify({court: court, urls: urls});
-        httpRequest(SERVER_ROOT + '/query/',
-                    'json=' + encodeURIComponent(json), 'json',
-                    function (type, object) { cb(object || {}); });
+        httpRequest(
+          SERVER_ROOT + '/query/',
+          'json=' + encodeURIComponent(json), 'json',
+          function (type, object) {cb(object || {});}
+        );
       } else {
         cb({});
       }
@@ -70,7 +75,6 @@ function Recap() {
     // callback with a boolean success flag.
     uploadMetadata: function (
         court, docid, casenum, de_seq_num, dm_id, docnum, cb) {
-      var url = SERVER_ROOT + '/adddocmeta/';
       var formData = new FormData();
       formData.append('court', court);
       formData.append('docid', docid);
@@ -79,54 +83,71 @@ function Recap() {
       formData.append('dm_id', dm_id);
       formData.append('docnum', docnum);
       formData.append('add_case_info', 'true');
-      httpRequest(url, formData, 'json', function (type, object) {
-        storeMetadata(object);
-        cb(object && object.message.match(/updated/i));
-      });
+      httpRequest(
+        SERVER_ROOT + '/adddocmeta/',
+        formData,
+        'json',
+        function (type, object) {
+          storeMetadata(object);
+          cb(object && object.message.match(/updated/i));
+        }
+      );
     },
 
     // Uploads an HTML docket to the RECAP server, calling the callback with
     // a boolean success flag.
     uploadDocket: function (court, casenum, filename, type, html, cb) {
-      var url = SERVER_ROOT + '/upload/';
       var formData = new FormData();
       formData.append('court', court);
       formData.append('casenum', casenum);
       formData.append('mimetype', type);
       formData.append('data', new Blob([html], {type: type}), filename);
-      httpRequest(url, formData, 'json', function (type, object) {
-        storeMetadata(object);
-        cb(object && object.message.match(/successfully parsed/i));
-      });
+      httpRequest(
+        SERVER_ROOT + '/upload/',
+        formData,
+        'json',
+        function (type, object) {
+          storeMetadata(object);
+          cb(object && object.message.match(/successfully parsed/i));
+        }
+      );
     },
 
     // Uploads a "Document Selection Menu" page to the RECAP server, calling
     // the callback with a boolean success flag.
     uploadAttachmentMenu: function (court, filename, type, html, cb) {
-      var url = SERVER_ROOT + '/upload/';
       var formData = new FormData();
       formData.append('court', court);
       formData.append('mimetype', type);
       formData.append('data', new Blob([html], {type: type}), filename);
-      httpRequest(url, formData, 'json', function (type, object) {
-        storeMetadata(object);
-        cb(object && object.message.match(/successfully parsed/i));
-      });
+      httpRequest(
+        SERVER_ROOT + '/upload/',
+        formData,
+        'json',
+        function (type, object) {
+          storeMetadata(object);
+          cb(object && object.message.match(/successfully parsed/i));
+        }
+      );
     },
 
     // Uploads a PDF document to the RECAP server, calling the callback with
     // a boolean success flag.
     uploadDocument: function (court, path, filename, type, bytes, cb) {
-      var url = SERVER_ROOT + '/upload/';
       var blob = new Blob([new Uint8Array(bytes)]);
       var formData = new FormData();
       formData.append('court', court);
       formData.append('url', path);  // should be a doc1-style path
       formData.append('mimetype', type);
       formData.append('data', blob, filename);
-      httpRequest(url, formData, 'json', function (type, object) {
-        cb(object && object.message.match(/pdf uploaded/i));
-      });
+      httpRequest(
+        SERVER_ROOT + '/upload/',
+        formData,
+        'json',
+        function (type, object) {
+          cb(object && object.message.match(/pdf uploaded/i));
+        }
+      );
     },
 
     // Given a docid, calls the callback with the corresponding case ID,
@@ -138,4 +159,4 @@ function Recap() {
          meta.docnum, meta.subdocnum);
     }
   };
-};
+}

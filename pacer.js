@@ -8,7 +8,7 @@
 // be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
 // Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // RECAP for Chrome.  If not, see: http://www.gnu.org/licenses/
 
@@ -26,10 +26,12 @@
 //        |                         |
 //        `--> History query form --|
 //                                  |
-//                                  '--> Docket, i.e. list of documents (*)
+//                                  '--> Docket, i.e. list of documents or
+//                                       History Report (*)
 //                                        |
 //                                        |--> Attachment menu page for a
-//                                        |    particular document
+//                                        |    particular document (aka doc1
+//                                        |    page.
 //                                        |     |
 //                                        `-----'--> Single document page
 //                                                    |
