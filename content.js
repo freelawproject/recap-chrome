@@ -59,20 +59,27 @@ if (!(history.state && history.state.uploaded)) {
                          document.documentElement.innerHTML, function (ok) {
         if (ok) {
           history.replaceState({uploaded: 1});
-          notifier.showUpload('Docket uploaded to the public archive.', null);
+          notifier.showUpload(
+            'Docket uploaded to the public archive.',
+            function(){}
+          );
         }
       });
     }
   }
 
-  // If this is a document's menu of attachments, upload it to RECAP.
+  // If this is a document's menu of attachments (subdocuments), upload it to
+  // RECAP.
   if (PACER.isAttachmentMenuPage(url, document)) {
     recap.uploadAttachmentMenu(
       court, window.location.pathname, 'text/html',
       document.documentElement.innerHTML, function (ok) {
       if (ok) {
         history.replaceState({uploaded: 1});
-        notifier.showUpload('Menu page uploaded to the public archive.', null);
+        notifier.showUpload(
+          'Menu page uploaded to the public archive.',
+          function () {}
+        );
       }
     });
   }
@@ -200,7 +207,10 @@ if (PACER.isSingleDocumentPage(url, document)) {
           var bytes = arrayBufferToArray(ab);
           recap.uploadDocument(court, path, name, type, bytes, function (ok) {
             if (ok) {
-              notifier.showUpload('PDF uploaded to the public archive.', null);
+              notifier.showUpload(
+                'PDF uploaded to the public archive.',
+                function () {}
+              );
             }
           });
         });
