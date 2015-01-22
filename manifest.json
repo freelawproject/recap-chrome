@@ -6,12 +6,12 @@
   "homepage_url": "https://www.recapthelaw.org",
   "version": "0.8.1",
   "icons": {
-    "16": "images/icon-16.png",
-    "19": "images/icon-19.png",
-    "32": "images/icon-32.png",
-    "38": "images/icon-38.png",
-    "48": "images/icon-48.png",
-    "128": "images/icon-128.png"
+    "16": "assets/images/icon-16.png",
+    "19": "assets/images/icon-19.png",
+    "32": "assets/images/icon-32.png",
+    "38": "assets/images/icon-38.png",
+    "48": "assets/images/icon-48.png",
+    "128": "assets/images/icon-128.png"
   },
   "permissions": [
     "*://*.recapextension.org/",
@@ -36,7 +36,7 @@
     "include_globs": ["*://ecf.*", "*://ecf-train.*", "*://pacer.*"],
     "css": ["style.css"],
     "js": [
-      "jquery.min.js",
+      "assets/js/jquery.min.js",
       "utils.js",
       "notifier.js",
       "toolbar_button.js",
@@ -48,14 +48,15 @@
   }],
   "browser_action": {
     "default_icon": {
-      "19": "images/grey-19.png",
-      "38": "images/grey-38.png"
+      "19": "assets/images/grey-19.png",
+      "38": "assets/images/grey-38.png"
     },
     "default_title": "RECAP: Not at a PACER site",
     "default_popup": "options.html"
   },
   "options_page": "options.html",
   "web_accessible_resources": [
-    "images/*.png"
+    "assets/assets/images/*.png",
+    "assets/js/*.js"
   ]
 }

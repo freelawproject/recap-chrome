@@ -23,7 +23,7 @@ function Notifier() {
       type: 'basic',
       title: title,
       message: message,
-      iconUrl: chrome.extension.getURL('images/icon-32.png'),
+      iconUrl: chrome.extension.getURL('assets/images/icon-32.png'),
       priority: 0
     };
     chrome.notifications.create(

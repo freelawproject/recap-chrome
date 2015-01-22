@@ -38,7 +38,7 @@ if (PACER.isDocketQueryUrl(url)) {
           title: 'Docket is available for free from RECAP.',
           href: result.docket_url
         }).append(
-          $('<img/>', {src: chrome.extension.getURL('images/icon-16.png')})
+          $('<img/>', {src: chrome.extension.getURL('assets/images/icon-16.png')})
         ).append(
           ' Get this docket as of ' + result.timestamp + ' for free from RECAP.'
         )
@@ -95,7 +95,7 @@ if (PACER.isSingleDocumentPage(url, document)) {
           title: 'Document is available for free from RECAP.',
           href: result[url].filename
         }).append(
-          $('<img/>', {src: chrome.extension.getURL('images/icon-16.png')})
+          $('<img/>', {src: chrome.extension.getURL('assets/images/icon-16.png')})
         ).append(
           ' Get this document for free from RECAP.'
         )
@@ -291,7 +291,7 @@ if (urls.length) {
           }).click(function () {
             return handleClick(info.filename, info.timestamp);
           }).append(
-            $('<img/>').attr({src: chrome.extension.getURL('images/icon-16.png')})
+            $('<img/>').attr({src: chrome.extension.getURL('assets/images/icon-16.png')})
           ).insertAfter(links[i]);
         }
       })(result[links[i].href]);

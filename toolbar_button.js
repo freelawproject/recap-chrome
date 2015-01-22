@@ -30,23 +30,23 @@ function ToolbarButton() {
     };
     if (!court) {
       setTitleIcon('Not at a PACER site', {
-        '19': 'images/grey-19.png',
-        '38': 'images/grey-38.png'
+        '19': 'assets/images/grey-19.png',
+        '38': 'assets/images/grey-38.png'
       });
     } else if (PACER.isAppellateCourt(court)) {
       setTitleIcon('Appellate courts are not supported', {
-        '19': 'images/warning-19.png',
-        '38': 'images/warning-38.png'
+        '19': 'assets/images/warning-19.png',
+        '38': 'assets/images/warning-38.png'
       });
     } else if (pacerLogin) {
       setTitleIcon('Logged in to PACER', {
-        '19': 'images/icon-19.png',
-        '38': 'images/icon-38.png'
+        '19': 'assets/images/icon-19.png',
+        '38': 'assets/images/icon-38.png'
       });
     } else {
       setTitleIcon('Not logged in to PACER', {
-        '19': 'images/grey-19.png',
-        '38': 'images/grey-38.png'
+        '19': 'assets/images/grey-19.png',
+        '38': 'assets/images/grey-38.png'
       });
     }
   };
