@@ -25,7 +25,7 @@ var url = window.location.href;
 var court = PACER.getCourtFromUrl(url);
 
 // Update the toolbar button with knowledge of whether the user is logged in.
-toolbar_button.updateCookieStatus(court, document.cookie, null);
+toolbar_button.updateCookieStatus(court, document.cookie);
 
 // If this is a docket query page, ask RECAP whether it has the docket page.
 if (PACER.isDocketQueryUrl(url)) {

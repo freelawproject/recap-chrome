@@ -60,7 +60,7 @@ function ToolbarButton() {
 
   return {
     // Updates our knowledge of the login status based on the current cookies.
-    updateCookieStatus: function (court, cookies, cb) {
+    updateCookieStatus: function (court, cookies) {
       if (court) {
         var newPacerLogin = !!PACER.hasPacerCookie(cookies);
         if (newPacerLogin != pacerLogin) {
