@@ -57,6 +57,6 @@
   "options_page": "options.html",
   "web_accessible_resources": [
     "assets/images/*.png",
-    "assets/js/*"
+    "assets/js/*.js"
   ]
 }
