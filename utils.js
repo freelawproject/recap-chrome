@@ -8,7 +8,7 @@
 // be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
 // Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // RECAP for Chrome.  If not, see: http://www.gnu.org/licenses/
 
@@ -72,7 +72,7 @@ function exportInstance(constructor) {
 }
 
 // Gets an object that can be used in a content script to invoke methods on an
-// instance exported from the background page.  See above for details.  
+// instance exported from the background page.  See above for details.
 function importInstance(constructor) {
   var name = constructor.name;
   var sender = {};
@@ -98,9 +98,9 @@ function importInstance(constructor) {
 // for details on responseType and response.  Uses GET if postData is null or
 // POST otherwise.  postData can be any type accepted by XMLHttpRequest.send().
 function httpRequest(url, postData, responseType, callback) {
-  var type = null;
-  var result = null;
-  var xhr = new XMLHttpRequest();
+  var type = null,
+      result = null,
+      xhr = new XMLHttpRequest();
   // WebKit doesn't support responseType 'json' yet, but probably will soon.
   xhr.responseType = responseType === 'json' ? 'text' : responseType;
   xhr.onreadystatechange = function () {

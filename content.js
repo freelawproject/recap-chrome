@@ -72,16 +72,20 @@ if (!(history.state && history.state.uploaded)) {
   // RECAP.
   if (PACER.isAttachmentMenuPage(url, document)) {
     recap.uploadAttachmentMenu(
-      court, window.location.pathname, 'text/html',
-      document.documentElement.innerHTML, function (ok) {
-      if (ok) {
-        history.replaceState({uploaded: 1});
-        notifier.showUpload(
-          'Menu page uploaded to the public archive.',
-          function () {}
-        );
+      court,
+      window.location.pathname,
+      'text/html',
+      document.documentElement.innerHTML,
+      function (ok) {
+        if (ok) {
+          history.replaceState({uploaded: 1});
+          notifier.showUpload(
+           'Menu page uploaded to the public archive.',
+            function () {}
+          );
+        }
       }
-    });
+    );
   }
 }
 

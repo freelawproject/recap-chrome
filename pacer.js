@@ -93,8 +93,9 @@ PACER = {
   // attachments for a particular document).
   isAttachmentMenuPage: function (url, document) {
     var inputs = document.getElementsByTagName('input');
-    return url.match(/\/doc1\/\d+/) && inputs.length &&
-        inputs[inputs.length - 1].value === 'Download All';
+    return url.match(/\/doc1\/\d+/) &&
+      inputs.length &&
+      inputs[inputs.length - 1].value === 'Download All';
   },
 
   // Returns true if this is a page for downloading a single document.
