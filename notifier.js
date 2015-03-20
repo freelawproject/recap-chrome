@@ -24,16 +24,26 @@ function Notifier() {
       title: title,
       message: message,
       iconUrl: chrome.extension.getURL('assets/images/icon-32.png'),
-      priority: 0
+      priority: -1
     };
+    var notificationID = 'recap_notification';
     chrome.notifications.create(
-      'recap_notification',
+      notificationID,
       notificationOptions,
       cb
     );
+    // Make it go away when clicked.
+    chrome.notifications.onClicked.addListener(
+      function(notificationID){
+        chrome.notifications.clear(
+          notificationID,
+          function(){}
+        );
+      }
+    );
   };
   return {
-    // Shows a desktop notification for a few seconds.
+    // Shows a desktop notification for a few seconds (length depends on priority)
     show: function (title, message, cb) {
       showNotification(
         title,
