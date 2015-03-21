@@ -54,7 +54,10 @@
     "default_title": "RECAP: Not at a PACER site",
     "default_popup": "options.html"
   },
-  "options_page": "options.html",
+  "options_ui": {
+    "page": "options.html",
+    "chrome_style": true
+  },
   "web_accessible_resources": [
     "assets/images/*.png",
     "assets/js/*.js"

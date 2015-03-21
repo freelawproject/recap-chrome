@@ -1,70 +1,58 @@
-<title>RECAP options</title>
-<style>
-  body {
-    font-family: helvetica, arial, sans-serif;
-    font-size: 13px;
-    width: 21em;
-    margin: 0;
-  }
-  h1 {
-    font-size: 13px;
-  }
-  .item {
-    width: 100%;
-    height: 18px;
-    padding: 4px;
-    white-space: nowrap;
-  }
-  .item:hover {
-    background: #bcf;
-  }
-  .icon {
-    display: inline-block;
-    width: 16px;
-    padding-right: 4px;
-  }
-  a {
-    outline: none;
-    text-decoration: none;
-    color: inherit;
-  }
-  input {
-    vertical-align: middle;
-  }
-</style>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>RECAP Options</title>
+  <style>
+    #donate-plea {
+      margin-top: 2em;
+    }
+  </style>
+</head>
 
-<a href="https://www.recapthelaw.org/" target="_blank">
-  <div class="item">
-    <span class="icon"></span>
-    About RECAP
+<body>
+  <div>
+    <label
+      for="status_notifications"
+      title="Show RECAP's status whenever you log into or out of PACER">
+      <div class="item">
+        <span class="icon">
+          <input id="status_notifications" type="checkbox">
+        </span>
+        Notify when RECAP becomes active
+      </div>
+    </label>
+    <label for="upload_notifications"
+      title="Show a message whenever RECAP uploads a file to the public archive">
+      <div class="item">
+        <span class="icon">
+          <input id="upload_notifications" type="checkbox">
+        </span>
+        Notify on file upload
+      </div>
+    </label>
+    <label for="recap_link_popups"
+      title="Pop up a dialog whenever you click a RECAP link to a free document">
+      <div class="item">
+        <span class="icon">
+          <input id="recap_link_popups" type="checkbox">
+        </span>
+        Confirm before opening free documents
+      </div>
+    </label>
+    <label for="recap_team_name"
+           title="Enter a team name if you are using RECAP as part of a competition">
+      <div class="item">
+        RECAP Team Name:
+        <span class="icon">
+          <input id="recap_team_name" type="text">
+        </span>
+      </div>
+    </label>
   </div>
-</a>
-<label for="status_notifications"
-  title="Show RECAP's status whenever you log into or out of PACER">
-  <div class="item">
-    <span class="icon">
-      <input id="status_notifications" type="checkbox">
-    </span>
-    Notify when RECAP becomes active
+  <div id="donate-plea">
+    <a href="https://www.courtlistener.com/donate/?referrer=recap-chrome-options"></a>
   </div>
-</label>
-<label for="upload_notifications"
-  title="Show a message whenever RECAP uploads a file to the public archive">
-  <div class="item">
-    <span class="icon">
-      <input id="upload_notifications" type="checkbox">
-    </span>
-    Notify on file upload
-  </div>
-</label>
-<label for="recap_link_popups"
-  title="Pop up a dialog whenever you click a RECAP link to a free document">
-  <div class="item">
-    <span class="icon">
-      <input id="recap_link_popups" type="checkbox">
-    </span>
-    Confirm before opening free documents
-  </div>
-</label>
 
-<script src="options.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>

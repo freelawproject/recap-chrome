@@ -21,7 +21,11 @@ var inputs = document.getElementsByTagName('input');
 function load_options() {
   chrome.storage.sync.get('options', function (items) {
     for (var i = 0; i < inputs.length; i++) {
-      inputs[i].checked = items.options[inputs[i].id];
+      if (inputs[i].type === "checkbox") {
+        inputs[i].checked = items.options[inputs[i].id];
+      } else if (inputs[i].type === "text") {
+        inputs[i].value = items.options[inputs[i].id] || "";
+      }
     }
   });
 }
@@ -29,7 +33,11 @@ function load_options() {
 function save_options() {
   var options = {};
   for (var i = 0; i < inputs.length; i++) {
-    options[inputs[i].id] = inputs[i].checked;
+    if (inputs[i].type === "checkbox"){
+      options[inputs[i].id] = inputs[i].checked;
+    } else if (inputs[i].type === "text") {
+      options[inputs[i].id] = inputs[i].value;
+    }
   }
   chrome.storage.sync.set({options: options});
 }
@@ -38,3 +46,8 @@ load_options();
 for (var i = 0; i < inputs.length; i++) {
   inputs[i].addEventListener('change', save_options);
 }
+
+// Set the image source
+var img = document.createElement("img");
+img.src = chrome.extension.getURL('assets/images/donate-button.png');
+document.querySelector("#donate-plea a").appendChild(img);
