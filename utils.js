@@ -111,7 +111,10 @@ function httpRequest(url, postData, responseType, callback) {
         if (responseType === 'json') {
           try {
             result = JSON.parse(result);
-          } catch (e) { }
+          } catch (e) {
+            // Don't bother calling the callback if there's no valid JSON.
+            return;
+          }
         }
       }
       callback && callback(type, result);
