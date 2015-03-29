@@ -50,4 +50,9 @@ for (var i = 0; i < inputs.length; i++) {
 // Set the image source
 var img = document.createElement("img");
 img.src = chrome.extension.getURL('assets/images/donate-button.png');
-document.querySelector("#donate-plea a").appendChild(img);
+var donateLink = document.querySelector("#donate-plea a")
+var donateURL = donateLink.href;
+donateLink.appendChild(img);
+donateLink.addEventListener('click', function() {
+  chrome.tabs.create({url: donateURL});
+});
