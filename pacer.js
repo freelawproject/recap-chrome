@@ -58,6 +58,7 @@ PACER = {
         return true;
       }
     }
+    return false;
   },
 
   // Returns true if a URL looks like a show_doc link that needs conversion.
@@ -67,13 +68,14 @@ PACER = {
         return true;
       }
     }
+    return false;
   },
 
   // Returns true if the URL is for the form for querying the list of documents
   // in a docket (i.e. the "Docket Sheet" or "History/Documents" query page).
   isDocketQueryUrl: function (url) {
     // The part after the "?" is all digits.
-    return url.match(/\/(DktRpt|HistDocQry)\.pl\?\d+$/);
+    return url.match(/\/(DktRpt|HistDocQry)\.pl\?\d+$/) ? true : false;
   },
 
   // Given a URL that satisfies isDocketQueryUrl, gets its case number.
@@ -86,16 +88,17 @@ PACER = {
   // after submitting the "Docket Sheet" or "History/Documents" query page).
   isDocketDisplayUrl: function (url) {
     // The part after the "?" has hyphens in it.
-    return url.match(/\/(DktRpt|HistDocQry)\.pl\?\w+-[\w-]+$/);
+    return url.match(/\/(DktRpt|HistDocQry)\.pl\?\w+-[\w-]+$/) ? true : false;
   },
 
   // Returns true if this is a "Document Selection Menu" page (a list of the
   // attachments for a particular document).
   isAttachmentMenuPage: function (url, document) {
     var inputs = document.getElementsByTagName('input');
-    return url.match(/\/doc1\/\d+/) &&
+    var pageCheck = url.match(/\/doc1\/\d+/) &&
       inputs.length &&
       inputs[inputs.length - 1].value === 'Download All';
+    return pageCheck ? true : false;
   },
 
   // Returns true if this is a page for downloading a single document.
