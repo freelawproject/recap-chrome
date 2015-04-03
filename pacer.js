@@ -104,8 +104,9 @@ PACER = {
   // Returns true if this is a page for downloading a single document.
   isSingleDocumentPage: function (url, document) {
     var inputs = document.getElementsByTagName('input');
-    return url.match(/\/doc1\/\d+/) && inputs.length &&
-        inputs[inputs.length - 1].value === 'View Document';
+    var pageCheck = (url.match(/\/doc1\/\d+/) && inputs.length &&
+                     inputs[inputs.length - 1].value === 'View Document');
+    return pageCheck ? true : false;
   },
 
   // Returns the document ID for a document view page or single-document page.
@@ -131,12 +132,12 @@ PACER = {
       cookies[name.trim()] = value.trim();
     });
     var pacerCookie = cookies['PacerUser'] || cookies['PacerSession'];
-    return pacerCookie && !pacerCookie.match(/unvalidated/);
+    return pacerCookie && !pacerCookie.match(/unvalidated/) ? true : false;
   },
 
   // Returns true if the given court identifier is for an appellate court.
   isAppellateCourt: function (court) {
-    return PACER.APPELLATE_COURTS[court];
+    return PACER.APPELLATE_COURTS[court] ? true : false;
   },
 
   // These are all the supported PACER court identifiers, together with their
