@@ -1,9 +1,15 @@
 module.exports = function(grunt) {
   grunt.initConfig({
     jasmine : {
-      src : 'pacer.js',
+      src : [
+        'pacer.js',
+        'recap.js',
+        'utils.js'
+      ],
       options: {
         specs : 'spec/**/*Spec.js',
+        helpers: 'test/mock-ajax.js',
+        polyfills: 'test/Blob.js'
       }
     }
   });
