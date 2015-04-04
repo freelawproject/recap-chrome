@@ -53,6 +53,7 @@ img.src = chrome.extension.getURL('assets/images/donate-button.png');
 var donateLink = document.querySelector("#donate-plea a")
 var donateURL = donateLink.href;
 donateLink.appendChild(img);
-donateLink.addEventListener('click', function() {
+donateLink.addEventListener('click', function(e) {
+  e.preventDefault();
   chrome.tabs.create({url: donateURL});
 });
