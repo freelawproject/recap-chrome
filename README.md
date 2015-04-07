@@ -15,6 +15,12 @@ We also have [a development mailing list][dev], where we sometimes discuss thing
 Finally, there's no reason you can't just start forking and hacking on this
 code. There are always lots of bugs and feature requests in the queue.
 
+Tips
+----
+1. While it's true that every court has their own customized version of PACER,
+   there is [a PACER training site that does not charge fees][trainwreck]. You
+   can use this if you wish to work on the system without accruing charges.
+
 
 Tests
 =====
@@ -57,3 +63,4 @@ RECAP for Chrome.  If not, see: http://www.gnu.org/licenses/
 [dev]: http://lists.freelawproject.org/cgi-bin/mailman/listinfo/dev
 [12]: https://travis-ci.org/freelawproject/recap-chrome
 [tci]: https://travis-ci.org/
+[trainwreck]: https://dcecf.psc.uscourts.gov/cgi-bin/login.pl
