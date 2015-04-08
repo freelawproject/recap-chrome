@@ -1,10 +1,10 @@
 describe('The Recap export module', function() {
-  recap = Recap();
+  var recap = Recap();
 
   var docUrls = [
     'https://ecf.canb.uscourts.gov/doc1/034031424909',
     'https://ecf.canb.uscourts.gov/doc1/034031425808',
-    'https://ecf.canb.uscourts.gov/doc1/034031438754',
+    'https://ecf.canb.uscourts.gov/doc1/034031438754'
   ];
   var court = 'nysd';
   var docid = '127015406472';
@@ -16,7 +16,7 @@ describe('The Recap export module', function() {
   var subdocnum = '0';
   var filename = 'DktRpt.html';
   var type = 'text/html';
-  var html = '<html></html>'
+  var html = '<html></html>';
 
 
   beforeEach(function() {
@@ -39,7 +39,7 @@ describe('The Recap export module', function() {
   function setupMetadataResponse(msg) {
     var caseObj = {};
     var docObj = {};
-    caseObj[casenum] = {'casenum': casenum, 'officialcasenum': offCaseNum}
+    caseObj[casenum] = {'casenum': casenum, 'officialcasenum': offCaseNum};
     docObj[docid] = {'casenum': casenum, 'officialcasenum': offCaseNum,
                      'docnum': docnum, 'subdocnum': subdocnum};
     return {'documents': docObj, 'cases': caseObj, 'message': msg};
@@ -50,7 +50,7 @@ describe('The Recap export module', function() {
     expect(actOff).toBe(offCaseNum);
     expect(actDocnum).toBe(docnum);
     expect(actSubdocnum).toBe(subdocnum);
-  };
+  }
 
   describe('getAvailabilityForDocket', function() {
     it('requests the correct URL', function() {
@@ -65,7 +65,7 @@ describe('The Recap export module', function() {
       recap.getAvailabilityForDocket(expectedCourt, expectedCaseNum);
       var actualData = jasmine.Ajax.requests.mostRecent().data();
       var expectedJson = ('{"court":"'+expectedCourt+'","casenum":"'+
-                          expectedCaseNum+'"}')
+                          expectedCaseNum+'"}');
       expect(actualData['json'][0]).toBe(expectedJson);
     });
 
@@ -96,7 +96,7 @@ describe('The Recap export module', function() {
       var expectedJson = ('{"court":"canb","urls":["https://ecf.canb.uscourts' +
                           '.gov/doc1/034031424909",' +
                           '"https://ecf.canb.uscourts.gov/doc1/034031425808",' +
-                          '"https://ecf.canb.uscourts.gov/doc1/034031438754"]}')
+                          '"https://ecf.canb.uscourts.gov/doc1/034031438754"]}');
       expect(actualData['json'][0]).toBe(expectedJson);
     });
 
@@ -136,7 +136,7 @@ describe('The Recap export module', function() {
     });
 
     it('updates the local metadata', function() {
-      resp = setupMetadataResponse('successfully updated');
+      var resp = setupMetadataResponse('successfully updated');
       recap.uploadMetadata(court, docid, casenum, de_seq_num, dm_id, docnum,
                           function() {});
       jasmine.Ajax.requests.mostRecent().respondWith({
@@ -168,7 +168,7 @@ describe('The Recap export module', function() {
     });
 
     it('updates the local metadata', function() {
-      resp = setupMetadataResponse('successfully updated');
+      var resp = setupMetadataResponse('successfully updated');
       recap.uploadDocket(court, casenum, filename, type, html, function() {});
       jasmine.Ajax.requests.mostRecent().respondWith({
         "status": 200,
@@ -199,7 +199,7 @@ describe('The Recap export module', function() {
     });
 
     it('updates the local metadata', function() {
-      resp = setupMetadataResponse('successfully updated');
+      var resp = setupMetadataResponse('successfully updated');
       recap.uploadAttachmentMenu(court, filename, type, html, function() {});
       jasmine.Ajax.requests.mostRecent().respondWith({
         "status": 200,
