@@ -19,6 +19,7 @@
 // Public impure functions.  (See utils.js for details on defining services.)
 function Recap() {
   var SERVER_ROOT = 'https://recapextension.org/recap';
+  //var SERVER_ROOT = 'http://it.recapextension.org:8008/recap';
   var caseMeta = {}; // key: casenum, value: {officialcasenum: o}
   var docMeta = {}; // key: docid; value: {casenum: c, docnum: d, subdocnum: s}
 
@@ -83,6 +84,7 @@ function Recap() {
       formData.append('dm_id', dm_id);
       formData.append('docnum', docnum);
       formData.append('add_case_info', 'true');
+      formData = this._add_team_name(formData);
       httpRequest(
         SERVER_ROOT + '/adddocmeta/',
         formData,
@@ -102,6 +104,7 @@ function Recap() {
       formData.append('casenum', casenum);
       formData.append('mimetype', type);
       formData.append('data', new Blob([html], {type: type}), filename);
+      formData = this._add_team_name(formData);
       httpRequest(
         SERVER_ROOT + '/upload/',
         formData,
@@ -120,6 +123,7 @@ function Recap() {
       formData.append('court', court);
       formData.append('mimetype', type);
       formData.append('data', new Blob([html], {type: type}), filename);
+      formData = this._add_team_name(formData);
       httpRequest(
         SERVER_ROOT + '/upload/',
         formData,
@@ -140,6 +144,7 @@ function Recap() {
       formData.append('url', path);  // should be a doc1-style path
       formData.append('mimetype', type);
       formData.append('data', blob, filename);
+      formData = this._add_team_name(formData);
       httpRequest(
         SERVER_ROOT + '/upload/',
         formData,
@@ -157,6 +162,18 @@ function Recap() {
       var meta = docMeta[docid] || {};
       cb(meta.casenum, (caseMeta[meta.casenum] || {}).officialcasenum,
          meta.docnum, meta.subdocnum);
+    },
+
+    // Get the team name from the user's preferences, and append it to the
+    // formData variable.
+    _add_team_name: function(formData){
+      chrome.storage.sync.get('options', function (items) {
+        var team_name = items.options.recap_team_name;
+        if (team_name) {
+          formData.append('team_name', team_name);
+        }
+      });
+      return formData;
     }
   };
 }
