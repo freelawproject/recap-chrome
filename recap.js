@@ -16,18 +16,12 @@
 // Get the team name from the user's preferences, and append it to the
 // formData variable.
 function appendTeamNameToFormData (formData) {
-  try {
-    chrome.storage.sync.get('options', function (items) {
-      var team_name = items.options.recap_team_name;
-      if (team_name) {
-        formData.append('team_name', team_name);
-      }
-    });
-  } catch (e){
-    if (e instanceof ReferenceError){
-      // During tests, we won't have access to the chrome variable.
+  chrome.storage.sync.get('options', function (items) {
+    var team_name = items.options.recap_team_name;
+    if (team_name) {
+      formData.append('team_name', team_name);
     }
-  }
+  });
 }
 
 

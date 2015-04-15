@@ -36,6 +36,20 @@ describe('The Recap export module', function() {
     jasmine.Ajax.uninstall();
   });
 
+  function setupChromeSpy() {
+    window.chrome = {
+      storage: {
+        sync: {
+          get: jasmine.createSpy()
+        }
+      }
+    }
+  }
+  
+  function removeChromeSpy() {
+    delete window.chrome;
+  }
+
   function setupMetadataResponse(msg) {
     var caseObj = {};
     var docObj = {};
@@ -113,6 +127,9 @@ describe('The Recap export module', function() {
   });
 
   describe('uploadMetadata', function() {
+    beforeEach(setupChromeSpy);
+    afterEach(removeChromeSpy);
+
     it('requests the correct URL', function() {
       recap.uploadMetadata(court, docid, casenum, de_seq_num, dm_id, docnum);
       expect(jasmine.Ajax.requests.mostRecent().url).toBe(
@@ -149,6 +166,9 @@ describe('The Recap export module', function() {
   });
 
   describe('uploadDocket', function() {
+    beforeEach(setupChromeSpy);
+    afterEach(removeChromeSpy);
+
     it('requests the correct URL', function() {
       recap.uploadDocket(court, casenum, filename, type, html);
       expect(jasmine.Ajax.requests.mostRecent().url).toBe(
@@ -180,6 +200,9 @@ describe('The Recap export module', function() {
   });
 
   describe('uploadAttachmentMenu', function() {
+    beforeEach(setupChromeSpy);
+    afterEach(removeChromeSpy);
+
     it('requests the correct URL', function() {
       recap.uploadAttachmentMenu(court, filename, type, html);
       expect(jasmine.Ajax.requests.mostRecent().url).toBe(
@@ -211,6 +234,9 @@ describe('The Recap export module', function() {
   });
 
   describe('uploadDocument', function() {
+    beforeEach(setupChromeSpy);
+    afterEach(removeChromeSpy);
+
     var path = '/doc1/127015406472';
     var bytes = new Uint8Array([100, 100, 200, 200, 300]);
 
