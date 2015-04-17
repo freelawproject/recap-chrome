@@ -119,7 +119,7 @@ ContentDelegate.prototype.handleSingleDocumentPage = function() {
     $('<div class="recap-banner"/>').append(
       $('<a/>', {
         title: 'Document is available for free from RECAP.',
-        href: result[url].filename
+        href: result[this.url].filename
       }).append(
         $('<img/>', {src: chrome.extension.getURL('assets/images/icon-16.png')})
       ).append(
