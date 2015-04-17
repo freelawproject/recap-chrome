@@ -15,15 +15,13 @@
 // -------------------------------------------------------------------------
 // Abstraction of content scripts to make them modular and testable.
 
-var notifier = importInstance(Notifier);
-var toolbar_button = importInstance(ToolbarButton);
-var pacer = importInstance(Pacer);
-var recap = importInstance(Recap);
-
 ContentDelegate = function(url, court, casenum) {
   this.url = url;
   this.court = court;
   this.casenum = casenum;
+
+  this.notifier = importInstance(Notifier);
+  this.recap = importInstance(Recap);
 };
 
 // If this is a docket query page, ask RECAP whether it has the docket page.
@@ -32,23 +30,25 @@ ContentDelegate.prototype.handleDocketQueryUrl = function() {
     return;
   }
 
-  recap.getAvailabilityForDocket(
-    court, PACER.getCaseNumberFromUrl(this.url), function (result) {
-    if (result && result.docket_url) {
-      // Insert a RECAP download link at the bottom of the form.
-      $('<div class="recap-banner"/>').append(
-        $('<a/>', {
-          title: 'Docket is available for free from RECAP.',
-          href: result.docket_url
-        }).append(
-          $('<img/>', {src: chrome.extension.getURL('assets/images/icon-16.png')})
-        ).append(
-          ' Get this docket as of ' + result.timestamp + ' for free from RECAP.'
-        )
-      ).append(
-        $('<br><small>Note that archived dockets may be out of date.</small>')
-      ).appendTo($('form'));
+  this.recap.getAvailabilityForDocket(
+    this.court, this.casenum, function (result) {
+    if (!(result && result.docket_url)) {
+      return;
     }
+
+    // Insert a RECAP download link at the bottom of the form.
+    $('<div class="recap-banner"/>').append(
+      $('<a/>', {
+        title: 'Docket is available for free from RECAP.',
+        href: result.docket_url
+      }).append(
+        $('<img/>', {src: chrome.extension.getURL('assets/images/icon-16.png')})
+      ).append(
+        ' Get this docket as of ' + result.timestamp + ' for free from RECAP.'
+      )
+    ).append(
+      $('<br><small>Note that archived dockets may be out of date.</small>')
+    ).appendTo($('form'));
   });
 };
 
@@ -63,11 +63,11 @@ ContentDelegate.prototype.handleDocketDisplayPage = function() {
   }
 
   var filename = PACER.getBaseNameFromUrl(url).replace('.pl', '.html');
-  recap.uploadDocket(this.court, this.casenum, filename, 'text/html',
+  this.recap.uploadDocket(this.court, this.casenum, filename, 'text/html',
                      document.documentElement.innerHTML, function (ok) {
     if (ok) {
       history.replaceState({uploaded: true});
-      notifier.showUpload(
+      this.notifier.showUpload(
         'Docket uploaded to the public archive.',
         function(){}
       );
@@ -86,7 +86,7 @@ ContentDelegate.prototype.handleAttachmentMenuPage = function() {
     return;
   }
 
-  recap.uploadAttachmentMenu(
+  this.recap.uploadAttachmentMenu(
     this.court,
     window.location.pathname,
     'text/html',
@@ -94,7 +94,7 @@ ContentDelegate.prototype.handleAttachmentMenuPage = function() {
     function (ok) {
       if (ok) {
         history.replaceState({uploaded: 1});
-        notifier.showUpload(
+        this.notifier.showUpload(
          'Menu page uploaded to the public archive.',
           function () {}
         );
@@ -110,7 +110,7 @@ ContentDelegate.prototype.handleSingleDocumentPage = function() {
     return;
   }
 
-  recap.getAvailabilityForDocuments([this.url], function (result) {
+  this.recap.getAvailabilityForDocuments([this.url], function (result) {
     if (!(result && result[this.url])) {
       return;
     }
