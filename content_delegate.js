@@ -89,20 +89,19 @@ ContentDelegate.prototype.handleAttachmentMenuPage = function() {
     return;
   }
 
-  this.recap.uploadAttachmentMenu(
-    this.court,
-    window.location.pathname,
-    'text/html',
-    document.documentElement.innerHTML,
-    function (ok) {
-      if (ok) {
-        history.replaceState({uploaded: 1});
-        this.notifier.showUpload(
-         'Menu page uploaded to the public archive.',
-          function () {}
-        );
-      }
+  var callback = $.proxy(function(ok) {
+    if (ok) {
+      history.replaceState({uploaded: true});
+      this.notifier.showUpload(
+        'Menu page uploaded to the public archive.',
+        function () {}
+      );
     }
+  }, this);
+
+  this.recap.uploadAttachmentMenu(
+    this.court, window.location.pathname, 'text/html',
+    document.documentElement.innerHTML, callback
   );
 };
 

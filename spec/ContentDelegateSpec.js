@@ -2,6 +2,7 @@ describe('The ContentDelegate class', function() {
   var docketQueryUrl = 'https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?531591';
   var docketDisplayUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?' +
                           '101092135737069-L_1_0-1');
+  var singleDocUrl = 'https://ecf.canb.uscourts.gov/doc1/034031424909';
   var nonsenseUrl = 'http://something.uscourts.gov/foobar/baz';
 
   function setupChromeSpy() {
@@ -147,6 +148,91 @@ describe('The ContentDelegate class', function() {
       expect(cd.recap.uploadDocket).toHaveBeenCalled();
       expect(cd.notifier.showUpload).not.toHaveBeenCalled();
       expect(history.replaceState).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('handleAttachmentMenuPage', function() {
+    var form;
+    beforeEach(function() {
+      form = document.createElement('form');
+      document.body.appendChild(form);
+    });
+
+    afterEach(function() {
+      form.parentNode.removeChild(form);
+    });
+
+    describe('when there is NO appropriate form', function() {
+      it('has no effect when the URL is wrong', function() {
+        var cd = new ContentDelegate(nonsenseUrl, null, null);
+        spyOn(cd.recap, 'uploadAttachmentMenu');
+        cd.handleAttachmentMenuPage();
+        expect(cd.recap.uploadAttachmentMenu).not.toHaveBeenCalled();
+      });
+
+      it('has no effect with a proper URL', function() {
+        var cd = new ContentDelegate(singleDocUrl, 'canb', '531591');
+        spyOn(cd.recap, 'uploadAttachmentMenu');
+        cd.handleAttachmentMenuPage();
+        expect(cd.recap.uploadAttachmentMenu).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('when there IS an appropriate form', function() {
+      var input;
+      beforeEach(function() {
+        input = document.createElement('input');
+        input.value = 'Download All';
+        form.appendChild(input);
+      });
+
+      afterEach(function() {
+        form.removeChild(input);
+      });
+
+      it('has no effect when the URL is wrong', function() {
+        var cd = new ContentDelegate(nonsenseUrl, null, null);
+        spyOn(cd.recap, 'uploadAttachmentMenu');
+        cd.handleAttachmentMenuPage();
+        expect(cd.recap.uploadAttachmentMenu).not.toHaveBeenCalled();
+      });
+
+      it('uploads the page when the URL is right', function() {
+        var cd = new ContentDelegate(singleDocUrl, 'canb', '531591');
+        spyOn(cd.recap, 'uploadAttachmentMenu');
+        cd.handleAttachmentMenuPage();
+        expect(cd.recap.uploadAttachmentMenu).toHaveBeenCalled();
+      });
+
+      it('calls the upload method and responds to positive result', function() {
+        var cd = new ContentDelegate(singleDocUrl, 'canb', '531591');
+        uploadFake = function(_, _, _, _, callback) {
+          callback(true);
+        };
+        spyOn(cd.recap, 'uploadAttachmentMenu').and.callFake(uploadFake);
+        spyOn(cd.notifier, 'showUpload');
+        spyOn(history, 'replaceState');
+
+        cd.handleAttachmentMenuPage();
+        expect(cd.recap.uploadAttachmentMenu).toHaveBeenCalled();
+        expect(cd.notifier.showUpload).toHaveBeenCalled();
+        expect(history.replaceState).toHaveBeenCalledWith({uploaded: true});
+      });
+
+      it('calls the upload method and responds to negative result', function() {
+        var cd = new ContentDelegate(singleDocUrl, 'canb', '531591');
+        uploadFake = function(_, _, _, _, callback) {
+          callback(false);
+        };
+        spyOn(cd.recap, 'uploadAttachmentMenu').and.callFake(uploadFake);
+        spyOn(cd.notifier, 'showUpload');
+        spyOn(history, 'replaceState');
+
+        cd.handleAttachmentMenuPage();
+        expect(cd.recap.uploadAttachmentMenu).toHaveBeenCalled();
+        expect(cd.notifier.showUpload).not.toHaveBeenCalled();
+        expect(history.replaceState).not.toHaveBeenCalled();
+      });
     });
   });
 });
