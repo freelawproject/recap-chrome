@@ -62,9 +62,7 @@ ContentDelegate.prototype.handleDocketDisplayPage = function() {
     return;
   }
 
-  var filename = PACER.getBaseNameFromUrl(url).replace('.pl', '.html');
-  this.recap.uploadDocket(this.court, this.casenum, filename, 'text/html',
-                     document.documentElement.innerHTML, function (ok) {
+  var callback = $.proxy(function (ok) {
     if (ok) {
       history.replaceState({uploaded: true});
       this.notifier.showUpload(
@@ -72,7 +70,12 @@ ContentDelegate.prototype.handleDocketDisplayPage = function() {
         function(){}
       );
     }
-  });
+  }, this);
+
+  
+  var filename = PACER.getBaseNameFromUrl(this.url).replace('.pl', '.html');
+  this.recap.uploadDocket(this.court, this.casenum, filename, 'text/html',
+                          document.documentElement.innerHTML, callback);
 }
 
 // If this is a document's menu of attachments (subdocuments), upload it to

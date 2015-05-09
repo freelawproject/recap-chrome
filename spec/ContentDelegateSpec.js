@@ -1,26 +1,30 @@
 describe('The ContentDelegate class', function() {
   var docketQueryUrl = 'https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?531591';
+  var docketDisplayUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?' +
+                          '101092135737069-L_1_0-1');
   var nonsenseUrl = 'http://something.uscourts.gov/foobar/baz';
 
-  beforeEach(function() {
-    jasmine.Ajax.install();
-  });
-
-  afterEach(function() {
-    jasmine.Ajax.uninstall();
-  });
-
   function setupChromeSpy() {
-    window.chrome = {      
+    window.chrome = {
       extension: {
         getURL: jasmine.createSpy()
       }
     }
   }
-  
+
   function removeChromeSpy() {
     delete window.chrome;
   }
+
+  beforeEach(function() {
+    jasmine.Ajax.install();
+    setupChromeSpy();
+  });
+
+  afterEach(function() {
+    jasmine.Ajax.uninstall();
+    removeChromeSpy();
+  });
 
 
   it('gets created with a url, court and casenum', function() {
@@ -37,13 +41,11 @@ describe('The ContentDelegate class', function() {
 
   describe('handleDocketQueryUrl', function() {
     beforeEach(function() {
-      setupChromeSpy();
       var form = document.createElement('form');
       document.body.appendChild(form);
     });
 
     afterEach(function() {
-      removeChromeSpy();
       var form = document.getElementsByTagName('FORM')[0];
       form.parentNode.removeChild(form);
     });
@@ -84,6 +86,67 @@ describe('The ContentDelegate class', function() {
       });
       var banner = document.querySelector('.recap-banner');
       expect(banner).toBeNull();
+    });
+  });
+
+  describe('handleDocketDisplayPage', function() {
+    it('has no effect when not on a docket display url', function() {
+      var cd = new ContentDelegate(nonsenseUrl, null, null);
+      spyOn(cd.recap, 'uploadDocket');
+      cd.handleDocketDisplayPage();
+      expect(cd.recap.uploadDocket).not.toHaveBeenCalled();
+    });
+
+    it('has no effect when there is no casenum', function() {
+      var cd = new ContentDelegate(docketDisplayUrl, null, null);
+      spyOn(cd.recap, 'uploadDocket');
+      cd.handleDocketDisplayPage();
+      expect(cd.recap.uploadDocket).not.toHaveBeenCalled();
+    });
+
+    describe('when the history state is already set', function() {
+      beforeEach(function() {
+        history.state = { uploaded: true };
+      });
+
+      afterEach(function() {
+        history.state = {};
+      });
+
+      it('has no effect', function() {
+        var cd = new ContentDelegate(docketDisplayUrl, 'canb', '531591');
+        spyOn(cd.recap, 'uploadDocket');
+        cd.handleDocketDisplayPage();
+        expect(cd.recap.uploadDocket).not.toHaveBeenCalled();
+      });
+    });
+
+    it('calls uploadDocket and responds to a positive result', function() {
+      var cd = new ContentDelegate(docketDisplayUrl, 'canb', '531591');
+      spyOn(cd.notifier, 'showUpload');
+      spyOn(cd.recap, 'uploadDocket').and.callFake(function(_, _, _, _, _, cb) {
+        cb(true);
+      });
+      spyOn(history, 'replaceState');
+
+      cd.handleDocketDisplayPage();
+      expect(cd.recap.uploadDocket).toHaveBeenCalled();
+      expect(cd.notifier.showUpload).toHaveBeenCalled();
+      expect(history.replaceState).toHaveBeenCalledWith({uploaded: true});
+    });
+
+    it('calls uploadDocket and responds to a negative result', function() {
+      var cd = new ContentDelegate(docketDisplayUrl, 'canb', '531591');
+      spyOn(cd.notifier, 'showUpload');
+      spyOn(cd.recap, 'uploadDocket').and.callFake(function(_, _, _, _, _, cb) {
+        cb(false);
+      });
+      spyOn(history, 'replaceState');
+
+      cd.handleDocketDisplayPage();
+      expect(cd.recap.uploadDocket).toHaveBeenCalled();
+      expect(cd.notifier.showUpload).not.toHaveBeenCalled();
+      expect(history.replaceState).not.toHaveBeenCalled();
     });
   });
 });
