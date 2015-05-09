@@ -235,4 +235,80 @@ describe('The ContentDelegate class', function() {
       });
     });
   });
+
+  describe('handleSingleDocumentPage', function() {
+    var form;
+    beforeEach(function() {
+      form = document.createElement('form');
+      document.body.appendChild(form);
+    });
+
+    afterEach(function() {
+      form.parentNode.removeChild(form);
+    });
+
+    describe('when there is NO appropriate form', function() {
+      it('has no effect when the URL is wrong', function() {
+        var cd = new ContentDelegate(nonsenseUrl, null, null);
+        spyOn(cd.recap, 'getAvailabilityForDocuments');
+        cd.handleSingleDocumentPage();
+        expect(cd.recap.getAvailabilityForDocuments).not.toHaveBeenCalled();
+      });
+
+      it('has no effect with a proper URL', function() {
+        var cd = new ContentDelegate(singleDocUrl, 'canb', '531591');
+        spyOn(cd.recap, 'getAvailabilityForDocuments');
+        cd.handleSingleDocumentPage();
+        expect(cd.recap.getAvailabilityForDocuments).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('when there IS an appropriate form', function() {
+      var input;
+      beforeEach(function() {
+        input = document.createElement('input');
+        input.value = 'View Document';
+        form.appendChild(input);
+      });
+
+      afterEach(function() {
+        form.removeChild(input);
+        form.innerHTML = '';
+      });
+
+      it('has no effect when the URL is wrong', function() {
+        var cd = new ContentDelegate(nonsenseUrl, null, null);
+        spyOn(cd.recap, 'getAvailabilityForDocuments');
+        cd.handleSingleDocumentPage();
+        expect(cd.recap.getAvailabilityForDocuments).not.toHaveBeenCalled();
+      });
+
+      it('checks availability for the page when the URL is right', function() {
+        var cd = new ContentDelegate(singleDocUrl, 'canb', '531591');
+        spyOn(cd.recap, 'getAvailabilityForDocuments');
+        cd.handleSingleDocumentPage();
+        expect(cd.recap.getAvailabilityForDocuments).toHaveBeenCalled();
+      });
+
+      it('responds to a positive result', function() {
+        var fakeDownloadUrl = 'http://download.fake/531591';
+        var cd = new ContentDelegate(singleDocUrl, 'canb', '531591');
+        var fake = function(_, callback) {
+          var response = {};
+          response[singleDocUrl] = {filename: fakeDownloadUrl};
+          callback(response);
+        };
+        spyOn(cd.recap, 'getAvailabilityForDocuments').and.callFake(fake);
+
+        cd.handleSingleDocumentPage();
+
+        expect(cd.recap.getAvailabilityForDocuments).toHaveBeenCalled();
+        var banner = document.querySelector('.recap-banner');
+        expect(banner).not.toBeNull();
+        var link = banner.querySelector('a');
+        expect(link).not.toBeNull();
+        expect(link.href).toBe(fakeDownloadUrl);
+      });
+    });
+  });
 });

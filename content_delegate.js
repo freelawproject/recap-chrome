@@ -112,7 +112,7 @@ ContentDelegate.prototype.handleSingleDocumentPage = function() {
     return;
   }
 
-  this.recap.getAvailabilityForDocuments([this.url], function (result) {
+  var callback = $.proxy(function (result) {
     if (!(result && result[this.url])) {
       return;
     }
@@ -128,5 +128,7 @@ ContentDelegate.prototype.handleSingleDocumentPage = function() {
         ' Get this document for free from RECAP.'
       )
     ).appendTo($('form'));
-  });
+  }, this);
+
+  this.recap.getAvailabilityForDocuments([this.url], callback);
 };
