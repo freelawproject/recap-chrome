@@ -116,7 +116,7 @@ if (PACER.isSingleDocumentPage(url, document)) {
               document.documentElement.innerHTML = event.state.content;
             }
           };
-          history.replaceState({content: previousPageHtml});
+          history.replaceState({content: previousPageHtml}, '');
 
           // Display the page with the downloaded file in the <iframe>.
           var blob = new Blob([new Uint8Array(ab)], {type: type});
@@ -138,7 +138,7 @@ if (PACER.isSingleDocumentPage(url, document)) {
               "  document.getElementById('recap-download').className = '';" +
               '}, 7500)" src="' + blobUrl + '"' + match[3];
             document.documentElement.innerHTML = html;
-            history.pushState({content: html});
+            history.pushState({content: html}, '');
           });
 
           // Upload the file to RECAP.  We can't pass an ArrayBuffer directly

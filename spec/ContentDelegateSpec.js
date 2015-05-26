@@ -133,7 +133,7 @@ describe('The ContentDelegate class', function() {
       cd.handleDocketDisplayPage();
       expect(cd.recap.uploadDocket).toHaveBeenCalled();
       expect(cd.notifier.showUpload).toHaveBeenCalled();
-      expect(history.replaceState).toHaveBeenCalledWith({uploaded: true});
+      expect(history.replaceState).toHaveBeenCalledWith({uploaded: true}, '');
     });
 
     it('calls uploadDocket and responds to a negative result', function() {
@@ -216,7 +216,7 @@ describe('The ContentDelegate class', function() {
         cd.handleAttachmentMenuPage();
         expect(cd.recap.uploadAttachmentMenu).toHaveBeenCalled();
         expect(cd.notifier.showUpload).toHaveBeenCalled();
-        expect(history.replaceState).toHaveBeenCalledWith({uploaded: true});
+        expect(history.replaceState).toHaveBeenCalledWith({uploaded: true}, '');
       });
 
       it('calls the upload method and responds to negative result', function() {
