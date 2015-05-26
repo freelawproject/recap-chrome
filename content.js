@@ -58,7 +58,7 @@ if (!(history.state && history.state.uploaded)) {
       recap.uploadDocket(court, casenum, filename, 'text/html',
                          document.documentElement.innerHTML, function (ok) {
         if (ok) {
-          history.replaceState({uploaded: 1});
+          history.replaceState({uploaded: 1}, '');
           notifier.showUpload(
             'Docket uploaded to the public archive.',
             function(){}
@@ -78,7 +78,7 @@ if (!(history.state && history.state.uploaded)) {
       document.documentElement.innerHTML,
       function (ok) {
         if (ok) {
-          history.replaceState({uploaded: 1});
+          history.replaceState({uploaded: 1}, '');
           notifier.showUpload(
            'Menu page uploaded to the public archive.',
             function () {}
@@ -180,7 +180,7 @@ if (PACER.isSingleDocumentPage(url, document)) {
               document.documentElement.innerHTML = event.state.content;
             }
           };
-          history.replaceState({content: previousPageHtml});
+          history.replaceState({content: previousPageHtml}, '');
 
           // Display the page with the downloaded file in the <iframe>.
           var blob = new Blob([new Uint8Array(ab)], {type: type});
@@ -202,7 +202,7 @@ if (PACER.isSingleDocumentPage(url, document)) {
               "  document.getElementById('recap-download').className = '';" +
               '}, 7500)" src="' + blobUrl + '"' + match[3];
             document.documentElement.innerHTML = html;
-            history.pushState({content: html});
+            history.pushState({content: html}, '');
           });
 
           // Upload the file to RECAP.  We can't pass an ArrayBuffer directly
