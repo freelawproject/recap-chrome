@@ -15,10 +15,12 @@ The tests are designed to be run with a headless browser (aka
 the [Grunt](http://gruntjs.com/) task runner. This is where the dependency on
 Node comes from.
 
-0. Install [Node and npm](https://nodejs.org/)
+0. Install [Node and npm](https://nodejs.org/).
+0. If you're on a Debian derivative install `nodejs-legacy`.
 0. In the project directory, `npm install grunt`
-0. Then, `npm install -g grunt-cli`
-0. Finally, `npm install grunt-contrib-jasmine`. It seems like this step will      install PhantomJS for you if you require it, as a dependency.
+0. Then, `sudo npm install -g grunt-cli`
+0. Finally, `npm install grunt-contrib-jasmine`. It seems like this step will
+   install PhantomJS for you if you require it, as a dependency.
 
 All of these packages, except for `grunt-cli`, are installed in the project
 folder in the node_modules directory (which is part of `.gitignore`).
