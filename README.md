@@ -61,7 +61,7 @@ When a new version is needed, the release process is:
         zip -FSr recap-chrome.zip * --exclude=*node_modules*
         
 1. Upload that to the [Chrome Market][market].
-1. Make any notes on [Github announcing the release][ghtags].
+1. Make a new release on [Github announcing the release][ghtags].
 
 Copyright
 =========
@@ -89,4 +89,4 @@ RECAP for Chrome.  If not, see: http://www.gnu.org/licenses/
 [trainwreck]: https://dcecf.psc.uscourts.gov/cgi-bin/login.pl
 [testingmd]: https://github.com/freelawproject/recap-chrome/blob/master/TESTING.md
 [market]: https://chrome.google.com/webstore/developer/edit/oiillickanjlaeghobeeknbddaonmjnc?authuser=3#
-[ghtags]: https://github.com/freelawproject/recap-chrome/releases
+[ghtags]: https://github.com/freelawproject/recap-chrome/releases/new
