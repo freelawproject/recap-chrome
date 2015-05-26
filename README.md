@@ -35,10 +35,30 @@ When we pull your code using Github, these tests will be automatically run by
 the [Travis-CI][tci] continuous integration system. You can make sure that your
 pull request is good to go by waiting for the automated tests to complete.
 
+For more information on testing see [TESTING.md][testingmd].
+
 The current status if Travis CI on our master branch is:
 
 [![Build Status](https://travis-ci.org/freelawproject/recap-chrome.svg?branch=master)][12]
 
+
+Releasing a New Version
+=======================
+When a new version is needed, the release process is:
+
+1. Update `package.json` and `manifest.json` with a new release version.
+1. Commit the code.
+1. Tag the code with something like:
+
+        git tag -s '0.8.4' -m "Releases 0.8.4, fixing replaceState and pushState to work in Chrome 43." -u 'mike@freelawproject.org' -f
+        git push --tags -f
+
+1. Zip up the archive with the rather archaic: 
+
+        zip -FSr recap-chrome.zip * --exclude=*node_modules*
+        
+1. Upload that to the [Chrome Market][market].
+1. Make any notes on [Github announcing the release][ghtags].
 
 Copyright
 =========
@@ -64,3 +84,6 @@ RECAP for Chrome.  If not, see: http://www.gnu.org/licenses/
 [12]: https://travis-ci.org/freelawproject/recap-chrome
 [tci]: https://travis-ci.org/
 [trainwreck]: https://dcecf.psc.uscourts.gov/cgi-bin/login.pl
+[testingmd]: https://github.com/freelawproject/recap-chrome/blob/master/TESTING.md
+[market]: https://chrome.google.com/webstore/developer/edit/oiillickanjlaeghobeeknbddaonmjnc?authuser=3#
+[ghtags]: https://github.com/freelawproject/recap-chrome/releases
