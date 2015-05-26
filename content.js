@@ -23,90 +23,26 @@ var recap = importInstance(Recap);
 
 var url = window.location.href;
 var court = PACER.getCourtFromUrl(url);
+var casenum = PACER.getCaseNumberFromUrl(document.referrer);
 
 // Update the toolbar button with knowledge of whether the user is logged in.
 toolbar_button.updateCookieStatus(court, document.cookie, null);
 
+// Create a delegate for handling the various states we might be in.
+var content_delegate = new ContentDelegate(url, court, casenum);
+
 // If this is a docket query page, ask RECAP whether it has the docket page.
-if (PACER.isDocketQueryUrl(url)) {
-  recap.getAvailabilityForDocket(
-    court, PACER.getCaseNumberFromUrl(url), function (result) {
-    if (result && result.docket_url) {
-      // Insert a RECAP download link at the bottom of the form.
-      $('<div class="recap-banner"/>').append(
-        $('<a/>', {
-          title: 'Docket is available for free from RECAP.',
-          href: result.docket_url
-        }).append(
-          $('<img/>', {src: chrome.extension.getURL('assets/images/icon-16.png')})
-        ).append(
-          ' Get this docket as of ' + result.timestamp + ' for free from RECAP.'
-        )
-      ).append(
-        $('<br><small>Note that archived dockets may be out of date.</small>')
-      ).appendTo($('form'));
-    }
-  });
-}
+content_delegate.handleDocketQueryUrl();
 
-if (!(history.state && history.state.uploaded)) {
-  // If this is a docket page, upload it to RECAP.
-  if (PACER.isDocketDisplayUrl(url)) {
-    var casenum = PACER.getCaseNumberFromUrl(document.referrer);
-    if (casenum) {
-      var filename = PACER.getBaseNameFromUrl(url).replace('.pl', '.html');
-      recap.uploadDocket(court, casenum, filename, 'text/html',
-                         document.documentElement.innerHTML, function (ok) {
-        if (ok) {
-          history.replaceState({uploaded: 1}, '');
-          notifier.showUpload(
-            'Docket uploaded to the public archive.',
-            function(){}
-          );
-        }
-      });
-    }
-  }
+// If this is a docket page, upload it to RECAP.
+content_delegate.handleDocketDisplayPage();
 
-  // If this is a document's menu of attachments (subdocuments), upload it to
-  // RECAP.
-  if (PACER.isAttachmentMenuPage(url, document)) {
-    recap.uploadAttachmentMenu(
-      court,
-      window.location.pathname,
-      'text/html',
-      document.documentElement.innerHTML,
-      function (ok) {
-        if (ok) {
-          history.replaceState({uploaded: 1}, '');
-          notifier.showUpload(
-           'Menu page uploaded to the public archive.',
-            function () {}
-          );
-        }
-      }
-    );
-  }
-}
+// If this is a document's menu of attachments (subdocuments), upload it to
+// RECAP.
+content_delegate.handleAttachmentMenuPage();
 
 // If this page offers a single document, ask RECAP whether it has the document.
-if (PACER.isSingleDocumentPage(url, document)) {
-  recap.getAvailabilityForDocuments([url], function (result) {
-    if (result && result[url]) {
-      // Insert a RECAP download link at the bottom of the form.
-      $('<div class="recap-banner"/>').append(
-        $('<a/>', {
-          title: 'Document is available for free from RECAP.',
-          href: result[url].filename
-        }).append(
-          $('<img/>', {src: chrome.extension.getURL('assets/images/icon-16.png')})
-        ).append(
-          ' Get this document for free from RECAP.'
-        )
-      ).appendTo($('form'));
-    }
-  });
-}
+content_delegate.handleSingleDocumentPage();
 
 // If this page offers a single document, intercept navigation to the document
 // view page.  The "View Document" button calls the goDLS() function, which
@@ -180,7 +116,7 @@ if (PACER.isSingleDocumentPage(url, document)) {
               document.documentElement.innerHTML = event.state.content;
             }
           };
-          history.replaceState({content: previousPageHtml}, '');
+          history.replaceState({content: previousPageHtml});
 
           // Display the page with the downloaded file in the <iframe>.
           var blob = new Blob([new Uint8Array(ab)], {type: type});
@@ -202,7 +138,7 @@ if (PACER.isSingleDocumentPage(url, document)) {
               "  document.getElementById('recap-download').className = '';" +
               '}, 7500)" src="' + blobUrl + '"' + match[3];
             document.documentElement.innerHTML = html;
-            history.pushState({content: html}, '');
+            history.pushState({content: html});
           });
 
           // Upload the file to RECAP.  We can't pass an ArrayBuffer directly

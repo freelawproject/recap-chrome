@@ -4,6 +4,9 @@ This is the code for the RECAP Chrome extension, a program that is used to
 liberate millions of documents from the PACER system. To install this extension
 please visit the [Chrome Store][1].
 
+Reporting Issues
+================
+Please report all issues at the centralized RECAP issue repo, [/freelawproject/recap](https://github.com/freelawproject/recap/issues).
 
 Joining as a Developer
 ======================

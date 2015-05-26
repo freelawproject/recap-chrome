@@ -42,6 +42,7 @@
       "toolbar_button.js",
       "pacer.js",
       "recap.js",
+      "content_delegate.js",
       "content.js"
     ],
     "run_at": "document_end"
