@@ -2,6 +2,7 @@ describe('The ContentDelegate class', function() {
   var docketQueryUrl = 'https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?531591';
   var docketDisplayUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?' +
                           '101092135737069-L_1_0-1');
+  var docketDisplayPath = '/cgi-bin/DktRpt.pl?101092135737069-L_1_0-1';
   var singleDocUrl = 'https://ecf.canb.uscourts.gov/doc1/034031424909';
   var nonsenseUrl = 'http://something.uscourts.gov/foobar/baz';
 
@@ -28,14 +29,16 @@ describe('The ContentDelegate class', function() {
   });
 
 
-  it('gets created with a url, court and casenum', function() {
+  it('gets created with a url, path, court and casenum', function() {
     var expected_url = 'https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?531591';
+    var expected_path = '/cgi-bin/DktRpt.pl?531591';
     var expected_court = 'canb';
     var expected_casenum = '531591';
 
     var cd = new ContentDelegate(
-      expected_url, expected_court, expected_casenum);
+      expected_url, expected_path, expected_court, expected_casenum);
     expect(cd.url).toBe(expected_url);
+    expect(cd.path).toBe(expected_path);
     expect(cd.court).toBe(expected_court);
     expect(cd.casenum).toBe(expected_casenum);
   });
@@ -123,7 +126,8 @@ describe('The ContentDelegate class', function() {
     });
 
     it('calls uploadDocket and responds to a positive result', function() {
-      var cd = new ContentDelegate(docketDisplayUrl, 'canb', '531591');
+      var cd = new ContentDelegate(docketDisplayUrl, docketDisplayPath,
+                                   'canb', '531591');
       spyOn(cd.notifier, 'showUpload');
       spyOn(cd.recap, 'uploadDocket').and.callFake(function(_, _, _, _, _, cb) {
         cb(true);
@@ -137,7 +141,8 @@ describe('The ContentDelegate class', function() {
     });
 
     it('calls uploadDocket and responds to a negative result', function() {
-      var cd = new ContentDelegate(docketDisplayUrl, 'canb', '531591');
+      var cd = new ContentDelegate(docketDisplayUrl, docketDisplayPath,
+                                   'canb', '531591');
       spyOn(cd.notifier, 'showUpload');
       spyOn(cd.recap, 'uploadDocket').and.callFake(function(_, _, _, _, _, cb) {
         cb(false);
@@ -236,7 +241,7 @@ describe('The ContentDelegate class', function() {
     });
   });
 
-  describe('handleSingleDocumentPage', function() {
+  describe('handleSingleDocumentPageCheck', function() {
     var form;
     beforeEach(function() {
       form = document.createElement('form');
@@ -251,14 +256,14 @@ describe('The ContentDelegate class', function() {
       it('has no effect when the URL is wrong', function() {
         var cd = new ContentDelegate(nonsenseUrl, null, null);
         spyOn(cd.recap, 'getAvailabilityForDocuments');
-        cd.handleSingleDocumentPage();
+        cd.handleSingleDocumentPageCheck();
         expect(cd.recap.getAvailabilityForDocuments).not.toHaveBeenCalled();
       });
 
       it('has no effect with a proper URL', function() {
         var cd = new ContentDelegate(singleDocUrl, 'canb', '531591');
         spyOn(cd.recap, 'getAvailabilityForDocuments');
-        cd.handleSingleDocumentPage();
+        cd.handleSingleDocumentPageCheck();
         expect(cd.recap.getAvailabilityForDocuments).not.toHaveBeenCalled();
       });
     });
@@ -279,14 +284,14 @@ describe('The ContentDelegate class', function() {
       it('has no effect when the URL is wrong', function() {
         var cd = new ContentDelegate(nonsenseUrl, null, null);
         spyOn(cd.recap, 'getAvailabilityForDocuments');
-        cd.handleSingleDocumentPage();
+        cd.handleSingleDocumentPageCheck();
         expect(cd.recap.getAvailabilityForDocuments).not.toHaveBeenCalled();
       });
 
       it('checks availability for the page when the URL is right', function() {
         var cd = new ContentDelegate(singleDocUrl, 'canb', '531591');
         spyOn(cd.recap, 'getAvailabilityForDocuments');
-        cd.handleSingleDocumentPage();
+        cd.handleSingleDocumentPageCheck();
         expect(cd.recap.getAvailabilityForDocuments).toHaveBeenCalled();
       });
 
@@ -300,7 +305,7 @@ describe('The ContentDelegate class', function() {
         };
         spyOn(cd.recap, 'getAvailabilityForDocuments').and.callFake(fake);
 
-        cd.handleSingleDocumentPage();
+        cd.handleSingleDocumentPageCheck();
 
         expect(cd.recap.getAvailabilityForDocuments).toHaveBeenCalled();
         var banner = document.querySelector('.recap-banner');
