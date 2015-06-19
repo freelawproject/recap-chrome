@@ -1,9 +1,11 @@
 describe('The ContentDelegate class', function() {
   var docketQueryUrl = 'https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?531591';
+  var docketQueryPath = '/cgi-bin/DktRpt.pl?531591';
   var docketDisplayUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?' +
                           '101092135737069-L_1_0-1');
   var docketDisplayPath = '/cgi-bin/DktRpt.pl?101092135737069-L_1_0-1';
   var singleDocUrl = 'https://ecf.canb.uscourts.gov/doc1/034031424909';
+  var singleDocPath = '/doc1/034031424909';
   var nonsenseUrl = 'http://something.uscourts.gov/foobar/baz';
 
   function setupChromeSpy() {
@@ -44,25 +46,27 @@ describe('The ContentDelegate class', function() {
   });
 
   describe('handleDocketQueryUrl', function() {
+    var form;
     beforeEach(function() {
-      var form = document.createElement('form');
+      form = document.createElement('form');
+      form.id = 'handledocketqueryurl';
       document.body.appendChild(form);
     });
 
     afterEach(function() {
-      var form = document.getElementsByTagName('FORM')[0];
       form.parentNode.removeChild(form);
     });
 
     it('has no effect when not on a docket query url', function() {
-      var cd = new ContentDelegate(nonsenseUrl, null, null);
+      var cd = new ContentDelegate(nonsenseUrl, null, null, null);
       spyOn(cd.recap, 'getAvailabilityForDocket');
       cd.handleDocketQueryUrl();
       expect(cd.recap.getAvailabilityForDocket).not.toHaveBeenCalled();
     });
 
     it('inserts the RECAP banner on an appropriate page', function() {
-      var cd = new ContentDelegate(docketQueryUrl, 'canb', '531591');
+      var cd = new ContentDelegate(
+        docketQueryUrl, docketQueryPath, 'canb', '531591');
       cd.handleDocketQueryUrl();
       jasmine.Ajax.requests.mostRecent().respondWith({
         'status': 200,
@@ -81,7 +85,8 @@ describe('The ContentDelegate class', function() {
     });
 
     it('has no effect when on a docket query that has no RECAP', function() {
-      var cd = new ContentDelegate(docketQueryUrl, 'canb', '531591');
+      var cd = new ContentDelegate(
+        docketQueryUrl, docketQueryPath, 'canb', '531591');
       cd.handleDocketQueryUrl();
       jasmine.Ajax.requests.mostRecent().respondWith({
         'status': 200,
@@ -160,6 +165,7 @@ describe('The ContentDelegate class', function() {
     var form;
     beforeEach(function() {
       form = document.createElement('form');
+      form.id='handleattachmentmenupage';
       document.body.appendChild(form);
     });
 
@@ -176,7 +182,8 @@ describe('The ContentDelegate class', function() {
       });
 
       it('has no effect with a proper URL', function() {
-        var cd = new ContentDelegate(singleDocUrl, 'canb', '531591');
+        var cd = new ContentDelegate(
+          singleDocUrl, singleDocPath, 'canb', '531591');
         spyOn(cd.recap, 'uploadAttachmentMenu');
         cd.handleAttachmentMenuPage();
         expect(cd.recap.uploadAttachmentMenu).not.toHaveBeenCalled();
@@ -203,14 +210,16 @@ describe('The ContentDelegate class', function() {
       });
 
       it('uploads the page when the URL is right', function() {
-        var cd = new ContentDelegate(singleDocUrl, 'canb', '531591');
+        var cd = new ContentDelegate(
+          singleDocUrl, singleDocPath, 'canb', '531591');
         spyOn(cd.recap, 'uploadAttachmentMenu');
         cd.handleAttachmentMenuPage();
         expect(cd.recap.uploadAttachmentMenu).toHaveBeenCalled();
       });
 
       it('calls the upload method and responds to positive result', function() {
-        var cd = new ContentDelegate(singleDocUrl, 'canb', '531591');
+        var cd = new ContentDelegate(
+          singleDocUrl, singleDocPath, 'canb', '531591');
         uploadFake = function(_, _, _, _, callback) {
           callback(true);
         };
@@ -225,7 +234,8 @@ describe('The ContentDelegate class', function() {
       });
 
       it('calls the upload method and responds to negative result', function() {
-        var cd = new ContentDelegate(singleDocUrl, 'canb', '531591');
+        var cd = new ContentDelegate(
+          singleDocUrl, singleDocPath, 'canb', '531591');
         uploadFake = function(_, _, _, _, callback) {
           callback(false);
         };
@@ -245,6 +255,7 @@ describe('The ContentDelegate class', function() {
     var form;
     beforeEach(function() {
       form = document.createElement('form');
+      form.id = 'handlesingledocumentpagecheck';
       document.body.appendChild(form);
     });
 
@@ -254,14 +265,15 @@ describe('The ContentDelegate class', function() {
 
     describe('when there is NO appropriate form', function() {
       it('has no effect when the URL is wrong', function() {
-        var cd = new ContentDelegate(nonsenseUrl, null, null);
+        var cd = new ContentDelegate(nonsenseUrl, null, null, null);
         spyOn(cd.recap, 'getAvailabilityForDocuments');
         cd.handleSingleDocumentPageCheck();
         expect(cd.recap.getAvailabilityForDocuments).not.toHaveBeenCalled();
       });
 
       it('has no effect with a proper URL', function() {
-        var cd = new ContentDelegate(singleDocUrl, 'canb', '531591');
+        var cd = new ContentDelegate(
+          singleDocUrl, singleDocPath, 'canb', '531591');
         spyOn(cd.recap, 'getAvailabilityForDocuments');
         cd.handleSingleDocumentPageCheck();
         expect(cd.recap.getAvailabilityForDocuments).not.toHaveBeenCalled();
@@ -289,7 +301,8 @@ describe('The ContentDelegate class', function() {
       });
 
       it('checks availability for the page when the URL is right', function() {
-        var cd = new ContentDelegate(singleDocUrl, 'canb', '531591');
+        var cd = new ContentDelegate(
+          singleDocUrl, singleDocPath, 'canb', '531591');
         spyOn(cd.recap, 'getAvailabilityForDocuments');
         cd.handleSingleDocumentPageCheck();
         expect(cd.recap.getAvailabilityForDocuments).toHaveBeenCalled();
@@ -297,7 +310,8 @@ describe('The ContentDelegate class', function() {
 
       it('responds to a positive result', function() {
         var fakeDownloadUrl = 'http://download.fake/531591';
-        var cd = new ContentDelegate(singleDocUrl, 'canb', '531591');
+        var cd = new ContentDelegate(
+          singleDocUrl, singleDocPath, 'canb', '531591');
         var fake = function(_, callback) {
           var response = {};
           response[singleDocUrl] = {filename: fakeDownloadUrl};
@@ -314,6 +328,102 @@ describe('The ContentDelegate class', function() {
         expect(link).not.toBeNull();
         expect(link.href).toBe(fakeDownloadUrl);
       });
+    });
+  });
+
+  describe('handleSingleDocumentPageView', function() {
+    var form;
+    beforeEach(function() {
+      form = document.createElement('form');
+      form.id = 'handlesingledocumentpageview';
+      document.body.appendChild(form);
+    });
+
+    afterEach(function() {
+      form.parentNode.removeChild(form);
+    });
+
+    describe('when there is NO appropriate form', function() {
+      it('has no effect when the URL is wrong', function() {
+        var cd = new ContentDelegate(nonsenseUrl, null, null, null);
+        spyOn(document, 'createElement');
+        cd.handleSingleDocumentPageView();
+        expect(document.createElement).not.toHaveBeenCalled();
+      });
+
+      it('has no effect with a proper URL', function() {
+        var cd = new ContentDelegate(
+          singleDocUrl, singleDocPath, 'canb', '531591');
+        spyOn(cd.recap, 'getAvailabilityForDocuments');
+        cd.handleSingleDocumentPageView();
+        expect(cd.recap.getAvailabilityForDocuments).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('when there IS an appropriate form', function() {
+      var input;
+      beforeEach(function() {
+        input = document.createElement('input');
+        input.value = 'View Document';
+        form.appendChild(input);
+      });
+
+      afterEach(function() {
+        form.removeChild(input);
+        form.innerHTML = '';
+      });
+
+      it('creates a non-empty script element', function() {
+        var cd = new ContentDelegate(
+          singleDocUrl, singleDocPath, 'canb', '531591');
+        var scriptSpy = {};
+        spyOn(document, 'createElement').and.returnValue(scriptSpy);
+        spyOn(document.body, 'appendChild');
+        cd.handleSingleDocumentPageView();
+
+        expect(document.createElement).toHaveBeenCalledWith('script');
+        expect(scriptSpy.innerText).toEqual(jasmine.any(String));
+        expect(document.body.appendChild).toHaveBeenCalledWith(scriptSpy);
+      });
+
+      it('adds an event listener for the message in the script', function() {
+        var cd = new ContentDelegate(
+          singleDocUrl, singleDocPath, 'canb', '531591');
+        spyOn(window, 'addEventListener');
+        cd.handleSingleDocumentPageView();
+
+        expect(window.addEventListener).toHaveBeenCalledWith(
+          'message', jasmine.any(Function), false);
+      });
+    });
+  });
+
+  describe('onDocumentViewSubmit', function() {
+    var form;
+    var form_id = '1234';
+    var event = {data: {id: form_id}};
+    beforeEach(function() {
+      form = document.createElement('form');
+      form.id = form_id;
+      document.body.appendChild(form);
+    });
+
+    afterEach(function() {
+      form.parentNode.removeChild(form);
+    });
+
+    it('sets the onsubmit attribute of the page form', function() {
+      var expected_on_submit = 'expectedOnSubmit();';
+      form.setAttribute('onsubmit', expected_on_submit);
+      spyOn(form, 'setAttribute');
+      var cd = new ContentDelegate(
+        singleDocUrl, singleDocPath, 'canb', '531591');
+      cd.onDocumentViewSubmit(event);
+
+      expect(form.setAttribute).toHaveBeenCalledWith(
+        'onsubmit', 'history.forward(); return !1;')
+      expect(form.setAttribute).toHaveBeenCalledWith(
+        'onsubmit', expected_on_submit)
     });
   });
 });

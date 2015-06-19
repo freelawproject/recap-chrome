@@ -120,6 +120,44 @@ ContentDelegate.prototype.handleSingleDocumentPageCheck = function() {
 };
 
 
+ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
+  // Save a copy of the page source, altered so that the "View Document"
+  // button goes forward in the history instead of resubmitting the form.
+  var originalSubmit = document.forms[0].getAttribute('onsubmit');
+  document.forms[0].setAttribute('onsubmit', 'history.forward(); return !1;');
+  var previousPageHtml = document.documentElement.innerHTML;
+  document.forms[0].setAttribute('onsubmit', originalSubmit);
+
+  // Now do the form request to get to the view page.  Some PACER sites will
+  // return an HTML page containing an <iframe> that loads the PDF document;
+  // others just return the PDF document.  As we don't know whether we'll get
+  // HTML (text) or PDF (binary), we ask for an ArrayBuffer and convert later.
+  $('body').css('cursor', 'wait');
+  var form = document.getElementById(event.data.id);
+  var data = new FormData(form);
+  httpRequest(form.action, data, 'arraybuffer', function (type, ab) {
+    var blob = new Blob([new Uint8Array(ab)], {type: type});
+    // If we got a PDF, we wrap it in a simple HTML page.  This lets us treat
+    // both cases uniformly: either way we have an HTML page with an <iframe>
+    // in it, which is handled by showPdfPage.
+    if (type === 'application/pdf') {
+      // canb and ca9 return PDFs and trigger this code path.
+      var html = '<style>body { margin: 0; } iframe { border: none; }' +
+                  '</style><iframe src="' + URL.createObjectURL(blob) +
+                  '" width="100%" height="100%"></iframe>';
+      this.showPdfPage(html, previousPageHtml);
+    } else {
+      // dcd (and presumably others) trigger this code path.
+      var reader = new FileReader();
+      reader.onload = function() {
+        this.showPdfPage(reader.result, previousPageHtml);
+      }.bind(this);
+      reader.readAsText(blob);  // convert blob to HTML text
+    }
+  }.bind(this));
+}
+
+
 // Given the HTML for a page with an <iframe> in it, downloads the PDF document
 // in the iframe, displays it in the browser, and also uploads the PDF document
 // to RECAP.
@@ -187,7 +225,7 @@ ContentDelegate.prototype.showPdfPage = function(html, previousPageHtml) {
 // view page.  The "View Document" button calls the goDLS() function, which
 // creates a <form> element and calls submit() on it, so we hook into submit().
 ContentDelegate.prototype.handleSingleDocumentPageView = function() {
-  if (!PACER.isSingleDocumentPage(url, document)) {
+  if (!PACER.isSingleDocumentPage(this.url, document)) {
     return;
   }
 
@@ -204,37 +242,6 @@ ContentDelegate.prototype.handleSingleDocumentPageView = function() {
 
   // When we receive the message from the above submit method, submit the form
   // via XHR so we can get the document before the browser does.
-  var self = this;
-  window.addEventListener('message', function (event) {
-    // Save a copy of the page source, altered so that the "View Document"
-    // button goes forward in the history instead of resubmitting the form.
-    var originalSubmit = document.forms[0].getAttribute('onsubmit');
-    document.forms[0].setAttribute('onsubmit', 'history.forward(); return !1;');
-    var previousPageHtml = document.documentElement.innerHTML;
-    document.forms[0].setAttribute('onsubmit', originalSubmit);
-
-    // Now do the form request to get to the view page.  Some PACER sites will
-    // return an HTML page containing an <iframe> that loads the PDF document;
-    // others just return the PDF document.  As we don't know whether we'll get
-    // HTML (text) or PDF (binary), we ask for an ArrayBuffer and convert later.
-    $('body').css('cursor', 'wait');
-    var form = document.getElementById(event.data.id);
-    var data = new FormData(form);
-    httpRequest(form.action, data, 'arraybuffer', function (type, ab) {
-      var blob = new Blob([new Uint8Array(ab)], {type: type});
-      // If we got a PDF, we wrap it in a simple HTML page.  This lets us treat
-      // both cases uniformly: either way we have an HTML page with an <iframe>
-      // in it, which is handled by showPdfPage (defined below).
-      if (type === 'application/pdf') {
-        var html = '<style>body { margin: 0; } iframe { border: none; }' +
-                    '</style><iframe src="' + URL.createObjectURL(blob) +
-                    '" width="100%" height="100%"></iframe>';
-        self.showPdfPage(html, previousPageHtml);
-      } else {
-        var reader = new FileReader();
-        reader.onload = function() { showPdfPage(reader.result); };
-        reader.readAsText(blob);  // convert blob to HTML text
-      }
-    });
-  }, false);
+  window.addEventListener(
+    'message', this.onDocumentViewSubmit.bind(this), false);
 };
