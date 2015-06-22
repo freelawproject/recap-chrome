@@ -7,11 +7,20 @@ describe('The ContentDelegate class', function() {
   var singleDocUrl = 'https://ecf.canb.uscourts.gov/doc1/034031424909';
   var singleDocPath = '/doc1/034031424909';
   var nonsenseUrl = 'http://something.uscourts.gov/foobar/baz';
+  // Smallest possible PDF according to:
+  // http://stackoverflow.com/questions/17279712/what-is-the-smallest-possible-valid-pdf
+  var pdf_data = ('%PDF-1.\ntrailer<</Root<</Pages<</Kids' +
+                  '[<</MediaBox[0 0 3 3]>>]>>>>>>\n');
 
   function setupChromeSpy() {
     window.chrome = {
       extension: {
         getURL: jasmine.createSpy()
+      },
+      storage: {
+        sync: {
+          get: jasmine.createSpy()
+        }
       }
     }
   }
@@ -49,7 +58,6 @@ describe('The ContentDelegate class', function() {
     var form;
     beforeEach(function() {
       form = document.createElement('form');
-      form.id = 'handledocketqueryurl';
       document.body.appendChild(form);
     });
 
@@ -165,7 +173,6 @@ describe('The ContentDelegate class', function() {
     var form;
     beforeEach(function() {
       form = document.createElement('form');
-      form.id='handleattachmentmenupage';
       document.body.appendChild(form);
     });
 
@@ -255,7 +262,6 @@ describe('The ContentDelegate class', function() {
     var form;
     beforeEach(function() {
       form = document.createElement('form');
-      form.id = 'handlesingledocumentpagecheck';
       document.body.appendChild(form);
     });
 
@@ -335,7 +341,6 @@ describe('The ContentDelegate class', function() {
     var form;
     beforeEach(function() {
       form = document.createElement('form');
-      form.id = 'handlesingledocumentpageview';
       document.body.appendChild(form);
     });
 
@@ -402,6 +407,7 @@ describe('The ContentDelegate class', function() {
     var form;
     var form_id = '1234';
     var event = {data: {id: form_id}};
+
     beforeEach(function() {
       form = document.createElement('form');
       form.id = form_id;
@@ -424,6 +430,115 @@ describe('The ContentDelegate class', function() {
         'onsubmit', 'history.forward(); return !1;')
       expect(form.setAttribute).toHaveBeenCalledWith(
         'onsubmit', expected_on_submit)
+    });
+
+
+    it('calls showPdfPage when the response is a PDF', function() {
+      var cd = new ContentDelegate(
+        singleDocUrl, singleDocPath, 'canb', '531591');
+      spyOn(cd, 'showPdfPage');
+      cd.onDocumentViewSubmit(event);
+
+      jasmine.Ajax.requests.mostRecent().respondWith({
+        'status': 200,
+        'contentType': 'application/pdf',
+        'responseText': pdf_data
+      });
+      expect(cd.showPdfPage).toHaveBeenCalled();
+    });
+
+    it('calls showPdfPage when the response is HTML', function() {
+      var cd = new ContentDelegate(
+        singleDocUrl, singleDocPath, 'canb', '531591');
+      var fakeOnLoad = jasmine.createSpy();
+      var fakeFileReader = {
+          readAsText: function() {
+            this.result = '<html></html>';
+            this.onload();
+          }
+      };
+      spyOn(window, 'FileReader').and.callFake(function() {
+        return fakeFileReader;
+      });
+      spyOn(cd, 'showPdfPage');
+      cd.onDocumentViewSubmit(event);
+
+      jasmine.Ajax.requests.mostRecent().respondWith({
+        'status': 200,
+        'contentType': 'text/html',
+        'responseText': '<html></html>'
+      });
+      expect(cd.showPdfPage).toHaveBeenCalled();
+    });
+  });
+
+  describe('showPdfPage', function() {
+    var pre = ('<head><style>body { margin: 0; } iframe { border: none; }' +
+               '</style></head><body>');
+    var iframe = '<iframe src="data:pdf"';
+    var post = ' width="100%" height="100%"></iframe></body>';
+    var html = pre + iframe + post;
+    var cd = new ContentDelegate(
+      singleDocUrl, singleDocPath, 'canb', '531591');
+    var documentElement;
+
+    beforeEach(function() {
+      documentElement = jasmine.createSpy();
+      cd.showPdfPage(documentElement, html, '');
+    });
+
+    it('correctly extracts the data before and after the iframe', function() {
+      var expected_iframe = '<iframe src="about:blank"';
+      expect(documentElement.innerHTML).toBe(pre + expected_iframe + post);
+    });
+
+    describe('when it downloads the PDF in the iframe', function() {
+      var docid = '127015406472';
+      var casenum = '437098';
+      var docnum = '4';
+      var subdocnum = '0';
+
+      beforeEach(function() {
+        var fakeGet = function(_, callback) {
+          callback(docid, casenum, docnum, subdocnum);
+        };
+        var fakeUpload = function(_, _, _, _, _, callback) {
+          callback(true);
+        }
+        spyOn(cd.recap, 'getDocumentMetadata').and.callFake(fakeGet);
+        spyOn(cd.recap, 'uploadDocument').and.callFake(fakeUpload);
+        spyOn(cd.notifier, 'showUpload');
+        spyOn(URL, 'createObjectURL').and.returnValue('data:blob');
+        spyOn(history, 'pushState');
+        jasmine.Ajax.requests.mostRecent().respondWith({
+          'status': 200,
+          'contentType': 'application/pdf',
+          'responseText': pdf_data
+        });
+      });
+
+      it('makes the back button redisplay the previous page', function() {
+        expect(window.onpopstate).toEqual(jasmine.any(Function));
+        window.onpopstate({state: {content: 'previous'}})
+        expect(documentElement.innerHTML).toBe('previous');
+      });
+
+      it('displays the page with the downloaded file in an iframe', function() {
+        expect(documentElement.innerHTML).toMatch(
+            /<iframe.*?src="data:blob".*?><\/iframe>/);
+      });
+
+      it('puts the generated HTML in the page history', function() {
+        expect(history.pushState).toHaveBeenCalled();
+      });
+
+      it('uploads the PDF to RECAP', function() {
+        expect(cd.recap.uploadDocument).toHaveBeenCalled();
+      });
+
+      it('calls the notifier once the upload finishes', function() {
+        expect(cd.notifier.showUpload).toHaveBeenCalled();
+      });
     });
   });
 });

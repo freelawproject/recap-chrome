@@ -145,12 +145,13 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
       var html = '<style>body { margin: 0; } iframe { border: none; }' +
                   '</style><iframe src="' + URL.createObjectURL(blob) +
                   '" width="100%" height="100%"></iframe>';
-      this.showPdfPage(html, previousPageHtml);
+      this.showPdfPage(document.documentElement, html, previousPageHtml);
     } else {
       // dcd (and presumably others) trigger this code path.
       var reader = new FileReader();
       reader.onload = function() {
-        this.showPdfPage(reader.result, previousPageHtml);
+        this.showPdfPage(
+          document.documentElement, reader.result, previousPageHtml);
       }.bind(this);
       reader.readAsText(blob);  // convert blob to HTML text
     }
@@ -161,16 +162,19 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
 // Given the HTML for a page with an <iframe> in it, downloads the PDF document
 // in the iframe, displays it in the browser, and also uploads the PDF document
 // to RECAP.
-ContentDelegate.prototype.showPdfPage = function(html, previousPageHtml) {
+// The documentElement is provided via dependency injection so that it can be
+// properly mocked in tests.
+ContentDelegate.prototype.showPdfPage = function(
+  documentElement, html, previousPageHtml) {
   // Find the <iframe> URL in the HTML string.
   var match = html.match(/([^]*?)<iframe[^>]*src="(.*?)"([^]*)/);
   if (!match) {
-    document.documentElement.innerHTML = html;
+    documentElement.innerHTML = html;
     return;
   }
 
   // Show the page with a blank <iframe> while waiting for the download.
-  document.documentElement.innerHTML =
+  documentElement.innerHTML =
     match[1] + '<iframe src="about:blank"' + match[3];
 
   // Download the file from the <iframe> URL.
@@ -178,7 +182,7 @@ ContentDelegate.prototype.showPdfPage = function(html, previousPageHtml) {
     // Make the Back button redisplay the previous page.
     window.onpopstate = function(event) {
       if (event.state.content) {
-        document.documentElement.innerHTML = event.state.content;
+        documentElement.innerHTML = event.state.content;
       }
     };
     history.replaceState({content: previousPageHtml}, '');
@@ -188,9 +192,9 @@ ContentDelegate.prototype.showPdfPage = function(html, previousPageHtml) {
     var blobUrl = URL.createObjectURL(blob);
     this.recap.getDocumentMetadata(
       this.docid, function (caseid, officialcasenum, docnum, subdocnum) {
-      var filename1 = 'gov.uscourts.' + court + '.' + caseid +
+      var filename1 = 'gov.uscourts.' + this.court + '.' + caseid +
         '.' + docnum + '.' + (subdocnum || '0') + '.pdf';
-      var filename2 = PACER.COURT_ABBREVS[court] + '_' +
+      var filename2 = PACER.COURT_ABBREVS[this.court] + '_' +
         (officialcasenum || caseid) +
         '_' + docnum + '_' + (subdocnum || '0') + '.pdf';
       var downloadLink = '<div id="recap-download" class="initial">' +
@@ -202,7 +206,7 @@ ContentDelegate.prototype.showPdfPage = function(html, previousPageHtml) {
         'setTimeout(function() {' +
         "  document.getElementById('recap-download').className = '';" +
         '}, 7500)" src="' + blobUrl + '"' + match[3];
-      document.documentElement.innerHTML = html;
+      documentElement.innerHTML = html;
       history.pushState({content: html}, '');
     });
 
@@ -215,9 +219,10 @@ ContentDelegate.prototype.showPdfPage = function(html, previousPageHtml) {
         this.notifier.showUpload(
           'PDF uploaded to the public archive.', function () {});
       }
-    }
-    recap.uploadDocument(this.court, this.path, name, type, bytes, onUploadOk);
-  });
+    }.bind(this);
+    this.recap.uploadDocument(
+      this.court, this.path, name, type, bytes, onUploadOk);
+  }.bind(this));
 }
 
 
