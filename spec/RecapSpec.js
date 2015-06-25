@@ -18,13 +18,26 @@ describe('The Recap export module', function() {
   var type = 'text/html';
   var html = '<html></html>';
 
+  var fakeFormData = {
+    append: function(key, value) {
+      this[key] = value;
+    }
+  };
+  var FormDataFake = function() {
+    return fakeFormData;
+  }
 
   beforeEach(function() {
     jasmine.Ajax.install();
     jasmine.Ajax.addCustomParamParser({
-      // If the params are a FormData, simply echo them back.
+      // This custom parser simply echos back the params, used for fake
+      // FormData objects.
       test: function(xhr) {
-        return xhr.params instanceof FormData;
+        // The params are a plain object with a court property.
+        if (xhr.params instanceof Object) {
+          return ('court' in xhr.params)
+        }
+        return false;
       },
       parse: function(formData) {
         return formData;
@@ -136,20 +149,21 @@ describe('The Recap export module', function() {
         'https://recapextension.org/recap/adddocmeta/');
     });
 
-    // Commented out until we figure out how to compare FormData.
-    xit('sends the correct FormData', function() {
-      var formData = new FormData();
-      formData.append('court', court);
-      formData.append('docid', docid);
-      formData.append('casenum', casenum);
-      formData.append('de_seq_num', de_seq_num);
-      formData.append('dm_id', dm_id);
-      formData.append('docnum', docnum);
-      formData.append('add_case_info', 'true');
+    it('sends the correct FormData', function() {
+      spyOn(window, 'FormData').and.callFake(FormDataFake);
+
+      var expected = new FormDataFake();
+      expected.append('court', court);
+      expected.append('docid', docid);
+      expected.append('casenum', casenum);
+      expected.append('de_seq_num', de_seq_num);
+      expected.append('dm_id', dm_id);
+      expected.append('docnum', docnum);
+      expected.append('add_case_info', 'true');
 
       recap.uploadMetadata(court, docid, casenum, de_seq_num, dm_id, docnum);
       var actualData = jasmine.Ajax.requests.mostRecent().data();
-      expect(actualData).toEqual(formData);
+      expect(actualData).toEqual(expected);
     });
 
     it('updates the local metadata', function() {
@@ -175,16 +189,17 @@ describe('The Recap export module', function() {
         'https://recapextension.org/recap/upload/');
     });
 
-    // Commented out until we figure out how to compare FormData.
-    xit('sends the correct FormData', function() {
-      var formData = new FormData();
-      formData.append('court', court);
-      formData.append('mimetype', type);
-      formData.append('data', new Blob([html], {type: type}), filename);
+    it('sends the correct FormData', function() {
+      spyOn(window, 'FormData').and.callFake(FormDataFake);
+
+      expected = new FormDataFake();
+      expected.append('court', court);
+      expected.append('mimetype', type);
+      expected.append('data', new Blob([html], {type: type}), filename);
 
       recap.uploadDocket(court, casenum, filename, type, html);
       var actualData = jasmine.Ajax.requests.mostRecent().data();
-      expect(actualData).toEqual(formData);
+      expect(actualData).toEqual(expected);
     });
 
     it('updates the local metadata', function() {
@@ -209,16 +224,17 @@ describe('The Recap export module', function() {
         'https://recapextension.org/recap/upload/');
     });
 
-    // Commented out until we figure out how to compare FormData.
-    xit('sends the correct FormData', function() {
-      var formData = new FormData();
-      formData.append('court', court);
-      formData.append('mimetype', type);
-      formData.append('data', new Blob([html], {type: type}), filename);
+    it('sends the correct FormData', function() {
+      spyOn(window, 'FormData').and.callFake(FormDataFake);
+
+      var expected = new FormDataFake();
+      expected.append('court', court);
+      expected.append('mimetype', type);
+      expected.append('data', new Blob([html], {type: type}), filename);
 
       recap.uploadAttachmentMenu(court, filename, type, html);
       var actualData = jasmine.Ajax.requests.mostRecent().data();
-      expect(actualData).toEqual(formData);
+      expect(actualData).toEqual(expected);
     });
 
     it('updates the local metadata', function() {
@@ -246,6 +262,18 @@ describe('The Recap export module', function() {
         'https://recapextension.org/recap/upload/');
     });
 
-    // TODO: test of FormData once we figure out how to do that.
+    it('sends the correct FormData', function() {
+      spyOn(window, 'FormData').and.callFake(FormDataFake);
+
+      var expected = new FormDataFake();
+      expected.append('court', court);
+      expected.append('url', path);
+      expected.append('mimetype', type);
+      expected.append('data', new Blob([html], {type: type}), filename);
+
+      recap.uploadDocument(court, path, filename, type, bytes);
+      var actualData = jasmine.Ajax.requests.mostRecent().data();
+      expect(actualData).toEqual(expected);
+    });
   });
 });
