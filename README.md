@@ -23,6 +23,9 @@ Tips
 1. While it's true that every court has their own customized version of PACER,
    there is [a PACER training site that does not charge fees][trainwreck]. You
    can use this if you wish to work on the system without accruing charges.
+1. While you're testing things across versions of PACER, you can use a handy
+   website ([json][csv-json]/[html][csv-html]) created by [@audiodude][ad] to 
+   find suitable versions of PACER.
 
 
 Tests
@@ -90,3 +93,6 @@ RECAP for Chrome.  If not, see: http://www.gnu.org/licenses/
 [testingmd]: https://github.com/freelawproject/recap-chrome/blob/master/TESTING.md
 [market]: https://chrome.google.com/webstore/developer/edit/oiillickanjlaeghobeeknbddaonmjnc?authuser=3#
 [ghtags]: https://github.com/freelawproject/recap-chrome/releases/new
+[csv-json]: https://court-version-scraper.herokuapp.com/courts.json
+[csv-html]: https://court-version-scraper.herokuapp.com/
+[ad]: https://github.com/audiodude
