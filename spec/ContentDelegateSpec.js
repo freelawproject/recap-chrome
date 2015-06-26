@@ -12,6 +12,14 @@ describe('The ContentDelegate class', function() {
   var pdf_data = ('%PDF-1.\ntrailer<</Root<</Pages<</Kids' +
                   '[<</MediaBox[0 0 3 3]>>]>>>>>>\n');
 
+  var nonsenseUrlContentDelegate = new ContentDelegate(nonsenseUrl);
+  var docketQueryContentDelegate = new ContentDelegate(
+    docketQueryUrl, docketQueryPath, 'canb', '531591');
+  var docketDisplayContentDelegate =  new ContentDelegate(
+    docketDisplayUrl, docketDisplayPath, 'canb', '531591');
+  var singleDocContentDelegate = new ContentDelegate(
+    singleDocUrl, singleDocPath, 'canb', '531591');
+
   function setupChromeSpy() {
     window.chrome = {
       extension: {
@@ -66,15 +74,14 @@ describe('The ContentDelegate class', function() {
     });
 
     it('has no effect when not on a docket query url', function() {
-      var cd = new ContentDelegate(nonsenseUrl, null, null, null);
+      var cd = nonsenseUrlContentDelegate;
       spyOn(cd.recap, 'getAvailabilityForDocket');
       cd.handleDocketQueryUrl();
       expect(cd.recap.getAvailabilityForDocket).not.toHaveBeenCalled();
     });
 
     it('inserts the RECAP banner on an appropriate page', function() {
-      var cd = new ContentDelegate(
-        docketQueryUrl, docketQueryPath, 'canb', '531591');
+      var cd = docketQueryContentDelegate;
       cd.handleDocketQueryUrl();
       jasmine.Ajax.requests.mostRecent().respondWith({
         'status': 200,
@@ -93,8 +100,7 @@ describe('The ContentDelegate class', function() {
     });
 
     it('has no effect when on a docket query that has no RECAP', function() {
-      var cd = new ContentDelegate(
-        docketQueryUrl, docketQueryPath, 'canb', '531591');
+      var cd = docketQueryContentDelegate;
       cd.handleDocketQueryUrl();
       jasmine.Ajax.requests.mostRecent().respondWith({
         'status': 200,
@@ -108,14 +114,14 @@ describe('The ContentDelegate class', function() {
 
   describe('handleDocketDisplayPage', function() {
     it('has no effect when not on a docket display url', function() {
-      var cd = new ContentDelegate(nonsenseUrl, null, null);
+      var cd = nonsenseUrlContentDelegate;
       spyOn(cd.recap, 'uploadDocket');
       cd.handleDocketDisplayPage();
       expect(cd.recap.uploadDocket).not.toHaveBeenCalled();
     });
 
     it('has no effect when there is no casenum', function() {
-      var cd = new ContentDelegate(docketDisplayUrl, null, null);
+      var cd = new ContentDelegate(docketDisplayUrl);
       spyOn(cd.recap, 'uploadDocket');
       cd.handleDocketDisplayPage();
       expect(cd.recap.uploadDocket).not.toHaveBeenCalled();
@@ -131,7 +137,7 @@ describe('The ContentDelegate class', function() {
       });
 
       it('has no effect', function() {
-        var cd = new ContentDelegate(docketDisplayUrl, 'canb', '531591');
+        var cd = docketDisplayContentDelegate;
         spyOn(cd.recap, 'uploadDocket');
         cd.handleDocketDisplayPage();
         expect(cd.recap.uploadDocket).not.toHaveBeenCalled();
@@ -139,8 +145,7 @@ describe('The ContentDelegate class', function() {
     });
 
     it('calls uploadDocket and responds to a positive result', function() {
-      var cd = new ContentDelegate(docketDisplayUrl, docketDisplayPath,
-                                   'canb', '531591');
+      var cd = docketDisplayContentDelegate;
       spyOn(cd.notifier, 'showUpload');
       spyOn(cd.recap, 'uploadDocket').and.callFake(function(_, _, _, _, _, cb) {
         cb(true);
@@ -154,8 +159,7 @@ describe('The ContentDelegate class', function() {
     });
 
     it('calls uploadDocket and responds to a negative result', function() {
-      var cd = new ContentDelegate(docketDisplayUrl, docketDisplayPath,
-                                   'canb', '531591');
+      var cd = docketDisplayContentDelegate;
       spyOn(cd.notifier, 'showUpload');
       spyOn(cd.recap, 'uploadDocket').and.callFake(function(_, _, _, _, _, cb) {
         cb(false);
@@ -182,15 +186,14 @@ describe('The ContentDelegate class', function() {
 
     describe('when there is NO appropriate form', function() {
       it('has no effect when the URL is wrong', function() {
-        var cd = new ContentDelegate(nonsenseUrl, null, null);
+        var cd = nonsenseUrlContentDelegate;
         spyOn(cd.recap, 'uploadAttachmentMenu');
         cd.handleAttachmentMenuPage();
         expect(cd.recap.uploadAttachmentMenu).not.toHaveBeenCalled();
       });
 
       it('has no effect with a proper URL', function() {
-        var cd = new ContentDelegate(
-          singleDocUrl, singleDocPath, 'canb', '531591');
+        cd = singleDocContentDelegate;
         spyOn(cd.recap, 'uploadAttachmentMenu');
         cd.handleAttachmentMenuPage();
         expect(cd.recap.uploadAttachmentMenu).not.toHaveBeenCalled();
@@ -210,23 +213,21 @@ describe('The ContentDelegate class', function() {
       });
 
       it('has no effect when the URL is wrong', function() {
-        var cd = new ContentDelegate(nonsenseUrl, null, null);
+        var cd = nonsenseUrlContentDelegate;
         spyOn(cd.recap, 'uploadAttachmentMenu');
         cd.handleAttachmentMenuPage();
         expect(cd.recap.uploadAttachmentMenu).not.toHaveBeenCalled();
       });
 
       it('uploads the page when the URL is right', function() {
-        var cd = new ContentDelegate(
-          singleDocUrl, singleDocPath, 'canb', '531591');
+        var cd = singleDocContentDelegate;
         spyOn(cd.recap, 'uploadAttachmentMenu');
         cd.handleAttachmentMenuPage();
         expect(cd.recap.uploadAttachmentMenu).toHaveBeenCalled();
       });
 
       it('calls the upload method and responds to positive result', function() {
-        var cd = new ContentDelegate(
-          singleDocUrl, singleDocPath, 'canb', '531591');
+        var cd = singleDocContentDelegate;
         uploadFake = function(_, _, _, _, callback) {
           callback(true);
         };
@@ -241,8 +242,7 @@ describe('The ContentDelegate class', function() {
       });
 
       it('calls the upload method and responds to negative result', function() {
-        var cd = new ContentDelegate(
-          singleDocUrl, singleDocPath, 'canb', '531591');
+        var cd = singleDocContentDelegate;
         uploadFake = function(_, _, _, _, callback) {
           callback(false);
         };
@@ -271,15 +271,14 @@ describe('The ContentDelegate class', function() {
 
     describe('when there is NO appropriate form', function() {
       it('has no effect when the URL is wrong', function() {
-        var cd = new ContentDelegate(nonsenseUrl, null, null, null);
+        var cd = nonsenseUrlContentDelegate;
         spyOn(cd.recap, 'getAvailabilityForDocuments');
         cd.handleSingleDocumentPageCheck();
         expect(cd.recap.getAvailabilityForDocuments).not.toHaveBeenCalled();
       });
 
       it('has no effect with a proper URL', function() {
-        var cd = new ContentDelegate(
-          singleDocUrl, singleDocPath, 'canb', '531591');
+        var cd = singleDocContentDelegate;
         spyOn(cd.recap, 'getAvailabilityForDocuments');
         cd.handleSingleDocumentPageCheck();
         expect(cd.recap.getAvailabilityForDocuments).not.toHaveBeenCalled();
@@ -300,15 +299,14 @@ describe('The ContentDelegate class', function() {
       });
 
       it('has no effect when the URL is wrong', function() {
-        var cd = new ContentDelegate(nonsenseUrl, null, null);
+        var cd = nonsenseUrlContentDelegate;
         spyOn(cd.recap, 'getAvailabilityForDocuments');
         cd.handleSingleDocumentPageCheck();
         expect(cd.recap.getAvailabilityForDocuments).not.toHaveBeenCalled();
       });
 
       it('checks availability for the page when the URL is right', function() {
-        var cd = new ContentDelegate(
-          singleDocUrl, singleDocPath, 'canb', '531591');
+        var cd = singleDocContentDelegate;
         spyOn(cd.recap, 'getAvailabilityForDocuments');
         cd.handleSingleDocumentPageCheck();
         expect(cd.recap.getAvailabilityForDocuments).toHaveBeenCalled();
@@ -316,8 +314,7 @@ describe('The ContentDelegate class', function() {
 
       it('responds to a positive result', function() {
         var fakeDownloadUrl = 'http://download.fake/531591';
-        var cd = new ContentDelegate(
-          singleDocUrl, singleDocPath, 'canb', '531591');
+        var cd = singleDocContentDelegate;
         var fake = function(_, callback) {
           var response = {};
           response[singleDocUrl] = {filename: fakeDownloadUrl};
@@ -350,15 +347,14 @@ describe('The ContentDelegate class', function() {
 
     describe('when there is NO appropriate form', function() {
       it('has no effect when the URL is wrong', function() {
-        var cd = new ContentDelegate(nonsenseUrl, null, null, null);
+        var cd = nonsenseUrlContentDelegate;
         spyOn(document, 'createElement');
         cd.handleSingleDocumentPageView();
         expect(document.createElement).not.toHaveBeenCalled();
       });
 
       it('has no effect with a proper URL', function() {
-        var cd = new ContentDelegate(
-          singleDocUrl, singleDocPath, 'canb', '531591');
+        var cd = singleDocContentDelegate;
         spyOn(cd.recap, 'getAvailabilityForDocuments');
         cd.handleSingleDocumentPageView();
         expect(cd.recap.getAvailabilityForDocuments).not.toHaveBeenCalled();
@@ -379,8 +375,7 @@ describe('The ContentDelegate class', function() {
       });
 
       it('creates a non-empty script element', function() {
-        var cd = new ContentDelegate(
-          singleDocUrl, singleDocPath, 'canb', '531591');
+        var cd = singleDocContentDelegate;
         var scriptSpy = {};
         spyOn(document, 'createElement').and.returnValue(scriptSpy);
         spyOn(document.body, 'appendChild');
@@ -392,8 +387,7 @@ describe('The ContentDelegate class', function() {
       });
 
       it('adds an event listener for the message in the script', function() {
-        var cd = new ContentDelegate(
-          singleDocUrl, singleDocPath, 'canb', '531591');
+        var cd = singleDocContentDelegate;
         spyOn(window, 'addEventListener');
         cd.handleSingleDocumentPageView();
 
@@ -422,8 +416,7 @@ describe('The ContentDelegate class', function() {
       var expected_on_submit = 'expectedOnSubmit();';
       form.setAttribute('onsubmit', expected_on_submit);
       spyOn(form, 'setAttribute');
-      var cd = new ContentDelegate(
-        singleDocUrl, singleDocPath, 'canb', '531591');
+      var cd = singleDocContentDelegate;
       cd.onDocumentViewSubmit(event);
 
       expect(form.setAttribute).toHaveBeenCalledWith(
@@ -434,8 +427,7 @@ describe('The ContentDelegate class', function() {
 
 
     it('calls showPdfPage when the response is a PDF', function() {
-      var cd = new ContentDelegate(
-        singleDocUrl, singleDocPath, 'canb', '531591');
+      var cd = singleDocContentDelegate;
       spyOn(cd, 'showPdfPage');
       cd.onDocumentViewSubmit(event);
 
@@ -448,8 +440,7 @@ describe('The ContentDelegate class', function() {
     });
 
     it('calls showPdfPage when the response is HTML', function() {
-      var cd = new ContentDelegate(
-        singleDocUrl, singleDocPath, 'canb', '531591');
+      var cd = singleDocContentDelegate;
       var fakeOnLoad = jasmine.createSpy();
       var fakeFileReader = {
           readAsText: function() {
@@ -478,8 +469,7 @@ describe('The ContentDelegate class', function() {
     var iframe = '<iframe src="data:pdf"';
     var post = ' width="100%" height="100%"></iframe></body>';
     var html = pre + iframe + post;
-    var cd = new ContentDelegate(
-      singleDocUrl, singleDocPath, 'canb', '531591');
+    var cd = singleDocContentDelegate;
     var documentElement;
 
     beforeEach(function() {
