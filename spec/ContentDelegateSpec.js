@@ -427,9 +427,9 @@ describe('The ContentDelegate class', function() {
       cd.onDocumentViewSubmit(event);
 
       expect(form.setAttribute).toHaveBeenCalledWith(
-        'onsubmit', 'history.forward(); return !1;')
+        'onsubmit', 'history.forward(); return false;');
       expect(form.setAttribute).toHaveBeenCalledWith(
-        'onsubmit', expected_on_submit)
+        'onsubmit', expected_on_submit);
     });
 
 
@@ -504,7 +504,7 @@ describe('The ContentDelegate class', function() {
         };
         var fakeUpload = function(_, _, _, _, _, callback) {
           callback(true);
-        }
+        };
         spyOn(cd.recap, 'getDocumentMetadata').and.callFake(fakeGet);
         spyOn(cd.recap, 'uploadDocument').and.callFake(fakeUpload);
         spyOn(cd.notifier, 'showUpload');
@@ -519,7 +519,7 @@ describe('The ContentDelegate class', function() {
 
       it('makes the back button redisplay the previous page', function() {
         expect(window.onpopstate).toEqual(jasmine.any(Function));
-        window.onpopstate({state: {content: 'previous'}})
+        window.onpopstate({state: {content: 'previous'}});
         expect(documentElement.innerHTML).toBe('previous');
       });
 

@@ -6,7 +6,7 @@ ContentDelegate = function(url, path, court, casenum, docid) {
   this.path = path;
   this.court = court;
   this.casenum = casenum;
-  this.docid = docid
+  this.docid = docid;
 
   this.notifier = importInstance(Notifier);
   this.recap = importInstance(Recap);
@@ -64,7 +64,7 @@ ContentDelegate.prototype.handleDocketDisplayPage = function() {
   var filename = PACER.getBaseNameFromUrl(this.url).replace('.pl', '.html');
   this.recap.uploadDocket(this.court, this.casenum, filename, 'text/html',
                           document.documentElement.innerHTML, callback);
-}
+};
 
 // If this is a document's menu of attachments (subdocuments), upload it to
 // RECAP.
@@ -124,7 +124,7 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
   // Save a copy of the page source, altered so that the "View Document"
   // button goes forward in the history instead of resubmitting the form.
   var originalSubmit = document.forms[0].getAttribute('onsubmit');
-  document.forms[0].setAttribute('onsubmit', 'history.forward(); return !1;');
+  document.forms[0].setAttribute('onsubmit', 'history.forward(); return false;');
   var previousPageHtml = document.documentElement.innerHTML;
   document.forms[0].setAttribute('onsubmit', originalSubmit);
 
@@ -156,7 +156,7 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
       reader.readAsText(blob);  // convert blob to HTML text
     }
   }.bind(this));
-}
+};
 
 
 // Given the HTML for a page with an <iframe> in it, downloads the PDF document
@@ -223,7 +223,7 @@ ContentDelegate.prototype.showPdfPage = function(
     this.recap.uploadDocument(
       this.court, this.path, name, type, bytes, onUploadOk);
   }.bind(this));
-}
+};
 
 
 // If this page offers a single document, intercept navigation to the document
