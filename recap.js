@@ -45,6 +45,26 @@ function Recap() {
   };
 
   return {
+    // For logging purposes, this method generates a call to the server's
+    // gen204 endpoint.
+    gen204: function(params, cb) {
+      var url =  SERVER_ROOT.replace(/recap$/, 'gen204');
+      if (params) {
+        url += '?';
+      }
+      for (key in params) {
+        if (params.hasOwnProperty(key)) {
+          url += (encodeURIComponent(key) + '=' +
+                  encodeURIComponent(params[key]) + '&');
+        }
+      }
+      if (params) {
+        // Remove the extra &.
+        url = url.substring(0, url.length - 1);
+      }
+      httpRequest(url, null, 'text', cb);
+    },
+
     // Asks RECAP whether it has a docket page for the specified case.  If it
     // is available, the callback will be called with a {docket_url: ...,
     // timestamp: ...} object, where the "docket_url" field gives the URL at

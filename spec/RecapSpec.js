@@ -276,4 +276,39 @@ describe('The Recap export module', function() {
       expect(actualData).toEqual(expected);
     });
   });
+
+  describe('gen204', function() {
+    it('generates the right ping URL with simple parameters', function() {
+      var params = {
+        'foo': 'bar',
+        'baz': 42
+      };
+      recap.gen204(params);
+      expect(jasmine.Ajax.requests.mostRecent().url).toBe(
+        'https://recapextension.org/gen204?foo=bar&baz=42');
+    });
+
+    it('generates an empty URL with no parameters', function() {
+      recap.gen204();
+      expect(jasmine.Ajax.requests.mostRecent().url).toBe(
+        'https://recapextension.org/gen204');
+    });
+
+    it('URL encodes its parameters', function() {
+      recap.gen204({'desc/': 'This is the desc'});
+      expect(jasmine.Ajax.requests.mostRecent().url).toBe(
+        'https://recapextension.org/gen204?desc%2F=This%20is%20the%20desc');
+    });
+
+    it('Handles URLs in parameters', function() {
+      recap.gen204({
+        'location': 'https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?531479'
+      });
+      expect(jasmine.Ajax.requests.mostRecent().url).toBe(
+        'https://recapextension.org/gen204?' +
+        'location=https%3A%2F%2Fecf.canb.uscourts.gov%2Fcgi-bin%2FDktRpt.pl' +
+        '%3F531479');
+
+    });
+  });
 });
