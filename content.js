@@ -57,6 +57,15 @@ var urls = [];
 for (var i = 0; i < links.length; i++) {
   if (PACER.isDocumentUrl(links[i].href)) {
     urls.push(links[i].href);
+    if (PACER.isConvertibleDocumentUrl(links[i].href)) {
+      // Do this here because the mouseover logic is crazy and who knows if
+      // anyone will actually mouseover a show_doc link if one appears.
+      recap.gen204({
+        'event': 'convertible_doc',
+        'doc_url': links[i].href,
+        'page_url': window.location.href
+      }, function() {});  // The export thing annoyingly requires a callback.
+    }
   }
   links[i].addEventListener('mouseover', function () {
     if (PACER.isConvertibleDocumentUrl(this.href)) {

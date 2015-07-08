@@ -120,8 +120,13 @@ function httpRequest(url, postData, responseType, callback) {
       callback && callback(type, result);
     }
   };
-  xhr.open(postData === null ? 'GET' : 'POST', url);
-  xhr.send(postData);
+  if (postData) {
+    xhr.open('POST', url);
+    xhr.send(postData);
+  } else {
+    xhr.open('GET', url);
+    xhr.send();
+  }
 }
 
 // Converts an ArrayBuffer to a regular array of unsigned bytes.  Array.apply()
