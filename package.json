@@ -1,6 +1,6 @@
 {
   "name": "recap-chrome",
-  "version": "0.8.5",
+  "version": "0.8.6",
   "description": "RECAP improves the experience of using PACER, the online public access system for the U.S. federal courts.",
   "scripts": {
     "test": "grunt jasmine"
