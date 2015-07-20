@@ -18,20 +18,20 @@
 
 var notifier = importInstance(Notifier);
 var toolbar_button = importInstance(ToolbarButton);
-var pacer = importInstance(Pacer);
-var recap = importInstance(Recap);
 
 var url = window.location.href;
 var path = window.location.pathname;
 var court = PACER.getCourtFromUrl(url);
 var casenum = PACER.getCaseNumberFromUrl(document.referrer);
 var docid = PACER.getDocumentIdFromUrl(url);
+var links = document.body.getElementsByTagName('a');
 
 // Update the toolbar button with knowledge of whether the user is logged in.
 toolbar_button.updateCookieStatus(court, document.cookie, null);
 
 // Create a delegate for handling the various states we might be in.
-var content_delegate = new ContentDelegate(url, path, court, casenum, docid);
+var content_delegate = new ContentDelegate(
+  url, path, court, casenum, docid, links);
 
 // If this is a docket query page, ask RECAP whether it has the docket page.
 content_delegate.handleDocketQueryUrl();
@@ -52,90 +52,9 @@ content_delegate.handleSingleDocumentPageCheck();
 content_delegate.handleSingleDocumentPageView();
 
 // Scan the document for all the links and collect the URLs we care about.
-var links = document.body.getElementsByTagName('a');
-var urls = [];
-for (var i = 0; i < links.length; i++) {
-  if (PACER.isDocumentUrl(links[i].href)) {
-    urls.push(links[i].href);
-    if (PACER.isConvertibleDocumentUrl(links[i].href)) {
-      // Do this here because the mouseover logic is crazy and who knows if
-      // anyone will actually mouseover a show_doc link if one appears.
-      recap.gen204({
-        'event': 'convertible_doc',
-        'doc_url': links[i].href,
-        'page_url': window.location.href
-      }, function() {});  // The export thing annoyingly requires a callback.
-    }
-  }
-  links[i].addEventListener('mouseover', function () {
-    if (PACER.isConvertibleDocumentUrl(this.href)) {
-      pacer.convertDocumentUrl(
-        this.href,
-        function (url, docid, caseid, de_seq_num, dm_id, docnum) {
-          recap.uploadMetadata(
-            court, docid, caseid, de_seq_num, dm_id, docnum, null);
-        }
-      );
-    }
-  });
-}
+// Then add mouseover events to links of the 'show_doc' type.
+content_delegate.addMouseoverToConvertibleLinks();
 
-// Pop up a dialog offering the link to the free cached copy of the document,
-// or just go directly to the free document if popups are turned off.
-function handleClick(url, uploadDate) {
-  chrome.storage.sync.get('options', function (items) {
-    if (!items.options.recap_link_popups) {
-      window.location = url;
-      return;
-    }
-    $('<div id="recap-shade"/>').appendTo($('body'));
-    $('<div class="recap-popup"/>').append(
-      $('<a/>', {
-        'class': 'recap-close-link',
-        href: '#',
-        onclick: 'var d = document; d.body.removeChild(this.parentNode); ' +
-          'd.body.removeChild(d.getElementById("recap-shade")); return false'
-      }).append(
-        '\u00d7'
-      )
-    ).append(
-      $('<a/>', {
-        href: url,
-        onclick: 'var d = document; d.body.removeChild(this.parentNode); ' +
-          'd.body.removeChild(d.getElementById("recap-shade"))'
-      }).append(
-        ' Get this document as of ' + uploadDate + ' for free from RECAP.'
-      )
-    ).append(
-      $('<br><br><small>Note that archived documents may be out of date. ' +
-        'RECAP is not affiliated with the U.S. Courts. The documents ' +
-        'it makes available are voluntarily uploaded by PACER users. ' +
-        'RECAP cannot guarantee the authenticity of documents because the ' +
-        'courts themselves provide no document authentication system.</small>')
-    ).appendTo($('body'));
-  });
-  return false;
-}
-
-if (urls.length) {
-  // Ask the server whether any of these documents are available from RECAP.
-  recap.getAvailabilityForDocuments(urls, function (result) {
-    // When we get a reply, update all links that have documents available.
-    for (var i = 0; i < links.length; i++) {
-      (function (info) {
-        if (info) {
-          // Insert a RECAP button just after the original link.
-          $('<a/>', {
-            'class': 'recap-inline',
-            title: 'Available for free from RECAP.',
-            href: info.filename
-          }).click(function () {
-            return handleClick(info.filename, info.timestamp);
-          }).append(
-            $('<img/>').attr({src: chrome.extension.getURL('assets/images/icon-16.png')})
-          ).insertAfter(links[i]);
-        }
-      })(result[links[i].href]);
-    }
-  });
-}
+// Check every link in the document to see if there is a free RECAP document
+// available. If there is, put a link with a RECAP icon.
+content_delegate.attachRecapLinkToEligibleDocs();
