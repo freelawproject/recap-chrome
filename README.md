@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/freelawproject/recap-chrome.svg?branch=master)][12]  [![Slack Status](https://join-flp-talk.herokuapp.com/badge.svg)][slack]
+
+
 What is this?
 =============
 This is the code for the RECAP Chrome extension, a program that is used to
@@ -15,8 +18,12 @@ using the [contact form on Free Law Project's website][contact].
 
 We also have [a development mailing list][dev], where we sometimes discuss things.
 
+And [a Slack chat room][slack] where we chat about other things.
+
 Finally, there's no reason you can't just start forking and hacking on this
 code. There are always lots of bugs and feature requests in the queue.
+
+[![Slack Status](https://join-flp-talk.herokuapp.com/badge.svg)][slack]
 
 Tips
 ----
@@ -96,3 +103,4 @@ RECAP for Chrome.  If not, see: http://www.gnu.org/licenses/
 [csv-json]: https://court-version-scraper.herokuapp.com/courts.json
 [csv-html]: https://court-version-scraper.herokuapp.com/
 [ad]: https://github.com/audiodude
+[slack]: https://join-flp-talk.herokuapp.com/
