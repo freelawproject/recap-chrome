@@ -1,15 +1,28 @@
 // -------------------------------------------------------------------------
 // Abstraction of content scripts to make them modular and testable.
 
-ContentDelegate = function(url, path, court, casenum, docid) {
+ContentDelegate = function(url, path, court, casenum, docid, links) {
   this.url = url;
   this.path = path;
   this.court = court;
   this.casenum = casenum;
   this.docid = docid;
+  this.links = links || [];
 
   this.notifier = importInstance(Notifier);
   this.recap = importInstance(Recap);
+  this.pacer = importInstance(Pacer);
+
+  this.findDocUrls();
+};
+
+ContentDelegate.prototype.findDocUrls = function() {
+  this.urls = [];
+  for (var i=0; i<this.links.length; i++) {
+    if (PACER.isDocumentUrl(this.links[i].href)) {
+      this.urls.push(this.links[i].href);
+    }
+  }
 };
 
 // If this is a docket query page, ask RECAP whether it has the docket page.
@@ -91,7 +104,6 @@ ContentDelegate.prototype.handleAttachmentMenuPage = function() {
                                   document.documentElement.innerHTML, callback);
 };
 
-
 // If this page offers a single document, ask RECAP whether it has the document.
 ContentDelegate.prototype.handleSingleDocumentPageCheck = function() {
   if (!PACER.isSingleDocumentPage(this.url, document)) {
@@ -118,7 +130,6 @@ ContentDelegate.prototype.handleSingleDocumentPageCheck = function() {
 
   this.recap.getAvailabilityForDocuments([this.url], callback);
 };
-
 
 ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
   // Save a copy of the page source, altered so that the "View Document"
@@ -157,7 +168,6 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
     }
   }.bind(this));
 };
-
 
 // Given the HTML for a page with an <iframe> in it, downloads the PDF document
 // in the iframe, displays it in the browser, and also uploads the PDF document
@@ -225,7 +235,6 @@ ContentDelegate.prototype.showPdfPage = function(
   }.bind(this));
 };
 
-
 // If this page offers a single document, intercept navigation to the document
 // view page.  The "View Document" button calls the goDLS() function, which
 // creates a <form> element and calls submit() on it, so we hook into submit().
@@ -249,4 +258,100 @@ ContentDelegate.prototype.handleSingleDocumentPageView = function() {
   // via XHR so we can get the document before the browser does.
   window.addEventListener(
     'message', this.onDocumentViewSubmit.bind(this), false);
+};
+
+// Add mouseover events to links of the 'show_doc' type, so that we can capture
+// the doc's metadata.
+ContentDelegate.prototype.addMouseoverToConvertibleLinks = function() {
+  var self = this;
+  for (var i = 0; i < this.links.length; i++) {
+    if (PACER.isConvertibleDocumentUrl(this.links[i].href)) {
+      this.links[i].addEventListener('mouseover', function () {
+        // The 'this' refers to the link in this handler.
+        if (!PACER.isConvertibleDocumentUrl(this.href)) {
+          // Need to check again if the URL is still convertible, because it
+          // may have already been converted by the host page.
+          return;
+        }
+        self.pacer.convertDocumentUrl(
+          this.href,
+          function (url, docid, caseid, de_seq_num, dm_id, docnum) {
+            self.recap.uploadMetadata(
+              this.court, docid, caseid, de_seq_num, dm_id, docnum, null);
+          }
+        );
+      });
+    }
+  }
+};
+
+// Pop up a dialog offering the link to the free cached copy of the document,
+// or just go directly to the free document if popups are turned off.
+ContentDelegate.prototype.handleRecapLinkClick = function(
+  window_obj, url, uploadDate) {
+  chrome.storage.sync.get('options', function (items) {
+    if (!items.options.recap_link_popups) {
+      window_obj.location = url;
+      return;
+    }
+    $('<div id="recap-shade"/>').appendTo($('body'));
+    $('<div class="recap-popup"/>').append(
+      $('<a/>', {
+        'class': 'recap-close-link',
+        href: '#',
+        onclick: 'var d = document; d.body.removeChild(this.parentNode); ' +
+          'd.body.removeChild(d.getElementById("recap-shade")); return false'
+      }).append(
+        '\u00d7'
+      )
+    ).append(
+      $('<a/>', {
+        href: url,
+        onclick: 'var d = document; d.body.removeChild(this.parentNode); ' +
+          'd.body.removeChild(d.getElementById("recap-shade"))'
+      }).append(
+        ' Get this document as of ' + uploadDate + ' for free from RECAP.'
+      )
+    ).append(
+      $('<br><br><small>Note that archived documents may be out of date. ' +
+        'RECAP is not affiliated with the U.S. Courts. The documents ' +
+        'it makes available are voluntarily uploaded by PACER users. ' +
+        'RECAP cannot guarantee the authenticity of documents because the ' +
+        'courts themselves provide no document authentication system.</small>')
+    ).appendTo($('body'));
+  });
+  return false;
+};
+
+// Check every link in the document to see if there is a free RECAP document
+// available. If there is, put a link with a RECAP icon.
+ContentDelegate.prototype.attachRecapLinkToEligibleDocs = function() {
+  if (!this.urls.length) {
+    return;
+  }
+
+  // Ask the server whether any of these documents are available from RECAP.
+  this.recap.getAvailabilityForDocuments(this.urls, $.proxy(function (result) {
+    // When we get a reply, update all links that have documents available.
+    for (var i = 0; i < this.links.length; i++) {
+      $.proxy(function (info) {
+        if (!info) {
+          // No availability for that link.
+          return;
+        }
+        // Insert a RECAP button just after the original link.
+        var recap_link = $('<a/>', {
+          'class': 'recap-inline',
+          'title': 'Available for free from RECAP.',
+          'href': info.filename
+        });
+        recap_link.click($.proxy(this.handleRecapLinkClick, this,
+                                 window, info.filename, info.timestamp));
+        recap_link.append($('<img/>').attr({
+          src: chrome.extension.getURL('assets/images/icon-16.png')
+        }));
+        recap_link.insertAfter(this.links[i]);
+      }, this)(result[this.links[i].href]);
+    }
+  }, this));
 };
