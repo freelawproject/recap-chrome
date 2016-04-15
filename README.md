@@ -18,15 +18,13 @@ using the [contact form on Free Law Project's website][contact].
 
 We also have [a development mailing list][dev], where we sometimes discuss things.
 
-And [a Slack chat room][slack] where we chat about other things.
-
 Finally, there's no reason you can't just start forking and hacking on this
 code. There are always lots of bugs and feature requests in the queue.
 
-[![Slack Status](https://join-flp-talk.herokuapp.com/badge.svg)][slack]
 
 Tips
 ----
+1. You can load an "unpacked extension" from [chrome://extensions/][c] if you enable developer options.
 1. While it's true that every court has their own customized version of PACER,
    there is [a PACER training site that does not charge fees][trainwreck]. You
    can use this if you wish to work on the system without accruing charges.
@@ -103,4 +101,4 @@ RECAP for Chrome.  If not, see: http://www.gnu.org/licenses/
 [csv-json]: https://court-version-scraper.herokuapp.com/courts.json
 [csv-html]: https://court-version-scraper.herokuapp.com/
 [ad]: https://github.com/audiodude
-[slack]: https://join-flp-talk.herokuapp.com/
+[c]: chrome://extensions/
