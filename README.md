@@ -31,7 +31,7 @@ Tips
    there is [a PACER training site that does not charge fees][trainwreck]. You
    can use this if you wish to work on the system without accruing charges.
 1. While you're testing things across versions of PACER, you can use a handy
-   website ([json][csv-json]/[html][csv-html]) created by [@audiodude][ad] to 
+   website ([json][csv-json]/[html][csv-html]) created by [@audiodude][ad] to
    find suitable versions of PACER.
 
 
@@ -66,10 +66,10 @@ When a new version is needed, the release process is:
         git tag -s '0.8.4' -m "Releases 0.8.4, fixing replaceState and pushState to work in Chrome 43." -u 'mike@freelawproject.org' -f
         git push --tags -f
 
-1. Zip up the archive with the rather archaic: 
+1. Zip up the archive with the rather archaic:
 
         zip -FSr recap-chrome.zip * --exclude=*node_modules*
-        
+
 1. Upload that to the [Chrome Market][market].
 1. Make a new release on [Github announcing the release][ghtags].
 
@@ -92,7 +92,7 @@ RECAP for Chrome.  If not, see: http://www.gnu.org/licenses/
 
 
 [1]: https://chrome.google.com/webstore/detail/recap/oiillickanjlaeghobeeknbddaonmjnc
-[contact]: http://freelawproject.org/contact/
+[contact]: http://free.law/contact/
 [dev]: http://lists.freelawproject.org/cgi-bin/mailman/listinfo/dev
 [12]: https://travis-ci.org/freelawproject/recap-chrome
 [tci]: https://travis-ci.org/
