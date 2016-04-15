@@ -24,7 +24,7 @@ function Notifier() {
       title: title,
       message: message,
       iconUrl: chrome.extension.getURL('assets/images/icon-32.png'),
-      priority: -1
+      priority: 0
     };
     var notificationID = 'recap_notification';
     chrome.notifications.create(
