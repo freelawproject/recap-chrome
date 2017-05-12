@@ -13,16 +13,7 @@
 // RECAP for Chrome.  If not, see: http://www.gnu.org/licenses/
 
 
-// Get the team name from the user's preferences, and append it to the
-// formData variable.
-function appendTeamNameToFormData (formData) {
-  chrome.storage.sync.get('options', function (items) {
-    var team_name = items.options.recap_team_name;
-    if (team_name) {
-      formData.append('team_name', team_name);
-    }
-  });
-}
+
 
 
 // -------------------------------------------------------------------------
@@ -115,7 +106,6 @@ function Recap() {
       formData.append('dm_id', dm_id);
       formData.append('docnum', docnum);
       formData.append('add_case_info', 'true');
-      appendTeamNameToFormData(formData);
       httpRequest(
         SERVER_ROOT + '/adddocmeta/',
         formData,
@@ -135,7 +125,6 @@ function Recap() {
       formData.append('casenum', casenum);
       formData.append('mimetype', type);
       formData.append('data', new Blob([html], {type: type}), filename);
-      appendTeamNameToFormData(formData);
       httpRequest(
         SERVER_ROOT + '/upload/',
         formData,
@@ -154,7 +143,6 @@ function Recap() {
       formData.append('court', court);
       formData.append('mimetype', type);
       formData.append('data', new Blob([html], {type: type}), filename);
-      appendTeamNameToFormData(formData);
       httpRequest(
         SERVER_ROOT + '/upload/',
         formData,
@@ -175,7 +163,6 @@ function Recap() {
       formData.append('url', path);  // should be a doc1-style path
       formData.append('mimetype', type);
       formData.append('data', blob, filename);
-      appendTeamNameToFormData(formData);
       httpRequest(
         SERVER_ROOT + '/upload/',
         formData,
