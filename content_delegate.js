@@ -289,7 +289,7 @@ ContentDelegate.prototype.addMouseoverToConvertibleLinks = function() {
 // or just go directly to the free document if popups are turned off.
 ContentDelegate.prototype.handleRecapLinkClick = function(
   window_obj, url, uploadDate) {
-  chrome.storage.sync.get('options', function (items) {
+  chrome.storage.local.get('options', function (items) {
     if (!items.options.recap_link_popups) {
       window_obj.location = url;
       return;

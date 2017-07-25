@@ -19,7 +19,7 @@
 var inputs = document.getElementsByTagName('input');
 
 function load_options() {
-  chrome.storage.sync.get('options', function (items) {
+  chrome.storage.local.get('options', function (items) {
     for (var i = 0; i < inputs.length; i++) {
       if (inputs[i].type === "checkbox") {
         inputs[i].checked = items.options[inputs[i].id];
@@ -39,7 +39,7 @@ function save_options() {
       options[inputs[i].id] = inputs[i].value;
     }
   }
-  chrome.storage.sync.set({options: options});
+  chrome.storage.local.set({options: options});
 }
 
 load_options();

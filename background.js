@@ -8,7 +8,7 @@
 // be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
 // Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License along with
 // RECAP for Chrome.  If not, see: http://www.gnu.org/licenses/
 
@@ -19,7 +19,7 @@
 // Set options to their default values.
 chrome.storage.sync.get('options', function (items) {
   if (!items.options) {
-    chrome.storage.sync.set({options: {
+    chrome.storage.local.set({options: {
       recap_link_popups: true,
       status_notifications: true,
       upload_notifications: true
