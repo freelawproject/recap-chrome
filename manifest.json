@@ -3,7 +3,7 @@
   "name": "RECAP",
   "author": "Free Law Project and the Center for Information Technology and Policy at Princeton",
   "description": "RECAP improves the experience of using PACER, the online public access system for the U.S. federal courts.",
-  "homepage_url": "https://www.recapthelaw.org",
+  "homepage_url": "https://free.law/recap/",
   "version": "0.8.7",
   "icons": {
     "16": "assets/images/icon-16.png",
