@@ -35,7 +35,7 @@ function Notifier() {
     },
     // Shows an upload message if upload notifications are enabled.
     showUpload: function (message, cb) {
-      chrome.storage.sync.get('options', function (items) {
+      chrome.storage.local.get('options', function (items) {
         if (items.options.upload_notifications) {
           showNotification(
             'RECAP upload',

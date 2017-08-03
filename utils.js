@@ -61,7 +61,7 @@
 function exportInstance(constructor) {
   var name = constructor.name;  // function name identifies the service
   var instance = new constructor();
-  chrome.extension.onMessage.addListener(function (request, sender, cb) {
+  chrome.runtime.onMessage.addListener(function (request, sender, cb) {
     if (request.name === name) {
       var pack = function () { cb(Array.prototype.slice.apply(arguments)); };
       pack.tab = sender.tab;
@@ -85,7 +85,7 @@ function importInstance(constructor) {
           throw 'Service invocation error: last argument is not a callback';
         }
         var unpack = function (results) { cb.apply(null, results); };
-        chrome.extension.sendMessage(
+        chrome.runtime.sendMessage(
           {name: name, verb: verb, args: args}, unpack);
       };
     })(verb);
