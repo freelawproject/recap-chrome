@@ -23,6 +23,7 @@
   ],
   "background": {
     "scripts": [
+      "assets/js/jquery-3.2.1.js",
       "utils.js",
       "notifier.js",
       "toolbar_button.js",
@@ -36,7 +37,7 @@
     "include_globs": ["*://ecf.*", "*://ecf-train.*", "*://pacer.*"],
     "css": ["style.css"],
     "js": [
-      "assets/js/jquery.min.js",
+      "assets/js/jquery-3.2.1.js",
       "utils.js",
       "notifier.js",
       "toolbar_button.js",

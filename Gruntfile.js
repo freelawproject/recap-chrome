@@ -2,7 +2,7 @@ module.exports = function(grunt) {
   grunt.initConfig({
     jasmine : {
       src : [
-        'assets/js/jquery.min.js',
+        'assets/js/jquery-3.2.1.js',
         'notifier.js',
         'pacer.js',
         'recap.js',
