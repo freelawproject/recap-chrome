@@ -1,18 +1,3 @@
-// This file is part of RECAP for Chrome.
-// Copyright 2013 Ka-Ping Yee <ping@zesty.ca>
-//
-// RECAP for Chrome is free software: you can redistribute it and/or modify it
-// under the terms of the GNU General Public License as published by the Free
-// Software Foundation, either version 3 of the License, or (at your option)
-// any later version.  RECAP for Chrome is distributed in the hope that it will
-// be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
-// Public License for more details.
-//
-// You should have received a copy of the GNU General Public License along with
-// RECAP for Chrome.  If not, see: http://www.gnu.org/licenses/
-
-// -------------------------------------------------------------------------
 // Content script to run when DOM finishes loading (run_at: "document_end").
 
 
@@ -22,7 +7,12 @@ var toolbar_button = importInstance(ToolbarButton);
 var url = window.location.href;
 var path = window.location.pathname;
 var court = PACER.getCourtFromUrl(url);
-var casenum = PACER.getCaseNumberFromUrl(document.referrer);
+// I'm unclear why we use the referrer here. Previously this didn't fall back
+// on the current URL, and so it straight-up failed if somebody just GETted the
+// docket URL. This seems weird to me that we rely on the referrer (the previous
+// URL and forgo the current one.
+var pacer_case_id = PACER.getCaseNumberFromUrl(document.referrer) ||
+        PACER.getCaseNumberFromUrl(url);
 var docid = PACER.getDocumentIdFromUrl(url);
 var links = document.body.getElementsByTagName('a');
 
@@ -31,7 +21,7 @@ toolbar_button.updateCookieStatus(court, document.cookie, null);
 
 // Create a delegate for handling the various states we might be in.
 var content_delegate = new ContentDelegate(
-  url, path, court, casenum, docid, links);
+  url, path, court, pacer_case_id, docid, links);
 
 // If this is a docket query page, ask RECAP whether it has the docket page.
 content_delegate.handleDocketQueryUrl();
