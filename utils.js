@@ -1,17 +1,3 @@
-// This file is part of RECAP for Chrome.
-// Copyright 2013 Ka-Ping Yee <ping@zesty.ca>
-//
-// RECAP for Chrome is free software: you can redistribute it and/or modify it
-// under the terms of the GNU General Public License as published by the Free
-// Software Foundation, either version 3 of the License, or (at your option)
-// any later version.  RECAP for Chrome is distributed in the hope that it will
-// be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
-// Public License for more details.
-//
-// You should have received a copy of the GNU General Public License along with
-// RECAP for Chrome.  If not, see: http://www.gnu.org/licenses/
-
 // -------------------------------------------------------------------------
 // Browser-specific utilities for use in background pages and content scripts.
 
@@ -128,6 +114,21 @@ function httpRequest(url, postData, responseType, callback) {
     xhr.send();
   }
 }
+
+// Default settings for any jquery $.ajax call.
+$.ajaxSetup({
+  beforeSend: function (xhr, settings) {
+    var hostname = $('<a>').prop('href', settings.url).prop('hostname');
+    if (hostname === "www.courtlistener.com") {
+        // If you are reading this code, we ask that you please refrain from
+        // using this token. Unfortunately, there is no way to distribute
+        // extensions that use hardcoded tokens except through begging and using
+        // funny variable names. Please do not abuse our service.
+        var asdf = '45c7946dd8400ad62662565cf79da3c081d9b0e5';
+        xhr.setRequestHeader("Authorization", `Token ${asdf}`);
+    }
+  }
+});
 
 // Converts an ArrayBuffer to a regular array of unsigned bytes.  Array.apply()
 // causes a "maximum call stack size exceeded" error for buffers of only 300k,
