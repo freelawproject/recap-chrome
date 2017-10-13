@@ -12,5 +12,11 @@ chrome.storage.local.get('options', function (items) {
 // Make services callable from content scripts.
 exportInstance(Notifier);
 exportInstance(ToolbarButton);
-exportInstance(Pacer);
 exportInstance(Recap);
+
+var DEBUG = 'true';
+function isTemporary(details) {
+  // Set DEBUG = true if it's a development environment.
+  DEBUG = details.temporary;
+}
+chrome.runtime.onInstalled.addListener(isTemporary);
