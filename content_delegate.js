@@ -1,4 +1,3 @@
-// -------------------------------------------------------------------------
 // Abstraction of content scripts to make them modular and testable.
 
 ContentDelegate = function(url, path, court, casenum, docid, links) {
@@ -11,16 +10,18 @@ ContentDelegate = function(url, path, court, casenum, docid, links) {
 
   this.notifier = importInstance(Notifier);
   this.recap = importInstance(Recap);
-  this.pacer = importInstance(Pacer);
 
-  this.findDocUrls();
+  this.findPacerDocIds();
 };
 
-ContentDelegate.prototype.findDocUrls = function() {
-  this.urls = [];
-  for (var i=0; i<this.links.length; i++) {
-    if (PACER.isDocumentUrl(this.links[i].href)) {
-      this.urls.push(this.links[i].href);
+ContentDelegate.prototype.findPacerDocIds = function() {
+  this.pacer_doc_ids = [];
+  for (var i = 0; i < this.links.length; i++) {
+    var link = this.links[i];
+    if (PACER.isDocumentUrl(link.href)) {
+      var pacer_doc_id = PACER.getDocumentIdFromUrl(link.href);
+      $(link).data('pacer_doc_id', pacer_doc_id);
+      this.pacer_doc_ids.push(pacer_doc_id);
     }
   }
 };
@@ -31,21 +32,34 @@ ContentDelegate.prototype.handleDocketQueryUrl = function() {
     return;
   }
 
-  this.recap.getAvailabilityForDocket(
-    this.court, this.casenum, function (result) {
-    if (!(result && result.docket_url)) {
+  this.recap.getAvailabilityForDocket(this.court, this.casenum, function (result) {
+    if (result.count === 0){
+      console.warn(`Zero results found for docket lookup.`);
+      return;
+    } else if (!(result.count === 1)){
+      console.error(`More than one result found for docket lookup. Found ` +
+                    `${result.count}`);
       return;
     }
+    let first_result = result.results[0];
 
     // Insert a RECAP download link at the bottom of the form.
     $('<div class="recap-banner"/>').append(
       $('<a/>', {
-        title: 'Docket is available for free from RECAP.',
-        href: result.docket_url
+        title: 'Docket is available in the RECAP Archive.',
+        target: '_blank',
+        href: "https://www.courtlistener.com" + first_result.absolute_url
       }).append(
         $('<img/>', {src: chrome.extension.getURL('assets/images/icon-16.png')})
       ).append(
-        ' Get this docket as of ' + result.timestamp + ' for free from RECAP.'
+        ' View and search this docket as of '
+      ).append(
+        $('<time/>', {
+          "data-livestamp": first_result.date_modified,
+          "title": first_result.date_modified,
+        }).append(first_result.date_modified)
+      ).append(
+        ' for free from RECAP'
       )
     ).append(
       $('<br><small>Note that archived dockets may be out of date.</small>')
@@ -63,7 +77,7 @@ ContentDelegate.prototype.handleDocketDisplayPage = function() {
     return;
   }
 
-  var callback = $.proxy(function (ok) {
+  let callback = $.proxy(function (ok) {
     if (ok) {
       history.replaceState({uploaded: true}, '');
       this.notifier.showUpload(
@@ -74,8 +88,8 @@ ContentDelegate.prototype.handleDocketDisplayPage = function() {
   }, this);
 
 
-  var filename = PACER.getBaseNameFromUrl(this.url).replace('.pl', '.html');
-  this.recap.uploadDocket(this.court, this.casenum, filename, 'text/html',
+  let filename = PACER.getBaseNameFromUrl(this.url).replace('.pl', '.html');
+  this.recap.uploadDocket(this.court, this.casenum, filename,
                           document.documentElement.innerHTML, callback);
 };
 
@@ -90,7 +104,7 @@ ContentDelegate.prototype.handleAttachmentMenuPage = function() {
     return;
   }
 
-  var callback = $.proxy(function(ok) {
+  let callback = $.proxy(function(ok) {
     if (ok) {
       history.replaceState({uploaded: true}, '');
       this.notifier.showUpload(
@@ -110,7 +124,7 @@ ContentDelegate.prototype.handleSingleDocumentPageCheck = function() {
     return;
   }
 
-  var callback = $.proxy(function (result) {
+  let callback = $.proxy(function (result) {
     if (!(result && result[this.url])) {
       return;
     }
@@ -154,8 +168,8 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
     if (type === 'application/pdf') {
       // canb and ca9 return PDFs and trigger this code path.
       var html = '<style>body { margin: 0; } iframe { border: none; }' +
-                  '</style><iframe src="' + URL.createObjectURL(blob) +
-                  '" width="100%" height="100%"></iframe>';
+                 '</style><iframe src="' + URL.createObjectURL(blob) +
+                 '" width="100%" height="100%"></iframe>';
       this.showPdfPage(document.documentElement, html, previousPageHtml);
     } else {
       // dcd (and presumably others) trigger this code path.
@@ -260,35 +274,9 @@ ContentDelegate.prototype.handleSingleDocumentPageView = function() {
     'message', this.onDocumentViewSubmit.bind(this), false);
 };
 
-// Add mouseover events to links of the 'show_doc' type, so that we can capture
-// the doc's metadata.
-ContentDelegate.prototype.addMouseoverToConvertibleLinks = function() {
-  var self = this;
-  for (var i = 0; i < this.links.length; i++) {
-    if (PACER.isConvertibleDocumentUrl(this.links[i].href)) {
-      this.links[i].addEventListener('mouseover', function () {
-        // The 'this' refers to the link in this handler.
-        if (!PACER.isConvertibleDocumentUrl(this.href)) {
-          // Need to check again if the URL is still convertible, because it
-          // may have already been converted by the host page.
-          return;
-        }
-        self.pacer.convertDocumentUrl(
-          this.href,
-          function (url, docid, caseid, de_seq_num, dm_id, docnum) {
-            self.recap.uploadMetadata(
-              this.court, docid, caseid, de_seq_num, dm_id, docnum, null);
-          }
-        );
-      });
-    }
-  }
-};
-
 // Pop up a dialog offering the link to the free cached copy of the document,
 // or just go directly to the free document if popups are turned off.
-ContentDelegate.prototype.handleRecapLinkClick = function(
-  window_obj, url, uploadDate) {
+ContentDelegate.prototype.handleRecapLinkClick = function(window_obj, url) {
   chrome.storage.local.get('options', function (items) {
     if (!items.options.recap_link_popups) {
       window_obj.location = url;
@@ -310,7 +298,7 @@ ContentDelegate.prototype.handleRecapLinkClick = function(
         onclick: 'var d = document; d.body.removeChild(this.parentNode); ' +
           'd.body.removeChild(d.getElementById("recap-shade"))'
       }).append(
-        ' Get this document as of ' + uploadDate + ' for free from RECAP.'
+        ' Get this document for free from RECAP.'
       )
     ).append(
       $('<br><br><small>Note that archived documents may be out of date. ' +
@@ -326,32 +314,39 @@ ContentDelegate.prototype.handleRecapLinkClick = function(
 // Check every link in the document to see if there is a free RECAP document
 // available. If there is, put a link with a RECAP icon.
 ContentDelegate.prototype.attachRecapLinkToEligibleDocs = function() {
-  if (!this.urls.length) {
+  var linkCount = this.pacer_doc_ids.length;
+  console.info(`Attaching links to all eligible documents (${linkCount} found)`);
+  if (linkCount === 0) {
     return;
   }
 
   // Ask the server whether any of these documents are available from RECAP.
-  this.recap.getAvailabilityForDocuments(this.urls, $.proxy(function (result) {
-    // When we get a reply, update all links that have documents available.
-    for (var i = 0; i < this.links.length; i++) {
-      $.proxy(function (info) {
-        if (!info) {
-          // No availability for that link.
-          return;
-        }
-        // Insert a RECAP button just after the original link.
-        var recap_link = $('<a/>', {
-          'class': 'recap-inline',
-          'title': 'Available for free from RECAP.',
-          'href': info.filename
-        });
-        recap_link.click($.proxy(this.handleRecapLinkClick, this,
-                                 window, info.filename, info.timestamp));
-        recap_link.append($('<img/>').attr({
-          src: chrome.extension.getURL('assets/images/icon-16.png')
-        }));
-        recap_link.insertAfter(this.links[i]);
-      }, this)(result[this.links[i].href]);
+  this.recap.getAvailabilityForDocuments(this.pacer_doc_ids, this.court,
+                                         $.proxy(function (api_results) {
+    console.info(`Got results from API. Running callback on API results to ` +
+                 `attach links and icons where appropriate.`);
+    for (let i = 0; i < this.links.length; i++) {
+      let pacer_doc_id = $(this.links[i]).data('pacer_doc_id');
+      if (!pacer_doc_id) {
+        continue;
+      }
+      let result = api_results.results.filter(function (obj) {
+        return obj.pacer_doc_id === pacer_doc_id;
+      })[0];
+      if (!result){
+        continue;
+      }
+      let href = "https://www.courtlistener.com/" + result.filepath_local;
+      let recap_link = $('<a/>', {
+        'class': 'recap-inline',
+        'title': 'Available for free from RECAP.',
+        'href': href
+      });
+      recap_link.click($.proxy(this.handleRecapLinkClick, this, window, href));
+      recap_link.append($('<img/>').attr({
+        src: chrome.extension.getURL('assets/images/icon-16.png')
+      }));
+      recap_link.insertAfter(this.links[i]);
     }
   }, this));
 };
