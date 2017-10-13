@@ -41,10 +41,6 @@ content_delegate.handleSingleDocumentPageCheck();
 // creates a <form> element and calls submit() on it, so we hook into submit().
 content_delegate.handleSingleDocumentPageView();
 
-// Scan the document for all the links and collect the URLs we care about.
-// Then add mouseover events to links of the 'show_doc' type.
-content_delegate.addMouseoverToConvertibleLinks();
-
 // Check every link in the document to see if there is a free RECAP document
 // available. If there is, put a link with a RECAP icon.
 content_delegate.attachRecapLinkToEligibleDocs();

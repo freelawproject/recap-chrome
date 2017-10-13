@@ -1,17 +1,3 @@
-// This file is part of RECAP for Chrome.
-// Copyright 2013 Ka-Ping Yee <ping@zesty.ca>
-//
-// RECAP for Chrome is free software: you can redistribute it and/or modify it
-// under the terms of the GNU General Public License as published by the Free
-// Software Foundation, either version 3 of the License, or (at your option)
-// any later version.  RECAP for Chrome is distributed in the hope that it will
-// be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
-// Public License for more details.
-//
-// You should have received a copy of the GNU General Public License along with
-// RECAP for Chrome.  If not, see: http://www.gnu.org/licenses/
-
 // -------------------------------------------------------------------------
 // Abstraction of PACER site and services.  This file is browser-independent.
 
@@ -40,6 +26,13 @@
 // Pages marked (*) cost money.  The "Single document page" is a page that
 // tells you how much a document will cost before you get to view the PDF.
 
+PACER_TO_CL_IDS = {
+    'azb': 'arb',         // Arizona Bankruptcy Court
+    'cofc': 'uscfc',      // Court of Federal Claims
+    'neb': 'nebraskab',   // Nebraska Bankruptcy
+    'nysb-mega': 'nysb'   // Remove the mega thing
+};
+
 // Public constants and pure functions.  As these are pure, they can be freely
 // called from anywhere; by convention we use an ALL_CAPS name to allude to
 // the purity (const-ness) of this object's contents.
@@ -51,19 +44,13 @@ PACER = {
     return match ? match[2] : null;
   },
 
+  convertToCourtListenerCourt: function(pacer_court_id) {
+    return PACER_TO_CL_IDS[pacer_court_id] || pacer_court_id;
+  },
+
   // Returns true if the given URL looks like a link to a PACER document.
   isDocumentUrl: function (url) {
     if (url.match(/\/doc1\/\d+/) || url.match(/\/cgi-bin\/show_doc/)) {
-      if (PACER.getCourtFromUrl(url)) {
-        return true;
-      }
-    }
-    return false;
-  },
-
-  // Returns true if a URL looks like a show_doc link that needs conversion.
-  isConvertibleDocumentUrl: function (url) {
-    if (url.match(/\/cgi-bin\/show_doc/)) {
       if (PACER.getCourtFromUrl(url)) {
         return true;
       }
@@ -351,26 +338,4 @@ PACER = {
     'cadc': 1,
     'cafc': 1
   }
-};
-
-// Public impure functions.  (See utils.js for details on defining services.)
-function Pacer() {
-  return {
-    // Converts a show_doc URL into a doc1-style URL, calling the callback with
-    // the arguments (doc1_url, docid, caseid, de_seq_num, dm_id, doc_num).
-    convertDocumentUrl: function (url, callback) {
-      var schemeHost = url.match(/^\w+:\/\/[^\/]+/)[0];
-      var query = url.match(/\?.*/)[0];
-      var data = {};
-      // The parameters only contain digits, so we don't need to unescape.
-      query.replace(/([^=?&]+)=([^&]*)/g, function (p, k, v) { data[k] = v; });
-      // PACER uses a crazy query encoding with "K" and "V" as delimiters.
-      query = query.replace(/[?&]/g, 'K').replace(/=/g, 'V');
-      httpRequest(schemeHost + '/cgi-bin/document_link.pl?document' + query,
-                  null, 'text', function (type, text) {
-        callback(text, PACER.getDocumentIdFromUrl(text),
-                 data.caseid, data.de_seq_num, data.dm_id, data.doc_num);
-      });
-    }
-  };
 };
