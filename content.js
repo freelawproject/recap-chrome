@@ -7,13 +7,10 @@ var toolbar_button = importInstance(ToolbarButton);
 var url = window.location.href;
 var path = window.location.pathname;
 var court = PACER.getCourtFromUrl(url);
-// I'm unclear why we use the referrer here. Previously this didn't fall back
-// on the current URL, and so it straight-up failed if somebody just GETted the
-// docket URL. This seems weird to me that we rely on the referrer (the previous
-// URL and forgo the current one.
-var pacer_case_id = PACER.getCaseNumberFromUrl(document.referrer) ||
-        PACER.getCaseNumberFromUrl(url);
-var docid = PACER.getDocumentIdFromUrl(url);
+// Referrer is used here because typically the URL that has the pacer_case_id is
+// the one that with the form that generates the docket.
+var pacer_case_id = PACER.getCaseNumberFromUrls([document.referrer, url]);
+var pacer_doc_id = PACER.getDocumentIdFromUrl(url);
 var links = document.body.getElementsByTagName('a');
 
 // Update the toolbar button with knowledge of whether the user is logged in.
@@ -21,7 +18,7 @@ toolbar_button.updateCookieStatus(court, document.cookie, null);
 
 // Create a delegate for handling the various states we might be in.
 var content_delegate = new ContentDelegate(
-  url, path, court, pacer_case_id, docid, links);
+  url, path, court, pacer_case_id, pacer_doc_id, links);
 
 // If this is a docket query page, ask RECAP whether it has the docket page.
 content_delegate.handleDocketQueryUrl();

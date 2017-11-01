@@ -46,6 +46,7 @@
       "assets/js/jquery-3.2.1.js",
       "assets/js/moment.js",
       "assets/js/livestamp.js",
+      "assets/js/jquery-ajax-blob-arraybuffer.js",
       "utils.js",
       "notifier.js",
       "toolbar_button.js",

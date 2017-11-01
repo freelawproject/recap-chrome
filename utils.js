@@ -45,11 +45,11 @@
 // Makes a singleton instance in a background page callable from a content
 // script, using Chrome's message system.  See above for details.
 function exportInstance(constructor) {
-  var name = constructor.name;  // function name identifies the service
-  var instance = new constructor();
+  let name = constructor.name;  // function name identifies the service
+  let instance = new constructor();
   chrome.runtime.onMessage.addListener(function (request, sender, cb) {
     if (request.name === name) {
-      var pack = function () { cb(Array.prototype.slice.apply(arguments)); };
+      let pack = function () { cb(Array.prototype.slice.apply(arguments)); };
       pack.tab = sender.tab;
       instance[request.verb].apply(instance, request.args.concat([pack]));
       return true;  // allow cb to be called after listener returns
@@ -79,52 +79,21 @@ function importInstance(constructor) {
   return sender;
 }
 
-// Makes an XHR to the given URL, calling a callback with the returned content
-// type and response (interpreted according to responseType).  See XHR2 spec
-// for details on responseType and response.  Uses GET if postData is null or
-// POST otherwise.  postData can be any type accepted by XMLHttpRequest.send().
-function httpRequest(url, postData, responseType, callback) {
-  var type = null,
-      result = null,
-      xhr = new XMLHttpRequest();
-  // WebKit doesn't support responseType 'json' yet, but probably will soon.
-  xhr.responseType = responseType === 'json' ? 'text' : responseType;
-  xhr.onreadystatechange = function () {
-    if (xhr.readyState === 4) {
-      if (xhr.status === 200) {
-        type = xhr.getResponseHeader('Content-Type');
-        result = xhr.response;
-        if (responseType === 'json') {
-          try {
-            result = JSON.parse(result);
-          } catch (e) {
-            // Don't bother calling the callback if there's no valid JSON.
-            return;
-          }
-        }
-      }
-      callback && callback(type, result);
-    }
-  };
-  if (postData) {
-    xhr.open('POST', url);
-    xhr.send(postData);
-  } else {
-    xhr.open('GET', url);
-    xhr.send();
-  }
+function getHostname(url){
+  // Extract the hostname from a URL.
+  return $('<a>').prop('href', url).prop('hostname');
 }
 
 // Default settings for any jquery $.ajax call.
 $.ajaxSetup({
   beforeSend: function (xhr, settings) {
-    var hostname = $('<a>').prop('href', settings.url).prop('hostname');
+    let hostname = getHostname(settings.url);
     if (hostname === "www.courtlistener.com") {
         // If you are reading this code, we ask that you please refrain from
         // using this token. Unfortunately, there is no way to distribute
         // extensions that use hardcoded tokens except through begging and using
-        // funny variable names. Please do not abuse our service.
-        var asdf = '45c7946dd8400ad62662565cf79da3c081d9b0e5';
+        // funny variable names. Do not abuse the RECAP service.
+        let asdf = '45c7946dd8400ad62662565cf79da3c081d9b0e5';
         xhr.setRequestHeader("Authorization", `Token ${asdf}`);
     }
   }
@@ -134,9 +103,9 @@ $.ajaxSetup({
 // causes a "maximum call stack size exceeded" error for buffers of only 300k,
 // so we need this ridiculous circumlocution of breaking the data into chunks.
 function arrayBufferToArray(ab) {
-  var chunks = [];
-  for (var i = 0; i < ab.byteLength; i += 100000) {
-    var slice = new Uint8Array(ab, i, Math.min(100000, ab.byteLength - i));
+  let chunks = [];
+  for (let i = 0; i < ab.byteLength; i += 100000) {
+    let slice = new Uint8Array(ab, i, Math.min(100000, ab.byteLength - i));
     chunks.push(Array.apply(null, slice));  // convert each chunk separately
   }
   return [].concat.apply([], chunks);  // concatenate all the chunks together

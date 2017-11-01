@@ -26,7 +26,7 @@
 // Pages marked (*) cost money.  The "Single document page" is a page that
 // tells you how much a document will cost before you get to view the PDF.
 
-PACER_TO_CL_IDS = {
+let PACER_TO_CL_IDS = {
     'azb': 'arb',         // Arizona Bankruptcy Court
     'cofc': 'uscfc',      // Court of Federal Claims
     'neb': 'nebraskab',   // Nebraska Bankruptcy
@@ -36,10 +36,10 @@ PACER_TO_CL_IDS = {
 // Public constants and pure functions.  As these are pure, they can be freely
 // called from anywhere; by convention we use an ALL_CAPS name to allude to
 // the purity (const-ness) of this object's contents.
-PACER = {
+let PACER = {
   // Returns the court identifier for a given URL, or null if not a PACER site.
   getCourtFromUrl: function (url) {
-    var match = (url || '').toLowerCase().match(
+    let match = (url || '').toLowerCase().match(
         /^\w+:\/\/(ecf|ecf-train|pacer)\.(\w+)\.uscourts\.gov\//);
     return match ? match[2] : null;
   },
@@ -62,47 +62,58 @@ PACER = {
   // in a docket (i.e. the "Docket Sheet" or "History/Documents" query page).
   isDocketQueryUrl: function (url) {
     // The part after the "?" is all digits.
-    return url.match(/\/(DktRpt|HistDocQry)\.pl\?\d+$/) ? true : false;
+    return !!url.match(/\/(DktRpt|HistDocQry)\.pl\?\d+$/);
   },
 
   // Given a URL that satisfies isDocketQueryUrl, gets its case number.
-  getCaseNumberFromUrl: function (url) {
-    var match = url.match(/\?(\d+)$/);
-    return match ? match[1] : null;
+  getCaseNumberFromUrls: function (urls) {
+    // Iterate over an array of URLs and get the case number from the first one
+    // that matches. Allows calling function to send a variety of URLs, like the
+    // referer and the actual URL, for example.
+    for (let url of urls){
+      let hostname = getHostname(url);
+      // JS is trash. It lacks a way of getting the TLD, so we use endsWith.
+      if (hostname.endsWith('uscourts.gov')){
+        let match = url.match(/\?(\d+)$/);
+        if (match){
+          return match[1];
+        }
+      }
+    }
   },
 
   // Returns true if the given URL is for a docket display page (i.e. the page
   // after submitting the "Docket Sheet" or "History/Documents" query page).
   isDocketDisplayUrl: function (url) {
     // The part after the "?" has hyphens in it.
-    return url.match(/\/(DktRpt|HistDocQry)\.pl\?\w+-[\w-]+$/) ? true : false;
+    return !!url.match(/\/(DktRpt|HistDocQry)\.pl\?\w+-[\w-]+$/);
   },
 
   // Returns true if this is a "Document Selection Menu" page (a list of the
   // attachments for a particular document).
   isAttachmentMenuPage: function (url, document) {
-    var inputs = document.getElementsByTagName('input');
-    var pageCheck = url.match(/\/doc1\/\d+/) &&
+    let inputs = document.getElementsByTagName('input');
+    let pageCheck = url.match(/\/doc1\/\d+/) &&
       inputs.length &&
       inputs[inputs.length - 1].value === 'Download All';
-    return pageCheck ? true : false;
+    return !!pageCheck;
   },
 
   // Returns true if this is a page for downloading a single document.
   isSingleDocumentPage: function (url, document) {
-    var inputs = document.getElementsByTagName('input');
-    var pageCheck = (url.match(/\/doc1\/\d+/) && inputs.length &&
+    let inputs = document.getElementsByTagName('input');
+    let pageCheck = (url.match(/\/doc1\/\d+/) && inputs.length &&
                      inputs[inputs.length - 1].value === 'View Document');
-    return pageCheck ? true : false;
+    return !!pageCheck;
   },
 
   // Returns the document ID for a document view page or single-document page.
   getDocumentIdFromUrl: function (url) {
-    var match = (url || '').match(/\/doc1\/(\d+)$/);
+    let match = (url || '').match(/\/doc1\/(\d+)$/);
     if (match) {
-      // Some PACER sites use the fourth digit of the docid to flag whether
-      // the user has been shown a receipt page.  We don't care about that,
-      // so we always set the fourth digit to 0 when getting a document ID.
+      // PACER sites use the fourth digit of the pacer_doc_id to flag whether
+      // the user has been shown a receipt page.  We don't care about that, so
+      // we always set the fourth digit to 0 when getting a doc ID.
       return match[1].slice(0, 3) + '0' + match[1].slice(4);
     }
   },
@@ -114,17 +125,17 @@ PACER = {
 
   // Given document.cookie, returns true if the user is logged in to PACER.
   hasPacerCookie: function (cookieString) {
-    var cookies = {};
+    let cookies = {};
     cookieString.replace(/\s*([^=;]+)=([^;]*)/g, function (match, name, value) {
       cookies[name.trim()] = value.trim();
     });
-    var pacerCookie = cookies['PacerUser'] || cookies['PacerSession'];
+    let pacerCookie = cookies['PacerUser'] || cookies['PacerSession'];
     return pacerCookie && !pacerCookie.match(/unvalidated/) ? true : false;
   },
 
   // Returns true if the given court identifier is for an appellate court.
   isAppellateCourt: function (court) {
-    return PACER.APPELLATE_COURTS[court] ? true : false;
+    return !!PACER.APPELLATE_COURTS[court];
   },
 
   // These are all the supported PACER court identifiers, together with their

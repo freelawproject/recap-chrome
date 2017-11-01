@@ -1,11 +1,17 @@
 // Abstraction of content scripts to make them modular and testable.
 
-ContentDelegate = function(url, path, court, casenum, docid, links) {
+let ContentDelegate = function(url, path, court, pacer_case_id, pacer_doc_id,
+                               links) {
   this.url = url;
   this.path = path;
   this.court = court;
-  this.casenum = casenum;
-  this.docid = docid;
+  this.pacer_case_id = pacer_case_id;
+  if (pacer_doc_id){
+    this.pacer_doc_id = pacer_doc_id;
+    this.pacer_doc_ids = [pacer_doc_id];
+  } else {
+    this.pacer_doc_ids = []
+  }
   this.links = links || [];
 
   this.notifier = importInstance(Notifier);
@@ -15,14 +21,23 @@ ContentDelegate = function(url, path, court, casenum, docid, links) {
 };
 
 ContentDelegate.prototype.findPacerDocIds = function() {
-  this.pacer_doc_ids = [];
-  for (var i = 0; i < this.links.length; i++) {
-    var link = this.links[i];
+  for (let i = 0; i < this.links.length; i++) {
+    let link = this.links[i];
     if (PACER.isDocumentUrl(link.href)) {
-      var pacer_doc_id = PACER.getDocumentIdFromUrl(link.href);
+      let pacer_doc_id = PACER.getDocumentIdFromUrl(link.href);
       $(link).data('pacer_doc_id', pacer_doc_id);
       this.pacer_doc_ids.push(pacer_doc_id);
     }
+  }
+  let pacer_case_id = this.pacer_case_id ||
+    this.recap.getPacerCaseIdFromPacerDocId(this.pacer_doc_id, function(){});
+  if (pacer_case_id){
+    // If we have the case ID or have it cached for the URL, stash a mapping of
+    // the doc ids on the page to the case id we were able to find.
+    this.recap.storePacerDocIds(this.pacer_doc_ids, pacer_case_id, function(){
+      console.info(`Saved the pacer_doc_id to pacer_case_id mappings to local ` +
+                   `storage.`);
+    });
   }
 };
 
@@ -32,7 +47,8 @@ ContentDelegate.prototype.handleDocketQueryUrl = function() {
     return;
   }
 
-  this.recap.getAvailabilityForDocket(this.court, this.casenum, function (result) {
+  this.recap.getAvailabilityForDocket(this.court, this.pacer_case_id,
+                                      function (result) {
     if (result.count === 0){
       console.warn(`Zero results found for docket lookup.`);
       return;
@@ -46,7 +62,7 @@ ContentDelegate.prototype.handleDocketQueryUrl = function() {
     // Insert a RECAP download link at the bottom of the form.
     $('<div class="recap-banner"/>').append(
       $('<a/>', {
-        title: 'Docket is available in the RECAP Archive.',
+        title: 'Docket is available for free in the RECAP Archive.',
         target: '_blank',
         href: "https://www.courtlistener.com" + first_result.absolute_url
       }).append(
@@ -73,7 +89,7 @@ ContentDelegate.prototype.handleDocketDisplayPage = function() {
     return;
   }
 
-  if (!(PACER.isDocketDisplayUrl(this.url) && this.casenum)) {
+  if (!(PACER.isDocketDisplayUrl(this.url) && this.pacer_case_id)) {
     return;
   }
 
@@ -81,15 +97,14 @@ ContentDelegate.prototype.handleDocketDisplayPage = function() {
     if (ok) {
       history.replaceState({uploaded: true}, '');
       this.notifier.showUpload(
-        'Docket uploaded to the public archive.',
+        'Docket uploaded to the public RECAP Archive.',
         function(){}
       );
     }
   }, this);
 
-
   let filename = PACER.getBaseNameFromUrl(this.url).replace('.pl', '.html');
-  this.recap.uploadDocket(this.court, this.casenum, filename,
+  this.recap.uploadDocket(this.court, this.pacer_case_id, filename,
                           document.documentElement.innerHTML, callback);
 };
 
@@ -108,13 +123,13 @@ ContentDelegate.prototype.handleAttachmentMenuPage = function() {
     if (ok) {
       history.replaceState({uploaded: true}, '');
       this.notifier.showUpload(
-        'Menu page uploaded to the public archive.',
+        'Menu page uploaded to the public RECAP Archive.',
         function () {}
       );
     }
   }, this);
 
-  this.recap.uploadAttachmentMenu(this.court, this.path, 'text/html',
+  this.recap.uploadAttachmentMenu(this.court, this.pacer_case_id,
                                   document.documentElement.innerHTML, callback);
 };
 
@@ -124,63 +139,106 @@ ContentDelegate.prototype.handleSingleDocumentPageCheck = function() {
     return;
   }
 
-  let callback = $.proxy(function (result) {
-    if (!(result && result[this.url])) {
+  let callback = $.proxy(function (api_results) {
+    console.info(`Got results from API. Running callback on API results to ` +
+                 `insert link`);
+    let result = api_results.results.filter(function(obj){
+      return obj.pacer_doc_id === pacer_doc_id;
+    })[0];
+    if (!result) {
       return;
     }
 
+    let href = "https://www.courtlistener.com/" + result.filepath_local;
     // Insert a RECAP download link at the bottom of the form.
     $('<div class="recap-banner"/>').append(
       $('<a/>', {
-        title: 'Document is available for free from RECAP.',
-        href: result[this.url].filename
+        title: 'Document is available for free in the RECAP Archive.',
+        href: href
       }).append(
         $('<img/>', {src: chrome.extension.getURL('assets/images/icon-16.png')})
       ).append(
-        ' Get this document for free from RECAP.'
+        ' Get this document for free from the RECAP Archive.'
       )
     ).appendTo($('form'));
   }, this);
 
-  this.recap.getAvailabilityForDocuments([this.url], callback);
+  let cl_court = PACER.convertToCourtListenerCourt(this.court);
+  this.recap.getAvailabilityForDocuments([this.pacer_doc_id], cl_court, callback);
 };
 
 ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
   // Save a copy of the page source, altered so that the "View Document"
   // button goes forward in the history instead of resubmitting the form.
-  var originalSubmit = document.forms[0].getAttribute('onsubmit');
+  let originalSubmit = document.forms[0].getAttribute('onsubmit');
   document.forms[0].setAttribute('onsubmit', 'history.forward(); return false;');
-  var previousPageHtml = document.documentElement.innerHTML;
+  let previousPageHtml = document.documentElement.innerHTML;
   document.forms[0].setAttribute('onsubmit', originalSubmit);
+
+  // Grab the document number, attachment number, and docket number
+  let image_string = $('td:contains(Image)').text();
+  let regex = /(\d+)-(\d+)/;
+  let matches = regex.exec(image_string);
+  let document_number = matches[1];
+  let attachment_number = matches[2];
+  let docket_number = $.trim($('tr:contains(Case Number) td:nth(1)').text())
 
   // Now do the form request to get to the view page.  Some PACER sites will
   // return an HTML page containing an <iframe> that loads the PDF document;
   // others just return the PDF document.  As we don't know whether we'll get
   // HTML (text) or PDF (binary), we ask for an ArrayBuffer and convert later.
   $('body').css('cursor', 'wait');
-  var form = document.getElementById(event.data.id);
-  var data = new FormData(form);
-  httpRequest(form.action, data, 'arraybuffer', function (type, ab) {
-    var blob = new Blob([new Uint8Array(ab)], {type: type});
-    // If we got a PDF, we wrap it in a simple HTML page.  This lets us treat
-    // both cases uniformly: either way we have an HTML page with an <iframe>
-    // in it, which is handled by showPdfPage.
-    if (type === 'application/pdf') {
-      // canb and ca9 return PDFs and trigger this code path.
-      var html = '<style>body { margin: 0; } iframe { border: none; }' +
-                 '</style><iframe src="' + URL.createObjectURL(blob) +
-                 '" width="100%" height="100%"></iframe>';
-      this.showPdfPage(document.documentElement, html, previousPageHtml);
-    } else {
-      // dcd (and presumably others) trigger this code path.
-      var reader = new FileReader();
-      reader.onload = function() {
-        this.showPdfPage(
-          document.documentElement, reader.result, previousPageHtml);
-      }.bind(this);
-      reader.readAsText(blob);  // convert blob to HTML text
+  let form = document.getElementById(event.data.id);
+  let data = new FormData(form);
+  $.ajax({
+    url: form.action,
+    method: 'POST',
+    processData: false,
+    contentType: false,
+    dataType: 'text',  // Disables post-processing of xhr.responseText
+    data: data,
+    xhr: function(){
+      try {
+        // Firefox. See: https://discourse.mozilla.org/t/webextension-xmlhttprequest-issues-no-cookies-or-referrer-solved/11224/18
+        return XPCNativeWrapper(new window.wrappedJSObject.XMLHttpRequest());
+      }
+      catch (evt) {
+        // Chrome.
+        return new XMLHttpRequest();
+      }
+    },
+    success: function(data, textStatus, xhr){
+      console.info(`Successfully submitted RECAP "View" button form: ${textStatus}`);
+      let type = xhr.getResponseHeader('Content-Type');
+      let blob = new Blob([xhr.responseText], {type: type});
+      // If we got a PDF, we wrap it in a simple HTML page.  This lets us treat
+      // both cases uniformly: either way we have an HTML page with an <iframe>
+      // in it, which is handled by showPdfPage.
+      if (type === 'application/pdf') {
+        // canb and ca9 return PDFs and trigger this code path.
+        let html = '<style>body { margin: 0; } iframe { border: none; }' +
+          '</style><iframe src="' + URL.createObjectURL(blob) +
+          '" width="100%" height="100%"></iframe>';
+        this.showPdfPage(document.documentElement, html, previousPageHtml,
+          document_number, attachment_number, docket_number);
+      } else {
+        // dcd (and presumably others) trigger this code path.
+        let reader = new FileReader();
+        reader.onload = function () {
+          this.showPdfPage(
+            document.documentElement, reader.result, previousPageHtml,
+            document_number, attachment_number, docket_number);
+        }.bind(this);
+        reader.readAsText(blob);  // convert blob to HTML text
+      }
+    }.bind(this),
+    error: function(xhr, textStatus, errorThrown) {
+      console.error(`Ajax error uploading docket. Status: ${textStatus}. ` +
+                    `Error: ${errorThrown}`);
     }
-  }.bind(this));
+  }
+)
+;
 };
 
 // Given the HTML for a page with an <iframe> in it, downloads the PDF document
@@ -189,9 +247,10 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
 // The documentElement is provided via dependency injection so that it can be
 // properly mocked in tests.
 ContentDelegate.prototype.showPdfPage = function(
-  documentElement, html, previousPageHtml) {
+  documentElement, html, previousPageHtml, document_number, attachment_number,
+  docket_number) {
   // Find the <iframe> URL in the HTML string.
-  var match = html.match(/([^]*?)<iframe[^>]*src="(.*?)"([^]*)/);
+  let match = html.match(/([^]*?)<iframe[^>]*src="(.*?)"([^]*)/);
   if (!match) {
     documentElement.innerHTML = html;
     return;
@@ -202,9 +261,14 @@ ContentDelegate.prototype.showPdfPage = function(
     match[1] + '<iframe src="about:blank"' + match[3];
 
   // Download the file from the <iframe> URL.
-  httpRequest(match[2], null, 'arraybuffer', function (type, ab) {
-    // Make the Back button redisplay the previous page.
-    window.onpopstate = function(event) {
+  $.ajax({
+    url: match[2],
+    method: 'GET',
+    dataType: 'arraybuffer',
+    processData: false
+  }).done(function (data, textStatus, xhr) {
+    console.info("Successfully got PDF as arraybuffer via ajax request.");
+    window.onpopstate = function (event) {
       if (event.state.content) {
         documentElement.innerHTML = event.state.content;
       }
@@ -212,16 +276,17 @@ ContentDelegate.prototype.showPdfPage = function(
     history.replaceState({content: previousPageHtml}, '');
 
     // Display the page with the downloaded file in the <iframe>.
-    var blob = new Blob([new Uint8Array(ab)], {type: type});
-    var blobUrl = URL.createObjectURL(blob);
-    this.recap.getDocumentMetadata(
-      this.docid, function (caseid, officialcasenum, docnum, subdocnum) {
-      var filename1 = 'gov.uscourts.' + this.court + '.' + caseid +
-        '.' + docnum + '.' + (subdocnum || '0') + '.pdf';
-      var filename2 = PACER.COURT_ABBREVS[this.court] + '_' +
-        (officialcasenum || caseid) +
-        '_' + docnum + '_' + (subdocnum || '0') + '.pdf';
-      var downloadLink = '<div id="recap-download" class="initial">' +
+    let type = xhr.getResponseHeader('Content-Type');
+    let blob = new Blob([new Uint8Array(data)], {type: type});
+    let blobUrl = URL.createObjectURL(blob);
+    this.recap.getPacerCaseIdFromPacerDocId(this.pacer_doc_id, function(pacer_case_id){
+      console.info(`Stored pacer_case_id is ${pacer_case_id}`);
+      let filename1 = 'gov.uscourts.' + this.court + '.' + pacer_case_id + '.' +
+        document_number + '.' + (attachment_number || '0') + '.pdf';
+      let filename2 = PACER.COURT_ABBREVS[this.court] + '_' + docket_number +
+        '_' + document_number + '_' + (attachment_number || '0') + '.pdf';
+
+      let downloadLink = '<div id="recap-download" class="initial">' +
         '<a href="' + blobUrl + '" download="' + filename1 + '">' +
         'Save as ' + filename1 + '</a>' +
         '<a href="' + blobUrl + '" download="' + filename2 + '">' +
@@ -232,21 +297,30 @@ ContentDelegate.prototype.showPdfPage = function(
         '}, 7500)" src="' + blobUrl + '"' + match[3];
       documentElement.innerHTML = html;
       history.pushState({content: html}, '');
-    });
 
-    // Upload the file to RECAP.  We can't pass an ArrayBuffer directly
-    // to the background page, so we have to convert to a regular array.
-    var name = this.path.match(/[^\/]+$/)[0] + '.pdf';
-    var bytes = arrayBufferToArray(ab);
-    var onUploadOk = function (ok) {
-      if (ok) {
-        this.notifier.showUpload(
-          'PDF uploaded to the public archive.', function () {});
+      if (pacer_case_id) {
+        // If we have the pacer_case_id, upload the file to RECAP.
+        // We can't pass an ArrayBuffer directly to the background page, so we
+        // have to convert to a regular array.
+        let bytes = arrayBufferToArray(data);
+        let onUploadOk = function (ok) {
+          if (ok) {
+            this.notifier.showUpload(
+              'PDF uploaded to the public RECAP Archive.', function () {
+              });
+          }
+        }.bind(this);
+        this.recap.uploadDocument(
+          this.court, pacer_case_id, document_number, attachment_number, bytes,
+          onUploadOk
+        );
       }
-    }.bind(this);
-    this.recap.uploadDocument(
-      this.court, this.path, name, type, bytes, onUploadOk);
-  }.bind(this));
+    }.bind(this));
+  }.bind(this)
+  ).fail(function (xhr, textStatus, errorThrown) {
+    console.error(`Ajax error getting temporary PDF file. Status: ` +
+                  `${textStatus}. Error: ${errorThrown}`);
+  });
 };
 
 // If this page offers a single document, intercept navigation to the document
@@ -260,7 +334,7 @@ ContentDelegate.prototype.handleSingleDocumentPageView = function() {
   // Monkey-patch the <form> prototype so that its submit() method sends a
   // message to this content script instead of submitting the form.  To do this
   // in the page context instead of this script's, we inject a <script> element.
-  var script = document.createElement('script');
+  let script = document.createElement('script');
   script.innerText =
       'document.createElement("form").__proto__.submit = function () {' +
       '  this.id = "form" + new Date().getTime();' +
@@ -314,7 +388,7 @@ ContentDelegate.prototype.handleRecapLinkClick = function(window_obj, url) {
 // Check every link in the document to see if there is a free RECAP document
 // available. If there is, put a link with a RECAP icon.
 ContentDelegate.prototype.attachRecapLinkToEligibleDocs = function() {
-  var linkCount = this.pacer_doc_ids.length;
+  let linkCount = this.pacer_doc_ids.length;
   console.info(`Attaching links to all eligible documents (${linkCount} found)`);
   if (linkCount === 0) {
     return;
@@ -339,7 +413,7 @@ ContentDelegate.prototype.attachRecapLinkToEligibleDocs = function() {
       let href = "https://www.courtlistener.com/" + result.filepath_local;
       let recap_link = $('<a/>', {
         'class': 'recap-inline',
-        'title': 'Available for free from RECAP.',
+        'title': 'Available for free from the RECAP Archive.',
         'href': href
       });
       recap_link.click($.proxy(this.handleRecapLinkClick, this, window, href));
