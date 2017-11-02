@@ -130,7 +130,7 @@ let PACER = {
       cookies[name.trim()] = value.trim();
     });
     let pacerCookie = cookies['PacerUser'] || cookies['PacerSession'];
-    return pacerCookie && !pacerCookie.match(/unvalidated/) ? true : false;
+    return !!(pacerCookie && !pacerCookie.match(/unvalidated/));
   },
 
   // Returns true if the given court identifier is for an appellate court.

@@ -46,6 +46,11 @@ ContentDelegate.prototype.handleDocketQueryUrl = function() {
   if (!PACER.isDocketQueryUrl(this.url)) {
     return;
   }
+  if (!PACER.hasPacerCookie(document.cookie)){
+    // Logged out users that load a docket page, see a login page, so they
+    // shouldn't check for docket availability.
+    return;
+  }
 
   this.recap.getAvailabilityForDocket(this.court, this.pacer_case_id,
                                       function (result) {
