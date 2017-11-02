@@ -78,7 +78,7 @@ When a new version is needed, the release process is:
 
 1. Zip up the archive with the rather archaic:
 
-        zip -FSr recap-chrome.zip * --exclude=*node_modules*
+        zip -FSr recap.zip * --exclude=*node_modules*
 
 1. Upload that to the [Chrome Market][market].
 1. Upload that to addons.mozilla.org
