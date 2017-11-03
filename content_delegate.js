@@ -267,8 +267,8 @@ ContentDelegate.prototype.showPdfPage = function(
     history.replaceState({content: previousPageHtml}, '');
 
     // Display the page with the downloaded file in the <iframe>.
-    var blob = new Blob([new Uint8Array(ab)], {type: type});
-    var blobUrl = URL.createObjectURL(blob);
+    let blob = new Blob([new Uint8Array(ab)], {type: type});
+    let blobUrl = URL.createObjectURL(blob);
     this.recap.getPacerCaseIdFromPacerDocId(this.pacer_doc_id, function(pacer_case_id){
       console.info(`Stored pacer_case_id is ${pacer_case_id}`);
       let filename1 = 'gov.uscourts.' + this.court + '.' +
