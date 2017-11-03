@@ -82,8 +82,8 @@ function Recap() {
 
     // Uploads an HTML docket to the RECAP server, calling the callback with
     // a boolean success flag.
-    uploadDocket: function (pacer_court, pacer_case_id, filename, html, cb) {
-      var formData = new FormData();
+    uploadDocket: function (pacer_court, pacer_case_id, html, cb) {
+      let formData = new FormData();
       formData.append('court', PACER.convertToCourtListenerCourt(pacer_court));
       formData.append('pacer_case_id', pacer_case_id);
       formData.append('upload_type', UPLOAD_TYPES['DOCKET']);
