@@ -21,6 +21,10 @@ let ContentDelegate = function(url, path, court, pacer_case_id, pacer_doc_id,
 };
 
 ContentDelegate.prototype.findPacerDocIds = function() {
+  if (!PACER.hasPacerCookie(document.cookie)) {
+    return;
+  }
+
   for (let i = 0; i < this.links.length; i++) {
     let link = this.links[i];
     if (PACER.isDocumentUrl(link.href)) {
@@ -98,19 +102,24 @@ ContentDelegate.prototype.handleDocketDisplayPage = function() {
     return;
   }
 
-  let callback = $.proxy(function (ok) {
-    if (ok) {
-      history.replaceState({uploaded: true}, '');
-      this.notifier.showUpload(
-        'Docket uploaded to the public RECAP Archive.',
-        function(){}
-      );
-    }
-  }, this);
+  chrome.storage.local.get('options', function (items) {
+    if (!items['options']['recap_disabled']) {
+      let callback = $.proxy(function (ok) {
+        if (ok) {
+          history.replaceState({uploaded: true}, '');
+          this.notifier.showUpload(
+            'Docket uploaded to the public RECAP Archive.',
+            function(){}
+          );
+        }
+      }, this);
 
-  let filename = PACER.getBaseNameFromUrl(this.url).replace('.pl', '.html');
-  this.recap.uploadDocket(this.court, this.pacer_case_id, filename,
-                          document.documentElement.innerHTML, callback);
+      this.recap.uploadDocket(this.court, this.pacer_case_id,
+                              document.documentElement.innerHTML, callback);
+    } else {
+      console.info(`Not uploading docket. RECAP is disabled.`)
+    }
+  }.bind(this));
 };
 
 // If this is a document's menu of attachments (subdocuments), upload it to
@@ -124,18 +133,25 @@ ContentDelegate.prototype.handleAttachmentMenuPage = function() {
     return;
   }
 
-  let callback = $.proxy(function(ok) {
-    if (ok) {
-      history.replaceState({uploaded: true}, '');
-      this.notifier.showUpload(
-        'Menu page uploaded to the public RECAP Archive.',
-        function () {}
-      );
-    }
-  }, this);
+  chrome.storage.local.get('options', function (items) {
+    if (!items['options']['recap_disabled']) {
+      let callback = $.proxy(function (ok) {
+        if (ok) {
+          history.replaceState({uploaded: true}, '');
+          this.notifier.showUpload(
+            'Menu page uploaded to the public RECAP Archive.',
+            function () {
+            }
+          );
+        }
+      }, this);
 
-  this.recap.uploadAttachmentMenu(this.court, this.pacer_case_id,
-                                  document.documentElement.innerHTML, callback);
+      this.recap.uploadAttachmentMenu(this.court, this.pacer_case_id,
+        document.documentElement.innerHTML, callback);
+    } else {
+      console.info("Not uploading attachment menu. RECAP is disabled.")
+    }
+  }.bind(this));
 };
 
 // If this page offers a single document, ask RECAP whether it has the document.
@@ -255,7 +271,8 @@ ContentDelegate.prototype.showPdfPage = function(
     var blobUrl = URL.createObjectURL(blob);
     this.recap.getPacerCaseIdFromPacerDocId(this.pacer_doc_id, function(pacer_case_id){
       console.info(`Stored pacer_case_id is ${pacer_case_id}`);
-      let filename1 = 'gov.uscourts.' + this.court + '.' + pacer_case_id + '.' +
+      let filename1 = 'gov.uscourts.' + this.court + '.' +
+        (pacer_case_id || 'unknown-case-id') + '.' +
         document_number + '.' + (attachment_number || '0') + '.pdf';
       let filename2 = PACER.COURT_ABBREVS[this.court] + '_' + docket_number +
         '_' + document_number + '_' + (attachment_number || '0') + '.pdf';
@@ -273,21 +290,29 @@ ContentDelegate.prototype.showPdfPage = function(
       history.pushState({content: html}, '');
     });
 
-    // Upload the file to RECAP.  We can't pass an ArrayBuffer directly
-    // to the background page, so we have to convert to a regular array.
-    var name = this.path.match(/[^\/]+$/)[0] + '.pdf';
-    var bytes = arrayBufferToArray(ab);
-    var onUploadOk = function (ok) {
-      if (ok) {
-        this.notifier.showUpload(
-          'PDF uploaded to the public archive.', function () {});
-      }
-    }.bind(this);
-    this.recap.uploadDocument(
-      this.court, pacer_case_id, document_number, attachment_number, bytes,
-      onUploadOk
-    );
-  }.bind(this));
+      chrome.storage.local.get('options', function (items) {
+        if (!items['options']['recap_disabled']) {
+          // If we have the pacer_case_id, upload the file to RECAP.
+          // We can't pass an ArrayBuffer directly to the background page, so
+          // we have to convert to a regular array.
+          let bytes = arrayBufferToArray(data);
+          let onUploadOk = function (ok) {
+            if (ok) {
+              this.notifier.showUpload(
+                'PDF uploaded to the public RECAP Archive.', function () {
+                });
+            }
+          }.bind(this);
+
+	  this.recap.uploadDocument(
+	    this.court, pacer_case_id, document_number, attachment_number, bytes,
+	    onUploadOk
+	  );
+        } else {
+          console.info("Not uploading PDF. RECAP is disabled.");
+        }
+      }.bind(this));
+    }.bind(this));
 };
 
 // If this page offers a single document, intercept navigation to the document
