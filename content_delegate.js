@@ -195,55 +195,30 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
   $('body').css('cursor', 'wait');
   let form = document.getElementById(event.data.id);
   let data = new FormData(form);
-  $.ajax({
-    url: form.action,
-    method: 'POST',
-    processData: false,
-    contentType: false,
-    dataType: 'text',  // Disables post-processing of xhr.responseText
-    data: data,
-    xhr: function(){
-      try {
-        // Firefox. See: https://discourse.mozilla.org/t/webextension-xmlhttprequest-issues-no-cookies-or-referrer-solved/11224/18
-        return XPCNativeWrapper(new window.wrappedJSObject.XMLHttpRequest());
-      }
-      catch (evt) {
-        // Chrome.
-        return new XMLHttpRequest();
-      }
-    },
-    success: function(data, textStatus, xhr){
-      console.info(`Successfully submitted RECAP "View" button form: ${textStatus}`);
-      let type = xhr.getResponseHeader('Content-Type');
-      let blob = new Blob([xhr.responseText], {type: type});
-      // If we got a PDF, we wrap it in a simple HTML page.  This lets us treat
-      // both cases uniformly: either way we have an HTML page with an <iframe>
-      // in it, which is handled by showPdfPage.
-      if (type === 'application/pdf') {
-        // canb and ca9 return PDFs and trigger this code path.
-        let html = '<style>body { margin: 0; } iframe { border: none; }' +
-          '</style><iframe src="' + URL.createObjectURL(blob) +
-          '" width="100%" height="100%"></iframe>';
-        this.showPdfPage(document.documentElement, html, previousPageHtml,
-          document_number, attachment_number, docket_number);
-      } else {
-        // dcd (and presumably others) trigger this code path.
-        let reader = new FileReader();
-        reader.onload = function () {
+  httpRequest(form.action, data, 'arraybuffer', function (type, ab, xhr) {
+    console.info('Successfully submitted RECAP "View" button form: '+xhr.statusText);
+    var blob = new Blob([new Uint8Array(ab)], {type: type});
+    // If we got a PDF, we wrap it in a simple HTML page.  This lets us treat
+    // both cases uniformly: either way we have an HTML page with an <iframe>
+    // in it, which is handled by showPdfPage.
+    if (type === 'application/pdf') {
+      // canb and ca9 return PDFs and trigger this code path.
+      var html = '<style>body { margin: 0; } iframe { border: none; }' +
+                 '</style><iframe src="' + URL.createObjectURL(blob) +
+                 '" width="100%" height="100%"></iframe>';
+      this.showPdfPage(document.documentElement, html, previousPageHtml,
+        document_number, attachment_number, docket_number);
+    } else {
+      // dcd (and presumably others) trigger this code path.
+      var reader = new FileReader();
+      reader.onload = function() {
           this.showPdfPage(
             document.documentElement, reader.result, previousPageHtml,
             document_number, attachment_number, docket_number);
-        }.bind(this);
-        reader.readAsText(blob);  // convert blob to HTML text
-      }
-    }.bind(this),
-    error: function(xhr, textStatus, errorThrown) {
-      console.error(`Ajax error uploading docket. Status: ${textStatus}. ` +
-                    `Error: ${errorThrown}`);
+      }.bind(this);
+      reader.readAsText(blob);  // convert blob to HTML text
     }
-  }
-)
-;
+  }.bind(this));
 };
 
 // Given the HTML for a page with an <iframe> in it, downloads the PDF document
@@ -266,14 +241,9 @@ ContentDelegate.prototype.showPdfPage = function(
     match[1] + '<iframe src="about:blank"' + match[3];
 
   // Download the file from the <iframe> URL.
-  $.ajax({
-    url: match[2],
-    method: 'GET',
-    dataType: 'arraybuffer',
-    processData: false
-  }).done(function (data, textStatus, xhr) {
-    console.info("Successfully got PDF as arraybuffer via ajax request.");
-    window.onpopstate = function (event) {
+  httpRequest(match[2], null, 'arraybuffer', function (type, ab, xhr) {
+    // Make the Back button redisplay the previous page.
+    window.onpopstate = function(event) {
       if (event.state.content) {
         documentElement.innerHTML = event.state.content;
       }
@@ -281,9 +251,8 @@ ContentDelegate.prototype.showPdfPage = function(
     history.replaceState({content: previousPageHtml}, '');
 
     // Display the page with the downloaded file in the <iframe>.
-    let type = xhr.getResponseHeader('Content-Type');
-    let blob = new Blob([new Uint8Array(data)], {type: type});
-    let blobUrl = URL.createObjectURL(blob);
+    var blob = new Blob([new Uint8Array(ab)], {type: type});
+    var blobUrl = URL.createObjectURL(blob);
     this.recap.getPacerCaseIdFromPacerDocId(this.pacer_doc_id, function(pacer_case_id){
       console.info(`Stored pacer_case_id is ${pacer_case_id}`);
       let filename1 = 'gov.uscourts.' + this.court + '.' + pacer_case_id + '.' +
@@ -302,30 +271,23 @@ ContentDelegate.prototype.showPdfPage = function(
         '}, 7500)" src="' + blobUrl + '"' + match[3];
       documentElement.innerHTML = html;
       history.pushState({content: html}, '');
+    });
 
-      if (pacer_case_id) {
-        // If we have the pacer_case_id, upload the file to RECAP.
-        // We can't pass an ArrayBuffer directly to the background page, so we
-        // have to convert to a regular array.
-        let bytes = arrayBufferToArray(data);
-        let onUploadOk = function (ok) {
-          if (ok) {
-            this.notifier.showUpload(
-              'PDF uploaded to the public RECAP Archive.', function () {
-              });
-          }
-        }.bind(this);
-        this.recap.uploadDocument(
-          this.court, pacer_case_id, document_number, attachment_number, bytes,
-          onUploadOk
-        );
+    // Upload the file to RECAP.  We can't pass an ArrayBuffer directly
+    // to the background page, so we have to convert to a regular array.
+    var name = this.path.match(/[^\/]+$/)[0] + '.pdf';
+    var bytes = arrayBufferToArray(ab);
+    var onUploadOk = function (ok) {
+      if (ok) {
+        this.notifier.showUpload(
+          'PDF uploaded to the public archive.', function () {});
       }
-    }.bind(this));
-  }.bind(this)
-  ).fail(function (xhr, textStatus, errorThrown) {
-    console.error(`Ajax error getting temporary PDF file. Status: ` +
-                  `${textStatus}. Error: ${errorThrown}`);
-  });
+    }.bind(this);
+    this.recap.uploadDocument(
+      this.court, pacer_case_id, document_number, attachment_number, bytes,
+      onUploadOk
+    );
+  }.bind(this));
 };
 
 // If this page offers a single document, intercept navigation to the document
