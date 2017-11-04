@@ -288,32 +288,34 @@ ContentDelegate.prototype.showPdfPage = function(
         '}, 7500)" src="' + blobUrl + '"' + match[3];
       documentElement.innerHTML = html;
       history.pushState({content: html}, '');
-    });
-
+	
       chrome.storage.local.get('options', function (items) {
         if (!items['options']['recap_disabled']) {
           // If we have the pacer_case_id, upload the file to RECAP.
           // We can't pass an ArrayBuffer directly to the background page, so
           // we have to convert to a regular array.
-          let bytes = arrayBufferToArray(data);
+          let bytes = arrayBufferToArray(ab);
           let onUploadOk = function (ok) {
             if (ok) {
               this.notifier.showUpload(
                 'PDF uploaded to the public RECAP Archive.', function () {
-                });
+                }.bind(this));
             }
           }.bind(this);
 
+	  console.info("debug: before upload");
 	  this.recap.uploadDocument(
 	    this.court, pacer_case_id, document_number, attachment_number, bytes,
 	    onUploadOk
 	  );
+	  console.info("debug: after upload");
         } else {
           console.info("Not uploading PDF. RECAP is disabled.");
         }
       }.bind(this));
     }.bind(this));
-};
+  }.bind(this));
+}
 
 // If this page offers a single document, intercept navigation to the document
 // view page.  The "View Document" button calls the goDLS() function, which
