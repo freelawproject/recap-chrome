@@ -1,8 +1,9 @@
 // Abstraction of the RECAP server APIs.
 // Public impure functions.  (See utils.js for details on defining services.)
 function Recap() {
-  var SERVER_ROOT = 'https://www.courtlistener.com/api/rest/v3/';
-  var UPLOAD_TYPES = {
+  var DEBUG=false,
+    SERVER_ROOT = 'https://www.courtlistener.com/api/rest/v3/',
+    UPLOAD_TYPES = {
     'DOCKET': 1,
     'ATTACHMENT_PAGE': 2,
     'PDF': 3
