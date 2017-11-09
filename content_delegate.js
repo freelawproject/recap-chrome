@@ -211,7 +211,7 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
   $('body').css('cursor', 'wait');
   let form = document.getElementById(event.data.id);
   let data = new FormData(form);
-  httpRequest(form.action, data, 'arraybuffer', function (type, ab, xhr) {
+  httpRequest(form.action, data, function (type, ab, xhr) {
     console.info('Successfully submitted RECAP "View" button form: '+xhr.statusText);
     var blob = new Blob([new Uint8Array(ab)], {type: type});
     // If we got a PDF, we wrap it in a simple HTML page.  This lets us treat
@@ -257,7 +257,9 @@ ContentDelegate.prototype.showPdfPage = function(
     match[1] + '<iframe src="about:blank"' + match[3];
 
   // Download the file from the <iframe> URL.
-  httpRequest(match[2], null, 'arraybuffer', function (type, ab, xhr) {
+  httpRequest(match[2], null, function (type, ab, xhr) {
+    console.info("Successfully got PDF as arraybuffer via ajax request.");
+
     // Make the Back button redisplay the previous page.
     window.onpopstate = function(event) {
       if (event.state.content) {
@@ -288,13 +290,12 @@ ContentDelegate.prototype.showPdfPage = function(
         '}, 7500)" src="' + blobUrl + '"' + match[3];
       documentElement.innerHTML = html;
       history.pushState({content: html}, '');
-	
+
       chrome.storage.local.get('options', function (items) {
         if (!items['options']['recap_disabled']) {
           // If we have the pacer_case_id, upload the file to RECAP.
           // We can't pass an ArrayBuffer directly to the background page, so
           // we have to convert to a regular array.
-          let bytes = arrayBufferToArray(ab);
           let onUploadOk = function (ok) {
             if (ok) {
               this.notifier.showUpload(
@@ -303,12 +304,10 @@ ContentDelegate.prototype.showPdfPage = function(
             }
           }.bind(this);
 
-	  console.info("debug: before upload");
-	  this.recap.uploadDocument(
-	    this.court, pacer_case_id, document_number, attachment_number, bytes,
-	    onUploadOk
-	  );
-	  console.info("debug: after upload");
+          this.recap.uploadDocument(
+            this.court, pacer_case_id, this.pacer_doc_id, document_number,
+            attachment_number, blob, onUploadOk
+          );
         } else {
           console.info("Not uploading PDF. RECAP is disabled.");
         }

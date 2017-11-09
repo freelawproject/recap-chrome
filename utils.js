@@ -88,8 +88,8 @@ function getHostname(url){
 // type and response (interpreted according to responseType).  See XHR2 spec
 // for details on responseType and response.  Uses GET if postData is null or
 // POST otherwise.  postData can be any type accepted by XMLHttpRequest.send().
-function httpRequest(url, postData, responseType, callback) {
-  var type = null,
+function httpRequest(url, postData, callback) {
+  let type = null,
       result = null,
       xhr;
 
@@ -106,21 +106,12 @@ function httpRequest(url, postData, responseType, callback) {
         xhr = new XMLHttpRequest();
     }
 
-  // WebKit doesn't support responseType 'json' yet, but probably will soon.
-  xhr.responseType = responseType === 'json' ? 'text' : responseType;
+  xhr.responseType = 'arraybuffer';
   xhr.onreadystatechange = function () {
     if (xhr.readyState === 4) {
       if (xhr.status === 200) {
         type = xhr.getResponseHeader('Content-Type');
         result = xhr.response;
-        if (responseType === 'json') {
-          try {
-            result = JSON.parse(result);
-          } catch (e) {
-            // Don't bother calling the callback if there's no valid JSON.
-            return;
-          }
-        }
       }
       callback && callback(type, result, xhr);
     }
@@ -148,15 +139,3 @@ $.ajaxSetup({
     }
   }
 });
-
-// Converts an ArrayBuffer to a regular array of unsigned bytes.  Array.apply()
-// causes a "maximum call stack size exceeded" error for buffers of only 300k,
-// so we need this ridiculous circumlocution of breaking the data into chunks.
-function arrayBufferToArray(ab) {
-  let chunks = [];
-  for (let i = 0; i < ab.byteLength; i += 100000) {
-    let slice = new Uint8Array(ab, i, Math.min(100000, ab.byteLength - i));
-    chunks.push(Array.apply(null, slice));  // convert each chunk separately
-  }
-  return [].concat.apply([], chunks);  // concatenate all the chunks together
-}
