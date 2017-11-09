@@ -84,6 +84,56 @@ function getHostname(url){
   return $('<a>').prop('href', url).prop('hostname');
 }
 
+// Makes an XHR to the given URL, calling a callback with the returned content
+// type and response (interpreted according to responseType).  See XHR2 spec
+// for details on responseType and response.  Uses GET if postData is null or
+// POST otherwise.  postData can be any type accepted by XMLHttpRequest.send().
+function httpRequest(url, postData, responseType, callback) {
+  var type = null,
+      result = null,
+      xhr;
+
+    // Firefox requires a special call to get an XMLHttpRequest() that
+    // sends Referer headers, which is CMECF needs because of their
+    // choice in how to fix the 2017 cross-site/same-origin security
+    // vulnerability.
+    try {
+        // Firefox. See: https://discourse.mozilla.org/t/webextension-xmlhttprequest-issues-no-cookies-or-referrer-solved/11224/18
+        xhr = XPCNativeWrapper(new window.wrappedJSObject.XMLHttpRequest());
+    }
+    catch (evt) {
+        // Chrome.
+        xhr = new XMLHttpRequest();
+    }
+
+  // WebKit doesn't support responseType 'json' yet, but probably will soon.
+  xhr.responseType = responseType === 'json' ? 'text' : responseType;
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState === 4) {
+      if (xhr.status === 200) {
+        type = xhr.getResponseHeader('Content-Type');
+        result = xhr.response;
+        if (responseType === 'json') {
+          try {
+            result = JSON.parse(result);
+          } catch (e) {
+            // Don't bother calling the callback if there's no valid JSON.
+            return;
+          }
+        }
+      }
+      callback && callback(type, result, xhr);
+    }
+  };
+  if (postData) {
+    xhr.open('POST', url);
+    xhr.send(postData);
+  } else {
+    xhr.open('GET', url);
+    xhr.send();
+  }
+}
+
 // Default settings for any jquery $.ajax call.
 $.ajaxSetup({
   beforeSend: function (xhr, settings) {
