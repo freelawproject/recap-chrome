@@ -12,8 +12,8 @@
       color: black;
     }
     fieldset {
-      margin-top: 10px;
-      width: 400px;
+      margin: 10px 5px;
+      width: 550px;
     }
   </style>
 </head>
@@ -38,15 +38,6 @@
         Confirm before opening free documents
       </div>
     </label>
-    <label for="recap_disabled"
-      title="Disable RECAP uploading even when logged in.">
-      <div class="item">
-        <span class="icon">
-          <input id="recap_disabled" type="checkbox">
-        </span>
-        Temporarily disable RECAP uploading even when logged in to PACER
-      </div>
-    </label>
     <fieldset>
       <legend>PDF Filenames</legend>
       <div>
@@ -59,9 +50,18 @@
         <input type="radio" id="lawyer_style_filenames"
                name="filename_style" value="lawyer_style_filenames">
         <label for="lawyer">Use Lawyer style (e.g.
-          N.D.Cal._3-08-cv-03251_46_0.pdf)</label>
+          N.D.Cal._3&#8209;08&#8209;cv&#8209;03251_46_0.pdf)</label>
       </div>
     </fieldset>
+    <label for="recap_disabled"
+           title="Disable RECAP uploading even when logged in.">
+      <div class="item">
+        <span class="icon">
+          <input id="recap_disabled" type="checkbox">
+        </span>
+        Temporarily disable RECAP uploading even when logged in to PACER
+      </div>
+    </label>
   </div>
   <div id="donate-plea">
     <a href="https://free.law/donate/?referrer=recap-extension"></a>
