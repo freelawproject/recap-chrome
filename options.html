@@ -11,6 +11,9 @@
       background-color: white;
       color: black;
     }
+    fieldset {
+      margin-top: 10px;
+    }
   </style>
 </head>
 
@@ -43,6 +46,21 @@
         Temporarily disable RECAP uploading even when logged in to PACER
       </div>
     </label>
+    <fieldset>
+      <legend>PDF Filenames</legend>
+      <div>
+        <input type="radio" id="ia_style_filenames"
+               name="filename_style" value="ia_style_filenames">
+        <label for="ia">Use Internet Archive style (e.g.
+          gov.uscourts.cand.201881.46.0.pdf)</label>
+      </div>
+      <div>
+        <input type="radio" id="lawyer_style_filenames"
+               name="filename_style" value="lawyer_style_filenames">
+        <label for="lawyer">Use Lawyer style (e.g.
+          N.D.Cal._3-08-cv-03251_46_0.pdf)</label>
+      </div>
+    </fieldset>
   </div>
   <div id="donate-plea">
     <a href="https://free.law/donate/?referrer=recap-extension"></a>

@@ -6,7 +6,8 @@ let inputs = document.getElementsByTagName('input');
 function load_options() {
   chrome.storage.local.get('options', function (items) {
     for (let i = 0; i < inputs.length; i++) {
-      if (inputs[i].type === "checkbox") {
+      if (inputs[i].type === "checkbox" ||
+          inputs[i].type === "radio") {
         inputs[i].checked = items.options[inputs[i].id];
       } else if (inputs[i].type === "text") {
         inputs[i].value = items.options[inputs[i].id] || "";
@@ -18,7 +19,8 @@ function load_options() {
 function save_options() {
   var options = {};
   for (let i = 0; i < inputs.length; i++) {
-    if (inputs[i].type === "checkbox"){
+    if (inputs[i].type === "checkbox" ||
+        inputs[i].type === "radio"){
       options[inputs[i].id] = inputs[i].checked;
     } else if (inputs[i].type === "text") {
       options[inputs[i].id] = inputs[i].value;
