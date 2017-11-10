@@ -36,7 +36,7 @@ function Notifier() {
     // Shows an upload message if upload notifications are enabled.
     showUpload: function (message, cb) {
       chrome.storage.local.get('options', function (items) {
-        if (items.options.upload_notifications) {
+        if (items.options.show_notifications) {
           showNotification(
             'RECAP upload',
             message,
@@ -48,7 +48,7 @@ function Notifier() {
     // Shows a login status message if login status notifications are enabled.
     showStatus: function (active, message, cb) {
       chrome.storage.local.get('options', function (items) {
-        if (items.options.status_notifications) {
+        if (items.options.show_notifications) {
           showNotification(
             active ? 'RECAP is active' : 'RECAP is inactive',
             message,

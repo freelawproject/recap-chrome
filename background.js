@@ -3,8 +3,7 @@ chrome.storage.local.get('options', function (items) {
   if (!items.options) {
     chrome.storage.local.set({options: {
       recap_link_popups: true,
-      status_notifications: true,
-      upload_notifications: true,
+      show_notifications: true,
       recap_disabled: false
     }});
   }
