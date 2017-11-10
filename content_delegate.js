@@ -304,9 +304,13 @@ ContentDelegate.prototype.showPdfPage = function(
             }
           }.bind(this);
 
+          // In Chrome, blobs can't be passed from content scripts to background
+          // scripts, so we have to convert to an array and pass that, then
+          // convert back to a blob when we add the data to the FormData object.
+          let bytes = arrayBufferToArray(ab);
           this.recap.uploadDocument(
             this.court, pacer_case_id, this.pacer_doc_id, document_number,
-            attachment_number, blob, onUploadOk
+            attachment_number, bytes, onUploadOk
           );
         } else {
           console.info("Not uploading PDF. RECAP is disabled.");

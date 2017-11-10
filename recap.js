@@ -137,10 +137,11 @@ function Recap() {
     // Uploads a PDF document to the RECAP server, calling the callback with
     // a boolean success flag.
     uploadDocument: function(pacer_court, pacer_case_id, pacer_doc_id,
-                             document_number, attachment_number, blob, cb) {
+                             document_number, attachment_number, bytes, cb) {
       console.info(`Attempting PDF upload to RECAP Archive with details: ` +
                    `pacer_court: ${pacer_court}, pacer_case_id: ` +
-                   `${pacer_case_id}, document_number: ${document_number}, ` +
+                   `${pacer_case_id}, pacer_doc_id: ${pacer_doc_id},` +
+                   `document_number: ${document_number}, ` +
                    `attachment_number: ${attachment_number}.`);
       let formData = new FormData();
       formData.append('court', PACER.convertToCourtListenerCourt(pacer_court));
@@ -150,7 +151,7 @@ function Recap() {
       if (attachment_number !== '0'){
         formData.append('attachment_number', attachment_number);
       }
-      formData.append('filepath_local', blob);
+      formData.append('filepath_local', new Blob([new Uint8Array(bytes)]));
       formData.append('upload_type', UPLOAD_TYPES['PDF']);
       formData.append('debug', DEBUG);
       $.ajax({
