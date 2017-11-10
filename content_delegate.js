@@ -273,29 +273,29 @@ ContentDelegate.prototype.showPdfPage = function(
     let blobUrl = URL.createObjectURL(blob);
     this.recap.getPacerCaseIdFromPacerDocId(this.pacer_doc_id, function(pacer_case_id){
       console.info(`Stored pacer_case_id is ${pacer_case_id}`);
-      var filename;
-      chrome.storage.local.get('options', function(items){
-        if (items.options.ia_style_filenames){
+      let updateHtmlPage = function (items) {
+        let filename;
+        if (items.options.ia_style_filenames) {
           filename = 'gov.uscourts.' + this.court + '.' +
             (pacer_case_id || 'unknown-case-id') + '.' +
             document_number + '.' + (attachment_number || '0') + '.pdf';
-        } else if (items.options.lawyer_style_filenames){
+        } else if (items.options.lawyer_style_filenames) {
           filename = PACER.COURT_ABBREVS[this.court] + '_' + docket_number +
             '_' + document_number + '_' + (attachment_number || '0') + '.pdf';
         }
-      }.bind(this));
+        let downloadLink = '<div id="recap-download" class="initial">' +
+          '<a href="' + blobUrl + '" download="' + filename + '">' +
+          'Save as ' + filename + '</a></div>';
+        html = match[1] + downloadLink + '<iframe onload="' +
+          'setTimeout(function() {' +
+          "  document.getElementById('recap-download').className = '';" +
+          '}, 7500)" src="' + blobUrl + '"' + match[3];
+        documentElement.innerHTML = html;
+        history.pushState({content: html}, '');
+      }.bind(this);
+      chrome.storage.local.get('options', updateHtmlPage);
 
-      let downloadLink = '<div id="recap-download" class="initial">' +
-        '<a href="' + blobUrl + '" download="' + filename + '">' +
-        'Save as ' + filename + '</a></div>';
-      html = match[1] + downloadLink + '<iframe onload="' +
-        'setTimeout(function() {' +
-        "  document.getElementById('recap-download').className = '';" +
-        '}, 7500)" src="' + blobUrl + '"' + match[3];
-      documentElement.innerHTML = html;
-      history.pushState({content: html}, '');
-
-      chrome.storage.local.get('options', function (items) {
+      let uploadDocument = function(items){
         if (!items['options']['recap_disabled']) {
           // If we have the pacer_case_id, upload the file to RECAP.
           // We can't pass an ArrayBuffer directly to the background page, so
@@ -319,10 +319,12 @@ ContentDelegate.prototype.showPdfPage = function(
         } else {
           console.info("Not uploading PDF. RECAP is disabled.");
         }
-      }.bind(this));
+      }.bind(this);
+      chrome.storage.local.get('options', uploadDocument);
+
     }.bind(this));
   }.bind(this));
-}
+};
 
 // If this page offers a single document, intercept navigation to the document
 // view page.  The "View Document" button calls the goDLS() function, which
