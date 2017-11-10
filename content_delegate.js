@@ -273,17 +273,21 @@ ContentDelegate.prototype.showPdfPage = function(
     let blobUrl = URL.createObjectURL(blob);
     this.recap.getPacerCaseIdFromPacerDocId(this.pacer_doc_id, function(pacer_case_id){
       console.info(`Stored pacer_case_id is ${pacer_case_id}`);
-      let filename1 = 'gov.uscourts.' + this.court + '.' +
-        (pacer_case_id || 'unknown-case-id') + '.' +
-        document_number + '.' + (attachment_number || '0') + '.pdf';
-      let filename2 = PACER.COURT_ABBREVS[this.court] + '_' + docket_number +
-        '_' + document_number + '_' + (attachment_number || '0') + '.pdf';
+      var filename;
+      chrome.storage.local.get('options', function(items){
+        if (items.options.ia_style_filenames){
+          filename = 'gov.uscourts.' + this.court + '.' +
+            (pacer_case_id || 'unknown-case-id') + '.' +
+            document_number + '.' + (attachment_number || '0') + '.pdf';
+        } else if (items.options.lawyer_style_filenames){
+          filename = PACER.COURT_ABBREVS[this.court] + '_' + docket_number +
+            '_' + document_number + '_' + (attachment_number || '0') + '.pdf';
+        }
+      }.bind(this));
 
       let downloadLink = '<div id="recap-download" class="initial">' +
-        '<a href="' + blobUrl + '" download="' + filename1 + '">' +
-        'Save as ' + filename1 + '</a>' +
-        '<a href="' + blobUrl + '" download="' + filename2 + '">' +
-        'Save as ' + filename2 + '</a></div>';
+        '<a href="' + blobUrl + '" download="' + filename + '">' +
+        'Save as ' + filename + '</a></div>';
       html = match[1] + downloadLink + '<iframe onload="' +
         'setTimeout(function() {' +
         "  document.getElementById('recap-download').className = '';" +
