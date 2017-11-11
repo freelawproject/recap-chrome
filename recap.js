@@ -97,7 +97,8 @@ function Recap() {
         contentType: false,
         data: formData,
         success: function(data, textStatus, xhr){
-          console.info(`Successfully uploaded docket: ${textStatus}`);
+          console.info(`Successfully uploaded docket: '${textStatus}' ` +
+                       `with processing queue id of ${data['id']}`);
           cb(data || null);
         },
         error: function(xhr, textStatus, errorThrown){
@@ -124,7 +125,8 @@ function Recap() {
         contentType: false,
         data: formData,
         success: function(data, textStatus, xhr){
-          console.info(`Successfully uploaded attachment page: ${textStatus}`);
+          console.info(`Successfully uploaded attachment page: '${textStatus}' ` +
+                       `with processing queue id of ${data['id']}`);
           cb(data || null);
         },
         error: function(xhr, textStatus, errorThrown){
@@ -161,7 +163,8 @@ function Recap() {
         contentType: false,
         data: formData,
         success: function(data, textStatus, xhr){
-          console.info(`Successfully uploaded PDF: ${textStatus}`);
+          console.info(`Successfully uploaded PDF: '${textStatus}' ` +
+                       `with processing queue id of ${data['id']}`);
           cb(data || null);
         },
         error: function(xhr, textStatus, errorThrown){
