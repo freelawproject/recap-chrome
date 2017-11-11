@@ -16,82 +16,60 @@
 // Toolbar button for RECAP (or "browser action" in Chrome parlance).
 
 
+function getTabById(tabId, cb){
+  chrome.tabs.get(tabId, cb);
+}
 
-function ToolbarButton() {
-  var pacerLogin = false;  // true if the user is logged in to PACER
-  var notifier = new Notifier();
-
+function updateToolbarButton(tab) {
   // Updates the toolbar button for a tab to reflect the tab's login status.
-  var updateToolbarButton = function (tab) {
-    // Public impure functions.  (See utils.js for details on defining services.)
-    var setTitleIcon = function (title, icon) {
-      chrome.browserAction.setTitle({title: 'RECAP: ' + title});
-      chrome.browserAction.setIcon({path: icon});
-    };
-    chrome.storage.local.get('options', function (items) {
-      if (items['options']['recap_disabled']) {
-        setTitleIcon('RECAP is temporarily disabled', {
-          '19': 'assets/images/disabled-19.png',
-          '38': 'assets/images/disabled-38.png'
+  let setTitleIcon = function (title, icon) {
+    chrome.browserAction.setTitle({title: 'RECAP: ' + title});
+    chrome.browserAction.setIcon({path: icon});
+  };
+  chrome.storage.local.get('options', function(items){
+    if (items['options']['recap_disabled']){
+      setTitleIcon('RECAP is temporarily disabled', {
+        '19': 'assets/images/disabled-19.png',
+        '38': 'assets/images/disabled-38.png'
+      });
+    } else {
+      // Is it a PACER URL?
+      let court = PACER.getCourtFromUrl(tab.url);
+      if (!court) {
+        // Not a PACER URL. Show gray.
+        setTitleIcon('Not at a PACER site', {
+          '19': 'assets/images/grey-19.png',
+          '38': 'assets/images/grey-38.png'
+        });
+      } else if (PACER.isAppellateCourt(court)) {
+        // Appellate court. Show warning.
+        setTitleIcon('Appellate courts are not supported', {
+          '19': 'assets/images/warning-19.png',
+          '38': 'assets/images/warning-38.png'
         });
       } else {
-        let court = PACER.getCourtFromUrl(tab.url);
-        if (!court) {
-          setTitleIcon('Not at a PACER site', {
-            '19': 'assets/images/grey-19.png',
-            '38': 'assets/images/grey-38.png'
-          });
-        } else if (PACER.isAppellateCourt(court)) {
-          setTitleIcon('Appellate courts are not supported', {
-            '19': 'assets/images/warning-19.png',
-            '38': 'assets/images/warning-38.png'
-          });
-        } else if (pacerLogin) {
-          setTitleIcon('Logged in to PACER', {
-            '19': 'assets/images/icon-19.png',
-            '38': 'assets/images/icon-38.png'
-          });
-        } else {
-          setTitleIcon('Not logged in to PACER', {
-            '19': 'assets/images/grey-19.png',
-            '38': 'assets/images/grey-38.png'
-          });
-        }
-      }
-    });
-  };
-
-  // Watches all the tabs so we can update their toolbar buttons on navigation.
-  if (chrome.tabs) {
-    chrome.tabs.onUpdated.addListener(function (tabId, details, tab) {
-      updateToolbarButton(tab);
-    });
-  }
-
-  return {
-    // Updates our knowledge of the login status based on the current cookies.
-    updateCookieStatus: function (court, cookies, cb) {
-      chrome.storage.local.get('options', function(items){
-        if (!items['options']['recap_disabled']){
-          if (court){
-            let newPacerLogin = !!PACER.hasPacerCookie(cookies);
-            if (newPacerLogin !== pacerLogin) {
-              notifier.showStatus(
-                newPacerLogin,
-                newPacerLogin ? 'Logged into PACER' : 'Logged out of PACER',
-                function () {
-                }
-              );
-              pacerLogin = newPacerLogin;
-              chrome.tabs.query({}, function (tabs) {
-                for (var i = 0; i < tabs.length; i++) {
-                  updateToolbarButton(tabs[i])
-                }
-              })
-            }
+        // It's a valid PACER URL. Therefore either show the nice blue icon or
+        // show the blue icon with a warning, if receipts are disabled.
+        chrome.cookies.get({
+          url: tab.url,
+          name: 'PacerPref'
+        }, function (pref_cookie) {
+          if (pref_cookie && pref_cookie.value.match(/receipt=N/)) {
+            // Receipts are disabled. Show the warning.
+            setTitleIcon("Receipts are disabled in your PACER settings",{
+              '19': 'assets/images/warning-19.png',
+              '38': 'assets/images/warning-38.png'
+            });
+          } else {
+            // At PACER, and things look good!
+            setTitleIcon('Logged in to PACER. RECAP is active.', {
+              '19': 'assets/images/icon-19.png',
+              '38': 'assets/images/icon-38.png'
+            });
           }
-        }
-      });
+        });
+
+      }
     }
-  }
+  });
 }

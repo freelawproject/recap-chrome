@@ -3,10 +3,6 @@
 let url = window.location.href;
 let court = PACER.getCourtFromUrl(url);
 
-// Update the toolbar button with knowledge of whether the user is logged in.
-let toolbar_button = importInstance(ToolbarButton);
-toolbar_button.updateCookieStatus(court, document.cookie, null);
-
 // Create a delegate for handling the various states we might be in.
 let path = window.location.pathname;
 // Referrer is used here because typically the URL that has the pacer_case_id is

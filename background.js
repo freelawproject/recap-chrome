@@ -1,6 +1,5 @@
 // Make services callable from content scripts.
 exportInstance(Notifier);
-exportInstance(ToolbarButton);
 exportInstance(Recap);
 
 function setDefaultOptions(details) {
@@ -30,3 +29,12 @@ function setDefaultOptions(details) {
   });
 }
 chrome.runtime.onInstalled.addListener(setDefaultOptions);
+
+// Watches all the tabs so we can update their toolbar buttons on navigation.
+chrome.tabs.onUpdated.addListener(function (tabId, details, tab) {
+  updateToolbarButton(tab);
+
+});
+chrome.tabs.onActivated.addListener(function(activeInfo){
+  getTabById(activeInfo.tabId, updateToolbarButton);
+});

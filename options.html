@@ -21,12 +21,12 @@
 <body>
   <div>
     <label for="show_notifications"
-           title="Show RECAP's status whenever you log into or out of PACER or whenever an item is uploaded">
+           title="Show a notification whenever an item is uploaded to the RECAP Archive on CourtListener.com">
       <div class="item">
         <span class="icon">
           <input id="show_notifications" type="checkbox">
         </span>
-        Notify me when RECAP becomes enabled or uploads a file to the Archive
+        Notify me when RECAP uploads a file to the Archive
       </div>
     </label>
     <label for="recap_link_popups"
@@ -43,13 +43,13 @@
       <div>
         <input type="radio" id="ia_style_filenames"
                name="filename_style" value="ia_style_filenames">
-        <label for="ia">Use Internet Archive style (e.g.
+        <label for="ia_style_filenames">Use Internet Archive style (e.g.
           gov.uscourts.cand.201881.46.0.pdf)</label>
       </div>
       <div>
         <input type="radio" id="lawyer_style_filenames"
                name="filename_style" value="lawyer_style_filenames">
-        <label for="lawyer">Use Lawyer style (e.g.
+        <label for="lawyer_style_filenames">Use Lawyer style (e.g.
           N.D.Cal._3&#8209;08&#8209;cv&#8209;03251_46_0.pdf)</label>
       </div>
     </fieldset>
@@ -66,6 +66,8 @@
   <div id="donate-plea">
     <a href="https://free.law/donate/?referrer=recap-extension"></a>
   </div>
+  <script src="pacer.js"></script>
+  <script src="toolbar_button.js"></script>
   <script src="options.js"></script>
 </body>
 </html>

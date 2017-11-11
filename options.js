@@ -17,7 +17,7 @@ function load_options() {
 }
 
 function save_options() {
-  var options = {};
+  let options = {};
   for (let i = 0; i < inputs.length; i++) {
     if (inputs[i].type === "checkbox" ||
         inputs[i].type === "radio"){
@@ -27,82 +27,9 @@ function save_options() {
     }
   }
   chrome.storage.local.set({options: options}, function(){
-    if (options['recap_disabled']) {
-      chrome.browserAction.setTitle({
-        title: 'RECAP is temporarily disabled',
-      });
-      chrome.browserAction.setIcon({path: {
-        '19': 'assets/images/disabled-19.png',
-        '38': 'assets/images/disabled-38.png'
-      }});
-    } else {
-      // Get the current tab, and check if it's a PACER site we're logged into.
-      chrome.tabs.query({active: true, currentWindow: true}, getSessionCookie);
-      function getSessionCookie (tabs){
-        // Get the session cookie (it can be in one of two cookie names).
-        chrome.cookies.get({
-          url: tabs[0].url,
-          name: 'PacerUser'
-        }, function(session_cookie){
-          if (session_cookie){
-            setButtonAndTitle(tabs, session_cookie)
-          } else {
-            chrome.cookies.get({
-              url: tabs[0].url,
-              name: 'PacerSession'
-            }, setButtonAndTitle.bind(this, tabs));
-          }
-        });
-      }
-
-      // If it's a valid PACER site that we're logged into, show the correct
-      // button and message.
-      function setButtonAndTitle (tabs, session_cookie) {
-        if (session_cookie) {
-          // If it's a valid PACER site, then we either show the nice blue icon
-          // or we show the blue with a warning, if they have receipts disabled.
-          chrome.cookies.get({
-            url: tabs[0].url,
-            name: 'PacerPref'
-          }, function (pref_cookie) {
-            if (pref_cookie && pref_cookie.value.match(/receipt=N/)) {
-              // Receipts are disabled. Show the warning.
-              chrome.browserAction.setTitle({
-                title: 'Receipts are disabled in your PACER settings',
-              });
-              chrome.browserAction.setIcon({
-                path: {
-                  '19': 'assets/images/warning-19.png',
-                  '38': 'assets/images/warning-38.png'
-                }
-              });
-            } else {
-              // At PACER, and things look good. Carry on!
-              chrome.browserAction.setTitle({
-                title: 'Logged into PACER. RECAP is active.',
-              });
-              chrome.browserAction.setIcon({
-                path: {
-                  '19': 'assets/images/icon-19.png',
-                  '38': 'assets/images/icon-38.png'
-                }
-              });
-            }
-          });
-        } else {
-          // Not PACER, show gray
-          chrome.browserAction.setTitle({
-            title: 'Not at a PACER site',
-          });
-          chrome.browserAction.setIcon({
-            path: {
-              '19': 'assets/images/grey-19.png',
-              '38': 'assets/images/grey-38.png'
-            }
-          });
-        }
-      }
-    }
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+      updateToolbarButton(tabs[0]);
+    });
   });
 }
 
