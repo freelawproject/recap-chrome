@@ -10,10 +10,16 @@
     body {
       background-color: white;
       color: black;
+      width: 580px;
     }
     fieldset {
       margin: 10px 5px;
-      width: 550px;
+    }
+    .alert {
+      background: lightyellow;
+    }
+    .hidden {
+      display: none;
     }
   </style>
 </head>
@@ -62,6 +68,9 @@
         Temporarily disable RECAP uploading even when logged in to PACER
       </div>
     </label>
+
+    <p id="receipts_disabled" class="alert hidden">Receipts are disabled in your PACER profile. While receipts are disabled, we are unable to upload PDFs that you purchase. To change this setting, please go to the billing preferences in your PACER account.
+    </p>
   </div>
   <div id="donate-plea">
     <a href="https://free.law/donate/?referrer=recap-extension"></a>

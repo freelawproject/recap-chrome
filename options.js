@@ -38,6 +38,26 @@ for (let i = 0; i < inputs.length; i++) {
   inputs[i].addEventListener('change', save_options);
 }
 
+// Show or hide the receipts warning
+chrome.tabs.query({active: true, currentWindow: true}, showHideReceiptsWarning);
+function showHideReceiptsWarning (tabs){
+  chrome.cookies.get({
+    url: tabs[0].url,
+    name: 'PacerPref'
+  }, function (pref_cookie) {
+    if (pref_cookie) {
+      let disabled_el = document.getElementById('receipts_disabled');
+      if (pref_cookie.value.match(/receipt=N/)) {
+        // Receipts are disabled. Show the warning.
+        disabled_el.classList.remove('hidden');
+      } else {
+        disabled_el.className += ' hidden';
+      }
+    }
+  });
+}
+
+
 // Set the image source
 let img = document.createElement("img");
 img.src = chrome.extension.getURL('assets/images/donate-button.png');
