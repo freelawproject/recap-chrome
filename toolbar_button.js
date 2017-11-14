@@ -26,17 +26,19 @@ function updateToolbarButton(tab) {
     chrome.browserAction.setTitle({title: 'RECAP: ' + title});
     chrome.browserAction.setIcon({path: icon});
   };
-  if (tab === null || tab === undefined){
-    // There's some code in Firefox that calls this when the browser is first
-    // starting. Catch it and handle it.
-    setTitleIcon('RECAP is ready', {
-      '19': 'assets/images/grey-19.png',
-      '38': 'assets/images/grey-38.png'
-    });
-    return;
-  }
 
   chrome.storage.local.get('options', function(items){
+    if (tab === null || tab === undefined || $.isEmptyObject(items)) {
+      // There's code in Firefox that can be called before the defaults are set
+      // and before the tab is even established. Catch that, and handle it or
+      // else it can crash things.
+      setTitleIcon('RECAP is ready', {
+        '19': 'assets/images/grey-19.png',
+        '38': 'assets/images/grey-38.png'
+      });
+      return;
+    }
+
     if (items['options']['recap_disabled']){
       setTitleIcon('RECAP is temporarily disabled', {
         '19': 'assets/images/disabled-19.png',

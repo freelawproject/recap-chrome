@@ -4,7 +4,10 @@ exportInstance(Recap);
 
 function setDefaultOptions(details) {
   // Set options to their default values.
+  console.debug("Setting default options after upgrade.");
   chrome.storage.local.get('options', function (items) {
+    console.debug("Attempted to get 'options' key from local storage. Got: " +
+      options);
     let defaults = {
       recap_link_popups: true,
       show_notifications: true,
@@ -14,16 +17,17 @@ function setDefaultOptions(details) {
       ia_style_filenames: false,
       lawyer_style_filenames: true,
     };
-    if (items === null) {
-      // Brand new install. Use the defaults.
+    if ($.isEmptyObject(items)) {
+      console.debug("New install. Attempting to set defaults.");
       chrome.storage.local.set({options: defaults});
     } else {
-      // Existing install. Set any new defaults.
+      console.debug("Existing install. Attempting to set new defaults, if any");
       for (let key in defaults) {
         if (!(key in items.options)) {
           items.options[key] = defaults[key];
         }
       }
+      console.debug("Persisting new settings object.");
       chrome.storage.local.set({options: items.options});
     }
   });
