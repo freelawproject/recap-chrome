@@ -18,7 +18,7 @@
    CSS For the options page
 */
 #options-body #donate-plea {
-  margin-top: 2em;
+  margin: 1em;
 }
 
 #options-body {
@@ -34,9 +34,18 @@
 #options-body .alert {
   background: lightyellow;
 }
+#options-body .gold {
+  color: gold;
+}
+#options-body .gray {
+  color: gray;
+}
 
 #options-body .hidden {
   display: none;
+}
+#options-body .text-center {
+  text-align: center;
 }
 
 

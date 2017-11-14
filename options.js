@@ -56,15 +56,3 @@ function showHideReceiptsWarning (tabs){
     }
   });
 }
-
-
-// Set the image source
-let img = document.createElement("img");
-img.src = chrome.extension.getURL('assets/images/donate-button.png');
-let donateLink = document.querySelector("#donate-plea a");
-let donateURL = donateLink.href;
-donateLink.appendChild(img);
-donateLink.addEventListener('click', function(e) {
-  e.preventDefault();
-  chrome.tabs.create({url: donateURL});
-});
