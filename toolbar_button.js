@@ -26,6 +26,16 @@ function updateToolbarButton(tab) {
     chrome.browserAction.setTitle({title: 'RECAP: ' + title});
     chrome.browserAction.setIcon({path: icon});
   };
+  if (tab === null || tab === undefined){
+    // There's some code in Firefox that calls this when the browser is first
+    // starting. Catch it and handle it.
+    setTitleIcon('RECAP is ready', {
+      '19': 'assets/images/grey-19.png',
+      '38': 'assets/images/grey-38.png'
+    });
+    return;
+  }
+
   chrome.storage.local.get('options', function(items){
     if (items['options']['recap_disabled']){
       setTitleIcon('RECAP is temporarily disabled', {

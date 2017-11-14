@@ -14,9 +14,9 @@ function setDefaultOptions(details) {
       ia_style_filenames: false,
       lawyer_style_filenames: true,
     };
-    if (!items.options) {
+    if (items === null) {
       // Brand new install. Use the defaults.
-      items.options = defaults;
+      chrome.storage.local.set({options: defaults});
     } else {
       // Existing install. Set any new defaults.
       for (let key in defaults) {
@@ -24,8 +24,8 @@ function setDefaultOptions(details) {
           items.options[key] = defaults[key];
         }
       }
+      chrome.storage.local.set({options: items.options});
     }
-    chrome.storage.local.set({options: items.options});
   });
 }
 chrome.runtime.onInstalled.addListener(setDefaultOptions);
