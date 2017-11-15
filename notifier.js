@@ -1,6 +1,7 @@
 // Public impure functions.  (See utils.js for details on defining services.)
 function Notifier() {
   var showNotification = function (title, message, cb) {
+    console.info("Running showNotification function. Expect a notification.");
     var notificationOptions = {
       type: 'basic',
       title: title,
