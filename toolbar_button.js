@@ -28,7 +28,7 @@ function updateToolbarButton(tab) {
   };
 
   chrome.storage.local.get('options', function(items){
-    if (tab === null || tab === undefined || $.isEmptyObject(items)) {
+    if (tab === null || tab === undefined) {
       // There's code in Firefox that can be called before the defaults are set
       // and before the tab is even established. Catch that, and handle it or
       // else it can crash things.
@@ -37,6 +37,12 @@ function updateToolbarButton(tab) {
         '38': 'assets/images/grey-38.png'
       });
       return;
+    }
+    if ($.isEmptyObject(items)){
+      // Firefox 56 bug. The default settings didn't get created properly when
+      // upgrading from the legacy extension. This can be removed when everybody
+      // is safely beyond 56 (and the ESR)
+      setDefaultOptions({});
     }
 
     if (items['options']['recap_disabled']){

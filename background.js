@@ -7,7 +7,7 @@ function setDefaultOptions(details) {
   console.debug("Setting default options after upgrade.");
   chrome.storage.local.get('options', function (items) {
     console.debug("Attempted to get 'options' key from local storage. Got: " +
-      options);
+      items);
     let defaults = {
       recap_link_popups: true,
       show_notifications: true,
@@ -20,6 +20,7 @@ function setDefaultOptions(details) {
     if ($.isEmptyObject(items)) {
       console.debug("New install. Attempting to set defaults.");
       chrome.storage.local.set({options: defaults});
+      console.debug("Set the defaults on new install successfully.");
     } else {
       console.debug("Existing install. Attempting to set new defaults, if any");
       for (let key in defaults) {
