@@ -8,6 +8,8 @@
 </head>
 
 <body id="options-body">
+<fieldset>
+<legend>Notifications and popups</legend>
   <div>
     <label for="show_notifications"
            title="Show a notification whenever an item is uploaded to the RECAP Archive on CourtListener.com">
@@ -27,6 +29,7 @@
         Confirm before opening free documents
       </div>
     </label>
+</fieldset>
     <fieldset>
       <legend>PDF Filenames</legend>
       <div>
@@ -42,6 +45,7 @@
           N.D.Cal._3&#8209;08&#8209;cv&#8209;03251_46_0.pdf)</label>
       </div>
     </fieldset>
+    <fieldset><legend>Deactivate RECAP</legend>
     <label for="recap_disabled"
            title="Disable RECAP uploading even when logged in.">
       <div class="item">
@@ -51,6 +55,15 @@
         Temporarily disable RECAP uploading even when logged in to PACER
       </div>
     </label>
+    </fieldset>
+
+    <fieldset><legend>Optimize PACER</legend>
+      <div>
+	<input type="checkbox"><label>Uncheck parties and counsel, automatically</label>
+	</div><Div>
+	<input type="checkbox"><label>Some other stuff Mike likes.</label>
+	</div>
+      </fieldset>
 
     <p id="receipts_disabled" class="alert hidden"><i class="fa fa-warning gold"></i>&nbsp;Receipts are disabled in your PACER profile. While receipts are disabled, we are unable to upload PDFs that you purchase. To change this setting, please go to the billing preferences in your PACER account.
     </p>
@@ -58,6 +71,8 @@
   <div id="donate-plea" class="text-center">
     <a href="https://free.law/donate/?referrer=recap-extension">
       <img src="assets/images/donate-button.png">
+      &nbsp;&nbsp;&nbsp;&nbsp;
+      <img width="150" src="assets/images/webstore-exports/440x280.png">
     </a>
   </div>
   <div class="text-center">
