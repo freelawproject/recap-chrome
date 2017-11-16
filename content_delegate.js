@@ -39,7 +39,7 @@ ContentDelegate.prototype.findPacerDocIds = function() {
     // If we have the case ID or have it cached for the URL, stash a mapping of
     // the doc ids on the page to the case id we were able to find.
     this.recap.storePacerDocIds(this.pacer_doc_ids, pacer_case_id, function(){
-      console.info(`Saved the pacer_doc_id to pacer_case_id mappings to local ` +
+      console.info(`RECAP: Saved the pacer_doc_id to pacer_case_id mappings to local ` +
                    `storage.`);
     });
   }
@@ -59,10 +59,10 @@ ContentDelegate.prototype.handleDocketQueryUrl = function() {
   this.recap.getAvailabilityForDocket(this.court, this.pacer_case_id,
                                       function (result) {
     if (result.count === 0){
-      console.warn(`Zero results found for docket lookup.`);
+      console.warn(`RECAP: Zero results found for docket lookup.`);
       return;
     } else if (!(result.count === 1)){
-      console.error(`More than one result found for docket lookup. Found ` +
+      console.error(`RECAP: More than one result found for docket lookup. Found ` +
                     `${result.count}`);
       return;
     }
@@ -117,7 +117,7 @@ ContentDelegate.prototype.handleDocketDisplayPage = function() {
       this.recap.uploadDocket(this.court, this.pacer_case_id,
                               document.documentElement.innerHTML, callback);
     } else {
-      console.info(`Not uploading docket. RECAP is disabled.`)
+      console.info(`RECAP: Not uploading docket. RECAP is disabled.`)
     }
   }.bind(this));
 };
@@ -149,7 +149,7 @@ ContentDelegate.prototype.handleAttachmentMenuPage = function() {
       this.recap.uploadAttachmentMenu(this.court, this.pacer_case_id,
         document.documentElement.innerHTML, callback);
     } else {
-      console.info("Not uploading attachment menu. RECAP is disabled.")
+      console.info("RECAP: Not uploading attachment menu. RECAP is disabled.")
     }
   }.bind(this));
 };
@@ -161,7 +161,7 @@ ContentDelegate.prototype.handleSingleDocumentPageCheck = function() {
   }
 
   let callback = $.proxy(function (api_results) {
-    console.info(`Got results from API. Running callback on API results to ` +
+    console.info(`RECAP: Got results from API. Running callback on API results to ` +
                  `insert link`);
     let result = api_results.results.filter(function(obj){
       return obj.pacer_doc_id === pacer_doc_id;
@@ -212,7 +212,7 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
   let form = document.getElementById(event.data.id);
   let data = new FormData(form);
   httpRequest(form.action, data, function (type, ab, xhr) {
-    console.info('Successfully submitted RECAP "View" button form: '+xhr.statusText);
+    console.info('RECAP: Successfully submitted RECAP "View" button form: '+xhr.statusText);
     var blob = new Blob([new Uint8Array(ab)], {type: type});
     // If we got a PDF, we wrap it in a simple HTML page.  This lets us treat
     // both cases uniformly: either way we have an HTML page with an <iframe>
@@ -258,7 +258,7 @@ ContentDelegate.prototype.showPdfPage = function(
 
   // Download the file from the <iframe> URL.
   httpRequest(match[2], null, function (type, ab, xhr) {
-    console.info("Successfully got PDF as arraybuffer via ajax request.");
+    console.info("RECAP: Successfully got PDF as arraybuffer via ajax request.");
 
     // Make the Back button redisplay the previous page.
     window.onpopstate = function(event) {
@@ -272,7 +272,7 @@ ContentDelegate.prototype.showPdfPage = function(
     let blob = new Blob([new Uint8Array(ab)], {type: type});
     let blobUrl = URL.createObjectURL(blob);
     this.recap.getPacerCaseIdFromPacerDocId(this.pacer_doc_id, function(pacer_case_id){
-      console.info(`Stored pacer_case_id is ${pacer_case_id}`);
+      console.info(`RECAP: Stored pacer_case_id is ${pacer_case_id}`);
       let updateHtmlPage = function (items) {
         let filename;
         if (items.options.ia_style_filenames) {
@@ -317,7 +317,7 @@ ContentDelegate.prototype.showPdfPage = function(
             attachment_number, bytes, onUploadOk
           );
         } else {
-          console.info("Not uploading PDF. RECAP is disabled.");
+          console.info("RECAP: Not uploading PDF. RECAP is disabled.");
         }
       }.bind(this);
       chrome.storage.local.get('options', uploadDocument);
@@ -392,7 +392,7 @@ ContentDelegate.prototype.handleRecapLinkClick = function(window_obj, url) {
 // available. If there is, put a link with a RECAP icon.
 ContentDelegate.prototype.attachRecapLinkToEligibleDocs = function() {
   let linkCount = this.pacer_doc_ids.length;
-  console.info(`Attaching links to all eligible documents (${linkCount} found)`);
+  console.info(`RECAP: Attaching links to all eligible documents (${linkCount} found)`);
   if (linkCount === 0) {
     return;
   }
@@ -400,7 +400,7 @@ ContentDelegate.prototype.attachRecapLinkToEligibleDocs = function() {
   // Ask the server whether any of these documents are available from RECAP.
   this.recap.getAvailabilityForDocuments(this.pacer_doc_ids, this.court,
                                          $.proxy(function (api_results) {
-    console.info(`Got results from API. Running callback on API results to ` +
+    console.info(`RECAP: Got results from API. Running callback on API results to ` +
                  `attach links and icons where appropriate.`);
     for (let i = 0; i < this.links.length; i++) {
       let pacer_doc_id = $(this.links[i]).data('pacer_doc_id');
