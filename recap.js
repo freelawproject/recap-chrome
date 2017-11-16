@@ -22,7 +22,7 @@ function Recap() {
     getPacerCaseIdFromPacerDocId: function (pacer_doc_id, cb) {
       chrome.storage.local.get(pacer_doc_id, function(items){
         let pacer_case_id = items[pacer_doc_id];
-        console.info(`Got case number '${pacer_case_id}' for pacer_doc_id: ` +
+        console.info(`RECAP: Got case number '${pacer_case_id}' for pacer_doc_id: ` +
                      `'${pacer_doc_id}'`);
         cb(pacer_case_id);
       });
@@ -31,7 +31,7 @@ function Recap() {
     // Asks RECAP whether it has a docket page for the specified case.  If it
     // is available, the callback will be called with a
     getAvailabilityForDocket: function (pacer_court, pacer_case_id, cb) {
-      console.info(`Getting availability of docket ${pacer_case_id} at ` +
+      console.info(`RECAP: Getting availability of docket ${pacer_case_id} at ` +
                    `${pacer_court}`);
       $.ajax({
           url: SERVER_ROOT + 'dockets/',
@@ -41,12 +41,12 @@ function Recap() {
             fields: 'absolute_url,date_modified'
           },
           success: function (data, textStatus, xhr){
-            console.info(`Got successful response from server on docket ` +
+            console.info(`RECAP: Got successful response from server on docket ` +
                          `query: ${textStatus}`);
             cb(data || null);
           },
           error: function (xhr, textStatus, errorThrown) {
-            console.error(`Ajax error getting docket availability. Status: ` +
+            console.error(`RECAP: Ajax error getting docket availability. Status: ` +
                           `${textStatus}. Error: ${errorThrown}.`);
           }
       });
@@ -56,7 +56,7 @@ function Recap() {
     getAvailabilityForDocuments: function (pacer_doc_ids, pacer_court, cb) {
       // The server API takes just one "court" parameter for all the URLs, so we
       // pick the court based on the first URL and assume the rest are the same.
-      console.info("Made it info the getAvailabilityForDocuments function");
+      console.info("RECAP: Made it info the getAvailabilityForDocuments function");
 
       let cl_court = PACER.convertToCourtListenerCourt(pacer_court);
       if (cl_court) {
@@ -67,12 +67,12 @@ function Recap() {
               docket_entry__docket__court: cl_court
             },
             success: function (data, textStatus, xhr){
-              console.info(`Got successful response when looking up document ` +
+              console.info(`RECAP: Got successful response when looking up document ` +
                            `availability: ${textStatus}`);
               cb(data || null);
             },
             error: function(xhr, textStatus, errorThrown){
-              console.error(`Ajax error getting document availability. ` +
+              console.error(`RECAP: Ajax error getting document availability. ` +
                             `Status: ${textStatus}. Error: ${errorThrown}` );
             }
         });
@@ -97,12 +97,12 @@ function Recap() {
         contentType: false,
         data: formData,
         success: function(data, textStatus, xhr){
-          console.info(`Successfully uploaded docket: '${textStatus}' ` +
+          console.info(`RECAP: Successfully uploaded docket: '${textStatus}' ` +
                        `with processing queue id of ${data['id']}`);
           cb(data || null);
         },
         error: function(xhr, textStatus, errorThrown){
-          console.error(`Ajax error uploading docket. Status: ${textStatus}.` +
+          console.error(`RECAP: Ajax error uploading docket. Status: ${textStatus}.` +
                         `Error: ${errorThrown}`);
         }
       });
@@ -125,12 +125,12 @@ function Recap() {
         contentType: false,
         data: formData,
         success: function(data, textStatus, xhr){
-          console.info(`Successfully uploaded attachment page: '${textStatus}' ` +
+          console.info(`RECAP: Successfully uploaded attachment page: '${textStatus}' ` +
                        `with processing queue id of ${data['id']}`);
           cb(data || null);
         },
         error: function(xhr, textStatus, errorThrown){
-          console.error(`Ajax error uploading docket. Status: ${textStatus}.` +
+          console.error(`RECAP: Ajax error uploading docket. Status: ${textStatus}.` +
                         `Error: ${errorThrown}`);
         }
       });
@@ -140,7 +140,7 @@ function Recap() {
     // a boolean success flag.
     uploadDocument: function(pacer_court, pacer_case_id, pacer_doc_id,
                              document_number, attachment_number, bytes, cb) {
-      console.info(`Attempting PDF upload to RECAP Archive with details: ` +
+      console.info(`RECAP: Attempting PDF upload to RECAP Archive with details: ` +
                    `pacer_court: ${pacer_court}, pacer_case_id: ` +
                    `${pacer_case_id}, pacer_doc_id: ${pacer_doc_id},` +
                    `document_number: ${document_number}, ` +
@@ -163,12 +163,12 @@ function Recap() {
         contentType: false,
         data: formData,
         success: function(data, textStatus, xhr){
-          console.info(`Successfully uploaded PDF: '${textStatus}' ` +
+          console.info(`RECAP: Successfully uploaded PDF: '${textStatus}' ` +
                        `with processing queue id of ${data['id']}`);
           cb(data || null);
         },
         error: function(xhr, textStatus, errorThrown){
-          console.error(`Ajax error uploading PDF. Status: ${textStatus}.` +
+          console.error(`RECAP: Ajax error uploading PDF. Status: ${textStatus}.` +
                         `Error: ${errorThrown}`);
         }
       });
