@@ -39,6 +39,46 @@ Version 1.1
   it works to be faster and more consistent. Please get in touch if
   you have any issues or ideas!
 
+Version 1.0.6
+* Unreleased
++ Warning pop-up if reciepts are disabled
+
+Version 1.0.5
+* Unreleased
++ Notification and icon changes
++ Tidy up image directories
++ Processing queues on success messages
++ Cleanup callbacks from jQuery excision
+
+Version 1.0.4
+* Unreleased
++ Options preference for IA vs. lawyer-style (#175)
++ "See previous commit messageS"
+
+Version 1.0.3
+* Unreleased
++ Lots of little improvements
++ Fix Chrome support, which requires arraybuffers not blobs
++ Reduce notification option choices (#193)
++ Explain DEBUG mode (causes server to not publish uploads),
+  default to false (#192)
+
+Version 1.0.2
+* Unreleased
++ Donate goes to the free.law website now. (#188)
++ Avoid jQuery for binary files (#27)
++ Adjust cosmetics of intersttitial page elements (#186)
+
+Version 1.0.1a
+* Unreleased
++ Remove recapextension.org
+
+Version 1.0
+* Unreleased
+
+Version 0.10.0
+* Unreleased
+	
 Version 0.9.2.2.1-signed.1-signed
 * Released April 21, 2015
 * Works with Firefox 3.0.9 - 56.*
