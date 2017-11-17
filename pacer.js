@@ -65,23 +65,6 @@ let PACER = {
     return !!url.match(/\/(DktRpt|HistDocQry)\.pl\?\d+$/);
   },
 
-  // Given a URL that satisfies isDocketQueryUrl, gets its case number.
-  getCaseNumberFromUrls: function (urls) {
-    // Iterate over an array of URLs and get the case number from the first one
-    // that matches. Allows calling function to send a variety of URLs, like the
-    // referer and the actual URL, for example.
-    for (let url of urls){
-      let hostname = getHostname(url);
-      // JS is trash. It lacks a way of getting the TLD, so we use endsWith.
-      if (hostname.endsWith('uscourts.gov')){
-        let match = url.match(/\?(\d+)$/);
-        if (match){
-          return match[1];
-        }
-      }
-    }
-  },
-
   // Returns true if the given URL is for a docket display page (i.e. the page
   // after submitting the "Docket Sheet" or "History/Documents" query page).
   isDocketDisplayUrl: function (url) {
@@ -115,6 +98,23 @@ let PACER = {
       // the user has been shown a receipt page.  We don't care about that, so
       // we always set the fourth digit to 0 when getting a doc ID.
       return match[1].slice(0, 3) + '0' + match[1].slice(4);
+    }
+  },
+
+  // Given a URL that satisfies isDocketQueryUrl, gets its case number.
+  getCaseNumberFromUrls: function (urls) {
+    // Iterate over an array of URLs and get the case number from the first one
+    // that matches. Allows calling function to send a variety of URLs, like the
+    // referer and the actual URL, for example.
+    for (let url of urls) {
+      let hostname = getHostname(url);
+      // JS is trash. It lacks a way of getting the TLD, so we use endsWith.
+      if (hostname.endsWith('uscourts.gov')) {
+        let match = url.match(/\?(\d+)$/);
+        if (match) {
+          return match[1];
+        }
+      }
     }
   },
 
