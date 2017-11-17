@@ -58,18 +58,22 @@ let PACER = {
     return false;
   },
 
-  // Returns true if the URL is for the form for querying the list of documents
-  // in a docket (i.e. the "Docket Sheet" or "History/Documents" query page).
+  // Returns true if the URL is for docket query page.
   isDocketQueryUrl: function (url) {
     // The part after the "?" is all digits.
     return !!url.match(/\/(DktRpt|HistDocQry)\.pl\?\d+$/);
   },
 
   // Returns true if the given URL is for a docket display page (i.e. the page
-  // after submitting the "Docket Sheet" or "History/Documents" query page).
+  // after submitting the "Docket Sheet" query page).
   isDocketDisplayUrl: function (url) {
     // The part after the "?" has hyphens in it.
-    return !!url.match(/\/(DktRpt|HistDocQry)\.pl\?\w+-[\w-]+$/);
+    return !!url.match(/\/DktRpt\.pl\?\w+-[\w-]+$/);
+  },
+
+  // Returns true if the given URL is for a docket history display page.
+  isDocketHistoryDisplayUrl: function (url) {
+    return !!url.match(/\/HistDocQry\.pl\?\w+-[\w-]+$/);
   },
 
   // Returns true if this is a "Document Selection Menu" page (a list of the

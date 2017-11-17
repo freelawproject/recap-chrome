@@ -97,8 +97,14 @@ ContentDelegate.prototype.handleDocketDisplayPage = function() {
   if (history.state && history.state.uploaded) {
     return;
   }
-
-  if (!(PACER.isDocketDisplayUrl(this.url) && this.pacer_case_id)) {
+  let isDocketDisplayUrl = PACER.isDocketDisplayUrl(this.url);
+  let isDocketHistoryDisplayUrl = PACER.isDocketHistoryDisplayUrl(this.url);
+  if (!(isDocketHistoryDisplayUrl || isDocketDisplayUrl)) {
+    // If it's not a docket display URL or a docket history URL, punt.
+    return;
+  }
+  if (!this.pacer_case_id) {
+    // If we don't have the pacer_case_id, punt.
     return;
   }
 
@@ -113,9 +119,15 @@ ContentDelegate.prototype.handleDocketDisplayPage = function() {
           );
         }
       }, this);
-
-      this.recap.uploadDocket(this.court, this.pacer_case_id,
-                              document.documentElement.innerHTML, callback);
+      if (isDocketDisplayUrl){
+        this.recap.uploadDocket(this.court, this.pacer_case_id,
+          document.documentElement.innerHTML, 'DOCKET',
+          callback);
+      } else if (isDocketHistoryDisplayUrl) {
+        this.recap.uploadDocket(this.court, this.pacer_case_id,
+          document.documentElement.innerHTML, 'DOCKET_HISTORY_REPORT',
+          callback);
+      }
     } else {
       console.info(`RECAP: Not uploading docket. RECAP is disabled.`)
     }
