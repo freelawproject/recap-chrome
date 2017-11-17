@@ -8,40 +8,56 @@
 </head>
 
 <body id="options-body">
-  <div>
-    <label for="show_notifications"
-           title="Show a notification whenever an item is uploaded to the RECAP Archive on CourtListener.com">
-      <div class="item">
-        <span class="icon">
-          <input id="show_notifications" type="checkbox">
-        </span>
-        Notify me when RECAP uploads a file to the Archive
-      </div>
-    </label>
-    <label for="recap_link_popups"
-      title="Pop up a dialog whenever you click a RECAP link to a free document">
-      <div class="item">
-        <span class="icon">
-          <input id="recap_link_popups" type="checkbox">
-        </span>
-        Confirm before opening free documents
-      </div>
-    </label>
-    <fieldset>
-      <legend>PDF Filenames</legend>
-      <div>
-        <input type="radio" id="ia_style_filenames"
-               name="filename_style" value="ia_style_filenames">
-        <label for="ia_style_filenames">Use Internet Archive style (e.g.
-          gov.uscourts.cand.201881.46.0.pdf)</label>
-      </div>
-      <div>
-        <input type="radio" id="lawyer_style_filenames"
-               name="filename_style" value="lawyer_style_filenames">
-        <label for="lawyer_style_filenames">Use Lawyer style (e.g.
-          N.D.Cal._3&#8209;08&#8209;cv&#8209;03251_46_0.pdf)</label>
-      </div>
-    </fieldset>
+  <fieldset><legend>Notifications and popups</legend>
+    <div>
+      <label for="show_notifications"
+             title="Show a notification whenever an item is uploaded to the RECAP Archive on CourtListener.com">
+	<div class="item">
+          <span class="icon">
+            <input id="show_notifications" type="checkbox">
+          </span>
+          Notify me when RECAP uploads a file to the Archive
+	</div>
+      </label>
+      <label for="recap_link_popups"
+	     title="Pop up a dialog whenever you click a RECAP link to a free document">
+	<div class="item">
+          <span class="icon">
+            <input id="recap_link_popups" type="checkbox">
+          </span>
+          Confirm before opening free documents
+	</div>
+      </label>
+  </fieldset>
+  
+  <fieldset><legend>PDF Filenames</legend>
+    <div>
+      <input type="radio" id="ia_style_filenames"
+             name="filename_style" value="ia_style_filenames">
+      <label for="ia_style_filenames">Use Internet Archive style (e.g.
+        gov.uscourts.cand.201881.46.0.pdf)</label>
+    </div>
+    <div>
+      <input type="radio" id="lawyer_style_filenames"
+             name="filename_style" value="lawyer_style_filenames">
+      <label for="lawyer_style_filenames">Use Lawyer style (e.g.
+        N.D.Cal._3&#8209;08&#8209;cv&#8209;03251_46_0.pdf)</label>
+    </div>
+  </fieldset>
+  
+  <!-- TBD: Optimize PACER.
+       See https://github.com/freelawproject/recap/issues/207 -->
+  <fieldset class="hidden"><legend>Optimize PACER</legend>
+    <div>
+      <input type="checkbox"><label>Uncheck parties and counsel, automatically</label>
+    </div><Div>
+      <input type="checkbox"><label>Some other stuff Mike likes.</label>
+    </div>
+  </fieldset>
+
+  <!-- Deactive RECAP should be the last fieldset,
+       for ease of UI navigation. -->
+  <fieldset><legend>Deactivate RECAP</legend>
     <label for="recap_disabled"
            title="Disable RECAP uploading even when logged in.">
       <div class="item">
@@ -51,13 +67,15 @@
         Temporarily disable RECAP uploading even when logged in to PACER
       </div>
     </label>
+  </fieldset>
 
-    <p id="receipts_disabled" class="alert hidden"><i class="fa fa-warning gold"></i>&nbsp;Receipts are disabled in your PACER profile. While receipts are disabled, we are unable to upload PDFs that you purchase. To change this setting, please go to the billing preferences in your PACER account.
-    </p>
+  <p id="receipts_disabled" class="alert hidden"><i class="fa fa-warning gold"></i>&nbsp;Receipts are disabled in your PACER profile. While receipts are disabled, we are unable to upload PDFs that you purchase. To change this setting, please go to the billing preferences in your PACER account.
+  </p>
   </div>
   <div id="donate-plea" class="text-center">
-    <a href="https://free.law/donate/?referrer=recap-extension">
-      <img src="assets/images/donate-button.png">
+    <a href="https://free.law/donate/?referrer=recap-extension" style="text-decoration: none">
+      <img class="pad20" src="assets/images/donate-button.png">
+      <img class="pad20" src="assets/images/recap-logo-143x85.png">
     </a>
   </div>
   <div class="text-center">
