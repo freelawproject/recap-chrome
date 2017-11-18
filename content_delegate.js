@@ -266,7 +266,7 @@ ContentDelegate.prototype.showPdfPage = function(
 
   // Show the page with a blank <iframe> while waiting for the download.
   documentElement.innerHTML =
-    match[1] + '<iframe src="about:blank"' + match[3];
+    match[1] + '<p>Waiting for download...<p><iframe src="about:blank"' + match[3];
 
   // Download the file from the <iframe> URL.
   httpRequest(match[2], null, function (type, ab, xhr) {
