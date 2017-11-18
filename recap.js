@@ -143,7 +143,7 @@ function Recap() {
                              document_number, attachment_number, bytes, cb) {
       console.info(`RECAP: Attempting PDF upload to RECAP Archive with details: ` +
                    `pacer_court: ${pacer_court}, pacer_case_id: ` +
-                   `${pacer_case_id}, pacer_doc_id: ${pacer_doc_id},` +
+                   `${pacer_case_id}, pacer_doc_id: ${pacer_doc_id}, ` +
                    `document_number: ${document_number}, ` +
                    `attachment_number: ${attachment_number}.`);
       let formData = new FormData();
