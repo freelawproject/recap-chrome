@@ -73,6 +73,5 @@
   },
   "web_accessible_resources": [
     "assets/images/*.png",
-    "assets/js/*.js"
   ]
 }
