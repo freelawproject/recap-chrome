@@ -56,10 +56,10 @@
   text-decoration: none;
 }
 
-#version {
-    font-family: helvetica, arial;
-    font-size: 10px;
-    padding: 10px;
+#options-body #version {
+  font-family: helvetica, arial, serif;
+  font-size: 10px;
+  padding: 10px;
 }
 
 /*
