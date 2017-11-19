@@ -280,12 +280,14 @@ ContentDelegate.prototype.showPdfPage = function(
     };
     history.replaceState({content: previousPageHtml}, '');
 
-    // Display the page with the downloaded file in the <iframe>.
+
+    // Get the PACER case ID and, on completion, define displayPDF() to
+    // either display the PDF in the provided <iframe>, or, if external_pdf is set,
+    // save it using FileSaver.js's saveAs().
     let blob = new Blob([new Uint8Array(ab)], {type: type});
-    let blobUrl = URL.createObjectURL(blob);
     this.recap.getPacerCaseIdFromPacerDocId(this.pacer_doc_id, function(pacer_case_id){
       console.info(`RECAP: Stored pacer_case_id is ${pacer_case_id}`);
-      let updateHtmlPage = function (items) {
+      let displayPDF = function (items) {
         let filename;
         if (items.options.ia_style_filenames) {
           filename = 'gov.uscourts.' + this.court + '.' +
@@ -295,6 +297,9 @@ ContentDelegate.prototype.showPdfPage = function(
           filename = PACER.COURT_ABBREVS[this.court] + '_' + docket_number +
             '_' + document_number + '_' + (attachment_number || '0') + '.pdf';
         }
+
+      if (!items.options.external_pdf) {
+        let blobUrl = URL.createObjectURL(blob);
         let downloadLink = '<div id="recap-download" class="initial">' +
           '<a href="' + blobUrl + '" download="' + filename + '">' +
           'Save as ' + filename + '</a></div>';
@@ -304,8 +309,16 @@ ContentDelegate.prototype.showPdfPage = function(
           '}, 7500)" src="' + blobUrl + '"' + match[3];
         documentElement.innerHTML = html;
         history.pushState({content: html}, '');
+      } else { // Saving to an external PDF.
+	  saveAs(blob, filename);
+	  documentElement.innerHTML = match[1] +
+	    '<p><iframe src="about:blank"'
+	    + match[3];  // Clear "Waiting..." message
+
+      }
       }.bind(this);
-      chrome.storage.local.get('options', updateHtmlPage);
+
+      chrome.storage.local.get('options', displayPDF);
 
       let uploadDocument = function(items){
         if (!items['options']['recap_disabled']) {
