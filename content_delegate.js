@@ -34,7 +34,10 @@ ContentDelegate.prototype.findPacerDocIds = function() {
 
   // xxx why isn't it this.url? (undefined)
   let pacer_doc_id = PACER.getDocumentIdFromUrl(url);
-  if (pacer_doc_id) { docsToCases[pacer_doc_id] = page_pacer_case_id; }
+  if (pacer_doc_id && page_pacer_case_id) {
+    console.info('jhawk Zap doc ' + pacer_doc_id + ' to ' + page_pacer_case_id);
+    docsToCases[pacer_doc_id] = page_pacer_case_id;
+  }
 
   for (let i = 0; i < this.links.length; i++) {
     let link = this.links[i];
