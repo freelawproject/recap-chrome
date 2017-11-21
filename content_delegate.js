@@ -68,7 +68,7 @@ ContentDelegate.prototype.findPacerDocIds = function() {
 
   chrome.storage.local.set(docsToCases, function(){
     console.info(`RECAP: Saved the pacer_doc_id to pacer_case_id mappings to local ` +
-                 `storage.`);
+                 `storage: ` + Object.keys(docsToCases).length);
   });
 
 };
