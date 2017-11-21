@@ -113,6 +113,10 @@ let PACER = {
     for (let url of urls) {
       let hostname = getHostname(url);
       // JS is trash. It lacks a way of getting the TLD, so we use endsWith.
+      //
+      // xxx aren't we only invoked when we match the "matches" and
+      // "include_globs" in manifest.json, which limits us to
+      // *://*.uscourts.gov/* ?
       if (hostname.endsWith('uscourts.gov')) {
         let match = url.match(/\?(\d+)$/);
         if (match) {
