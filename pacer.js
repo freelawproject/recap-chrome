@@ -96,7 +96,7 @@ let PACER = {
 
   // Returns the document ID for a document view page or single-document page.
   getDocumentIdFromUrl: function (url) {
-    let match = (url || '').match(/\/doc1\/(\d+)$/);
+    let match = (url || '').match(/\/doc1\/(\d+)/);
     if (match) {
       // PACER sites use the fourth digit of the pacer_doc_id to flag whether
       // the user has been shown a receipt page.  We don't care about that, so
