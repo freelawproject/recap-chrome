@@ -32,6 +32,10 @@ ContentDelegate.prototype.findPacerDocIds = function() {
 
   let docsToCases = {};
 
+  // xxx why isn't it this.url? (undefined)
+  let pacer_doc_id = PACER.getDocumentIdFromUrl(url);
+  if (pacer_doc_id) { docsToCases[pacer_doc_id] = page_pacer_case_id; }
+
   for (let i = 0; i < this.links.length; i++) {
     let link = this.links[i];
     if (PACER.isDocumentUrl(link.href)) {
