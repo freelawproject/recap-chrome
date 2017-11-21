@@ -118,10 +118,12 @@ let PACER = {
       // "include_globs" in manifest.json, which limits us to
       // *://*.uscourts.gov/* ?
       if (hostname.endsWith('uscourts.gov')) {
-        let match = url.match(/\?(\d+)$/);
-        if (match) {
+        let match;
+        if (match = url.match(/\?(\d+)$/)) {
           return match[1];
-        }
+        } else if (match = url.match(/[?&]caseid=(\d+)/)) {
+	  return match[1];
+	}
       }
     }
   },
