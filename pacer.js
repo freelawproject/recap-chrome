@@ -133,11 +133,16 @@ let PACER = {
   },
 
   // Returns true if this is a page for downloading a single document.
+  // district:
+  //   https://ecf.dcd.uscourts.gov/doc1/04503837920
+  // appellate:
+  //   https://ecf.ca1.uscourts.gov/n/beam/servlet/TransportRoom?servlet=ShowDoc&dls_id=00107215565&caseId=41182&dktType=dktPublic
   isSingleDocumentPage: function (url, document) {
     let inputs = document.getElementsByTagName('input');
-    let pageCheck = PACER.isDocumentUrl(url) &&
-      inputs.length &&
-      inputs[inputs.length - 1].value === 'View Document';
+    let lastInput = inputs.length && inputs[inputs.length - 1].value;
+    let pageCheck = (PACER.isDocumentUrl(url) &&
+                     (lastInput === 'View Document') ||
+                     (lastInput === 'Accept Charges and Retrieve'));
     return !!pageCheck;
   },
 
