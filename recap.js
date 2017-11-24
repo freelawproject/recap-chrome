@@ -8,6 +8,8 @@ function Recap() {
       'ATTACHMENT_PAGE': 2,
       'PDF': 3,
       'DOCKET_HISTORY_REPORT': 4,
+      'APPELLATE_DOCKET': 5,
+      'APPELLATE_ATTACHMENT_PAGE': 6,
     };
 
   return {
