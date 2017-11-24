@@ -49,9 +49,32 @@ ContentDelegate.prototype.findAndStorePacerDocIds = function() {
 
       let onclick = link.getAttribute('onclick');
       let goDLS = PACER.parseGoDLSFunction(onclick);
+
+      // In Appellate NextGen, we have a similiar pattern:
+      //   <a
+      //     href="https://ecf.ca1.uscourts.gov/docs1/00107150550"
+      //     onclick="return doDocPostURL('00107150550','41182');"
+      //     title="Open Document">
+      //     <img src="TransportRoom?servlet=document.gif" alt="Open Document" width="13" border="1" height="15">
+      //   </a>
+      // and defined as (in TransportRoom?servlet=ShowPagePublic):
+      // function doDocPostURL(dls, caseIdStr){
+      //    aWin = window.open("TransportRoom?servlet=ShowDoc&dls_id="+dls+
+      //      "&caseId="+caseIdStr+"&dktType=dktPublic",
+      //     "_blank","location=no,resizable,toolbar,status,scrollbars",false);
+      //    return false;
+      //  }
+
+      // xxx use array destructuring
+      let goDPU = onclick.match(/doDocPostURL\('([^']*)','([^]*)'\)/);
+
       if (goDLS.de_caseid) {
         docsToCases[pacer_doc_id] = goDLS.de_caseid;
         debug(3, 'Y doc ' + pacer_doc_id + ' to ' + goDLS.de_caseid);
+// for now, better to keep CL caseid = ECF docketid, not internal caseid.
+//      } else if (goDPU && goDPU[2]) {
+//	docsToCases[pacer_doc_id] = goDPU[2];
+//	debug(4, 'A doc ' + pacer_doc_id + ' to ' + goDLS[2]);
       } else if (page_pacer_case_id) {
         docsToCases[pacer_doc_id] = page_pacer_case_id;
         debug(3,'X doc ' + pacer_doc_id + ' to '
