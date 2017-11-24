@@ -146,6 +146,7 @@ ContentDelegate.prototype.handleDocketDisplayPage = function() {
     // If it's not a docket display URL or a docket history URL, punt.
     return;
   }
+  let isAppellate = PACER.isAppellateCourt(this.court);
   if (!this.pacer_case_id) {
     // If we don't have the pacer_case_id, punt.
     return;
@@ -164,7 +165,8 @@ ContentDelegate.prototype.handleDocketDisplayPage = function() {
       }, this);
       if (isDocketDisplayUrl){
         this.recap.uploadDocket(this.court, this.pacer_case_id,
-          document.documentElement.innerHTML, 'DOCKET',
+          document.documentElement.innerHTML,
+	  (isAppellate?'APPELLATE_DOCKET':'DOCKET'),
           callback);
       } else if (isDocketHistoryDisplayUrl) {
         this.recap.uploadDocket(this.court, this.pacer_case_id,
