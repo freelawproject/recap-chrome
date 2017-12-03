@@ -304,7 +304,14 @@ ContentDelegate.prototype.showPdfPage = function(
               '_' + document_number + '_' + (attachment_number || '0') + '.pdf';
           }
 
-          if (!items.options.external_pdf) {
+          let external_pdf = items.options.external_pdf;
+          if ((navigator.userAgent.indexOf('Chrome') >= 0) &&
+              !navigator.plugins.namedItem('Chrome PDF Viewer')) {
+            // We are in Google Chrome, and the built-in PDF Viewer has been disabled.
+            // So we autodetect and force external_pdf true for proper filenames.
+            external_pdf = true;
+          }
+          if (!external_pdf) {
             let blobUrl = URL.createObjectURL(blob);
             let downloadLink = '<div id="recap-download" class="initial">' +
                 '<a href="' + blobUrl + '" download="' + filename + '">' +
