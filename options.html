@@ -29,17 +29,22 @@
     </label>
   </fieldset>
 
-  <fieldset><legend>PDF Filenames</legend>
+  <fieldset><legend>PDF Files</legend>
     <div>
+      <label
+	 class="hidden" id="external_pdf_label"
+	 title="Tells RECAP to save PDFs as downloaded files, rather than set up for in-browser viewing. Check this box when the browser is also set to an external PDF viewers, otherwise filenames will be random characters rather than structured.">
+      <input type="checkbox" id="external_pdf">
+      Force external PDF viewing (download PDFs)<br></label>
       <input type="radio" id="ia_style_filenames"
              name="filename_style" value="ia_style_filenames">
-      <label for="ia_style_filenames">Use Internet Archive style (e.g.
+      <label for="ia_style_filenames">Use Internet Archive style naming (e.g.
         gov.uscourts.cand.201881.46.0.pdf)</label>
     </div>
     <div>
       <input type="radio" id="lawyer_style_filenames"
              name="filename_style" value="lawyer_style_filenames">
-      <label for="lawyer_style_filenames">Use Lawyer style (e.g.
+      <label for="lawyer_style_filenames">Use Lawyer style naming (e.g.
         N.D.Cal._3&#8209;08&#8209;cv&#8209;03251_46_0.pdf)</label>
     </div>
   </fieldset>

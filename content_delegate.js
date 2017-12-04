@@ -204,7 +204,8 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
   // Save a copy of the page source, altered so that the "View Document"
   // button goes forward in the history instead of resubmitting the form.
   let originalSubmit = document.forms[0].getAttribute('onsubmit');
-  document.forms[0].setAttribute('onsubmit', 'history.forward(); return false;');
+  document.forms[0].setAttribute('onsubmit',
+				 'history.forward(); return false;');
   let previousPageHtml = document.documentElement.innerHTML;
   document.forms[0].setAttribute('onsubmit', originalSubmit);
 
@@ -224,7 +225,8 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
   let form = document.getElementById(event.data.id);
   let data = new FormData(form);
   httpRequest(form.action, data, function (type, ab, xhr) {
-    console.info('RECAP: Successfully submitted RECAP "View" button form: '+xhr.statusText);
+    console.info('RECAP: Successfully submitted RECAP "View" button form: ' +
+		 xhr.statusText);
     var blob = new Blob([new Uint8Array(ab)], {type: type});
     // If we got a PDF, we wrap it in a simple HTML page.  This lets us treat
     // both cases uniformly: either way we have an HTML page with an <iframe>
@@ -249,11 +251,12 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
   }.bind(this));
 };
 
-// Given the HTML for a page with an <iframe> in it, downloads the PDF document
-// in the iframe, displays it in the browser, and also uploads the PDF document
-// to RECAP.
-// The documentElement is provided via dependency injection so that it can be
-// properly mocked in tests.
+// Given the HTML for a page with an <iframe> in it, downloads the PDF
+// document in the iframe, displays it in the browser, and also
+// uploads the PDF document to RECAP.
+//
+// The documentElement is provided via dependency injection so that it
+// can be properly mocked in tests.
 ContentDelegate.prototype.showPdfPage = function(
   documentElement, html, previousPageHtml, document_number, attachment_number,
   docket_number) {
@@ -266,11 +269,14 @@ ContentDelegate.prototype.showPdfPage = function(
 
   // Show the page with a blank <iframe> while waiting for the download.
   documentElement.innerHTML =
-    match[1] + '<iframe src="about:blank"' + match[3];
+    match[1] +
+    '<p>Waiting for download...<p><iframe src="about:blank"' +
+    match[3];
 
   // Download the file from the <iframe> URL.
   httpRequest(match[2], null, function (type, ab, xhr) {
-    console.info("RECAP: Successfully got PDF as arraybuffer via ajax request.");
+    console.info(
+      "RECAP: Successfully got PDF as arraybuffer via ajax request.");
 
     // Make the Back button redisplay the previous page.
     window.onpopstate = function(event) {
@@ -280,61 +286,82 @@ ContentDelegate.prototype.showPdfPage = function(
     };
     history.replaceState({content: previousPageHtml}, '');
 
-    // Display the page with the downloaded file in the <iframe>.
+    // Get the PACER case ID and, on completion, define displayPDF()
+    // to either display the PDF in the provided <iframe>, or, if
+    // external_pdf is set, save it using FileSaver.js's saveAs().
     let blob = new Blob([new Uint8Array(ab)], {type: type});
-    let blobUrl = URL.createObjectURL(blob);
-    this.recap.getPacerCaseIdFromPacerDocId(this.pacer_doc_id, function(pacer_case_id){
-      console.info(`RECAP: Stored pacer_case_id is ${pacer_case_id}`);
-      let updateHtmlPage = function (items) {
-        let filename;
-        if (items.options.ia_style_filenames) {
-          filename = 'gov.uscourts.' + this.court + '.' +
-            (pacer_case_id || 'unknown-case-id') + '.' +
-            document_number + '.' + (attachment_number || '0') + '.pdf';
-        } else if (items.options.lawyer_style_filenames) {
-          filename = PACER.COURT_ABBREVS[this.court] + '_' + docket_number +
-            '_' + document_number + '_' + (attachment_number || '0') + '.pdf';
-        }
-        let downloadLink = '<div id="recap-download" class="initial">' +
-          '<a href="' + blobUrl + '" download="' + filename + '">' +
-          'Save as ' + filename + '</a></div>';
-        html = match[1] + downloadLink + '<iframe onload="' +
-          'setTimeout(function() {' +
-          "  document.getElementById('recap-download').className = '';" +
-          '}, 7500)" src="' + blobUrl + '"' + match[3];
-        documentElement.innerHTML = html;
-        history.pushState({content: html}, '');
-      }.bind(this);
-      chrome.storage.local.get('options', updateHtmlPage);
+    this.recap.getPacerCaseIdFromPacerDocId(
+      this.pacer_doc_id, function(pacer_case_id){
+        console.info(`RECAP: Stored pacer_case_id is ${pacer_case_id}`);
+        let displayPDF = function (items) {
+          let filename;
+          if (items.options.ia_style_filenames) {
+            filename = 'gov.uscourts.' + this.court + '.' +
+              (pacer_case_id || 'unknown-case-id') + '.' +
+              document_number + '.' + (attachment_number || '0') + '.pdf';
+          } else if (items.options.lawyer_style_filenames) {
+            filename = PACER.COURT_ABBREVS[this.court] + '_' + docket_number +
+              '_' + document_number + '_' + (attachment_number || '0') + '.pdf';
+          }
 
-      let uploadDocument = function(items){
-        if (!items['options']['recap_disabled']) {
-          // If we have the pacer_case_id, upload the file to RECAP.
-          // We can't pass an ArrayBuffer directly to the background page, so
-          // we have to convert to a regular array.
-          let onUploadOk = function (ok) {
-            if (ok) {
-              this.notifier.showUpload(
-                'PDF uploaded to the public RECAP Archive.', function () {
-                }.bind(this));
-            }
-          }.bind(this);
+          let external_pdf = items.options.external_pdf;
+          if ((navigator.userAgent.indexOf('Chrome') >= 0) &&
+              !navigator.plugins.namedItem('Chrome PDF Viewer')) {
+            // We are in Google Chrome, and the built-in PDF Viewer has been disabled.
+            // So we autodetect and force external_pdf true for proper filenames.
+            external_pdf = true;
+          }
+          if (!external_pdf) {
+            let blobUrl = URL.createObjectURL(blob);
+            let downloadLink = '<div id="recap-download" class="initial">' +
+                '<a href="' + blobUrl + '" download="' + filename + '">' +
+                'Save as ' + filename + '</a></div>';
+            html = match[1] + downloadLink + '<iframe onload="' +
+              'setTimeout(function() {' +
+              "  document.getElementById('recap-download').className = '';" +
+              '}, 7500)" src="' + blobUrl + '"' + match[3];
+            documentElement.innerHTML = html;
+            history.pushState({content: html}, '');
+          } else {
+            // Saving to an external PDF.
+            saveAs(blob, filename);
+	    documentElement.innerHTML = match[1] +
+	      '<p><iframe src="about:blank"'
+	      + match[3];  // Clear "Waiting..." message
+          }
+        }.bind(this);
 
-          // In Chrome, blobs can't be passed from content scripts to background
-          // scripts, so we have to convert to an array and pass that, then
-          // convert back to a blob when we add the data to the FormData object.
-          let bytes = arrayBufferToArray(ab);
-          this.recap.uploadDocument(
-            this.court, pacer_case_id, this.pacer_doc_id, document_number,
-            attachment_number, bytes, onUploadOk
-          );
-        } else {
-          console.info("RECAP: Not uploading PDF. RECAP is disabled.");
-        }
-      }.bind(this);
-      chrome.storage.local.get('options', uploadDocument);
+        chrome.storage.local.get('options', displayPDF);
 
-    }.bind(this));
+        let uploadDocument = function(items){
+          if (!items['options']['recap_disabled']) {
+            // If we have the pacer_case_id, upload the file to RECAP.
+            // We can't pass an ArrayBuffer directly to the background
+            // page, so we have to convert to a regular array.
+            let onUploadOk = function (ok) {
+              if (ok) {
+                this.notifier.showUpload(
+                  'PDF uploaded to the public RECAP Archive.', function () {
+                  }.bind(this));
+              }
+            }.bind(this);
+
+            // In Chrome, blobs can't be passed from content scripts
+            // to background scripts, so we have to convert to an
+            // array and pass that, then convert back to a blob when
+            // we add the data to the FormData object.
+            let bytes = arrayBufferToArray(ab);
+            this.recap.uploadDocument(
+              this.court, pacer_case_id, this.pacer_doc_id, document_number,
+              attachment_number, bytes, onUploadOk
+            );
+          } else {
+            console.info("RECAP: Not uploading PDF. RECAP is disabled.");
+          }
+        }.bind(this);
+        chrome.storage.local.get('options', uploadDocument);
+
+      }.bind(this));
   }.bind(this));
 };
 

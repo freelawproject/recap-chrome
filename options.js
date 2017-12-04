@@ -33,6 +33,12 @@ function save_options() {
   });
 }
 
+if (navigator.userAgent.indexOf('Chrome') < 0) {
+    // Autodetect in Chrome. Otherwise offer an option (Firefix and friends)
+    let external_pdf = document.getElementById('external_pdf_label');
+    external_pdf.classList.remove('hidden');
+}
+
 load_options();
 for (let i = 0; i < inputs.length; i++) {
   inputs[i].addEventListener('change', save_options);

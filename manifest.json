@@ -46,6 +46,7 @@
     ],
     "js": [
       "assets/js/jquery-3.2.1.js",
+      "assets/js/FileSaver.js",
       "assets/js/moment.js",
       "assets/js/livestamp.js",
       "utils.js",
