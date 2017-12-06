@@ -143,6 +143,7 @@ let PACER = {
     let pageCheck = (PACER.isDocumentUrl(url) &&
                      (lastInput === 'View Document') ||
                      (lastInput === 'Accept Charges and Retrieve'));
+    debug(4," lastInput "+lastInput);
     return !!pageCheck;
   },
 
