@@ -255,12 +255,18 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
   document.forms[0].setAttribute('onsubmit', originalSubmit);
 
   // Grab the document number, attachment number, and docket number
-  let image_string = $('td:contains(Image)').text();
-  let regex = /(\d+)-(\d+)/;
-  let matches = regex.exec(image_string);
-  let document_number = matches[1];
-  let attachment_number = matches[2];
-  let docket_number = $.trim($('tr:contains(Case Number) td:nth(1)').text())
+  let document_number, attachment_number, docket_number;
+
+  if (!PACER.isAppellateCourt(this.court)) {
+    let image_string = $('td:contains(Image)').text();
+    let regex = /(\d+)-(\d+)/;
+    let matches = regex.exec(image_string);
+    document_number = matches[1];
+    attachment_number = matches[2];
+    docket_number = $.trim($('tr:contains(Case Number) td:nth(1)').text());
+  } else { // Appellate
+    debug(4,"Appellate parsing not yet implemented");
+  }
 
   // Now do the form request to get to the view page.  Some PACER sites will
   // return an HTML page containing an <iframe> that loads the PDF document;
@@ -415,6 +421,11 @@ ContentDelegate.prototype.showPdfPage = function(
 // creates a <form> element and calls submit() on it, so we hook into submit().
 ContentDelegate.prototype.handleSingleDocumentPageView = function() {
   if (!PACER.isSingleDocumentPage(this.url, document)) {
+    return;
+  }
+
+  if (PACER.isAppellateCourt(this.court)) {
+    debug(4,"No interposition for appellate downloads yet");
     return;
   }
 
