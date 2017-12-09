@@ -17,7 +17,7 @@ function Recap() {
       for (let pacer_doc_id of pacer_doc_ids){
         values[pacer_doc_id] = pacer_case_id;
       }
-      chrome.storage.local.set(values, cb());
+      chrome.storage.local.set(values, cb);
     },
     //Given a pacer_doc_id, return the pacer_case_id that it is associated with
     getPacerCaseIdFromPacerDocId: function (pacer_doc_id, cb) {
