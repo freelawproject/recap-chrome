@@ -117,7 +117,7 @@ let PACER = {
       // JS is trash. It lacks a way of getting the TLD, so we use endsWith.
       if (hostname.endsWith('uscourts.gov')) {
         let match;
-        if (match = url.match(/\?(\d+)$/)) {
+        if (match = url.match(/\?(\d+)/)) {
           return match[1];
         } else if (match = url.match(/[?&]caseid=(\d+)/)) {
 	  return match[1];
