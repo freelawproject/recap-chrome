@@ -61,14 +61,19 @@ ContentDelegate.prototype.findPacerDocIds = function() {
       //   function goDLS(hyperlink, de_caseid, de_seqno, got_receipt,
       //     pdf_header, pdf_toggle_possible, magic_num, hdr) {
 
-      let goDLS = onclick.match(/^goDLS\('([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)'\)/);
+      let goDLS;
+      let [, hyperlink, de_caseid, de_seqno, got_receipt,
+           pdf_header, pdf_toggle_possible, magic_num, hdr ]
+          = goDLS
+          = onclick.match(/^goDLS\('([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)'\)/);
 
-      if (goDLS[2]) {
-	docsToCases[pacer_doc_id] = goDLS[2];
-	// console.info('RECAP debug: Y doc ' + pacer_doc_id + ' to ' + goDLS[2]);
+      if (de_caseid) {
+        docsToCases[pacer_doc_id] = de_caseid;
+        // console.info('RECAP debug: Y doc ' + pacer_doc_id + ' to ' + de_caseid);
       } else if (page_pacer_case_id) {
-	docsToCases[pacer_doc_id] = page_pacer_case_id;
-	// console.info('RECAP debug: X doc ' + pacer_doc_id + ' to ' + page_pacer_case_id);
+        docsToCases[pacer_doc_id] = page_pacer_case_id;
+        // console.info('RECAP debug: X doc ' + pacer_doc_id + ' to '
+        //              + page_pacer_case_id);
       }
     }
   }
