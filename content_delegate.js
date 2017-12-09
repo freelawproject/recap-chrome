@@ -35,7 +35,7 @@ ContentDelegate.prototype.findPacerDocIds = function() {
   // xxx why isn't it this.url? (undefined)
   let pacer_doc_id = PACER.getDocumentIdFromUrl(url);
   if (pacer_doc_id && page_pacer_case_id) {
-    // console.info('RECAP debug: Z doc ' + pacer_doc_id + ' to ' + page_pacer_case_id);
+    debug(3, 'Z doc ' + pacer_doc_id + ' to ' + page_pacer_case_id);
     docsToCases[pacer_doc_id] = page_pacer_case_id;
   }
 
@@ -69,11 +69,11 @@ ContentDelegate.prototype.findPacerDocIds = function() {
 
       if (de_caseid) {
         docsToCases[pacer_doc_id] = de_caseid;
-        // console.info('RECAP debug: Y doc ' + pacer_doc_id + ' to ' + de_caseid);
+        debug(3, 'Y doc ' + pacer_doc_id + ' to ' + de_caseid);
       } else if (page_pacer_case_id) {
         docsToCases[pacer_doc_id] = page_pacer_case_id;
-        // console.info('RECAP debug: X doc ' + pacer_doc_id + ' to '
-        //              + page_pacer_case_id);
+        debug(3,'X doc ' + pacer_doc_id + ' to '
+              + page_pacer_case_id);
       }
     }
   }
