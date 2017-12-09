@@ -78,7 +78,7 @@ ContentDelegate.prototype.findPacerDocIds = function() {
     }
   }
 
-  chrome.storage.local.set(docsToCases, function(){
+  this.recap.storePacerDocIdsMultipleCases(docsToCases, function(){
     console.info(`RECAP: Saved the pacer_doc_id to pacer_case_id mappings to local ` +
                  `storage: ` + Object.keys(docsToCases).length);
   });
