@@ -72,7 +72,6 @@
     "chrome_style": true
   },
   "web_accessible_resources": [
-    "assets/images/*.png",
-    "assets/js/*.js"
+    "assets/images/*.png"
   ]
 }

@@ -11,13 +11,18 @@ function Recap() {
   };
 
   return {
+    // Save a mapping of pacer_doc_ids to pacer_case_ids
+    // In the future, we may wish to abstract this differently.
+    storePacerDocIdsMultipleCases: function(mapping, cb) {
+      chrome.storage.local.set(mapping, cb);
+    },
     // Associate a list of pacer_doc_ids with a pacer_case_id
     storePacerDocIds: function (pacer_doc_ids, pacer_case_id, cb) {
       let values = {};
       for (let pacer_doc_id of pacer_doc_ids){
         values[pacer_doc_id] = pacer_case_id;
       }
-      chrome.storage.local.set(values, cb());
+      storePacerDocIdsMultipleCases(values, cb);
     },
     //Given a pacer_doc_id, return the pacer_case_id that it is associated with
     getPacerCaseIdFromPacerDocId: function (pacer_doc_id, cb) {

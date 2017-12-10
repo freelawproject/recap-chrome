@@ -152,3 +152,19 @@ function arrayBufferToArray(ab) {
   }
   return [].concat.apply([], chunks);  // concatenate all the chunks together
 }
+
+// Debug logging function. First argument is a debug level, remainder are variable args
+// for console.log(). If the global debug level matches the first arg, calls console.log().
+// Example usage:
+//    debug(5, "This message is only seen when the debug level is %d or higher.", 5);
+// Debug levels:
+//   1   General informational
+//   3   Developer debugging
+var DEBUGLEVEL = 1;
+function debug(level, varargs) {
+  if (DEBUGLEVEL >= level) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    args[0] = `RECAP debug [${level}]: `+args[0];
+    return console.log.apply(this, args);
+  }
+}

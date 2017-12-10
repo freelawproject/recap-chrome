@@ -25,24 +25,64 @@ ContentDelegate.prototype.findPacerDocIds = function() {
     return;
   }
 
+  // Not all pages have a case ID, and potentially there are
+  // corner-cases where there are links to documents on another case?
+  let page_pacer_case_id = this.pacer_case_id ||
+    this.recap.getPacerCaseIdFromPacerDocId(this.pacer_doc_id, function(){});
+
+  let docsToCases = {};
+
+  // xxx why isn't it this.url? (undefined)
+  let pacer_doc_id = PACER.getDocumentIdFromUrl(url);
+  if (pacer_doc_id && page_pacer_case_id) {
+    debug(3, 'Z doc ' + pacer_doc_id + ' to ' + page_pacer_case_id);
+    docsToCases[pacer_doc_id] = page_pacer_case_id;
+  }
+
   for (let i = 0; i < this.links.length; i++) {
     let link = this.links[i];
     if (PACER.isDocumentUrl(link.href)) {
       let pacer_doc_id = PACER.getDocumentIdFromUrl(link.href);
       $(link).data('pacer_doc_id', pacer_doc_id);
       this.pacer_doc_ids.push(pacer_doc_id);
+
+      let onclick = link.getAttribute('onclick');
+      // CMECF provides extra information on Document Links (DLS?) in the
+      // goDLS() function of an onclick handler, e.g.:
+      // <a
+      //   href="https://ecf.mad.uscourts.gov/doc1/09518360046"
+      //   onclick="goDLS('/doc1/09518360046','153992','264','','','1','','');
+      //     return(false);">
+      //  95
+      // </a>
+      // The parameters are defined in the unminified js
+      //   https://ecf.flnd.uscourts.gov/lib/dls_url.js
+      // as:
+      //   function goDLS(hyperlink, de_caseid, de_seqno, got_receipt,
+      //     pdf_header, pdf_toggle_possible, magic_num, hdr) {
+
+      let goDLS;
+      let [, hyperlink, de_caseid, de_seqno, got_receipt,
+           pdf_header, pdf_toggle_possible, magic_num, hdr ]
+          = goDLS
+          = onclick.match(/^goDLS\('([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)'\)/);
+
+      if (de_caseid) {
+        docsToCases[pacer_doc_id] = de_caseid;
+        debug(3, 'Y doc ' + pacer_doc_id + ' to ' + de_caseid);
+      } else if (page_pacer_case_id) {
+        docsToCases[pacer_doc_id] = page_pacer_case_id;
+        debug(3,'X doc ' + pacer_doc_id + ' to '
+              + page_pacer_case_id);
+      }
     }
   }
-  let pacer_case_id = this.pacer_case_id ||
-    this.recap.getPacerCaseIdFromPacerDocId(this.pacer_doc_id, function(){});
-  if (pacer_case_id){
-    // If we have the case ID or have it cached for the URL, stash a mapping of
-    // the doc ids on the page to the case id we were able to find.
-    this.recap.storePacerDocIds(this.pacer_doc_ids, pacer_case_id, function(){
-      console.info(`RECAP: Saved the pacer_doc_id to pacer_case_id mappings to local ` +
-                   `storage.`);
-    });
-  }
+
+  this.recap.storePacerDocIdsMultipleCases(docsToCases, function(){
+    console.info(`RECAP: Saved the pacer_doc_id to pacer_case_id mappings to local ` +
+                 `storage: ` + Object.keys(docsToCases).length);
+  });
+
 };
 
 // If this is a docket query page, ask RECAP whether it has the docket page.
