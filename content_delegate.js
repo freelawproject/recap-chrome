@@ -17,26 +17,27 @@ let ContentDelegate = function(url, path, court, pacer_case_id, pacer_doc_id,
   this.notifier = importInstance(Notifier);
   this.recap = importInstance(Recap);
 
-  this.findPacerDocIds();
+  this.findAndStorePacerDocIds();
 };
 
-ContentDelegate.prototype.findPacerDocIds = function() {
+// Use a variety of approaches to get and store pacer_doc_id to pacer_case_id
+// mappings in local storage.
+ContentDelegate.prototype.findAndStorePacerDocIds = function() {
   if (!PACER.hasPacerCookie(document.cookie)) {
     return;
   }
 
-  // Not all pages have a case ID, and potentially there are
-  // corner-cases where there are links to documents on another case?
+  // Not all pages have a case ID, and there are corner-cases in merged dockets
+  // where there are links to documents on another case.
   let page_pacer_case_id = this.pacer_case_id ||
     this.recap.getPacerCaseIdFromPacerDocId(this.pacer_doc_id, function(){});
 
   let docsToCases = {};
 
-  // xxx why isn't it this.url? (undefined)
-  let pacer_doc_id = PACER.getDocumentIdFromUrl(url);
-  if (pacer_doc_id && page_pacer_case_id) {
-    debug(3, 'Z doc ' + pacer_doc_id + ' to ' + page_pacer_case_id);
-    docsToCases[pacer_doc_id] = page_pacer_case_id;
+  // Try getting a mapping from a pacer_doc_id in the URL to a
+  if (this.pacer_doc_id && page_pacer_case_id) {
+    debug(3, 'Z doc ' + this.pacer_doc_id + ' to ' + page_pacer_case_id);
+    docsToCases[this.pacer_doc_id] = page_pacer_case_id;
   }
 
   for (let i = 0; i < this.links.length; i++) {
@@ -77,12 +78,10 @@ ContentDelegate.prototype.findPacerDocIds = function() {
       }
     }
   }
-
-  this.recap.storePacerDocIdsMultipleCases(docsToCases, function(){
+  chrome.storage.local.set(docsToCases, function(){
     console.info(`RECAP: Saved the pacer_doc_id to pacer_case_id mappings to local ` +
                  `storage: ` + Object.keys(docsToCases).length);
   });
-
 };
 
 // If this is a docket query page, ask RECAP whether it has the docket page.
