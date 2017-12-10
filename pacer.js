@@ -116,12 +116,12 @@ let PACER = {
       let hostname = getHostname(url);
       // JS is trash. It lacks a way of getting the TLD, so we use endsWith.
       if (hostname.endsWith('uscourts.gov')) {
-        let match;
-        if (match = url.match(/\?(\d+)/)) {
-          return match[1];
-        } else if (match = url.match(/[?&]caseid=(\d+)/)) {
-	  return match[1];
-	}
+        for (let re of [/\?(\d+)/, /[?&]caseid=(\d+)/]){
+          let match = url.match(re);
+          if (match){
+            return match[1];
+          }
+        }
       }
     }
   },
