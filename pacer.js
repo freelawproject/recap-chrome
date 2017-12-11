@@ -89,8 +89,9 @@ let PACER = {
   // Returns true if this is a page for downloading a single document.
   isSingleDocumentPage: function (url, document) {
     let inputs = document.getElementsByTagName('input');
-    let pageCheck = (url.match(/\/doc1\/\d+/) && inputs.length &&
-                     inputs[inputs.length - 1].value === 'View Document');
+    let pageCheck = (url.match(/\/doc1\/\d+/) || url.match(/\/cgi-bin\/show_doc/)) &&
+      inputs.length &&
+      inputs[inputs.length - 1].value === 'View Document';
     return !!pageCheck;
   },
 
@@ -102,6 +103,21 @@ let PACER = {
       // the user has been shown a receipt page.  We don't care about that, so
       // we always set the fourth digit to 0 when getting a doc ID.
       return match[1].slice(0, 3) + '0' + match[1].slice(4);
+    }
+  },
+
+  // Get the document ID for a document view page using the "View Document"
+  // form.
+  getDocumentIdFromForm: function(url, document){
+    if (PACER.isDocumentUrl(url)) {
+      let inputs = document.getElementsByTagName('input');
+      let last_input = inputs[inputs.length - 1];
+      if (inputs.length && last_input.value === 'View Document') {
+        // Grab the document ID from the form's onsubmit attribute
+        let onsubmit = last_input.form.getAttribute('onsubmit');
+        let goDls = PACER.parseGoDlsFunction(onsubmit);
+        return PACER.getDocumentIdFromUrl(goDls.hyperlink);
+      }
     }
   },
 
@@ -138,6 +154,37 @@ let PACER = {
   // Gets the last path component of a URL.
   getBaseNameFromUrl: function (url) {
     return url.replace(/\?.*/, '').replace(/.*\//, '');
+  },
+
+  // Parse the goDLS function returning its parameters as a dict.
+  parseGoDlsFunction: function (goDLS_string){
+    // CMECF provides extra information on Document Links (DLS?) in the goDLS()
+    // function of an onclick handler, e.g.:
+    //
+    //   <a href="https://ecf.mad.uscourts.gov/doc1/09518360046"
+    //      onclick="goDLS('/doc1/09518360046','153992','264','','','1','','');
+    //               return(false);">95</a>
+    //
+    // This is similarly used in the onsubmit function of some forms.
+    //
+    // The parameters are defined in the unminified js
+    //   https://ecf.flnd.uscourts.gov/lib/dls_url.js
+    // as:
+    //   function goDLS(hyperlink, de_caseid, de_seqno, got_receipt,
+    //                  pdf_header, pdf_toggle_possible, magic_num, hdr)
+    let [, hyperlink, de_caseid, de_seqno, got_receipt,
+      pdf_header, pdf_toggle_possible, magic_num, hdr]
+      = goDLS_string.match(/^goDLS\('([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)'\)/);
+    return {
+      'hyperlink': hyperlink,
+      'de_caseid': de_caseid,
+      'de_seqno': de_seqno,
+      'got_receipt': got_receipt,
+      'pdf_header': pdf_header,
+      'pdf_toggle_possible': pdf_toggle_possible,
+      'magic_num': magic_num,
+      'hdr': hdr
+    }
   },
 
   // Given document.cookie, returns true if the user is logged in to PACER.

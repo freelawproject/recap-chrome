@@ -48,26 +48,8 @@ ContentDelegate.prototype.findAndStorePacerDocIds = function() {
       this.pacer_doc_ids.push(pacer_doc_id);
 
       let onclick = link.getAttribute('onclick');
-      // CMECF provides extra information on Document Links (DLS?) in the
-      // goDLS() function of an onclick handler, e.g.:
-      // <a
-      //   href="https://ecf.mad.uscourts.gov/doc1/09518360046"
-      //   onclick="goDLS('/doc1/09518360046','153992','264','','','1','','');
-      //     return(false);">
-      //  95
-      // </a>
-      // The parameters are defined in the unminified js
-      //   https://ecf.flnd.uscourts.gov/lib/dls_url.js
-      // as:
-      //   function goDLS(hyperlink, de_caseid, de_seqno, got_receipt,
-      //     pdf_header, pdf_toggle_possible, magic_num, hdr) {
-
-      let goDLS;
-      let [, hyperlink, de_caseid, de_seqno, got_receipt,
-           pdf_header, pdf_toggle_possible, magic_num, hdr ]
-          = goDLS
-          = onclick.match(/^goDLS\('([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)'\)/);
-
+      let goDls = PACER.parseGoDlsFunction(onclick);
+      let de_caseid = goDls.de_caseid;
       if (de_caseid) {
         docsToCases[pacer_doc_id] = de_caseid;
         debug(3, 'Y doc ' + pacer_doc_id + ' to ' + de_caseid);
