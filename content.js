@@ -7,7 +7,7 @@ let court = PACER.getCourtFromUrl(url);
 let path = window.location.pathname;
 // Referrer is used here because typically the URL that has the pacer_case_id is
 // the one that with the form that generates the docket.
-let pacer_case_id = PACER.getCaseNumberFromUrls([document.referrer, url]);
+let pacer_case_id = PACER.getCaseNumberFromUrls([url, document.referrer]);
 let pacer_doc_id = PACER.getDocumentIdFromUrl(url);
 let links = document.body.getElementsByTagName('a');
 let content_delegate = new ContentDelegate(
