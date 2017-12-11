@@ -108,15 +108,15 @@ let PACER = {
   // Given a URL that satisfies isDocketQueryUrl, gets its case number.
   getCaseNumberFromUrls: function (urls) {
     // Iterate over an array of URLs and get the case number from the
-    // first one that matches. The calling function may pass us URLs
+    // first one that matches. Because the calling function may pass us URLs
     // other than the page URL, such as referrers, we narrow to
     // *uscourts.gov. (Page URLs are so limited by the "include_globs" in
-    // manifest.json; but referrs are not.)
+    // manifest.json; but referrers are not.)
     for (let url of urls) {
       let hostname = getHostname(url);
       // JS is trash. It lacks a way of getting the TLD, so we use endsWith.
       if (hostname.endsWith('uscourts.gov')) {
-        for (let re of [/\?(\d+)/, /[?&]caseid=(\d+)/]){
+        for (let re of [/[?&]caseid=(\d+)/, /\?(\d+)(?:&.*)?$/]){
           let match = url.match(re);
           if (match){
             return match[1];
