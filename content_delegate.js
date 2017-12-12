@@ -48,11 +48,10 @@ ContentDelegate.prototype.findAndStorePacerDocIds = function() {
       this.pacer_doc_ids.push(pacer_doc_id);
 
       let onclick = link.getAttribute('onclick');
-      let goDls = PACER.parseGoDlsFunction(onclick);
-      let de_caseid = goDls.de_caseid;
-      if (de_caseid) {
-        docsToCases[pacer_doc_id] = de_caseid;
-        debug(3, 'Y doc ' + pacer_doc_id + ' to ' + de_caseid);
+      let goDLS = PACER.parseGoDLSFunction(onclick);
+      if (goDLS.de_caseid) {
+        docsToCases[pacer_doc_id] = goDLS.de_caseid;
+        debug(3, 'Y doc ' + pacer_doc_id + ' to ' + goDLS.de_caseid);
       } else if (page_pacer_case_id) {
         docsToCases[pacer_doc_id] = page_pacer_case_id;
         debug(3,'X doc ' + pacer_doc_id + ' to '
