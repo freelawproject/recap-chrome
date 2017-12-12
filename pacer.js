@@ -185,6 +185,9 @@ let PACER = {
       // JS is trash. It lacks a way of getting the TLD, so we use endsWith.
       if (hostname.endsWith('uscourts.gov')) {
         for (let re of [
+	  // Appellate CMECF sends us some odd URLs, be aware:
+	  // https://ecf.mad.uscourts.gov/cgi-bin/DktRpt.pl?caseNumber=1:17-cv-11842-PBS&caseId=0
+	  // https://ecf.mad.uscourts.gov/cgi-bin/DktRpt.pl?caseNumber=1:17-cv-11842-PBS&caseId=1:17-cv-11842-PBS
           /[?&]caseid=(\d+)/i, // match on caseid GET param
           /\?(\d+)(?:&.*)?$/,  // match on DktRpt.pl?178502&blah urls
         ]){
