@@ -50,7 +50,10 @@ let PACER = {
 
   // Returns true if the given URL looks like a link to a PACER document.
   isDocumentUrl: function (url) {
-    if (url.match(/\/doc1\/\d+/) || url.match(/\/cgi-bin\/show_doc/)) {
+    if (
+        url.match(/\/doc1\/\d+/) ||
+        url.match(/\/cgi-bin\/show_doc/)
+    ) {
       if (PACER.getCourtFromUrl(url)) {
         return true;
       }
@@ -89,7 +92,10 @@ let PACER = {
   // Returns true if this is a page for downloading a single document.
   isSingleDocumentPage: function (url, document) {
     let inputs = document.getElementsByTagName('input');
-    let pageCheck = (url.match(/\/doc1\/\d+/) || url.match(/\/cgi-bin\/show_doc/)) &&
+    let pageCheck = (
+                     url.match(/\/doc1\/\d+/) ||
+                     url.match(/\/cgi-bin\/show_doc/
+    )) &&
       inputs.length &&
       inputs[inputs.length - 1].value === 'View Document';
     return !!pageCheck;
