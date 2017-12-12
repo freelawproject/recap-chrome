@@ -48,8 +48,8 @@ ContentDelegate.prototype.findAndStorePacerDocIds = function() {
       this.pacer_doc_ids.push(pacer_doc_id);
 
       let onclick = link.getAttribute('onclick');
-      let goDls = PACER.parseGoDlsFunction(onclick);
-      let de_caseid = goDls.de_caseid;
+      let goDLS = PACER.parseGoDLSFunction(onclick);
+      let de_caseid = goDLS.de_caseid;
       if (de_caseid) {
         docsToCases[pacer_doc_id] = de_caseid;
         debug(3, 'Y doc ' + pacer_doc_id + ' to ' + de_caseid);

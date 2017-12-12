@@ -121,8 +121,8 @@ let PACER = {
       if (inputs.length && last_input.value === 'View Document') {
         // Grab the document ID from the form's onsubmit attribute
         let onsubmit = last_input.form.getAttribute('onsubmit');
-        let goDls = PACER.parseGoDlsFunction(onsubmit);
-        return PACER.getDocumentIdFromUrl(goDls.hyperlink);
+        let goDLS = PACER.parseGoDLSFunction(onsubmit);
+        return PACER.getDocumentIdFromUrl(goDLS.hyperlink);
       }
     }
   },
@@ -162,7 +162,7 @@ let PACER = {
   },
 
   // Parse the goDLS function returning its parameters as a dict.
-  parseGoDlsFunction: function (goDLS_string){
+  parseGoDLSFunction: function (goDLS_string){
     // CMECF provides extra information on Document Links (DLS?) in the goDLS()
     // function of an onclick handler, e.g.:
     //
