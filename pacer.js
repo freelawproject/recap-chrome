@@ -181,19 +181,14 @@ let PACER = {
     // as:
     //   function goDLS(hyperlink, de_caseid, de_seqno, got_receipt,
     //                  pdf_header, pdf_toggle_possible, magic_num, hdr)
-    let [, hyperlink, de_caseid, de_seqno, got_receipt,
-      pdf_header, pdf_toggle_possible, magic_num, hdr]
-      = goDLS_string.match(/^goDLS\('([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)'\)/);
-    return {
-      'hyperlink': hyperlink,
-      'de_caseid': de_caseid,
-      'de_seqno': de_seqno,
-      'got_receipt': got_receipt,
-      'pdf_header': pdf_header,
-      'pdf_toggle_possible': pdf_toggle_possible,
-      'magic_num': magic_num,
-      'hdr': hdr
+    let goDLS = goDLS_string.match(/^goDLS\('([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)'\)/);
+    if (!goDLS) {
+      return false;
     }
+    let r = {};
+    [, r.hyperlink, r.de_caseid, r.de_seqno, r.got_receipt,
+	 r.pdf_header, r.pdf_toggle_possible, r.magic_num, r.hdr] = goDLS;
+    return r;
   },
 
   // Given document.cookie, returns true if the user is logged in to PACER.
