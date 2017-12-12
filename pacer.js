@@ -148,6 +148,7 @@ let PACER = {
         ]){
           let match = url.match(re);
           if (match){
+            debug(3, "Found caseid via: " + match[0]);
             if (match[1] === '0'){
               // Appellate CMECF calls District CMECF with caseId=0 when it doesn't
               // know the caseid. Ignore that special case here.
