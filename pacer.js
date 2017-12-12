@@ -50,7 +50,12 @@ let PACER = {
 
   // Returns true if the given URL looks like a link to a PACER document.
   isDocumentUrl: function (url) {
-    if (url.match(/\/doc1\/\d+/) || url.match(/\/cgi-bin\/show_doc/)) {
+    // xxx isSingleDocumentPage() and isDocumentURL() use the same regexp.
+    // this suggests an abstraction problem.
+    if (
+        url.match(/\/doc1\/\d+/) ||
+        url.match(/\/cgi-bin\/show_doc/)
+    ) {
       if (PACER.getCourtFromUrl(url)) {
         return true;
       }
@@ -89,7 +94,12 @@ let PACER = {
   // Returns true if this is a page for downloading a single document.
   isSingleDocumentPage: function (url, document) {
     let inputs = document.getElementsByTagName('input');
-    let pageCheck = (url.match(/\/doc1\/\d+/) || url.match(/\/cgi-bin\/show_doc/)) &&
+    // xxx isSingleDocumentPage() and isDocumentURL() use the same regexp.
+    // this suggests an abstraction problem.
+    let pageCheck = (
+                     url.match(/\/doc1\/\d+/) ||
+                     url.match(/\/cgi-bin\/show_doc/
+    )) &&
       inputs.length &&
       inputs[inputs.length - 1].value === 'View Document';
     return !!pageCheck;
@@ -115,8 +125,8 @@ let PACER = {
       if (inputs.length && last_input.value === 'View Document') {
         // Grab the document ID from the form's onsubmit attribute
         let onsubmit = last_input.form.getAttribute('onsubmit');
-        let goDls = PACER.parseGoDlsFunction(onsubmit);
-        return PACER.getDocumentIdFromUrl(goDls.hyperlink);
+        let goDLS = PACER.parseGoDLSFunction(onsubmit);
+        return PACER.getDocumentIdFromUrl(goDLS.hyperlink);
       }
     }
   },
@@ -133,16 +143,16 @@ let PACER = {
       // JS is trash. It lacks a way of getting the TLD, so we use endsWith.
       if (hostname.endsWith('uscourts.gov')) {
         for (let re of [
-          /[?&]caseid=(\d+)/,  // match on caseid GET param
-          /\?(\d+)(?:&.*)?$/   // match on DktRpt.pl?178502&blah urls
+          /[?&]caseid=(\d+)/i, // match on caseid GET param
+          /\?(\d+)(?:&.*)?$/,  // match on DktRpt.pl?178502&blah urls
         ]){
           let match = url.match(re);
           if (match){
+            debug(3, "Found caseid via: " + match[0]);
             if (match[1] === '0'){
-              // This is somehow matching the caseId GET param from appellate
-              // PACER, which often has a value like caseId=0 in the URL. We
-              // don't want that. Press on.
-              continue
+              // Appellate CMECF calls District CMECF with caseId=0 when it doesn't
+              // know the caseid. Ignore that special case here.
+              continue;
             }
             return match[1];
           }
@@ -157,7 +167,7 @@ let PACER = {
   },
 
   // Parse the goDLS function returning its parameters as a dict.
-  parseGoDlsFunction: function (goDLS_string){
+  parseGoDLSFunction: function (goDLS_string){
     // CMECF provides extra information on Document Links (DLS?) in the goDLS()
     // function of an onclick handler, e.g.:
     //
@@ -172,19 +182,14 @@ let PACER = {
     // as:
     //   function goDLS(hyperlink, de_caseid, de_seqno, got_receipt,
     //                  pdf_header, pdf_toggle_possible, magic_num, hdr)
-    let [, hyperlink, de_caseid, de_seqno, got_receipt,
-      pdf_header, pdf_toggle_possible, magic_num, hdr]
-      = goDLS_string.match(/^goDLS\('([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)'\)/);
-    return {
-      'hyperlink': hyperlink,
-      'de_caseid': de_caseid,
-      'de_seqno': de_seqno,
-      'got_receipt': got_receipt,
-      'pdf_header': pdf_header,
-      'pdf_toggle_possible': pdf_toggle_possible,
-      'magic_num': magic_num,
-      'hdr': hdr
+    let goDLS = goDLS_string.match(/^goDLS\('([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)'\)/);
+    if (!goDLS) {
+      return false;
     }
+    let r = {};
+    [, r.hyperlink, r.de_caseid, r.de_seqno, r.got_receipt,
+	 r.pdf_header, r.pdf_toggle_possible, r.magic_num, r.hdr] = goDLS;
+    return r;
   },
 
   // Given document.cookie, returns true if the user is logged in to PACER.
