@@ -50,6 +50,8 @@ let PACER = {
 
   // Returns true if the given URL looks like a link to a PACER document.
   isDocumentUrl: function (url) {
+    // xxx isSingleDocumentPage() and isDocumentURL() use the same regexp.
+    // this suggests an abstraction problem.
     if (
         url.match(/\/doc1\/\d+/) ||
         url.match(/\/cgi-bin\/show_doc/)
@@ -92,6 +94,8 @@ let PACER = {
   // Returns true if this is a page for downloading a single document.
   isSingleDocumentPage: function (url, document) {
     let inputs = document.getElementsByTagName('input');
+    // xxx isSingleDocumentPage() and isDocumentURL() use the same regexp.
+    // this suggests an abstraction problem.
     let pageCheck = (
                      url.match(/\/doc1\/\d+/) ||
                      url.match(/\/cgi-bin\/show_doc/
