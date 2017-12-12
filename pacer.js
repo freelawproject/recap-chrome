@@ -139,10 +139,9 @@ let PACER = {
           let match = url.match(re);
           if (match){
             if (match[1] === '0'){
-              // This is somehow matching the caseId GET param from appellate
-              // PACER, which often has a value like caseId=0 in the URL. We
-              // don't want that. Press on.
-              continue
+              // Appellate CMECF calls District CMECF with caseId=0 when it doesn't
+              // know the caseid. Ignore that special case here.
+              continue;
             }
             return match[1];
           }
