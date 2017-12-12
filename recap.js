@@ -140,7 +140,9 @@ function Recap() {
                    `attachment_number: ${attachment_number}.`);
       let formData = new FormData();
       formData.append('court', PACER.convertToCourtListenerCourt(pacer_court));
-      formData.append('pacer_case_id', pacer_case_id);
+      if (pacer_case_id){
+        formData.append('pacer_case_id', pacer_case_id);
+      }
       formData.append('pacer_doc_id', pacer_doc_id);
       formData.append('document_number', document_number);
       if (attachment_number !== '0'){
