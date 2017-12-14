@@ -161,6 +161,26 @@ let PACER = {
     }
   },
 
+  getCaseNumberFromInputs: function(url, document){
+    if (PACER.isDocumentUrl(url)){
+      let inputs = document.getElementsByTagName('input');
+      let last_input = inputs[inputs.length -1];
+      if (inputs.length && last_input.value === "Download All") {
+        // Attachment page.
+        let onclick = last_input.getAttribute("onclick");
+        let match = onclick.match(/[?&]caseid=(\d+)/i);
+        if (match && match[1] !== '0'){
+          return match[1];
+        }
+      } else if (inputs.length && last_input.value === "View Document") {
+        // Download receipt page.
+        let onsubmit = last_input.form.getAttribute("onsubmit");
+        let goDLS = PACER.parseGoDLSFunction(onsubmit);
+        return goDLS.de_caseid;
+      }
+    }
+  },
+
   // Gets the last path component of a URL.
   getBaseNameFromUrl: function (url) {
     return url.replace(/\?.*/, '').replace(/.*\//, '');
