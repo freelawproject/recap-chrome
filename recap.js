@@ -78,7 +78,7 @@ function Recap() {
     uploadDocket: function (pacer_court, pacer_case_id, html, upload_type, cb) {
       let formData = new FormData();
       formData.append('court', PACER.convertToCourtListenerCourt(pacer_court));
-      formData.append('pacer_case_id', pacer_case_id);
+      pacer_case_id && formData.append('pacer_case_id', pacer_case_id);
       formData.append('upload_type', UPLOAD_TYPES[upload_type]);
       formData.append('filepath_local', new Blob([html], {type: 'text/plain'}));
       formData.append('debug', DEBUG);
@@ -106,8 +106,9 @@ function Recap() {
     uploadAttachmentMenu: function (pacer_court, pacer_case_id, html, cb) {
       let formData = new FormData();
       formData.append('court', PACER.convertToCourtListenerCourt(pacer_court));
-      // pacer_case_id is not currently used by backend, but send anyway...
-      formData.append('pacer_case_id', pacer_case_id);
+      // pacer_case_id is not currently used by backend, but send anyway if we
+      // have it.
+      pacer_case_id && formData.append('pacer_case_id', pacer_case_id);
       formData.append('upload_type', UPLOAD_TYPES['ATTACHMENT_PAGE']);
       formData.append('filepath_local', new Blob([html], {type: 'text/html'}));
       formData.append('debug', DEBUG);
@@ -140,12 +141,10 @@ function Recap() {
                    `attachment_number: ${attachment_number}.`);
       let formData = new FormData();
       formData.append('court', PACER.convertToCourtListenerCourt(pacer_court));
-      if (pacer_case_id){
-        formData.append('pacer_case_id', pacer_case_id);
-      }
-      formData.append('pacer_doc_id', pacer_doc_id);
-      formData.append('document_number', document_number);
-      if (attachment_number !== '0'){
+      pacer_case_id && formData.append('pacer_case_id', pacer_case_id);
+      pacer_doc_id && formData.append('pacer_doc_id', pacer_doc_id);
+      document_number && formData.append('document_number', document_number);
+      if (attachment_number && attachment_number !== '0'){
         formData.append('attachment_number', attachment_number);
       }
       formData.append('filepath_local', new Blob([new Uint8Array(bytes)]));
