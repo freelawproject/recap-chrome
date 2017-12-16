@@ -49,10 +49,15 @@ let PACER = {
   },
 
   // Returns true if the given URL looks like a link to a PACER document.
+  // For CMECF District:
+  //   https://ecf.dcd.uscourts.gov/doc1/04503837920
+  // For CMECF Appellate:
+  //   https://ecf.ca2.uscourts.gov/docs1/00205695758
   isDocumentUrl: function (url) {
     if (
-        url.match(/\/doc1\/\d+/) ||
-        url.match(/\/cgi-bin\/show_doc/)
+        url.match(/\/(?:doc1|docs1)\/\d+/) ||
+        url.match(/\/cgi-bin\/show_doc/) ||
+        url.match(/servlet=ShowDoc/)
     ) {
       if (PACER.getCourtFromUrl(url)) {
         return true;
@@ -71,7 +76,45 @@ let PACER = {
   // after submitting the "Docket Sheet" query page).
   isDocketDisplayUrl: function (url) {
     // The part after the "?" has hyphens in it.
-    return !!url.match(/\/DktRpt\.pl\?\w+-[\w-]+$/);
+    //   https://ecf.dcd.uscourts.gov/cgi-bin/DktRpt.pl?591030040473392-L_1_0-1
+    // Appellate:
+    //   https://ecf.ca1.uscourts.gov/n/beam/servlet/TransportRoom?servlet=CaseSummary.jsp&caseNum=16-1567&incOrigDkt=Y&incDktEntries=Y
+    if (url.match(/\/DktRpt\.pl\?\w+-[\w-]+$/)) { return true; }
+    let match;
+//
+    if (match = url.match(/servlet\/TransportRoom(?:\?servlet=([^?&]+)(?:[\/&#;].*)?)?$/)) {
+      let servlet = match[1];
+      debug(4, `Identified appellate servlet ${servlet} at ${url}`);
+
+      switch(servlet) {
+      case 'CaseSummary.jsp':
+      case 'ShowPage': // what is this?
+      case undefined:
+	return true;
+	break;
+
+      default:
+	debug(4, `Assuming servlet ${servlet} is not a docket.`);
+      case 'CaseSearch.jsp':
+      case 'ShowDoc':
+      case 'ShowDocMulti':
+      case 'CaseSelectionTable':
+      case 'CourtInfo.jsp':
+      case 'DocketReportFilter.jsp':
+      case 'InvalidUserLogin.jsp':
+      case 'OrderJudgment.jsp':
+      case 'PACERCalendar.jsp':
+      case 'PacerHelp.jsp':
+      case 'PACEROpinion.jsp':
+      case 'Login':
+      case 'k2aframe.jsp': // attorney/java?
+      case 'k2ajnlp.jsp':
+      case 'RSSGenerator': // maybe we should upload rss?
+      case 'PaymentHistory':
+      case 'ChangeClient.jsp':
+	return false;
+      }
+    }
   },
 
   // Returns true if the given URL is for a docket history display page.
@@ -100,7 +143,7 @@ let PACER = {
 
   // Returns the document ID for a document view page or single-document page.
   getDocumentIdFromUrl: function (url) {
-    let match = (url || '').match(/\/doc1\/(\d+)/);
+    let match = (url || '').match(/\/(?:doc1|docs1)\/(\d+)/);
     if (match) {
       // PACER sites use the fourth digit of the pacer_doc_id to flag whether
       // the user has been shown a receipt page.  We don't care about that, so
