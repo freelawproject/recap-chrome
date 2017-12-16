@@ -83,7 +83,7 @@ let PACER = {
   // attachments for a particular document).
   isAttachmentMenuPage: function (url, document) {
     let inputs = document.getElementsByTagName('input');
-    let pageCheck = url.match(/\/doc1\/\d+/) &&
+    let pageCheck = PACER.isDocumentUrl(url) &&
       inputs.length &&
       inputs[inputs.length - 1].value === 'Download All';
     return !!pageCheck;
