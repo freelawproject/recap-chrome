@@ -34,7 +34,21 @@ function setDefaultOptions(details) {
     }
   });
 }
+
+function showNotificationTab(details){
+  // Show some kind of notification tab to the user after install/upgrade.
+  console.debug("RECAP: showing install/upgrade notification if version matches");
+  let currentVersion = chrome.runtime.getManifest().version;
+  if (details.reason === 'update' && currentVersion === '1.2.3'){
+    // This version is when we pushed for donations. Show that page.
+    chrome.tabs.create({
+      url: 'https://free.law/fundraisers/2017/recap/'
+    });
+  }
+}
+
 chrome.runtime.onInstalled.addListener(setDefaultOptions);
+chrome.runtime.onInstalled.addListener(showNotificationTab);
 
 // Watches all the tabs so we can update their toolbar buttons on navigation.
 chrome.tabs.onUpdated.addListener(function (tabId, details, tab) {
