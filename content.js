@@ -38,5 +38,5 @@ if (PACER.hasPacerCookie(document.cookie)) {
   // available. If there is, put a link with a RECAP icon.
   content_delegate.attachRecapLinkToEligibleDocs();
 } else {
-  console.info(`RECAP: Taking no actions because not logged in: `+url);
+  console.info(`RECAP: Taking no actions because not logged in.`);
 }
