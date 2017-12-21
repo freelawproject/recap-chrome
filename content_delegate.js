@@ -49,9 +49,32 @@ ContentDelegate.prototype.findAndStorePacerDocIds = function() {
 
       let onclick = link.getAttribute('onclick');
       let goDLS = PACER.parseGoDLSFunction(onclick);
+
+      // In Appellate NextGen, we have a similiar pattern:
+      //   <a
+      //     href="https://ecf.ca1.uscourts.gov/docs1/00107150550"
+      //     onclick="return doDocPostURL('00107150550','41182');"
+      //     title="Open Document">
+      //     <img src="TransportRoom?servlet=document.gif" alt="Open Document" width="13" border="1" height="15">
+      //   </a>
+      // and defined as (in TransportRoom?servlet=ShowPagePublic):
+      // function doDocPostURL(dls, caseIdStr){
+      //    aWin = window.open("TransportRoom?servlet=ShowDoc&dls_id="+dls+
+      //      "&caseId="+caseIdStr+"&dktType=dktPublic",
+      //     "_blank","location=no,resizable,toolbar,status,scrollbars",false);
+      //    return false;
+      //  }
+
+      // xxx use array destructuring
+      let goDPU = onclick.match(/doDocPostURL\('([^']*)','([^]*)'\)/);
+
       if (goDLS.de_caseid) {
         docsToCases[pacer_doc_id] = goDLS.de_caseid;
         debug(3, 'Y doc ' + pacer_doc_id + ' to ' + goDLS.de_caseid);
+// for now, better to keep CL caseid = ECF docketid, not internal caseid.
+//      } else if (goDPU && goDPU[2]) {
+//	docsToCases[pacer_doc_id] = goDPU[2];
+//	debug(4, 'A doc ' + pacer_doc_id + ' to ' + goDLS[2]);
       } else if (page_pacer_case_id) {
         docsToCases[pacer_doc_id] = page_pacer_case_id;
         debug(3,'X doc ' + pacer_doc_id + ' to '
@@ -123,6 +146,7 @@ ContentDelegate.prototype.handleDocketDisplayPage = function() {
     // If it's not a docket display URL or a docket history URL, punt.
     return;
   }
+  let isAppellate = PACER.isAppellateCourt(this.court);
   if (!this.pacer_case_id) {
     // If we don't have the pacer_case_id, punt.
     return;
@@ -141,7 +165,8 @@ ContentDelegate.prototype.handleDocketDisplayPage = function() {
       }, this);
       if (isDocketDisplayUrl){
         this.recap.uploadDocket(this.court, this.pacer_case_id,
-          document.documentElement.innerHTML, 'DOCKET',
+          document.documentElement.innerHTML,
+	  (isAppellate?'APPELLATE_DOCKET':'DOCKET'),
           callback);
       } else if (isDocketHistoryDisplayUrl) {
         this.recap.uploadDocket(this.court, this.pacer_case_id,
@@ -230,12 +255,18 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
   document.forms[0].setAttribute('onsubmit', originalSubmit);
 
   // Grab the document number, attachment number, and docket number
-  let image_string = $('td:contains(Image)').text();
-  let regex = /(\d+)-(\d+)/;
-  let matches = regex.exec(image_string);
-  let document_number = matches[1];
-  let attachment_number = matches[2];
-  let docket_number = $.trim($('tr:contains(Case Number) td:nth(1)').text())
+  let document_number, attachment_number, docket_number;
+
+  if (!PACER.isAppellateCourt(this.court)) {
+    let image_string = $('td:contains(Image)').text();
+    let regex = /(\d+)-(\d+)/;
+    let matches = regex.exec(image_string);
+    document_number = matches[1];
+    attachment_number = matches[2];
+    docket_number = $.trim($('tr:contains(Case Number) td:nth(1)').text());
+  } else { // Appellate
+    debug(4,"Appellate parsing not yet implemented");
+  }
 
   // Now do the form request to get to the view page.  Some PACER sites will
   // return an HTML page containing an <iframe> that loads the PDF document;
@@ -390,6 +421,11 @@ ContentDelegate.prototype.showPdfPage = function(
 // creates a <form> element and calls submit() on it, so we hook into submit().
 ContentDelegate.prototype.handleSingleDocumentPageView = function() {
   if (!PACER.isSingleDocumentPage(this.url, document)) {
+    return;
+  }
+
+  if (PACER.isAppellateCourt(this.court)) {
+    debug(4,"No interposition for appellate downloads yet");
     return;
   }
 
