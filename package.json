@@ -1,12 +1,30 @@
 {
   "name": "recap-chrome",
-  "version": "1.0",
-  "description": "RECAP improves the experience of using PACER, the online public access system for the U.S. federal courts.",
-  "scripts": {
-    "test": "grunt jasmine"
+  "version": "1.0.0",
+  "description": "RECAP improves the experience of using PACER, the online public acces system for the U.S. federal courts",
+  "main": " ",
+  "directories": {
+    "test": "test"
   },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/freelawproject/recap-chrome.git"
+  },
+  "author": "",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/freelawproject/recap-chrome/issues"
+  },
+  "homepage": "https://github.com/freelawproject/recap-chrome#readme",
   "devDependencies": {
-    "grunt": "^0.4.5",
-    "grunt-contrib-jasmine": "^0.8.2"
+    "jasmine": "^2.8.0",
+    "karma": "^2.0.0",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-jasmine": "^1.1.1",
+    "karma-jasmine-ajax": "^0.1.13",
+    "karma-jquery": "^0.2.2"
   }
 }
