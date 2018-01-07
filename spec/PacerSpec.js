@@ -1,15 +1,10 @@
 describe('The PACER module', function() {
   var nonsenseUrl = 'http://something.uscourts.gov/foobar/baz';
-  var docketQueryUrl = 'https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?531316';
-  var altDocketQueryUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/' +
+  var docketQueryUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/' +
                            'HistDocQry.pl?531316');
   var docketDisplayUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?' +
                           '101092135737069-L_1_0-1');
-  var altDocketDisplayUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/' +
-                             'HistDocQry.pl?101092135737069-L_1_0-1');
   var singleDocUrl = 'https://ecf.canb.uscourts.gov/doc1/034031424909';
-  var convertibleDocUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/show_doc/' +
-                           '034031424909');
   var loggedInCookie = ('PacerSession=B7yuvmcj2F...9p5nDzEXsHE; ' +
                         'PacerPref=receipt=Y');
   var altLoggedInCookie = ('PacerUser=B7yuvmcj2F...9p5nDzEXsHE; ' +
@@ -45,31 +40,9 @@ describe('The PACER module', function() {
     });
   });
 
-  describe('isConvertibleDocumentUrl', function() {
-    it('matches a valid convertible document URL', function() {
-      expect(PACER.isConvertibleDocumentUrl(convertibleDocUrl)).toBe(true);
-    });
-
-    it('returns false for a  non-converitble document URL', function() {
-      expect(PACER.isConvertibleDocumentUrl(singleDocUrl)).toBe(false);
-    });
-
-    it('returns false for a non-document court URL', function() {
-      expect(PACER.isConvertibleDocumentUrl(docketQueryUrl)).toBe(false);
-    });
-
-    it('returns false for patent nonsense', function() {
-      expect(PACER.isConvertibleDocumentUrl(nonsenseUrl)).toBe(false);
-    });
-  });
-
   describe('isDocketQueryUrl', function() {
     it('matches a valid docket query URL', function() {
       expect(PACER.isDocketQueryUrl(docketQueryUrl)).toBe(true);
-    });
-
-    it('matches another valid docket query URL', function() {
-      expect(PACER.isDocketQueryUrl(altDocketQueryUrl)).toBe(true);
     });
 
     it('returns false for a document URL', function() {
@@ -83,15 +56,15 @@ describe('The PACER module', function() {
 
   describe('getCaseNumberFromUrl', function() {
     it('returns the right case number for a docket query URL', function() {
-      expect(PACER.getCaseNumberFromUrl(docketQueryUrl)).toBe('531316');
+      expect(PACER.getCaseNumberFromUrls([docketQueryUrl])).toBe('531316');
     });
 
     it('returns null for a document URL', function() {
-      expect(PACER.getCaseNumberFromUrl(singleDocUrl)).toBe(null);
+      expect(PACER.getCaseNumberFromUrls([singleDocUrl])).toBeUndefined();
     });
 
     it('returns null for patent nonsense', function() {
-      expect(PACER.getCaseNumberFromUrl(nonsenseUrl)).toBe(null);
+      expect(PACER.getCaseNumberFromUrls([nonsenseUrl])).toBeUndefined();
     });
   });
 
@@ -100,20 +73,16 @@ describe('The PACER module', function() {
       expect(PACER.isDocketDisplayUrl(docketDisplayUrl)).toBe(true);
     });
 
-    it('matches another docket display URL', function() {
-      expect(PACER.isDocketDisplayUrl(altDocketDisplayUrl)).toBe(true);
-    });
-
     it('returns false for a docket query URL', function() {
-      expect(PACER.isDocketDisplayUrl(docketQueryUrl)).toBe(false);
+      expect(PACER.isDocketDisplayUrl(docketQueryUrl)).toBeUndefined();
     });
 
     it('returns false for a document URL', function() {
-      expect(PACER.isDocketDisplayUrl(singleDocUrl)).toBe(false);
+      expect(PACER.isDocketDisplayUrl(singleDocUrl)).toBeUndefined();
     });
 
     it('returns false for patent nonsense', function() {
-      expect(PACER.isDocketDisplayUrl(nonsenseUrl)).toBe(false);
+      expect(PACER.isDocketDisplayUrl(nonsenseUrl)).toBeUndefined();
     });
   });
 
@@ -219,7 +188,7 @@ describe('The PACER module', function() {
 
   describe('getBaseNameFromUrl', function() {
     it('gets the proper basename for a docket URL', function() {
-      expect(PACER.getBaseNameFromUrl(docketQueryUrl)).toBe('DktRpt.pl');
+      expect(PACER.getBaseNameFromUrl(docketQueryUrl)).toBe('HistDocQry.pl');
     });
 
     it('gets the proper basename for a document URL', function() {
