@@ -19,9 +19,9 @@ module.exports = function(config) {
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
     frameworks: ['jasmine-ajax', 'jasmine', 'jquery-3.2.1'],
 
-
     // list of files / patterns to load in the browser
     files: [
+      'assets/js/FileSaver.js',
       'notifier.js',
       'pacer.js',
       'recap.js',
@@ -71,6 +71,17 @@ module.exports = function(config) {
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
     browsers: ['Chrome'],
 
+    customLaunchers: {
+      Chrome_CI: {
+        base: 'Chrome',
+        flags: [
+          '--no-sandbox',
+          '--headless',
+          '--disable-gpu',
+          '--remote-debugging-port=9222',
+        ]
+      }
+    },
 
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits

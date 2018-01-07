@@ -586,12 +586,25 @@ describe('The ContentDelegate class', function() {
       });
 
       it('displays the page with the downloaded file in an iframe', function() {
-        expect(documentElement.innerHTML).toMatch(
-            /<iframe.*?src="data:blob".*?><\/iframe>/);
+        if ((navigator.userAgent.indexOf('Chrome') >= 0) &&
+              !navigator.plugins.namedItem('Chrome PDF Viewer')) {
+          // isExternalPdf, file is saved with saveAs
+          expect(documentElement.innerHTML).toMatch(
+            /<iframe.*?src="about:blank".*?><\/iframe>/);
+        } else {
+          expect(documentElement.innerHTML).toMatch(
+              /<iframe.*?src="data:blob".*?><\/iframe>/);
+        }
       });
 
       it('puts the generated HTML in the page history', function() {
-        expect(history.pushState).toHaveBeenCalled();
+        if ((navigator.userAgent.indexOf('Chrome') >= 0) &&
+              !navigator.plugins.namedItem('Chrome PDF Viewer')) {
+          // isExternalPdf, file is saved with saveAs
+          expect(history.pushState).not.toHaveBeenCalled();
+        } else {
+          expect(history.pushState).toHaveBeenCalled();
+        }
       });
 
       it('uploads the PDF to RECAP', function() {
