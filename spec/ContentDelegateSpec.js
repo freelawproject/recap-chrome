@@ -26,8 +26,12 @@ describe('The ContentDelegate class', function() {
         getURL: jasmine.createSpy()
       },
       storage: {
-        sync: {
-          get: jasmine.createSpy()
+        local: {
+          get: jasmine.createSpy().and.callFake(function(_, cb) {
+            cb({
+              options: {}
+            });
+          })
         }
       }
     }
@@ -52,8 +56,8 @@ describe('The ContentDelegate class', function() {
     var expected_url = 'https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?531591';
     var expected_path = '/cgi-bin/DktRpt.pl?531591';
     var expected_court = 'canb';
-    var expected_casenum = '531591';
-    var expected_docid = '127015406472';
+    var expected_pacer_case_id = '531591';
+    var expected_pacer_doc_id = '127015406472';
     var link_0 = document.createElement('a');
     link_0.href = 'http://foo/bar/0'
     var link_1 = document.createElement('a');
@@ -62,13 +66,13 @@ describe('The ContentDelegate class', function() {
 
 
     var cd = new ContentDelegate(
-      expected_url, expected_path, expected_court, expected_casenum,
-      expected_docid, expected_links);
+      expected_url, expected_path, expected_court, expected_pacer_case_id,
+      expected_pacer_doc_id, expected_links);
     expect(cd.url).toBe(expected_url);
     expect(cd.path).toBe(expected_path);
     expect(cd.court).toBe(expected_court);
-    expect(cd.casenum).toBe(expected_casenum);
-    expect(cd.docid).toBe(expected_docid);
+    expect(cd.pacer_case_id).toBe(expected_pacer_case_id);
+    expect(cd.pacer_doc_id).toBe(expected_pacer_doc_id);
     expect(cd.links).toEqual(expected_links);
   });
 
@@ -86,31 +90,38 @@ describe('The ContentDelegate class', function() {
     it('has no effect when not on a docket query url', function() {
       var cd = nonsenseUrlContentDelegate;
       spyOn(cd.recap, 'getAvailabilityForDocket');
+      spyOn(PACER, 'hasPacerCookie').and.returnValue(true);
       cd.handleDocketQueryUrl();
       expect(cd.recap.getAvailabilityForDocket).not.toHaveBeenCalled();
     });
 
     it('inserts the RECAP banner on an appropriate page', function() {
       var cd = docketQueryContentDelegate;
+      spyOn(PACER, 'hasPacerCookie').and.returnValue(true);
       cd.handleDocketQueryUrl();
       jasmine.Ajax.requests.mostRecent().respondWith({
         'status': 200,
         'contentType': 'application/json',
-        'responseText': ('{"timestamp": "04\/16\/15", "docket_url": ' +
-                         '"http:\/\/www.archive.org\/download\/gov.uscourts.' +
-                         'canb.531591\/gov.uscourts.canb.531591.docket.html"}')
+        'responseText': (
+          '{"count": 1, "results": [' +
+            '{"date_modified": "04\/16\/15", "absolute_url": ' +
+            '"/download\/gov.uscourts.' +
+            'canb.531591\/gov.uscourts.canb.531591.docket.html"}]}'
+        )
       });
       var banner = document.querySelector('.recap-banner');
       expect(banner).not.toBeNull();
       expect(banner.innerHTML).toContain('04/16/15');
       var link = banner.querySelector('a');
       expect(link).not.toBeNull();
-      expect(link.href).toBe('http://www.archive.org/download/gov.uscourts.' +
-                             'canb.531591/gov.uscourts.canb.531591.docket.html')
+      expect(link.href).toBe(
+        'https://www.courtlistener.com/download/gov.uscourts.' +
+          'canb.531591/gov.uscourts.canb.531591.docket.html')
     });
 
     it('has no effect when on a docket query that has no RECAP', function() {
       var cd = docketQueryContentDelegate;
+      spyOn(PACER, 'hasPacerCookie').and.returnValue(true);
       cd.handleDocketQueryUrl();
       jasmine.Ajax.requests.mostRecent().respondWith({
         'status': 200,
@@ -123,6 +134,23 @@ describe('The ContentDelegate class', function() {
   });
 
   describe('handleDocketDisplayPage', function() {
+    beforeEach(function() {
+      window.chrome =  {
+        storage: {
+          local: {
+            get: jasmine.createSpy().and.callFake(function(_, cb) {
+              cb({options: {}});
+            })
+          }
+        }
+      };
+    });
+
+    afterEach(function() {
+      delete window.chrome;
+    });
+
+
     it('has no effect when not on a docket display url', function() {
       var cd = nonsenseUrlContentDelegate;
       spyOn(cd.recap, 'uploadDocket');
@@ -139,11 +167,11 @@ describe('The ContentDelegate class', function() {
 
     describe('when the history state is already set', function() {
       beforeEach(function() {
-        history.state = { uploaded: true };
+        history.replaceState({ uploaded: true }, '');
       });
 
       afterEach(function() {
-        history.state = {};
+        history.replaceState({}, '');
       });
 
       it('has no effect', function() {
@@ -157,7 +185,7 @@ describe('The ContentDelegate class', function() {
     it('calls uploadDocket and responds to a positive result', function() {
       var cd = docketDisplayContentDelegate;
       spyOn(cd.notifier, 'showUpload');
-      spyOn(cd.recap, 'uploadDocket').and.callFake(function(_, _, _, _, _, cb) {
+      spyOn(cd.recap, 'uploadDocket').and.callFake(function(_, _, _, _, cb) {
         cb(true);
       });
       spyOn(history, 'replaceState');
@@ -171,7 +199,7 @@ describe('The ContentDelegate class', function() {
     it('calls uploadDocket and responds to a negative result', function() {
       var cd = docketDisplayContentDelegate;
       spyOn(cd.notifier, 'showUpload');
-      spyOn(cd.recap, 'uploadDocket').and.callFake(function(_, _, _, _, _, cb) {
+      spyOn(cd.recap, 'uploadDocket').and.callFake(function(_, _, _, _, cb) {
         cb(false);
       });
       spyOn(history, 'replaceState');
@@ -188,10 +216,20 @@ describe('The ContentDelegate class', function() {
     beforeEach(function() {
       form = document.createElement('form');
       document.body.appendChild(form);
+      window.chrome =  {
+        storage: {
+          local: {
+            get: jasmine.createSpy().and.callFake(function(_, cb) {
+              cb({options: {}});
+            })
+          }
+        }
+      };
     });
 
     afterEach(function() {
       form.parentNode.removeChild(form);
+      delete window.chrome;
     });
 
     describe('when there is NO appropriate form', function() {
@@ -238,7 +276,7 @@ describe('The ContentDelegate class', function() {
 
       it('calls the upload method and responds to positive result', function() {
         var cd = singleDocContentDelegate;
-        uploadFake = function(_, _, _, _, callback) {
+        uploadFake = function(_, _, _, callback) {
           callback(true);
         };
         spyOn(cd.recap, 'uploadAttachmentMenu').and.callFake(uploadFake);
@@ -253,7 +291,7 @@ describe('The ContentDelegate class', function() {
 
       it('calls the upload method and responds to negative result', function() {
         var cd = singleDocContentDelegate;
-        uploadFake = function(_, _, _, _, callback) {
+        uploadFake = function(_, _, _, callback) {
           callback(false);
         };
         spyOn(cd.recap, 'uploadAttachmentMenu').and.callFake(uploadFake);
@@ -322,24 +360,38 @@ describe('The ContentDelegate class', function() {
         expect(cd.recap.getAvailabilityForDocuments).toHaveBeenCalled();
       });
 
-      it('responds to a positive result', function() {
-        var fakeDownloadUrl = 'http://download.fake/531591';
-        var cd = singleDocContentDelegate;
-        var fake = function(_, callback) {
-          var response = {};
-          response[singleDocUrl] = {filename: fakeDownloadUrl};
-          callback(response);
-        };
-        spyOn(cd.recap, 'getAvailabilityForDocuments').and.callFake(fake);
+      describe('for pacer doc id 531591', function() {
+        beforeEach(function() {
+          window.pacer_doc_id = 531591;
+        });
 
-        cd.handleSingleDocumentPageCheck();
+        afterEach(function() {
+          delete window.pacer_doc_id
+        });
 
-        expect(cd.recap.getAvailabilityForDocuments).toHaveBeenCalled();
-        var banner = document.querySelector('.recap-banner');
-        expect(banner).not.toBeNull();
-        var link = banner.querySelector('a');
-        expect(link).not.toBeNull();
-        expect(link.href).toBe(fakeDownloadUrl);
+        it('responds to a positive result', function() {
+          var fakePacerDocId = 531591;
+          var cd = singleDocContentDelegate;
+          var fake = function(_, _, callback) {
+            var response = {
+              results: [{
+                pacer_doc_id: fakePacerDocId,
+                filepath_local: 'download/1234'
+              }]
+            };
+            callback(response);
+          };
+          spyOn(cd.recap, 'getAvailabilityForDocuments').and.callFake(fake);
+
+          cd.handleSingleDocumentPageCheck();
+
+          expect(cd.recap.getAvailabilityForDocuments).toHaveBeenCalled();
+          var banner = document.querySelector('.recap-banner');
+          expect(banner).not.toBeNull();
+          var link = banner.querySelector('a');
+          expect(link).not.toBeNull();
+          expect(link.href).toBe('https://www.courtlistener.com/download/1234');
+        });
       });
     });
   });
@@ -416,6 +468,13 @@ describe('The ContentDelegate class', function() {
       form = document.createElement('form');
       form.id = form_id;
       document.body.appendChild(form);
+      let table = document.createElement('table');
+      let tr_image = document.createElement('tr');
+      let td_image = document.createElement('td');
+      td_image.innerHTML = 'Image 1234-9876'
+      tr_image.appendChild(td_image);
+      table.appendChild(tr_image);
+      document.body.appendChild(table);
     });
 
     afterEach(function() {
@@ -488,8 +547,10 @@ describe('The ContentDelegate class', function() {
     });
 
     it('correctly extracts the data before and after the iframe', function() {
+      let waiting = '<p>Waiting for download...<p>';
       var expected_iframe = '<iframe src="about:blank"';
-      expect(documentElement.innerHTML).toBe(pre + expected_iframe + post);
+      expect(documentElement.innerHTML).toBe(
+        pre + waiting + expected_iframe + post);
     });
 
     describe('when it downloads the PDF in the iframe', function() {
@@ -500,12 +561,13 @@ describe('The ContentDelegate class', function() {
 
       beforeEach(function() {
         var fakeGet = function(_, callback) {
-          callback(docid, casenum, docnum, subdocnum);
+          callback(casenum);
         };
-        var fakeUpload = function(_, _, _, _, _, callback) {
+        var fakeUpload = function(_, _, _, _, _, _, callback) {
           callback(true);
         };
-        spyOn(cd.recap, 'getDocumentMetadata').and.callFake(fakeGet);
+
+        spyOn(cd.recap, 'getPacerCaseIdFromPacerDocId').and.callFake(fakeGet);
         spyOn(cd.recap, 'uploadDocument').and.callFake(fakeUpload);
         spyOn(cd.notifier, 'showUpload');
         spyOn(URL, 'createObjectURL').and.returnValue('data:blob');
@@ -548,85 +610,18 @@ describe('The ContentDelegate class', function() {
     for (var i=0; i<urls.length; i++) {
       var link = document.createElement('a');
       link.href = urls[i];
+      if (i == 0) {
+        link.dataset.pacer_doc_id = 1234;
+      }
       links.push(link);
     }
     return links;
   }
 
+  // TODO: Add tests for findAndStorePacerDocIds
 
-  describe('find doc URLs', function() {
-    var valid_doc_urls = [
-      'https://ecf.canb.uscourts.gov/doc1/034031424909',
-      'https://ecf.canb.uscourts.gov/doc1/034031425808'
-    ];
-
-    var invalid_doc_urls = [
-      'https://foo.bar.canb.uscourts.gov/some/path',
-      'https://ecf.canb.uscourts.gov/some/path'
-    ];
-    var doc_urls = valid_doc_urls.concat(invalid_doc_urls);
-    var links = linksFromUrls(doc_urls);
-
-    var cd = null;
-    beforeEach(function() {
-      cd = new ContentDelegate(null, null, null, null, null, links);
-    });
-
-    it('finds the actual document URLs', function() {
-      expect(cd.urls).toEqual(valid_doc_urls);
-    });
-  });
-
-  describe('addMouseoverToConvertibleLinks', function() {
-    var convertible_doc_url = ('https://ecf.nysd.uscourts.gov/cgi-bin/' + 
-                               'show_doc.pl?caseid=427118&de_seq_num=34' +
-                               '&dm_id=13165146&doc_num=6');
-    var nonconvertible_url = 'https://ecf.canb.uscourts.gov/doc1/034031424909';
-
-    function dispatchMouseoverOn(elem) {
-      var event = document.createEvent('MouseEvents');
-      event.initMouseEvent('mouseover', true, true, null)
-      elem.dispatchEvent(event);
-    }
-
-    var links;
-    var cd;
-    beforeEach(function() {
-      links = linksFromUrls([convertible_doc_url, nonconvertible_url]);
-      cd = new ContentDelegate(null, null, null, null, null, links);
-      cd.addMouseoverToConvertibleLinks();
-    });
-
-    it('adds a mouseover function to a convertible doc link', function() {
-      spyOn(cd.pacer, 'convertDocumentUrl');
-      dispatchMouseoverOn(links[0]);
-      expect(cd.pacer.convertDocumentUrl).toHaveBeenCalled();
-    });
-
-    it('does not add a mouseover function to the wrong link', function() {
-      spyOn(cd.pacer, 'convertDocumentUrl');
-      dispatchMouseoverOn(links[1]);
-      expect(cd.pacer.convertDocumentUrl).not.toHaveBeenCalled();
-    });
-
-    it('handler does not trigger after url changes', function() {
-      spyOn(cd.pacer, 'convertDocumentUrl');
-      links[0].href = 'http://foo/bar';
-      dispatchMouseoverOn(links[0]);
-      expect(cd.pacer.convertDocumentUrl).not.toHaveBeenCalled();      
-    });
-
-    it('calls uploadMetadata after converting the url', function() {
-      spyOn(cd.recap, 'uploadMetadata');
-      dispatchMouseoverOn(links[0]);
-      jasmine.Ajax.requests.mostRecent().respondWith({
-        'status': 200,
-        'contentType': 'text/html',
-        'responseText': nonconvertible_url
-      });
-      expect(cd.recap.uploadMetadata).toHaveBeenCalled();
-    });
-  });
+  // TODO: Figure out where the functionality of
+  // 'addMouseoverToConvertibleLinks' went, and add tests for that.
 
   describe('handleRecapLinkClick', function() {
     var cd = docketDisplayContentDelegate;
@@ -640,7 +635,7 @@ describe('The ContentDelegate class', function() {
       beforeEach(function() {
         window.chrome =  {
           storage: {
-            sync: {
+            local: {
               get: jasmine.createSpy().and.callFake(function(_, cb) {
                  cb({options: {}});
               })
@@ -660,7 +655,7 @@ describe('The ContentDelegate class', function() {
       beforeEach(function() {
         window.chrome =  {
           storage: {
-            sync: {
+            local: {
               get: jasmine.createSpy().and.callFake(function(_, cb) {
                  cb({options: {recap_link_popups: true}});
               })
@@ -718,40 +713,41 @@ describe('The ContentDelegate class', function() {
         links = linksFromUrls(urls);
         $('body').append(links);
         cd = new ContentDelegate(null, null, null, null, null, links);
-        cd.attachRecapLinkToEligibleDocs();
+        cd.pacer_doc_ids = [1234];
       });
 
       it('does not attach any links if no urls have recap', function() {
-        jasmine.Ajax.requests.mostRecent().respondWith({
-          'status': 200,
-          'contentType': 'application/json',
-          'responseText': "{}"
-        });
+        spyOn(cd.recap, 'getAvailabilityForDocuments').and.callFake(
+          function(_, _, callback) {
+            callback({
+              results: [],
+            });
+          });
+        cd.attachRecapLinkToEligibleDocs();
         expect($('.recap-inline').length).toBe(0);
       });
-
-      var resp = {}
-      resp[urls[0]] = {
-        'filename': 'foo.pdf',
-        'timestamp': 'July 4, 2015',
-      };
+      
       it('attaches a single link to the one url with recap', function() {
-        jasmine.Ajax.requests.mostRecent().respondWith({
-          'status': 200,
-          'contentType': 'application/json',
-          'responseText': JSON.stringify(resp)
-        });
+        spyOn(cd.recap, 'getAvailabilityForDocuments').and.callFake(
+          function(_, _, callback) {
+            callback({
+              results: [{pacer_doc_id: 1234, filepath_local: 'download/1234'}],
+            });
+          });
+        cd.attachRecapLinkToEligibleDocs();
         expect($('.recap-inline').length).toBe(1);
       });
 
       it('attaches a working click handler', function() {
         spyOn(cd, 'handleRecapLinkClick');
-        jasmine.Ajax.requests.mostRecent().respondWith({
-          'status': 200,
-          'contentType': 'application/json',
-          'responseText': JSON.stringify(resp)
-        });
-        $('.recap-inline').click()
+        spyOn(cd.recap, 'getAvailabilityForDocuments').and.callFake(
+          function(_, _, callback) {
+            callback({
+              results: [{pacer_doc_id: 1234, filepath_local: 'download/1234'}],
+            });
+          });
+        cd.attachRecapLinkToEligibleDocs();
+        $(links[0]).next().click();
         expect(cd.handleRecapLinkClick).toHaveBeenCalled();
       });
     });
