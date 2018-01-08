@@ -218,7 +218,9 @@ describe('The Recap export module', function() {
     var bytes = new Uint8Array([100, 100, 200, 200, 300]);
 
     it('requests the correct URL', function() {
-      recap.uploadDocument(court, path, filename, type, bytes);
+      recap.uploadDocument(
+        court, pacer_case_id, pacer_doc_id, docnum, attachnum, bytes,
+        function() {});
       expect(jasmine.Ajax.requests.mostRecent().url).toBe(
         'https://www.courtlistener.com/api/rest/v3/recap/');
     });
