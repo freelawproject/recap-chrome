@@ -477,7 +477,7 @@ ContentDelegate.prototype.handleRecapLinkClick = function(window_obj, url) {
         'RECAP is not affiliated with the U.S. Courts. The documents ' +
         'it makes available are voluntarily uploaded by PACER users. ' +
         'RECAP cannot guarantee the authenticity of documents because the ' +
-        'courts themselves provide no document authentication system.</small>')
+        'courts provide no effective document authentication system.</small>')
     ).appendTo($('body'));
   });
   return false;
