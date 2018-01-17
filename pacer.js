@@ -263,8 +263,8 @@ let PACER = {
       return false;
     }
     let r = {};
-    [, r.hyperlink, r.de_caseid, r.de_seqno, r.got_receipt,
-	 r.pdf_header, r.pdf_toggle_possible, r.magic_num, r.hdr] = goDLS;
+    [, r.hyperlink, r.de_caseid, r.de_seqno, r.got_receipt, r.pdf_header,
+      r.pdf_toggle_possible, r.magic_num, r.hdr] = goDLS;
     return r;
   },
 

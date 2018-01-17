@@ -10,7 +10,9 @@ describe('The PACER module', function() {
   var altLoggedInCookie = ('PacerUser=B7yuvmcj2F...9p5nDzEXsHE; ' +
                            'PacerPref=receipt=Y');
   var nonLoggedInCookie = ('PacerSession=unvalidated; PacerPref=receipt=Y');
-  var nonsenseCookie = ('Foo=barbaz; Baz=bazbar; Foobar=Foobar')
+  var nonsenseCookie = ('Foo=barbaz; Baz=bazbar; Foobar=Foobar');
+  var goDLSSampleString = ('goDLS(\'/doc1/09518360046\',\'153992\',\'264\',' +
+                           '\'\',\'\',\'1\',\'\',\'\'); return(false);');
 
   describe('getCourtFromUrl', function() {
     it('matches a valid docket query URL', function() {
@@ -126,7 +128,7 @@ describe('The PACER module', function() {
       });
 
       it('returns false with valid URL', function() {
-        expect(PACER.isAttachmentMenuPage(singleDocUrl, document)).toBe(false); 
+        expect(PACER.isAttachmentMenuPage(singleDocUrl, document)).toBe(false);
       });
     });
 
@@ -166,7 +168,7 @@ describe('The PACER module', function() {
       });
 
       it('returns false with valid URL', function() {
-        expect(PACER.isSingleDocumentPage(singleDocUrl, document)).toBe(false); 
+        expect(PACER.isSingleDocumentPage(singleDocUrl, document)).toBe(false);
       });
     });
 
@@ -181,7 +183,7 @@ describe('The PACER module', function() {
     });
 
     it('coerces the fourth digit to zero', function() {
-      fourthSetUrl = singleDocUrl.replace('034031424909', '034131424909')
+      let fourthSetUrl = singleDocUrl.replace('034031424909', '034131424909');
       expect(PACER.getDocumentIdFromUrl(fourthSetUrl)).toBe('034031424909');
     });
   });
@@ -193,6 +195,21 @@ describe('The PACER module', function() {
 
     it('gets the proper basename for a document URL', function() {
       expect(PACER.getBaseNameFromUrl(singleDocUrl)).toBe('034031424909')
+    });
+  });
+
+  describe('parseGoDLSFunction', function(){
+    it("gets the right values for an example DLS string", function() {
+      expect(PACER.parseGoDLSFunction(goDLSSampleString)).toEqual({
+        hyperlink: '/doc1/09518360046',
+        de_caseid: '153992',
+        de_seqno: '264',
+        got_receipt: '',
+        pdf_header: '',
+        pdf_toggle_possible: '1',
+        magic_num: '',
+        hdr: ''
+      });
     });
   });
 
