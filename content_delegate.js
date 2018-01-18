@@ -144,11 +144,12 @@ ContentDelegate.prototype.handleDocketDisplayPage = function() {
       if (isDocketDisplayUrl){
         this.recap.uploadDocket(this.court, this.pacer_case_id,
           document.documentElement.innerHTML,
-	  (isAppellate?'APPELLATE_DOCKET':'DOCKET'),
+          (isAppellate?'APPELLATE_DOCKET':'DOCKET'),
           callback);
       } else if (isDocketHistoryDisplayUrl) {
         this.recap.uploadDocket(this.court, this.pacer_case_id,
-          document.documentElement.innerHTML, 'DOCKET_HISTORY_REPORT',
+          document.documentElement.innerHTML,
+          'DOCKET_HISTORY_REPORT',
           callback);
       }
     } else {
