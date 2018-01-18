@@ -80,39 +80,38 @@ let PACER = {
     // Appellate:
     //   https://ecf.ca1.uscourts.gov/n/beam/servlet/TransportRoom?servlet=CaseSummary.jsp&caseNum=16-1567&incOrigDkt=Y&incDktEntries=Y
     if (url.match(/\/DktRpt\.pl\?\w+-[\w-]+$/)) { return true; }
-    let match;
-//
-    if (match = url.match(/servlet\/TransportRoom(?:\?servlet=([^?&]+)(?:[\/&#;].*)?)?$/)) {
+
+    let match = url.match(/servlet\/TransportRoom(?:\?servlet=([^?&]+)(?:[\/&#;].*)?)?$/);
+    if (match) {
       let servlet = match[1];
       debug(4, `Identified appellate servlet ${servlet} at ${url}`);
 
       switch(servlet) {
-      case 'CaseSummary.jsp':
-      case 'ShowPage': // what is this?
-      case undefined:
-	return true;
-	break;
+        case 'CaseSummary.jsp':
+        case 'ShowPage': // what is this?
+        case undefined:
+          return true;
 
-      default:
-	debug(4, `Assuming servlet ${servlet} is not a docket.`);
-      case 'CaseSearch.jsp':
-      case 'ShowDoc':
-      case 'ShowDocMulti':
-      case 'CaseSelectionTable':
-      case 'CourtInfo.jsp':
-      case 'DocketReportFilter.jsp':
-      case 'InvalidUserLogin.jsp':
-      case 'OrderJudgment.jsp':
-      case 'PACERCalendar.jsp':
-      case 'PacerHelp.jsp':
-      case 'PACEROpinion.jsp':
-      case 'Login':
-      case 'k2aframe.jsp': // attorney/java?
-      case 'k2ajnlp.jsp':
-      case 'RSSGenerator': // maybe we should upload rss?
-      case 'PaymentHistory':
-      case 'ChangeClient.jsp':
-	return false;
+        default:
+          debug(4, `Assuming servlet ${servlet} is not a docket.`);
+        case 'CaseSearch.jsp':
+        case 'ShowDoc':
+        case 'ShowDocMulti':
+        case 'CaseSelectionTable':
+        case 'CourtInfo.jsp':
+        case 'DocketReportFilter.jsp':
+        case 'InvalidUserLogin.jsp':
+        case 'OrderJudgment.jsp':
+        case 'PACERCalendar.jsp':
+        case 'PacerHelp.jsp':
+        case 'PACEROpinion.jsp':
+        case 'Login':
+        case 'k2aframe.jsp': // attorney/java?
+        case 'k2ajnlp.jsp':
+        case 'RSSGenerator': // maybe we should upload rss?
+        case 'PaymentHistory':
+        case 'ChangeClient.jsp':
+          return false;
       }
     }
   },
