@@ -5,6 +5,9 @@ describe('The PACER module', function() {
   var docketDisplayUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?' +
                           '101092135737069-L_1_0-1');
   var singleDocUrl = 'https://ecf.canb.uscourts.gov/doc1/034031424909';
+  var appellateDocumentUrl = 'https://ecf.ca2.uscourts.gov/docs1/00205695758';
+  var showDocUrl = ('https://ecf.cacd.uscourts.gov/cgi-bin/show_doc.pl?' +
+                    'caseid=560453&de_seq_num=24&dm_id=15521444&doc_num=7');
   var loggedInCookie = ('PacerSession=B7yuvmcj2F...9p5nDzEXsHE; ' +
                         'PacerPref=receipt=Y');
   var altLoggedInCookie = ('PacerUser=B7yuvmcj2F...9p5nDzEXsHE; ' +
@@ -31,6 +34,14 @@ describe('The PACER module', function() {
   describe('isDocumentUrl', function() {
     it('matches a valid document URL', function() {
       expect(PACER.isDocumentUrl(singleDocUrl)).toBe(true);
+    });
+
+    it('matches a valid appellate document URL', function() {
+      expect(PACER.isDocumentUrl(appellateDocumentUrl)).toBe(true);
+    });
+
+    it('matches a valid show_doc document URL', function() {
+      expect(PACER.isDocumentUrl(showDocUrl)).toBe(true);
     });
 
     it('returns false for a non-document court URL', function() {
