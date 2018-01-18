@@ -201,6 +201,10 @@ describe('The PACER module', function() {
       expect(PACER.getDocumentIdFromUrl(singleDocUrl)).toBe('034031424909');
     });
 
+    it('returns the correct document id for a valid appellate URL', function() {
+      expect(PACER.getDocumentIdFromUrl(appellateDocumentUrl)).toBe('00205695758');
+    });
+
     it('coerces the fourth digit to zero', function() {
       let fourthSetUrl = singleDocUrl.replace('034031424909', '034131424909');
       expect(PACER.getDocumentIdFromUrl(fourthSetUrl)).toBe('034031424909');
