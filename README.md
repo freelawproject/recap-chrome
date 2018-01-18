@@ -40,16 +40,14 @@ Tips
 
 Tests
 =====
-We got that! You can (and should) run the tests before you push. To do that,
+We got those! You can (and should) run the tests before you push. To do that,
 install the dependencies described in `package.json` by running:
 
-   npm install -g grunt-cli
+   npm install
    
-And any other commands in .travis.yml.
+You will need Chrome installed. Then run:
 
-Then run:
-
-    grunt jasmine
+    karma start --single-run
 
 If the tests pass, give a push to your repo and send us a pull request.
 
@@ -59,7 +57,7 @@ pull request is good to go by waiting for the automated tests to complete.
 
 For more information on testing see [TESTING.md][testingmd].
 
-The current status if Travis CI on our master branch is:
+The current status of Travis CI on our master branch is:
 
 [![Build Status](https://travis-ci.org/freelawproject/recap-chrome.svg?branch=master)][12]
 
