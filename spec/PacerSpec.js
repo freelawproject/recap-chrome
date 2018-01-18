@@ -4,6 +4,10 @@ describe('The PACER module', function() {
                            'HistDocQry.pl?531316');
   var docketDisplayUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?' +
                           '101092135737069-L_1_0-1');
+  var appellateDocketDisplayUrl = (
+    'https://ecf.ca1.uscourts.gov/n/beam/servlet/TransportRoom?' +
+    'servlet=CaseSummary.jsp&caseNum=16-1567&incOrigDkt=Y&incDktEntries=Y'
+  );
   var singleDocUrl = 'https://ecf.canb.uscourts.gov/doc1/034031424909';
   var appellateDocumentUrl = 'https://ecf.ca2.uscourts.gov/docs1/00205695758';
   var showDocUrl = ('https://ecf.cacd.uscourts.gov/cgi-bin/show_doc.pl?' +
@@ -84,6 +88,10 @@ describe('The PACER module', function() {
   describe('isDocketDisplayUrl', function() {
     it('matches a docket display URL', function() {
       expect(PACER.isDocketDisplayUrl(docketDisplayUrl)).toBe(true);
+    });
+
+    it('returns true for a valid appellate docket URL', function() {
+      expect(PACER.isDocketDisplayUrl(appellateDocketDisplayUrl)).toBe(true);
     });
 
     it('returns false for a docket query URL', function() {
