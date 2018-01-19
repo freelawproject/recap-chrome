@@ -257,7 +257,7 @@ let PACER = {
     // as:
     //   function goDLS(hyperlink, de_caseid, de_seqno, got_receipt,
     //                  pdf_header, pdf_toggle_possible, magic_num, hdr)
-    let goDLS = goDLS_string.match(/^goDLS\('([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)'\)/);
+    let goDLS = /^goDLS\('([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)'\)/.exec(goDLS_string);
     if (!goDLS) {
       return false;
     }
