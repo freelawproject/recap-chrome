@@ -167,7 +167,7 @@ let PACER = {
         // Grab the document ID from the form's onsubmit attribute
         let onsubmit = last_input.form.getAttribute('onsubmit');
         let goDLS = PACER.parseGoDLSFunction(onsubmit);
-        return PACER.getDocumentIdFromUrl(goDLS.hyperlink);
+        return goDLS && PACER.getDocumentIdFromUrl(goDLS.hyperlink);
       }
     }
   },
@@ -231,7 +231,7 @@ let PACER = {
         // Download receipt page.
         let onsubmit = last_input.form.getAttribute("onsubmit");
         let goDLS = PACER.parseGoDLSFunction(onsubmit);
-        return goDLS.de_caseid;
+        return goDLS && goDLS.de_caseid;
       }
     }
   },
