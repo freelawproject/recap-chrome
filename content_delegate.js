@@ -228,10 +228,6 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
   // Save a copy of the page source, altered so that the "View Document"
   // button goes forward in the history instead of resubmitting the form.
   let form = document.getElementById(event.data.id);
-  let originalSubmit = form.getAttribute('onsubmit');
-  form.setAttribute('onsubmit', 'history.forward(); return false;');
-  let previousPageHtml = document.documentElement.innerHTML;
-  form.setAttribute('onsubmit', originalSubmit);
 
   // Grab the document number, attachment number, and docket number
   let document_number, attachment_number, docket_number;
@@ -240,12 +236,22 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
     let image_string = $('td:contains(Image)').text();
     let regex = /(\d+)-(\d+)/;
     let matches = regex.exec(image_string);
+    if (!matches) {
+      // This happens on bankruptcy claim pages, which are a form of document in
+      // CM/ECF that we don't want. In this case, just submit the original form.
+      form.submit();
+    }
     document_number = matches[1];
     attachment_number = matches[2];
     docket_number = $.trim($('tr:contains(Case Number) td:nth(1)').text());
   } else { // Appellate
     debug(4,"Appellate parsing not yet implemented");
   }
+
+  let originalSubmit = form.getAttribute('onsubmit');
+  form.setAttribute('onsubmit', 'history.forward(); return false;');
+  let previousPageHtml = document.documentElement.innerHTML;
+  form.setAttribute('onsubmit', originalSubmit);
 
   // Now do the form request to get to the view page.  Some PACER sites will
   // return an HTML page containing an <iframe> that loads the PDF document;
