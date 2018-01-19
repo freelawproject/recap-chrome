@@ -259,7 +259,7 @@ let PACER = {
     //                  pdf_header, pdf_toggle_possible, magic_num, hdr)
     let goDLS = /^goDLS\('([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)'\)/.exec(goDLS_string);
     if (!goDLS) {
-      return false;
+      return null;
     }
     let r = {};
     [, r.hyperlink, r.de_caseid, r.de_seqno, r.got_receipt, r.pdf_header,
