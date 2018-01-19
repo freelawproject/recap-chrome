@@ -227,11 +227,11 @@ ContentDelegate.prototype.handleSingleDocumentPageCheck = function() {
 ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
   // Save a copy of the page source, altered so that the "View Document"
   // button goes forward in the history instead of resubmitting the form.
-  let originalSubmit = document.forms[0].getAttribute('onsubmit');
-  document.forms[0].setAttribute('onsubmit',
-				 'history.forward(); return false;');
+  let form = document.getElementById(event.data.id);
+  let originalSubmit = form.getAttribute('onsubmit');
+  form.setAttribute('onsubmit', 'history.forward(); return false;');
   let previousPageHtml = document.documentElement.innerHTML;
-  document.forms[0].setAttribute('onsubmit', originalSubmit);
+  form.setAttribute('onsubmit', originalSubmit);
 
   // Grab the document number, attachment number, and docket number
   let document_number, attachment_number, docket_number;
@@ -252,7 +252,6 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
   // others just return the PDF document.  As we don't know whether we'll get
   // HTML (text) or PDF (binary), we ask for an ArrayBuffer and convert later.
   $('body').css('cursor', 'wait');
-  let form = document.getElementById(event.data.id);
   let data = new FormData(form);
   httpRequest(form.action, data, function (type, ab, xhr) {
     console.info('RECAP: Successfully submitted RECAP "View" button form: ' +
