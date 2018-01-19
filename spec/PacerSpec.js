@@ -234,6 +234,19 @@ describe('The PACER module', function() {
         hdr: ''
       });
     });
+
+    it("returns false for an invalid DLS string", function() {
+      expect(PACER.parseGoDLSFunction("not a goDLS function call")).toBe(null);
+    });
+
+    it("returns false for a null DLS input", function() {
+      expect(PACER.parseGoDLSFunction(null)).toBe(null);
+    });
+
+    it("returns false for an undefined DLS input", function() {
+      expect(PACER.parseGoDLSFunction(undefined)).toBe(null);
+    });
+
   });
 
   describe('hasPacerCookie', function() {

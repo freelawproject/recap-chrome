@@ -167,7 +167,7 @@ let PACER = {
         // Grab the document ID from the form's onsubmit attribute
         let onsubmit = last_input.form.getAttribute('onsubmit');
         let goDLS = PACER.parseGoDLSFunction(onsubmit);
-        return PACER.getDocumentIdFromUrl(goDLS.hyperlink);
+        return goDLS && PACER.getDocumentIdFromUrl(goDLS.hyperlink);
       }
     }
   },
@@ -231,7 +231,7 @@ let PACER = {
         // Download receipt page.
         let onsubmit = last_input.form.getAttribute("onsubmit");
         let goDLS = PACER.parseGoDLSFunction(onsubmit);
-        return goDLS.de_caseid;
+        return goDLS && goDLS.de_caseid;
       }
     }
   },
@@ -257,9 +257,9 @@ let PACER = {
     // as:
     //   function goDLS(hyperlink, de_caseid, de_seqno, got_receipt,
     //                  pdf_header, pdf_toggle_possible, magic_num, hdr)
-    let goDLS = goDLS_string.match(/^goDLS\('([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)'\)/);
+    let goDLS = /^goDLS\('([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)'\)/.exec(goDLS_string);
     if (!goDLS) {
-      return false;
+      return null;
     }
     let r = {};
     [, r.hyperlink, r.de_caseid, r.de_seqno, r.got_receipt, r.pdf_header,
