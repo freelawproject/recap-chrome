@@ -217,8 +217,8 @@ describe('The PACER module', function() {
   });
 
   describe('parseGoDLSFunction', function(){
-    var goDLSSampleString = ('goDLS(\'/doc1/09518360046\',\'153992\',\'264\',' +
-                             '\'\',\'\',\'1\',\'\',\'\'); return(false);');
+    var goDLSSampleString = "goDLS('/doc1/09518360046','153992','264','','','1','',''); " +
+	"return(false);"
     
     it("gets the right values for an example DLS string", function() {
       expect(PACER.parseGoDLSFunction(goDLSSampleString)).toEqual({
