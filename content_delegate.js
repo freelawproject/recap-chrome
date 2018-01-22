@@ -227,7 +227,11 @@ ContentDelegate.prototype.handleSingleDocumentPageCheck = function() {
 ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
   // Save a copy of the page source, altered so that the "View Document"
   // button goes forward in the history instead of resubmitting the form.
-  let form = document.getElementById(event.data.id);
+  let originalForm = document.forms[0];
+  let originalSubmit = originalForm.getAttribute('onsubmit');
+  originalForm.setAttribute('onsubmit', 'history.forward(); return false;');
+  let previousPageHtml = document.documentElement.innerHTML;
+  originalForm.setAttribute('onsubmit', originalSubmit);
 
   // Grab the document number, attachment number, and docket number
   let document_number, attachment_number, docket_number;
@@ -248,16 +252,12 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
     debug(4,"Appellate parsing not yet implemented");
   }
 
-  let originalSubmit = form.getAttribute('onsubmit');
-  form.setAttribute('onsubmit', 'history.forward(); return false;');
-  let previousPageHtml = document.documentElement.innerHTML;
-  form.setAttribute('onsubmit', originalSubmit);
-
   // Now do the form request to get to the view page.  Some PACER sites will
   // return an HTML page containing an <iframe> that loads the PDF document;
   // others just return the PDF document.  As we don't know whether we'll get
   // HTML (text) or PDF (binary), we ask for an ArrayBuffer and convert later.
   $('body').css('cursor', 'wait');
+  let form = document.getElementById(event.data.id);
   let data = new FormData(form);
   httpRequest(form.action, data, function (type, ab, xhr) {
     console.info('RECAP: Successfully submitted RECAP "View" button form: ' +
