@@ -240,11 +240,6 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
     let image_string = $('td:contains(Image)').text();
     let regex = /(\d+)-(\d+)/;
     let matches = regex.exec(image_string);
-    if (!matches) {
-      // This happens on bankruptcy claim pages, which are a form of document in
-      // CM/ECF that we don't want. In this case, just submit the original form.
-      form.submit();
-    }
     document_number = matches[1];
     attachment_number = matches[2];
     docket_number = $.trim($('tr:contains(Case Number) td:nth(1)').text());
