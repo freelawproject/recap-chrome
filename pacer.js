@@ -139,7 +139,11 @@ let PACER = {
   isSingleDocumentPage: function (url, document) {
     let inputs = document.getElementsByTagName('input');
     let lastInput = inputs.length && inputs[inputs.length - 1].value;
+    // If the receipt doesn't say "Image" we don't yet support it on the server.
+    // So far, this only appears to apply to bankruptcy claims.
+    let hasImageReceipt = !!$('td:contains(Image)').length;
     let pageCheck = (PACER.isDocumentUrl(url) &&
+                     hasImageReceipt &&
                      (lastInput === 'View Document') ||
                      (lastInput === 'Accept Charges and Retrieve'));
     debug(4," lastInput "+lastInput);
