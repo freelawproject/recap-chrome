@@ -339,6 +339,14 @@ describe('The ContentDelegate class', function() {
         input = document.createElement('input');
         input.value = 'View Document';
         form.appendChild(input);
+
+        table = document.createElement('table');
+        tr = document.createElement('tr');
+        td = document.createElement('td');
+        td.appendChild(document.createTextNode('Image'));
+        tr.appendChild(td);
+        table.appendChild(tr);
+        document.body.appendChild(table);
       });
 
       afterEach(function() {
@@ -429,6 +437,14 @@ describe('The ContentDelegate class', function() {
         input = document.createElement('input');
         input.value = 'View Document';
         form.appendChild(input);
+
+        table = document.createElement('table');
+        tr = document.createElement('tr');
+        td = document.createElement('td');
+        td.appendChild(document.createTextNode('Image'));
+        tr.appendChild(td);
+        table.appendChild(tr);
+        document.body.appendChild(table);
       });
 
       afterEach(function() {
@@ -663,7 +679,7 @@ describe('The ContentDelegate class', function() {
         expect(window_obj.location).toBe(linkUrl);
       });
     });
-    
+
     describe('when the popup option is set', function() {
       beforeEach(function() {
         window.chrome =  {
@@ -739,7 +755,7 @@ describe('The ContentDelegate class', function() {
         cd.attachRecapLinkToEligibleDocs();
         expect($('.recap-inline').length).toBe(0);
       });
-      
+
       it('attaches a single link to the one url with recap', function() {
         spyOn(cd.recap, 'getAvailabilityForDocuments').and.callFake(
           function(_, _, callback) {
