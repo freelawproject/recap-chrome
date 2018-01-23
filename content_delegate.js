@@ -233,13 +233,20 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
   let previousPageHtml = document.documentElement.innerHTML;
   originalForm.setAttribute('onsubmit', originalSubmit);
 
+  let form = document.getElementById(event.data.id);
+
   // Grab the document number, attachment number, and docket number
   let document_number, attachment_number, docket_number;
 
   if (!PACER.isAppellateCourt(this.court)) {
+    // This CSS selector duplicated in isSingleDocumentPage
     let image_string = $('td:contains(Image)').text();
     let regex = /(\d+)-(\d+)/;
     let matches = regex.exec(image_string);
+    if (!matches){
+      form.submit();
+      return;
+    }
     document_number = matches[1];
     attachment_number = matches[2];
     docket_number = $.trim($('tr:contains(Case Number) td:nth(1)').text());
@@ -252,7 +259,6 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
   // others just return the PDF document.  As we don't know whether we'll get
   // HTML (text) or PDF (binary), we ask for an ArrayBuffer and convert later.
   $('body').css('cursor', 'wait');
-  let form = document.getElementById(event.data.id);
   let data = new FormData(form);
   httpRequest(form.action, data, function (type, ab, xhr) {
     console.info('RECAP: Successfully submitted RECAP "View" button form: ' +

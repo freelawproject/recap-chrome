@@ -140,7 +140,8 @@ let PACER = {
     let inputs = document.getElementsByTagName('input');
     let lastInput = inputs.length && inputs[inputs.length - 1].value;
     // If the receipt doesn't say "Image" we don't yet support it on the server.
-    // So far, this only appears to apply to bankruptcy claims.
+    // So far, this only appears to apply to bankruptcy claims. This CSS
+    // selector is duplicated in onDocumentViewSubmit.
     let hasImageReceipt = !!$('td:contains(Image)').length;
     let pageCheck = (PACER.isDocumentUrl(url) &&
                      hasImageReceipt &&
