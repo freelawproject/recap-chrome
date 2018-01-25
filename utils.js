@@ -127,6 +127,12 @@ function httpRequest(url, postData, callback) {
 
 // Default settings for any jquery $.ajax call.
 $.ajaxSetup({
+  // The dataType parameter is a security measure requested by Opera code
+  // review. 'json' is the default, but if it is not explicitly set, and if the
+  // CourtListener server was hacked, the API could be used to serve JSONP to
+  // our users. If the server did that, all of our users would be at risk of
+  // running custom JavaScript. We don't want that, so we set this explicitly.
+  dataType: 'json',
   beforeSend: function (xhr, settings) {
     let hostname = getHostname(settings.url);
     if (hostname === "www.courtlistener.com") {
