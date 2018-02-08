@@ -1,5 +1,7 @@
 describe('The PACER module', function() {
   var nonsenseUrl = 'http://something.uscourts.gov/foobar/baz';
+  var maliciousUrl = 'https://ecf.canb.uscourts.gov.evilsite.com/';
+  var noTrailingSlashUrl = 'https://ecf.canb.uscourts.gov';
   var docketQueryUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/' +
                            'HistDocQry.pl?531316');
   var singleDocUrl = 'https://ecf.canb.uscourts.gov/doc1/034031424909';
@@ -16,6 +18,14 @@ describe('The PACER module', function() {
 
     it('ignores patent nonsense', function() {
       expect(PACER.getCourtFromUrl(nonsenseUrl)).toBe(null);
+    });
+
+    it('cannot be fooled by extra subdomains', function() {
+      expect(PACER.getCourtFromUrl(maliciousUrl)).toBe(null);
+    });
+
+    it('matches even if trailing slash is absent', function() {
+      expect(PACER.getCourtFromUrl(noTrailingSlashUrl)).toBe('canb');
     });
   });
 
@@ -219,7 +229,7 @@ describe('The PACER module', function() {
   describe('parseGoDLSFunction', function(){
     var goDLSSampleString = "goDLS('/doc1/09518360046','153992','264','','','1','',''); " +
 	"return(false);"
-    
+
     it("gets the right values for an example DLS string", function() {
       expect(PACER.parseGoDLSFunction(goDLSSampleString)).toEqual({
         hyperlink: '/doc1/09518360046',
@@ -254,7 +264,7 @@ describe('The PACER module', function() {
                              'PacerPref=receipt=Y');
     var nonLoggedInCookie = ('PacerSession=unvalidated; PacerPref=receipt=Y');
     var nonsenseCookie = ('Foo=barbaz; Baz=bazbar; Foobar=Foobar');
-    
+
     it('returns true for a valid logged in cookie', function() {
       expect(PACER.hasPacerCookie(loggedInCookie)).toBe(true);
     });

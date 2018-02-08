@@ -39,8 +39,11 @@ let PACER_TO_CL_IDS = {
 let PACER = {
   // Returns the court identifier for a given URL, or null if not a PACER site.
   getCourtFromUrl: function (url) {
+    // This regex is used as a security check to ensure that no components of
+    // RECAP are being used outside of PACER. Be sure tests pass appropriately
+    // before tweaking this regex.
     let match = (url || '').toLowerCase().match(
-        /^\w+:\/\/(ecf|ecf-train|pacer)\.(\w+)\.uscourts\.gov\//);
+        /^\w+:\/\/(ecf|ecf-train|pacer)\.(\w+)\.uscourts\.gov(?:\/.*)?$/);
     return match ? match[2] : null;
   },
 
