@@ -478,7 +478,7 @@ describe('The ContentDelegate class', function() {
   describe('onDocumentViewSubmit', function() {
     var form;
     var form_id = '1234';
-    var event = {data: {id: form_id}};
+    var event = {data: {id: form_id}, origin: 'https://ecf.pamd.uscourts.gov'};
 
     beforeEach(function() {
       form = document.createElement('form');

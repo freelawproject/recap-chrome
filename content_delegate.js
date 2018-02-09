@@ -225,6 +225,14 @@ ContentDelegate.prototype.handleSingleDocumentPageCheck = function() {
 };
 
 ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
+  // Security check to ensure message is from a PACER website. (see:
+  // https://github.com/freelawproject/recap/issues/236)
+  if (!PACER.getCourtFromUrl(event.origin)) {
+    console.warn("Received message from non PACER origin. This should only " +
+                 "happen when the extension is being abused by a bad actor.");
+    return;
+  }
+
   // Save a copy of the page source, altered so that the "View Document"
   // button goes forward in the history instead of resubmitting the form.
   let originalForm = document.forms[0];
