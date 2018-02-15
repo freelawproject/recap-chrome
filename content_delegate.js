@@ -372,8 +372,6 @@ ContentDelegate.prototype.showPdfPage = function(
         let uploadDocument = function(items){
           if (!items['options']['recap_disabled']) {
             // If we have the pacer_case_id, upload the file to RECAP.
-            // We can't pass an ArrayBuffer directly to the background
-            // page, so we have to convert to a regular array.
             let onUploadOk = function (ok) {
               if (ok) {
                 this.notifier.showUpload(
@@ -387,10 +385,18 @@ ContentDelegate.prototype.showPdfPage = function(
             // array and pass that, then convert back to a blob when
             // we add the data to the FormData object.
             let bytes = arrayBufferToArray(ab);
-            this.recap.uploadDocument(
-              this.court, pacer_case_id, this.pacer_doc_id, document_number,
-              attachment_number, bytes, onUploadOk
-            );
+            chrome.runtime.sendMessage({
+              package: 'recap',
+              function: 'uploadDocument',
+              args: {
+                pacer_court: this.court,
+                pacer_case_id: pacer_case_id,
+                pacer_doc_id: this.pacer_doc_id,
+                document_number: document_number,
+                attachment_number: attachment_number,
+                bytes: bytes,
+              },
+            }, onUploadOk);
           } else {
             console.info("RECAP: Not uploading PDF. RECAP is disabled.");
           }
