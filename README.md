@@ -22,7 +22,7 @@ Tips
 ----
 1. You can load an "unpacked extension" from [chrome://extensions/][c] if you enable developer options in Chrome. The same [can be accomplished in Firefox][tempff] by going to [about:debugging][abtdbg], clicking "Load Temporary Add-on" and then selecting any file.
 
-1. While it's true that every court has their own customized version of PACER, there is [a PACER training site that does not charge fees][trainwreck]. You can use this if you wish to work on the system without accruing charges. If you are accruing charges while working on this extension, Free Law Project may be able to help. Let us know.
+1. While it's true that every court has their own customized version of PACER, there is [a PACER training site that does not charge fees][trainwreck]. You can use this if you wish to work on the system without accruing charges. Note that the extension is disabled on the PACER training site to avoid training documents being sent in. To enable the extension you'll need to edit the blacklist. If you are accruing charges while working on this extension, Free Law Project may be able to help. Let us know.
 
 1. While you're testing things across versions of PACER, you can use a handy website ([json][csv-json]/[html][csv-html]) created by [@audiodude][ad] to find suitable versions of PACER.
 
