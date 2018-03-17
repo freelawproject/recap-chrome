@@ -14,32 +14,25 @@ describe('The ContentDelegate class', function() {
 
   var nonsenseUrlContentDelegate = new ContentDelegate(nonsenseUrl);
   var docketQueryContentDelegate = new ContentDelegate(
-    docketQueryUrl, docketQueryPath, 'canb', '531591', []);
-  var docketDisplayContentDelegate =  new ContentDelegate(
-    docketDisplayUrl, docketDisplayPath, 'canb', '531591', []);
-  var singleDocContentDelegate = new ContentDelegate(
-    singleDocUrl, singleDocPath, 'canb', '531591', []);
+      docketQueryUrl, docketQueryPath, 'canb', '531591', []);
+  var docketDisplayContentDelegate = new ContentDelegate(
+      docketDisplayUrl, docketDisplayPath, 'canb', '531591', []);
+  var singleDocContentDelegate =
+      new ContentDelegate(singleDocUrl, singleDocPath, 'canb', '531591', []);
 
   function setupChromeSpy() {
     window.chrome = {
-      extension: {
-        getURL: jasmine.createSpy()
-      },
-      storage: {
-        local: {
-          get: jasmine.createSpy().and.callFake(function(_, cb) {
-            cb({
-              options: {}
-            });
-          })
+      extension : {getURL : jasmine.createSpy()},
+      storage : {
+        local : {
+          get : jasmine.createSpy().and.callFake(function(
+              _, cb) { cb({options : {}}); })
         }
       }
     }
   }
 
-  function removeChromeSpy() {
-    delete window.chrome;
-  }
+  function removeChromeSpy() { delete window.chrome; }
 
   beforeEach(function() {
     jasmine.Ajax.install();
@@ -51,7 +44,6 @@ describe('The ContentDelegate class', function() {
     removeChromeSpy();
   });
 
-
   it('gets created with necessary arguments', function() {
     var expected_url = 'https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?531591';
     var expected_path = '/cgi-bin/DktRpt.pl?531591';
@@ -62,12 +54,11 @@ describe('The ContentDelegate class', function() {
     link_0.href = 'http://foo/bar/0'
     var link_1 = document.createElement('a');
     link_1.href = 'http://foo/bar/1'
-    var expected_links = [link_0, link_1];
+    var expected_links = [ link_0, link_1 ];
 
-
-    var cd = new ContentDelegate(
-      expected_url, expected_path, expected_court, expected_pacer_case_id,
-      expected_pacer_doc_id, expected_links);
+    var cd = new ContentDelegate(expected_url, expected_path, expected_court,
+                                 expected_pacer_case_id, expected_pacer_doc_id,
+                                 expected_links);
     expect(cd.url).toBe(expected_url);
     expect(cd.path).toBe(expected_path);
     expect(cd.court).toBe(expected_court);
@@ -83,9 +74,7 @@ describe('The ContentDelegate class', function() {
       document.body.appendChild(form);
     });
 
-    afterEach(function() {
-      form.parentNode.removeChild(form);
-    });
+    afterEach(function() { form.parentNode.removeChild(form); });
 
     it('has no effect when not on a docket query url', function() {
       var cd = nonsenseUrlContentDelegate;
@@ -100,14 +89,13 @@ describe('The ContentDelegate class', function() {
       spyOn(PACER, 'hasPacerCookie').and.returnValue(true);
       cd.handleDocketQueryUrl();
       jasmine.Ajax.requests.mostRecent().respondWith({
-        'status': 200,
-        'contentType': 'application/json',
-        'responseText': (
-          '{"count": 1, "results": [' +
-            '{"date_modified": "04\/16\/15", "absolute_url": ' +
-            '"/download\/gov.uscourts.' +
-            'canb.531591\/gov.uscourts.canb.531591.docket.html"}]}'
-        )
+        'status' : 200,
+        'contentType' : 'application/json',
+        'responseText' :
+            ('{"count": 1, "results": [' +
+             '{"date_modified": "04\/16\/15", "absolute_url": ' +
+             '"/download\/gov.uscourts.' +
+             'canb.531591\/gov.uscourts.canb.531591.docket.html"}]}')
       });
       var banner = document.querySelector('.recap-banner');
       expect(banner).not.toBeNull();
@@ -115,7 +103,7 @@ describe('The ContentDelegate class', function() {
       var link = banner.querySelector('a');
       expect(link).not.toBeNull();
       expect(link.href).toBe(
-        'https://www.courtlistener.com/download/gov.uscourts.' +
+          'https://www.courtlistener.com/download/gov.uscourts.' +
           'canb.531591/gov.uscourts.canb.531591.docket.html')
     });
 
@@ -124,9 +112,9 @@ describe('The ContentDelegate class', function() {
       spyOn(PACER, 'hasPacerCookie').and.returnValue(true);
       cd.handleDocketQueryUrl();
       jasmine.Ajax.requests.mostRecent().respondWith({
-        'status': 200,
-        'contentType': 'application/json',
-        'responseText': '{}'
+        'status' : 200,
+        'contentType' : 'application/json',
+        'responseText' : '{}'
       });
       var banner = document.querySelector('.recap-banner');
       expect(banner).toBeNull();
@@ -135,21 +123,17 @@ describe('The ContentDelegate class', function() {
 
   describe('handleDocketDisplayPage', function() {
     beforeEach(function() {
-      window.chrome =  {
-        storage: {
-          local: {
-            get: jasmine.createSpy().and.callFake(function(_, cb) {
-              cb({options: {}});
-            })
+      window.chrome = {
+        storage : {
+          local : {
+            get : jasmine.createSpy().and.callFake(function(
+                _, cb) { cb({options : {}}); })
           }
         }
       };
     });
 
-    afterEach(function() {
-      delete window.chrome;
-    });
-
+    afterEach(function() { delete window.chrome; });
 
     it('has no effect when not on a docket display url', function() {
       var cd = nonsenseUrlContentDelegate;
@@ -166,13 +150,9 @@ describe('The ContentDelegate class', function() {
     });
 
     describe('when the history state is already set', function() {
-      beforeEach(function() {
-        history.replaceState({ uploaded: true }, '');
-      });
+      beforeEach(function() { history.replaceState({uploaded : true}, ''); });
 
-      afterEach(function() {
-        history.replaceState({}, '');
-      });
+      afterEach(function() { history.replaceState({}, ''); });
 
       it('has no effect', function() {
         var cd = docketDisplayContentDelegate;
@@ -185,23 +165,21 @@ describe('The ContentDelegate class', function() {
     it('calls uploadDocket and responds to a positive result', function() {
       var cd = docketDisplayContentDelegate;
       spyOn(cd.notifier, 'showUpload');
-      spyOn(cd.recap, 'uploadDocket').and.callFake(function(_, _, _, _, cb) {
-        cb(true);
-      });
+      spyOn(cd.recap, 'uploadDocket')
+          .and.callFake(function(_, _, _, _, cb) { cb(true); });
       spyOn(history, 'replaceState');
 
       cd.handleDocketDisplayPage();
       expect(cd.recap.uploadDocket).toHaveBeenCalled();
       expect(cd.notifier.showUpload).toHaveBeenCalled();
-      expect(history.replaceState).toHaveBeenCalledWith({uploaded: true}, '');
+      expect(history.replaceState).toHaveBeenCalledWith({uploaded : true}, '');
     });
 
     it('calls uploadDocket and responds to a negative result', function() {
       var cd = docketDisplayContentDelegate;
       spyOn(cd.notifier, 'showUpload');
-      spyOn(cd.recap, 'uploadDocket').and.callFake(function(_, _, _, _, cb) {
-        cb(false);
-      });
+      spyOn(cd.recap, 'uploadDocket')
+          .and.callFake(function(_, _, _, _, cb) { cb(false); });
       spyOn(history, 'replaceState');
 
       cd.handleDocketDisplayPage();
@@ -216,12 +194,11 @@ describe('The ContentDelegate class', function() {
     beforeEach(function() {
       form = document.createElement('form');
       document.body.appendChild(form);
-      window.chrome =  {
-        storage: {
-          local: {
-            get: jasmine.createSpy().and.callFake(function(_, cb) {
-              cb({options: {}});
-            })
+      window.chrome = {
+        storage : {
+          local : {
+            get : jasmine.createSpy().and.callFake(function(
+                _, cb) { cb({options : {}}); })
           }
         }
       };
@@ -256,9 +233,7 @@ describe('The ContentDelegate class', function() {
         form.appendChild(input);
       });
 
-      afterEach(function() {
-        form.removeChild(input);
-      });
+      afterEach(function() { form.removeChild(input); });
 
       it('has no effect when the URL is wrong', function() {
         var cd = nonsenseUrlContentDelegate;
@@ -276,9 +251,7 @@ describe('The ContentDelegate class', function() {
 
       it('calls the upload method and responds to positive result', function() {
         var cd = singleDocContentDelegate;
-        uploadFake = function(_, _, _, callback) {
-          callback(true);
-        };
+        uploadFake = function(_, _, _, callback) { callback(true); };
         spyOn(cd.recap, 'uploadAttachmentMenu').and.callFake(uploadFake);
         spyOn(cd.notifier, 'showUpload');
         spyOn(history, 'replaceState');
@@ -286,14 +259,13 @@ describe('The ContentDelegate class', function() {
         cd.handleAttachmentMenuPage();
         expect(cd.recap.uploadAttachmentMenu).toHaveBeenCalled();
         expect(cd.notifier.showUpload).toHaveBeenCalled();
-        expect(history.replaceState).toHaveBeenCalledWith({uploaded: true}, '');
+        expect(history.replaceState)
+            .toHaveBeenCalledWith({uploaded : true}, '');
       });
 
       it('calls the upload method and responds to negative result', function() {
         var cd = singleDocContentDelegate;
-        uploadFake = function(_, _, _, callback) {
-          callback(false);
-        };
+        uploadFake = function(_, _, _, callback) { callback(false); };
         spyOn(cd.recap, 'uploadAttachmentMenu').and.callFake(uploadFake);
         spyOn(cd.notifier, 'showUpload');
         spyOn(history, 'replaceState');
@@ -313,9 +285,7 @@ describe('The ContentDelegate class', function() {
       document.body.appendChild(form);
     });
 
-    afterEach(function() {
-      form.parentNode.removeChild(form);
-    });
+    afterEach(function() { form.parentNode.removeChild(form); });
 
     describe('when there is NO appropriate form', function() {
       it('has no effect when the URL is wrong', function() {
@@ -369,23 +339,19 @@ describe('The ContentDelegate class', function() {
       });
 
       describe('for pacer doc id 531591', function() {
-        beforeEach(function() {
-          window.pacer_doc_id = 531591;
-        });
+        beforeEach(function() { window.pacer_doc_id = 531591; });
 
-        afterEach(function() {
-          delete window.pacer_doc_id
-        });
+        afterEach(function() { delete window.pacer_doc_id });
 
         it('responds to a positive result', function() {
           var fakePacerDocId = 531591;
           var cd = singleDocContentDelegate;
           var fake = function(_, _, callback) {
             var response = {
-              results: [{
-                pacer_doc_id: fakePacerDocId,
-                filepath_local: 'download/1234'
-              }]
+              results : [ {
+                pacer_doc_id : fakePacerDocId,
+                filepath_local : 'download/1234'
+              } ]
             };
             callback(response);
           };
@@ -411,9 +377,7 @@ describe('The ContentDelegate class', function() {
       document.body.appendChild(form);
     });
 
-    afterEach(function() {
-      form.parentNode.removeChild(form);
-    });
+    afterEach(function() { form.parentNode.removeChild(form); });
 
     describe('when there is NO appropriate form', function() {
       it('has no effect when the URL is wrong', function() {
@@ -469,8 +433,8 @@ describe('The ContentDelegate class', function() {
         spyOn(window, 'addEventListener');
         cd.handleSingleDocumentPageView();
 
-        expect(window.addEventListener).toHaveBeenCalledWith(
-          'message', jasmine.any(Function), false);
+        expect(window.addEventListener)
+            .toHaveBeenCalledWith('message', jasmine.any(Function), false);
       });
     });
   });
@@ -478,7 +442,7 @@ describe('The ContentDelegate class', function() {
   describe('onDocumentViewSubmit', function() {
     var form;
     var form_id = '1234';
-    var event = {data: {id: form_id}};
+    var event = {data : {id : form_id}};
 
     beforeEach(function() {
       form = document.createElement('form');
@@ -493,9 +457,7 @@ describe('The ContentDelegate class', function() {
       document.body.appendChild(table);
     });
 
-    afterEach(function() {
-      form.parentNode.removeChild(form);
-    });
+    afterEach(function() { form.parentNode.removeChild(form); });
 
     it('sets the onsubmit attribute of the page form', function() {
       var expected_on_submit = 'expectedOnSubmit();';
@@ -504,12 +466,11 @@ describe('The ContentDelegate class', function() {
       var cd = singleDocContentDelegate;
       cd.onDocumentViewSubmit(event);
 
-      expect(form.setAttribute).toHaveBeenCalledWith(
-        'onsubmit', 'history.forward(); return false;');
-      expect(form.setAttribute).toHaveBeenCalledWith(
-        'onsubmit', expected_on_submit);
+      expect(form.setAttribute)
+          .toHaveBeenCalledWith('onsubmit', 'history.forward(); return false;');
+      expect(form.setAttribute)
+          .toHaveBeenCalledWith('onsubmit', expected_on_submit);
     });
-
 
     it('calls showPdfPage when the response is a PDF', function() {
       var cd = singleDocContentDelegate;
@@ -517,9 +478,9 @@ describe('The ContentDelegate class', function() {
       cd.onDocumentViewSubmit(event);
 
       jasmine.Ajax.requests.mostRecent().respondWith({
-        'status': 200,
-        'contentType': 'application/pdf',
-        'responseText': pdf_data
+        'status' : 200,
+        'contentType' : 'application/pdf',
+        'responseText' : pdf_data
       });
       expect(cd.showPdfPage).toHaveBeenCalled();
     });
@@ -528,21 +489,20 @@ describe('The ContentDelegate class', function() {
       var cd = singleDocContentDelegate;
       var fakeOnLoad = jasmine.createSpy();
       var fakeFileReader = {
-          readAsText: function() {
-            this.result = '<html></html>';
-            this.onload();
-          }
+        readAsText : function() {
+          this.result = '<html></html>';
+          this.onload();
+        }
       };
-      spyOn(window, 'FileReader').and.callFake(function() {
-        return fakeFileReader;
-      });
+      spyOn(window, 'FileReader')
+          .and.callFake(function() { return fakeFileReader; });
       spyOn(cd, 'showPdfPage');
       cd.onDocumentViewSubmit(event);
 
       jasmine.Ajax.requests.mostRecent().respondWith({
-        'status': 200,
-        'contentType': 'text/html',
-        'responseText': '<html></html>'
+        'status' : 200,
+        'contentType' : 'text/html',
+        'responseText' : '<html></html>'
       });
       expect(cd.showPdfPage).toHaveBeenCalled();
     });
@@ -565,8 +525,8 @@ describe('The ContentDelegate class', function() {
     it('correctly extracts the data before and after the iframe', function() {
       let waiting = '<p>Waiting for download...<p>';
       var expected_iframe = '<iframe src="about:blank"';
-      expect(documentElement.innerHTML).toBe(
-        pre + waiting + expected_iframe + post);
+      expect(documentElement.innerHTML)
+          .toBe(pre + waiting + expected_iframe + post);
     });
 
     describe('when it downloads the PDF in the iframe', function() {
@@ -576,67 +536,64 @@ describe('The ContentDelegate class', function() {
       var subdocnum = '0';
 
       beforeEach(function() {
-        var fakeGet = function(_, callback) {
-          callback(casenum);
-        };
-        var fakeUpload = function(_, _, _, _, _, _, callback) {
-          callback(true);
-        };
+        var fakeGet = function(_, callback) { callback(casenum); };
+        var fakeUpload = function(_, _, _, _, _, _,
+                                  callback) { callback(true); };
 
         spyOn(cd.recap, 'getPacerCaseIdFromPacerDocId').and.callFake(fakeGet);
         spyOn(cd.recap, 'uploadDocument').and.callFake(fakeUpload);
         spyOn(cd.notifier, 'showUpload');
         spyOn(URL, 'createObjectURL').and.returnValue('data:blob');
         spyOn(history, 'pushState');
+        spyOn(window, 'saveAs');
         jasmine.Ajax.requests.mostRecent().respondWith({
-          'status': 200,
-          'contentType': 'application/pdf',
-          'responseText': pdf_data
+          'status' : 200,
+          'contentType' : 'application/pdf',
+          'responseText' : pdf_data
         });
       });
 
       it('makes the back button redisplay the previous page', function() {
         expect(window.onpopstate).toEqual(jasmine.any(Function));
-        window.onpopstate({state: {content: 'previous'}});
+        window.onpopstate({state : {content : 'previous'}});
         expect(documentElement.innerHTML).toBe('previous');
       });
 
       it('displays the page with the downloaded file in an iframe', function() {
         if ((navigator.userAgent.indexOf('Chrome') >= 0) &&
-              !navigator.plugins.namedItem('Chrome PDF Viewer')) {
+            !navigator.plugins.namedItem('Chrome PDF Viewer')) {
           // isExternalPdf, file is saved with saveAs
-          expect(documentElement.innerHTML).toMatch(
-            /<iframe.*?src="about:blank".*?><\/iframe>/);
+          expect(documentElement.innerHTML)
+              .toMatch(/<iframe.*?src="about:blank".*?><\/iframe>/);
+          expect(window.saveAs).toHaveBeenCalled();
         } else {
-          expect(documentElement.innerHTML).toMatch(
-              /<iframe.*?src="data:blob".*?><\/iframe>/);
+          expect(documentElement.innerHTML)
+              .toMatch(/<iframe.*?src="data:blob".*?><\/iframe>/);
         }
       });
 
       it('puts the generated HTML in the page history', function() {
         if ((navigator.userAgent.indexOf('Chrome') >= 0) &&
-              !navigator.plugins.namedItem('Chrome PDF Viewer')) {
+            !navigator.plugins.namedItem('Chrome PDF Viewer')) {
           // isExternalPdf, file is saved with saveAs
           expect(history.pushState).not.toHaveBeenCalled();
+          expect(window.saveAs).toHaveBeenCalled();
         } else {
           expect(history.pushState).toHaveBeenCalled();
         }
       });
 
-      it('uploads the PDF to RECAP', function() {
-        expect(cd.recap.uploadDocument).toHaveBeenCalled();
-      });
+      it('uploads the PDF to RECAP',
+         function() { expect(cd.recap.uploadDocument).toHaveBeenCalled(); });
 
-      it('calls the notifier once the upload finishes', function() {
-        expect(cd.notifier.showUpload).toHaveBeenCalled();
-      });
+      it('calls the notifier once the upload finishes',
+         function() { expect(cd.notifier.showUpload).toHaveBeenCalled(); });
     });
   });
 
-
   function linksFromUrls(urls) {
-    var links = []
-    for (var i=0; i<urls.length; i++) {
+    var links = [];
+    for (var i = 0; i < urls.length; i++) {
       var link = document.createElement('a');
       link.href = urls[i];
       if (i == 0) {
@@ -656,18 +613,15 @@ describe('The ContentDelegate class', function() {
     var cd = docketDisplayContentDelegate;
     var linkUrl = singleDocUrl;
 
-    afterEach(function() {
-      delete window.chrome;
-    });
+    afterEach(function() { delete window.chrome; });
 
     describe('when the popup option is not set', function() {
       beforeEach(function() {
-        window.chrome =  {
-          storage: {
-            local: {
-              get: jasmine.createSpy().and.callFake(function(_, cb) {
-                 cb({options: {}});
-              })
+        window.chrome = {
+          storage : {
+            local : {
+              get : jasmine.createSpy().and.callFake(function(
+                  _, cb) { cb({options : {}}); })
             }
           }
         };
@@ -682,12 +636,11 @@ describe('The ContentDelegate class', function() {
 
     describe('when the popup option is set', function() {
       beforeEach(function() {
-        window.chrome =  {
-          storage: {
-            local: {
-              get: jasmine.createSpy().and.callFake(function(_, cb) {
-                 cb({options: {recap_link_popups: true}});
-              })
+        window.chrome = {
+          storage : {
+            local : {
+              get : jasmine.createSpy().and.callFake(function(
+                  _, cb) { cb({options : {recap_link_popups : true}}); })
             }
           }
         };
@@ -710,10 +663,7 @@ describe('The ContentDelegate class', function() {
   });
 
   describe('attachRecapLinkToEligibleDocs', function() {
-    var fake_urls = [
-      'http://foo.fake/bar/0',
-      'http://foo.fake/bar/1'
-    ];
+    var fake_urls = [ 'http://foo.fake/bar/0', 'http://foo.fake/bar/1' ];
 
     var urls = [
       'https://ecf.canb.uscourts.gov/doc1/034031424909',
@@ -729,7 +679,6 @@ describe('The ContentDelegate class', function() {
         cd.attachRecapLinkToEligibleDocs();
       });
 
-
       it('does nothing', function() {
         expect(jasmine.Ajax.requests.mostRecent()).toBeUndefined();
       });
@@ -742,39 +691,41 @@ describe('The ContentDelegate class', function() {
         links = linksFromUrls(urls);
         $('body').append(links);
         cd = new ContentDelegate(null, null, null, null, null, links);
-        cd.pacer_doc_ids = [1234];
+        cd.pacer_doc_ids = [ 1234 ];
       });
 
       it('does not attach any links if no urls have recap', function() {
-        spyOn(cd.recap, 'getAvailabilityForDocuments').and.callFake(
-          function(_, _, callback) {
-            callback({
-              results: [],
+        spyOn(cd.recap, 'getAvailabilityForDocuments')
+            .and.callFake(function(_, _, callback) {
+              callback({
+                results : [],
+              });
             });
-          });
         cd.attachRecapLinkToEligibleDocs();
         expect($('.recap-inline').length).toBe(0);
       });
 
       it('attaches a single link to the one url with recap', function() {
-        spyOn(cd.recap, 'getAvailabilityForDocuments').and.callFake(
-          function(_, _, callback) {
-            callback({
-              results: [{pacer_doc_id: 1234, filepath_local: 'download/1234'}],
+        spyOn(cd.recap, 'getAvailabilityForDocuments')
+            .and.callFake(function(_, _, callback) {
+              callback({
+                results :
+                    [ {pacer_doc_id : 1234, filepath_local : 'download/1234'} ],
+              });
             });
-          });
         cd.attachRecapLinkToEligibleDocs();
         expect($('.recap-inline').length).toBe(1);
       });
 
       it('attaches a working click handler', function() {
         spyOn(cd, 'handleRecapLinkClick');
-        spyOn(cd.recap, 'getAvailabilityForDocuments').and.callFake(
-          function(_, _, callback) {
-            callback({
-              results: [{pacer_doc_id: 1234, filepath_local: 'download/1234'}],
+        spyOn(cd.recap, 'getAvailabilityForDocuments')
+            .and.callFake(function(_, _, callback) {
+              callback({
+                results :
+                    [ {pacer_doc_id : 1234, filepath_local : 'download/1234'} ],
+              });
             });
-          });
         cd.attachRecapLinkToEligibleDocs();
         $(links[0]).next().click();
         expect(cd.handleRecapLinkClick).toHaveBeenCalled();
