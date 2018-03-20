@@ -133,6 +133,42 @@ describe('The Recap export module', function() {
     });
   });
 
+  describe('uploadDocket, uploadAttachmentMenu, uploadDocument', function() {
+    var existingFormData;
+    beforeEach(function() {
+      setupChromeSpy();
+      existingFormData = window.FormData;
+      window.FormData = FormDataFake;
+    });
+    
+    afterEach(function() {
+      window.FormData = existingFormData;
+      removeChromeSpy();
+    });
+
+    var bytes = new Uint8Array([100, 100, 200, 200, 300]);
+
+    it('all send debug=false in AJAX request', function() {
+      expected = new FormDataFake();
+      expected.append('debug', false);
+
+      recap.uploadDocket(court, pacer_case_id, html, 'DOCKET', function() {});
+      var actualData = jasmine.Ajax.requests.mostRecent().data();
+      expect(actualData).toEqual(jasmine.objectContaining(expected));
+
+      recap.uploadAttachmentMenu(court, pacer_case_id, html, function() {});
+      var actualData = jasmine.Ajax.requests.mostRecent().data();
+      expect(actualData).toEqual(jasmine.objectContaining(expected));
+
+      recap.uploadDocument(
+        court, pacer_case_id, pacer_doc_id, docnum, attachnum, bytes,
+        function() {});
+      var actualData = jasmine.Ajax.requests.mostRecent().data();
+      expect(actualData).toEqual(jasmine.objectContaining(expected));
+    });
+  });
+
+
   describe('uploadDocket', function() {
     var existingFormData;
     beforeEach(function() {
