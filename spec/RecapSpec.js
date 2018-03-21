@@ -140,7 +140,7 @@ describe('The Recap export module', function() {
       existingFormData = window.FormData;
       window.FormData = FormDataFake;
     });
-    
+
     afterEach(function() {
       window.FormData = existingFormData;
       removeChromeSpy();
@@ -148,23 +148,21 @@ describe('The Recap export module', function() {
 
     var bytes = new Uint8Array([100, 100, 200, 200, 300]);
 
-    it('all send debug=false in AJAX request', function() {
-      expected = new FormDataFake();
-      expected.append('debug', false);
-
+    it('all send debug=false in AJAX request. If this test fails, it likely means DEBUG=true is set in ' + 
+           'recap', function() {
       recap.uploadDocket(court, pacer_case_id, html, 'DOCKET', function() {});
       var actualData = jasmine.Ajax.requests.mostRecent().data();
-      expect(actualData).toEqual(jasmine.objectContaining(expected));
+      expect(actualData['debug']).toBe(false);
 
       recap.uploadAttachmentMenu(court, pacer_case_id, html, function() {});
       var actualData = jasmine.Ajax.requests.mostRecent().data();
-      expect(actualData).toEqual(jasmine.objectContaining(expected));
+      expect(actualData['debug']).toBe(false);
 
       recap.uploadDocument(
         court, pacer_case_id, pacer_doc_id, docnum, attachnum, bytes,
         function() {});
       var actualData = jasmine.Ajax.requests.mostRecent().data();
-      expect(actualData).toEqual(jasmine.objectContaining(expected));
+      expect(actualData['debug']).toBe(false)
     });
   });
 
