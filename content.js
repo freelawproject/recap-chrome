@@ -40,4 +40,3 @@ if (PACER.hasPacerCookie(document.cookie)) {
 } else {
   console.info(`RECAP: Taking no actions because not logged in: `+url);
 }
-
