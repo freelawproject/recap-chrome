@@ -58,6 +58,12 @@
       "content.js"
     ],
     "run_at": "document_end"
+  }, {
+    "matches": ["https://www.courtlistener.com/*"],
+    "js": [
+      "install_notifier.js"
+    ],
+    "run_at": "document_idle"
   }],
   "browser_action": {
     "default_icon": {
