@@ -32,7 +32,7 @@ let ContentDelegate = function(url, path, court, pacer_case_id, pacer_doc_id,
   //              case participants and public terminal users.</b></td></tr>
   // </tbody></table>
   //
-  // Be somewhat paranoid about this and check for both a Warning!
+  // Be somewhat paranoid about this and check for either a "Warning!"
   // in the first <td> cell of a table, as well as any <b> containing
   // "document is restricted".
   for (let td of
