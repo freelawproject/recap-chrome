@@ -38,9 +38,7 @@
     ]
   },
   "content_scripts": [{
-    "matches": [
-      "*://*.uscourts.gov/*"
-    ],
+    "matches": ["*://*.uscourts.gov/*"],
     "include_globs": ["*://ecf.*", "*://ecf-train.*", "*://pacer.*"],
     "css": [
       "assets/css/style.css",
