@@ -39,11 +39,9 @@
   },
   "content_scripts": [{
     "matches": [
-      "*://*.uscourts.gov/*",
-      "https://www.courtlistener.com/*",
-      "http://localhost/*",
-      "http://127.0.0.1/*"
+      "*://*.uscourts.gov/*"
     ],
+    "include_globs": ["*://ecf.*", "*://ecf-train.*", "*://pacer.*"],
     "css": [
       "assets/css/style.css",
       "assets/css/font-awesome.css"
@@ -60,6 +58,16 @@
       "recap.js",
       "content_delegate.js",
       "content.js"
+    ],
+    "run_at": "document_end"
+  }, {
+    "matches": [
+      "https://www.courtlistener.com/*",
+      "http://localhost/*",
+      "http://127.0.0.1/*"
+    ],
+    "js": [
+      "install_notifier.js"
     ],
     "run_at": "document_end"
   }],
