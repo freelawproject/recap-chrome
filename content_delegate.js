@@ -237,8 +237,7 @@ ContentDelegate.prototype.handleAttachmentMenuPage = function() {
 
 // If this page offers a single document, ask RECAP whether it has the document.
 ContentDelegate.prototype.handleSingleDocumentPageCheck = function() {
-  if (!PACER.isSingleDocumentPage(this.url, document) ||
-     this.restricted) {
+  if (!PACER.isSingleDocumentPage(this.url, document)) {
     return;
   }
 
@@ -415,8 +414,12 @@ ContentDelegate.prototype.showPdfPage = function(
 
         chrome.storage.local.get('options', displayPDF);
 
+	if (this.restricted) {
+	  alert("Yeah we did the check before uploadpdf.");
+	}
+
         let uploadDocument = function(items){
-          if (!items['options']['recap_disabled']) {
+          if (!items['options']['recap_disabled'] && !this.restricted) {
             // If we have the pacer_case_id, upload the file to RECAP.
             // We can't pass an ArrayBuffer directly to the background
             // page, so we have to convert to a regular array.
@@ -451,8 +454,7 @@ ContentDelegate.prototype.showPdfPage = function(
 // view page.  The "View Document" button calls the goDLS() function, which
 // creates a <form> element and calls submit() on it, so we hook into submit().
 ContentDelegate.prototype.handleSingleDocumentPageView = function() {
-  if (!PACER.isSingleDocumentPage(this.url, document) ||
-     this.restricted) {
+  if (!PACER.isSingleDocumentPage(this.url, document)) {
     return;
   }
 
