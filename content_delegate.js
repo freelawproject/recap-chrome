@@ -19,8 +19,11 @@ let ContentDelegate = function(url, path, court, pacer_case_id, pacer_doc_id,
 
   this.findAndStorePacerDocIds();
 
-  let restrictedDoc = false;
+  this.restricted = this.checkRestrictions();
+};
 
+// Check for document restrictions
+ContentDelegate.prototype.checkRestrictions = function() {
   // Some documents are restricted to case participants. Typically
   // this is offered with either an interstitial page (in the case
   // of free looks) or an extra box on the receipt page. In both cases
@@ -35,6 +38,9 @@ let ContentDelegate = function(url, path, court, pacer_case_id, pacer_doc_id,
   // Be somewhat paranoid about this and check for either a "Warning!"
   // in the first <td> cell of a table, as well as any <b> containing
   // "document is restricted".
+
+  let restrictedDoc = false;
+
   for (let td of
        document.querySelectorAll("table td:first-child")) {
     if (td.textContent.match(/Warning!/)) {
@@ -42,6 +48,7 @@ let ContentDelegate = function(url, path, court, pacer_case_id, pacer_doc_id,
       break;
     }
   }
+
   for (let td of document.querySelectorAll("b")) {
     if (td.textContent.match(/document is restricted/)) {
         restrictedDoc = true;
@@ -55,8 +62,8 @@ let ContentDelegate = function(url, path, court, pacer_case_id, pacer_doc_id,
     // send a message to the background script? ughhhh. xxx
   }
 
-  this.restricted = restrictedDoc;
-};
+  return restrictedDoc;
+}
 
 // Use a variety of approaches to get and store pacer_doc_id to pacer_case_id
 // mappings in local storage.
