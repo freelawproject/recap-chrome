@@ -59,11 +59,7 @@
     ],
     "run_at": "document_end"
   }, {
-    "matches": [
-      "https://www.courtlistener.com/*",
-      "http://localhost/*",
-      "http://127.0.0.1/*"
-    ],
+    "matches": ["https://www.courtlistener.com/*"],
     "js": [
       "install_notifier.js"
     ],
