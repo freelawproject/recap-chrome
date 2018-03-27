@@ -157,13 +157,12 @@ describe('The Recap export module', function() {
       expected.append('upload_type', 1);
       expected.append('court', court);
       expected.append('pacer_case_id', pacer_case_id);
-      expected.append('debug', false);
       expected.append('filepath_local', new Blob(
         [html], {type: type}), filename);
 
       recap.uploadDocket(court, pacer_case_id, html, 'DOCKET', function() {});
       var actualData = jasmine.Ajax.requests.mostRecent().data();
-      expect(actualData).toEqual(expected);
+      expect(actualData).toEqual(jasmine.objectContaining(expected));
     });
   });
 
@@ -191,13 +190,12 @@ describe('The Recap export module', function() {
       expected.append('court', court);
       expected.append('pacer_case_id', pacer_case_id);
       expected.append('upload_type', 2);
-      expected.append('debug', false);
       expected.append('filepath_local', new Blob(
         [html], {type: type}), filename);
 
       recap.uploadAttachmentMenu(court, pacer_case_id, html, function() {});
       var actualData = jasmine.Ajax.requests.mostRecent().data();
-      expect(actualData).toEqual(expected);
+      expect(actualData).toEqual(jasmine.objectContaining(expected));
     });
   });
 
@@ -234,7 +232,6 @@ describe('The Recap export module', function() {
       expected.append('document_number', docnum);
       expected.append('attachment_number', attachnum);
       expected.append('upload_type', 3);
-      expected.append('debug', false);
       expected.append('filepath_local', new Blob(
         [html], {type: type}), filename);
 
@@ -245,7 +242,7 @@ describe('The Recap export module', function() {
         court, pacer_case_id, pacer_doc_id, docnum, attachnum, bytes,
         function() {});
       var actualData = jasmine.Ajax.requests.mostRecent().data();
-      expect(actualData).toEqual(expected);
+      expect(actualData).toEqual(jasmine.objectContaining(expected));
     });
   });
 });
