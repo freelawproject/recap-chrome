@@ -170,6 +170,8 @@ let PACER = {
     // So far, this only appears to apply to bankruptcy claims. This CSS
     // selector is duplicated in onDocumentViewSubmit.
     let hasImageReceipt = !!$('td:contains(Image)').length;
+
+
     let pageCheck = (PACER.isDocumentUrl(url) &&
                      hasImageReceipt &&
                      (lastInput === 'View Document') ||

@@ -18,6 +18,44 @@ let ContentDelegate = function(url, path, court, pacer_case_id, pacer_doc_id,
   this.recap = importInstance(Recap);
 
   this.findAndStorePacerDocIds();
+
+  let restrictedDoc = false;
+
+  // Some documents are restricted to case participants. Typically
+  // this is offered with either an interstitial page (in the case
+  // of free looks) or an extra box on the receipt page. In both cases
+  // it's something like this:
+  //
+  // <table><tbody>
+  //   <tr><td>Warning!</td></tr>
+  //   <tr><td><b>This document is restricted to court users,
+  //              case participants and public terminal users.</b></td></tr>
+  // </tbody></table>
+  //
+  // Be somewhat paranoid about this and check for both a Warning!
+  // in the first <td> cell of a table, as well as any <b> containing
+  // "document is restricted".
+  for (let td of
+       document.querySelectorAll("table td:first-child")) {
+    if (td.textContent.match(/Warning!/)) {
+      restrictedDoc = true;
+      break;
+    }
+  }
+  for (let td of document.querySelectorAll("b")) {
+    if (td.textContent.match(/document is restricted/)) {
+        restrictedDoc = true;
+      break;
+    }
+  }
+
+  if (restrictedDoc) {
+    alert("Restricted document detected. Skipping RECAP upload.");
+    // xxx can't call chrome.browserAction.setIcon() here. Need to
+    // send a message to the background script? ughhhh. xxx
+  }
+
+  this.restricted = restrictedDoc;
 };
 
 // Use a variety of approaches to get and store pacer_doc_id to pacer_case_id
@@ -192,7 +230,8 @@ ContentDelegate.prototype.handleAttachmentMenuPage = function() {
 
 // If this page offers a single document, ask RECAP whether it has the document.
 ContentDelegate.prototype.handleSingleDocumentPageCheck = function() {
-  if (!PACER.isSingleDocumentPage(this.url, document)) {
+  if (!PACER.isSingleDocumentPage(this.url, document) ||
+     this.restricted) {
     return;
   }
 
@@ -405,7 +444,8 @@ ContentDelegate.prototype.showPdfPage = function(
 // view page.  The "View Document" button calls the goDLS() function, which
 // creates a <form> element and calls submit() on it, so we hook into submit().
 ContentDelegate.prototype.handleSingleDocumentPageView = function() {
-  if (!PACER.isSingleDocumentPage(this.url, document)) {
+  if (!PACER.isSingleDocumentPage(this.url, document) ||
+     this.restricted) {
     return;
   }
 
