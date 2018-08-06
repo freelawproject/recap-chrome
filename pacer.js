@@ -41,6 +41,12 @@ let PACER = {
   getCourtFromUrl: function (url) {
     let match = (url || '').toLowerCase().match(
         /^\w+:\/\/(ecf|ecf-train|pacer)\.(\w+)\.uscourts\.gov\//);
+
+    if (match == null) {
+      match = (url || '').toLowerCase().match(
+        /^\w+:\/\/(efiling)\.uscourts\.(cavc)\.gov\//);
+    }
+
     return match ? match[2] : null;
   },
 
@@ -68,6 +74,7 @@ let PACER = {
 
   // Returns true if the URL is for docket query page.
   isDocketQueryUrl: function (url) {
+    debug(4, "checking isDocketQueryUrl");
     // The part after the "?" is all digits.
     return !!url.match(/\/(DktRpt|HistDocQry)\.pl\?\d+$/);
   },
@@ -140,6 +147,8 @@ let PACER = {
         case 'ChangeClient.jsp':
           return false;
       }
+    } else {
+      debug(4, "No appellate match for" + url);
     }
   },
 
@@ -244,6 +253,8 @@ let PACER = {
           // Also seen in appellate. Note upppercase 'I' and hyphens. Actual caseID. xxx
           return match[1];
         }
+      } else {
+        console.info("Couldn't find case number via getCaseNumberFromUrls: " + url);
       }
     }
   },

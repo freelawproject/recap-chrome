@@ -23,7 +23,9 @@ let ContentDelegate = function(url, path, court, pacer_case_id, pacer_doc_id,
 // Use a variety of approaches to get and store pacer_doc_id to pacer_case_id
 // mappings in local storage.
 ContentDelegate.prototype.findAndStorePacerDocIds = function() {
+  console.info("ContentDelegate");
   if (!PACER.hasPacerCookie(document.cookie)) {
+    console.info("returned out of ContentDelegate because no PACER cookie");
     return;
   }
 

@@ -21,6 +21,7 @@
   },
   "permissions": [
     "*://*.uscourts.gov/",
+    "*://*.uscourts.cavc.gov/*",
     "notifications",
     "storage",
     "tabs",
@@ -38,8 +39,8 @@
     ]
   },
   "content_scripts": [{
-    "matches": ["*://*.uscourts.gov/*"],
-    "include_globs": ["*://ecf.*", "*://ecf-train.*", "*://pacer.*"],
+    "matches": ["*://*.uscourts.gov/*","*://*.uscourts.cavc.gov/*"],
+    "include_globs": ["*://ecf.*", "*://ecf-train.*", "*://pacer.*", "*://efiling.*"],
     "css": [
       "assets/css/style.css",
       "assets/css/font-awesome.css"

@@ -1,5 +1,7 @@
 // Content script to run when DOM finishes loading (run_at: "document_end").
 
+console.info("Starting content.js: " + window.location.href);
+
 let url = window.location.href;
 let court = PACER.getCourtFromUrl(url);
 
