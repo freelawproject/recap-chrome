@@ -166,7 +166,7 @@ function arrayBufferToArray(ab) {
 // Debug levels:
 //   1   General informational
 //   3   Developer debugging
-var DEBUGLEVEL = 1;
+var DEBUGLEVEL = 4;
 function debug(level, varargs) {
   if (DEBUGLEVEL >= level) {
     var args = Array.prototype.slice.call(arguments, 1);

@@ -1,6 +1,5 @@
 // Content script to run when DOM finishes loading (run_at: "document_end").
 
-console.info("Starting content.js: " + window.location.href);
 
 let url = window.location.href;
 let court = PACER.getCourtFromUrl(url);
@@ -40,5 +39,5 @@ if (PACER.hasPacerCookie(document.cookie)) {
   // available. If there is, put a link with a RECAP icon.
   content_delegate.attachRecapLinkToEligibleDocs();
 } else {
-  console.info(`RECAP: Taking no actions because not logged in: `+url);
+  console.info("RECAP: Taking no actions because not logged in");
 }

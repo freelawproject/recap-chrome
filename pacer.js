@@ -39,12 +39,20 @@ let PACER_TO_CL_IDS = {
 let PACER = {
   // Returns the court identifier for a given URL, or null if not a PACER site.
   getCourtFromUrl: function (url) {
-    let match = (url || '').toLowerCase().match(
-        /^\w+:\/\/(ecf|ecf-train|pacer)\.(\w+)\.uscourts\.gov\//);
 
-    if (match == null) {
-      match = (url || '').toLowerCase().match(
-        /^\w+:\/\/(efiling)\.uscourts\.(cavc)\.gov\//);
+    let courtRegexps = new Array (
+      /^\w+:\/\/(ecf|ecf-train|pacer)\.(\w+)\.uscourts\.gov\//,
+      /^\w+:\/\/(efiling)\.uscourts\.(cavc)\.gov\//
+    );
+
+    let match;
+
+    for (let re of courtRegexps) {
+      match = (url || '').toLowerCase().match(re);
+      if (match) {
+        let servlet = match[1];
+        break;
+      }
     }
 
     return match ? match[2] : null;
@@ -59,6 +67,7 @@ let PACER = {
   //   https://ecf.dcd.uscourts.gov/doc1/04503837920
   // For CMECF Appellate:
   //   https://ecf.ca2.uscourts.gov/docs1/00205695758
+  // TODO: implement related logic for appellate
   isDocumentUrl: function (url) {
     if (
         url.match(/\/(?:doc1|docs1)\/\d+/) ||
@@ -77,6 +86,7 @@ let PACER = {
     debug(4, "checking isDocketQueryUrl");
     // The part after the "?" is all digits.
     return !!url.match(/\/(DktRpt|HistDocQry)\.pl\?\d+$/);
+    // TODO: make above match for appellate (and implement related logic)
   },
 
   // Returns true if the given URL is for a docket display page (i.e. the page
@@ -223,7 +233,7 @@ let PACER = {
     for (let url of urls) {
       let hostname = getHostname(url);
       // JS is trash. It lacks a way of getting the TLD, so we use endsWith.
-      if (hostname.endsWith('uscourts.gov')) {
+      if (hostname.endsWith('uscourts.gov')||hostname.endsWith('cavc.gov')) {
         for (let re of [
           // Appellate CMECF sends us some odd URLs, be aware:
           // https://ecf.mad.uscourts.gov/cgi-bin/DktRpt.pl?caseNumber=1:17-cv-11842-PBS&caseId=0
@@ -253,8 +263,7 @@ let PACER = {
           // Also seen in appellate. Note upppercase 'I' and hyphens. Actual caseID. xxx
           return match[1];
         }
-      } else {
-        console.info("Couldn't find case number via getCaseNumberFromUrls: " + url);
+        debug(4, "Couldn't find case number via getCaseNumberFromUrls");
       }
     }
   },
@@ -316,7 +325,7 @@ let PACER = {
     cookieString.replace(/\s*([^=;]+)=([^;]*)/g, function (match, name, value) {
       cookies[name.trim()] = value.trim();
     });
-    let pacerCookie = cookies['PacerUser'] || cookies['PacerSession'];
+    let pacerCookie = cookies['PacerUser'] || cookies['PacerSession'] || cookies['CMECFASESSIONID'];
     return !!(pacerCookie && !pacerCookie.match(/unvalidated/));
   },
 
@@ -534,6 +543,7 @@ let PACER = {
     'ca10': 1,
     'ca11': 1,
     'cadc': 1,
-    'cafc': 1
+    'cafc': 1,
+    'cavc': 1
   }
 };
