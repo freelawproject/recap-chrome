@@ -81,7 +81,34 @@ let PACER = {
     //   https://ecf.ca1.uscourts.gov/n/beam/servlet/TransportRoom?servlet=CaseSummary.jsp&caseNum=16-1567&incOrigDkt=Y&incDktEntries=Y
     if (url.match(/\/DktRpt\.pl\?\w+-[\w-]+$/)) { return true; }
 
-    let match = url.match(/servlet\/TransportRoom(?:\?servlet=([^?&]+)(?:[\/&#;].*)?)?$/);
+    // Regular expression to match on Appellate pages, and if a
+    // servlet is specified, to return it as a captured group.
+    // If no servlet is specified, it's returned as undefined, which
+    // is properly handled in the switch block.
+    //
+    // The RE is a bit complicated, so let's break it down:
+    //
+    //   servlet\/TransportRoom # 1: The string servlet/TransportRoom
+    //   (?:\?servlet=          # 2: An OPTIONAL, TERMINAL, NON-CAPTURING
+    //                          #    group that contains ?servlet=
+    //     ([^?&]+)             # 3: A CAPTURING group of >1 non-? or &
+    //                          #    chars, as they'd delimit another
+    //                          #    url parameter.
+    //     (?:[\/&#;].*)?       # 4: An OPTIONAL, NON-CAPTURING group of a
+    //                          #    /, &, #, or ; char, followed by
+    //                          #    anything at all, which would be
+    //                          #    one or more url parameters.
+    //   )?                     # Closing of (2) and making it optional
+    //   $                      # Making (2) terminal
+    //
+    // xxx: This would match on
+    //   https://ecf.ca1.uscourts.gov/n/beam/underservlet/
+    // xxx: This presumes ?servlet= is the first parameter, would fail on
+    //   /servlet/TransportRoom?caseId=44381&servlet=DocketReportFilter.jsp
+    // xxx: This will if a terminal slash precedes the parameter section:
+    //   /servlet/TransportRoom/?...
+    let re = /servlet\/TransportRoom(?:\?servlet=([^?&]+)(?:[\/&#;].*)?)?$/;
+    let match = url.match(re);
     if (match) {
       let servlet = match[1];
       debug(4, `Identified appellate servlet ${servlet} at ${url}`);
@@ -189,9 +216,9 @@ let PACER = {
       // JS is trash. It lacks a way of getting the TLD, so we use endsWith.
       if (hostname.endsWith('uscourts.gov')) {
         for (let re of [
-	  // Appellate CMECF sends us some odd URLs, be aware:
-	  // https://ecf.mad.uscourts.gov/cgi-bin/DktRpt.pl?caseNumber=1:17-cv-11842-PBS&caseId=0
-	  // https://ecf.mad.uscourts.gov/cgi-bin/DktRpt.pl?caseNumber=1:17-cv-11842-PBS&caseId=1:17-cv-11842-PBS
+          // Appellate CMECF sends us some odd URLs, be aware:
+          // https://ecf.mad.uscourts.gov/cgi-bin/DktRpt.pl?caseNumber=1:17-cv-11842-PBS&caseId=0
+          // https://ecf.mad.uscourts.gov/cgi-bin/DktRpt.pl?caseNumber=1:17-cv-11842-PBS&caseId=1:17-cv-11842-PBS
           /[?&]caseid=(\d+)/i, // match on caseid GET param
           /\?(\d+)(?:&.*)?$/,  // match on DktRpt.pl?178502&blah urls
         ]){
