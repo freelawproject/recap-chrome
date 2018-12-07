@@ -44,7 +44,12 @@ function showNotificationTab(details){
     chrome.tabs.create({
       url: 'https://free.law/fundraisers/2017/recap/'
     });
+  } else if (details.reason === 'update' && currentVersion === '1.2.10'){
+    chrome.tabs.create({
+      url: 'https://free.law/fundraisers/2018/recap/'
+    });
   }
+
 }
 
 chrome.runtime.onInstalled.addListener(setDefaultOptions);
