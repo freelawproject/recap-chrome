@@ -58,7 +58,7 @@ describe('The Recap export module', function() {
       }
     }
   }
-  
+
   function removeChromeSpy() {
     delete window.chrome;
   }
@@ -83,7 +83,7 @@ describe('The Recap export module', function() {
     it('requests the correct URL', function() {
       recap.getAvailabilityForDocket();
       expect(jasmine.Ajax.requests.mostRecent().url).toBe(
-        'https://www.courtlistener.com/api/rest/v3/dockets/?fields=absolute_url%2Cdate_modified');
+        'https://www.courtlistener.com/api/rest/v3/dockets/?source__in=1%2C3%2C5%2C7%2C9%2C11%2C13%2C15&fields=absolute_url%2Cdate_modified');
     });
 
     it('encodes the court and caseId in the GET params', function() {
@@ -92,7 +92,9 @@ describe('The Recap export module', function() {
       recap.getAvailabilityForDocket(expectedCourt, expectedCaseId);
       expect(jasmine.Ajax.requests.mostRecent().url).toBe(
         'https://www.courtlistener.com/api/rest/v3/dockets/' +
-          '?pacer_case_id=531316&court=canb&' +
+          '?pacer_case_id=531316' +
+          '&source__in=1%2C3%2C5%2C7%2C9%2C11%2C13%2C15' +
+          '&court=canb&' +
           'fields=absolute_url%2Cdate_modified');
     });
 
@@ -115,7 +117,7 @@ describe('The Recap export module', function() {
       recap.getAvailabilityForDocuments(docUrls, 'canb', function() {});
       expect(jasmine.Ajax.requests.mostRecent().url).toBe(
         'https://www.courtlistener.com/api/rest/v3/recap-query/?' +
-          'pacer_doc_id__in=https%3A%2F%2Fecf.canb.uscourts.gov' + 
+          'pacer_doc_id__in=https%3A%2F%2Fecf.canb.uscourts.gov' +
           '%2Fdoc1%2F034031424909%2Chttps%3A%2F%2Fecf.canb.uscourts.gov' +
           '%2Fdoc1%2F034031425808%2Chttps%3A%2F%2Fecf.canb.uscourts.gov' +
           '%2Fdoc1%2F034031438754&docket_entry__docket__court=canb');
@@ -140,7 +142,7 @@ describe('The Recap export module', function() {
       existingFormData = window.FormData;
       window.FormData = FormDataFake;
     });
-    
+
     afterEach(function() {
       window.FormData = existingFormData;
       removeChromeSpy();
@@ -173,7 +175,7 @@ describe('The Recap export module', function() {
       existingFormData = window.FormData;
       window.FormData = FormDataFake;
     });
-    
+
     afterEach(function() {
       window.FormData = existingFormData;
       removeChromeSpy();
@@ -206,7 +208,7 @@ describe('The Recap export module', function() {
       existingFormData = window.FormData;
       window.FormData = FormDataFake;
     });
-    
+
     afterEach(function() {
       window.FormData = existingFormData;
       removeChromeSpy();
