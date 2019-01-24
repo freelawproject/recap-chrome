@@ -57,7 +57,7 @@ ContentDelegate.prototype.checkRestrictions = function() {
   }
 
   if (restrictedDoc) {
-    alert("Restricted document detected. Skipping RECAP upload.");
+    console.log("RECAP: Restricted document detected. Skipping upload.");
     // We would like to alter the [R] icon to indicate what's going
     // on, but we cannot call chrome.browserAction.setIcon()
     // here. Instead, we'd need to send a message to the background
@@ -415,10 +415,6 @@ ContentDelegate.prototype.showPdfPage = function(
         }.bind(this);
 
         chrome.storage.local.get('options', displayPDF);
-
-	if (this.restricted) {
-	  alert("Yeah we did the check before uploadpdf.");
-	}
 
         let uploadDocument = function(items){
           if (!items['options']['recap_disabled'] && !this.restricted) {
