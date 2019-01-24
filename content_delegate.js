@@ -95,8 +95,8 @@ ContentDelegate.prototype.checkRestrictions = function() {
 	      </div>
 	      <div style="display: table-cell; vertical-align: middle">
 		This document <b>will not be uploaded</b> to the RECAP Archive
-		because the RECAP extension has detected that may be restricted
-		from public distribution.
+		because the RECAP extension has detected that it may be
+		restricted from public distribution.
 	      </div>
 	    </div>
           </div>
