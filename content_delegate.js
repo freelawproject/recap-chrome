@@ -81,26 +81,23 @@ ContentDelegate.prototype.checkRestrictions = function() {
     // we just go to the end of the final form.
     // Should we just always go the end of the final form?
     let target =
-	document.querySelector("form input") ||
-	document.forms[document.forms.length - 1].lastChild;
+      document.querySelector("form input") ||
+      document.forms[document.forms.length - 1].lastChild;
 
     // Nested div for horizontal centering.
     target.insertAdjacentHTML('beforebegin',
       `<div style="text-align: center">
-	  <div style="display: inline-block; text-align: left; align: top">
-            <div class="recap-banner" style="display: table">
-              <div style="display: table-cell; padding: 12px; ">
-		<img src="${chrome.extension.getURL('assets/images/disabled-38.png')}"
-		     style="width: auto; height: auto">
-	      </div>
-	      <div style="display: table-cell; vertical-align: middle">
-		This document <b>will not be uploaded</b> to the RECAP Archive
-		because the RECAP extension has detected that it may be
-		restricted from public distribution.
-	      </div>
-	    </div>
-          </div>
-	</div>`);
+              <div style="display: inline-block; text-align: left; align: top">
+                <div class="recap-banner" style="display: table">
+                  <div style="display: table-cell; padding: 12px; ">
+                    <img src="${chrome.extension.getURL('assets/images/disabled-38.png')}"
+                         style="width: auto; height: auto">
+                  </div>
+                  <div style="display: table-cell; vertical-align: middle">This document <b>will not be uploaded</b> to the RECAP Archive because the RECAP extension has detected that it may be restricted from public distribution.
+                  </div>
+                </div>
+              </div>
+            </div>`);
   }
 
   return restrictedDoc;
