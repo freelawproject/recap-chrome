@@ -73,6 +73,30 @@ ContentDelegate.prototype.checkRestrictions = function() {
     // on, but we cannot call chrome.browserAction.setIcon()
     // here. Instead, we'd need to send a message to the background
     // script? ughhhh. Punt for now.
+
+    // Insert a RECAP banner near the end of the form, before the action button.
+    // Ideally this would have some RECAP branding, icon/logo, etc.
+
+    // Ideally we target the form <input>, but absent that
+    // we just go to the end of the final form.
+    // Should we just always go the end of the final form?
+    let target =
+	document.querySelector("form input") ||
+	document.forms[document.forms.length - 1].lastChild;
+
+    // Nested div for horizontal centering.
+    target.insertAdjacentHTML('beforebegin',
+      `<div style="text-align: center">
+         <div
+            class="recap-banner"
+            style="display: inline-block; text-align: left"
+         >
+	   This document <b>will not be uploaded</b> to the RECAP Archive
+           because
+           the RECAP extension has detected that it is restricted from
+           public distribution.
+         </div>
+       </div>`);
   }
 
   return restrictedDoc;
