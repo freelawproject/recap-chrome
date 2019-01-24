@@ -35,9 +35,18 @@ ContentDelegate.prototype.checkRestrictions = function() {
   //              case participants and public terminal users.</b></td></tr>
   // </tbody></table>
   //
+  // The exact text will change, depending on the circumstances. For
+  // sealed documents, e.g., ohsd offers:
+  //
+  //   "The document you are about to view is SEALED; do not allow it
+  //   to be seen by unauthorized persons."
+  //
+  // Sealing behavior differs from CMECF instance to CMECF instance.
+  //
   // Be somewhat paranoid about this and check for either a "Warning!"
   // in the first <td> cell of a table, as well as any <b> containing
-  // "document is restricted".
+  // "document is restricted", "SEALED", or "do not allow it to be seen".
+  // Case-insensitively.
 
   let restrictedDoc = false;
 
@@ -50,7 +59,9 @@ ContentDelegate.prototype.checkRestrictions = function() {
   }
 
   for (let td of document.querySelectorAll("b")) {
-    if (td.textContent.match(/document is restricted/)) {
+    if (td.textContent.match(
+	/document is restricted|SEALED|do not allow it to be seen/i
+    )) {
         restrictedDoc = true;
       break;
     }
