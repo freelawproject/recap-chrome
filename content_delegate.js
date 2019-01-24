@@ -87,16 +87,20 @@ ContentDelegate.prototype.checkRestrictions = function() {
     // Nested div for horizontal centering.
     target.insertAdjacentHTML('beforebegin',
       `<div style="text-align: center">
-         <div
-            class="recap-banner"
-            style="display: inline-block; text-align: left"
-         >
-	   This document <b>will not be uploaded</b> to the RECAP Archive
-           because
-           the RECAP extension has detected that it is restricted from
-           public distribution.
-         </div>
-       </div>`);
+	  <div style="display: inline-block; text-align: left; align: top">
+            <div class="recap-banner" style="display: table">
+              <div style="display: table-cell; padding: 12px; ">
+		<img src="${chrome.extension.getURL('assets/images/disabled-38.png')}"
+		     style="width: auto; height: auto">
+	      </div>
+	      <div style="display: table-cell; vertical-align: middle">
+		This document <b>will not be uploaded</b> to the RECAP Archive
+		because the RECAP extension has detected that it is restricted
+		from public distribution.
+	      </div>
+	    </div>
+          </div>
+	</div>`);
   }
 
   return restrictedDoc;
