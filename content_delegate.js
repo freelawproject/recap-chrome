@@ -58,8 +58,10 @@ ContentDelegate.prototype.checkRestrictions = function() {
 
   if (restrictedDoc) {
     alert("Restricted document detected. Skipping RECAP upload.");
-    // xxx can't call chrome.browserAction.setIcon() here. Need to
-    // send a message to the background script? ughhhh. xxx
+    // We would like to alter the [R] icon to indicate what's going
+    // on, but we cannot call chrome.browserAction.setIcon()
+    // here. Instead, we'd need to send a message to the background
+    // script? ughhhh. Punt for now.
   }
 
   return restrictedDoc;
