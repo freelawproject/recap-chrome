@@ -60,7 +60,7 @@ ContentDelegate.prototype.checkRestrictions = function() {
 
   for (let td of document.querySelectorAll("b")) {
     if (td.textContent.match(
-	/document is restricted|SEALED|do not allow it to be seen/i
+      /document is restricted|SEALED|do not allow it to be seen/i
     )) {
         restrictedDoc = true;
       break;
@@ -101,7 +101,7 @@ ContentDelegate.prototype.checkRestrictions = function() {
   }
 
   return restrictedDoc;
-}
+};
 
 // Use a variety of approaches to get and store pacer_doc_id to pacer_case_id
 // mappings in local storage.
