@@ -37,7 +37,7 @@
       "background.js"
     ]
   },
-  "content_scripts": [{
+    "content_scripts": [{
     "matches": ["*://*.uscourts.gov/*"],
     "include_globs": ["*://ecf.*", "*://ecf-train.*", "*://pacer.*"],
     "css": [
@@ -72,6 +72,16 @@
     },
     "default_title": "RECAP: Not at a PACER site",
     "default_popup": "options.html"
+  },
+  "chrome_settings_overrides": {
+    "search_provider": {
+      "name": "Recap",
+      "search_url": "https://www.courtlistener.com/?type=r&q={searchTerms}&order_by=score+desc",
+      "keyword": "recap",
+      "favicon_url": "https://www.courtlistener.com/static/ico/favicon.ico",
+      "encoding": "UTF-8",
+      "is_default": false
+    }
   },
   "options_ui": {
     "page": "options.html",
