@@ -75,7 +75,7 @@
   },
   "chrome_settings_overrides": {
     "search_provider": {
-      "name": "Recap",
+      "name": "RECAP Archive",
       "search_url": "https://www.courtlistener.com/?type=r&q={searchTerms}&order_by=score+desc",
       "keyword": "recap",
       "favicon_url": "https://www.courtlistener.com/static/ico/favicon.ico",
