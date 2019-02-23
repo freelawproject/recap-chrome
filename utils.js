@@ -60,17 +60,20 @@ function exportInstance(constructor) {
 // Gets an object that can be used in a content script to invoke methods on an
 // instance exported from the background page.  See above for details.
 function importInstance(constructor) {
-  var name = constructor.name;
-  var sender = {};
-  for (var verb in new constructor()) {
+  let name = constructor.name;
+  let sender = {};
+  for (let verb in new constructor()) {
     (function (verb) {
       sender[verb] = function () {
-        var args = Array.prototype.slice.call(arguments, 0, -1);
-        var cb = arguments[arguments.length - 1] || function () {};
+        let args = Array.prototype.slice.call(arguments, 0, -1);
+        let cb = arguments[arguments.length - 1] || function () {
+        };
         if (typeof cb !== 'function') {
           throw 'Service invocation error: last argument is not a callback';
         }
-        var unpack = function (results) { cb.apply(null, results); };
+        let unpack = function (results) {
+          cb.apply(null, results);
+        };
         chrome.runtime.sendMessage(
           {name: name, verb: verb, args: args}, unpack);
       };
@@ -166,10 +169,11 @@ function arrayBufferToArray(ab) {
 // Debug levels:
 //   1   General informational
 //   3   Developer debugging
-var DEBUGLEVEL = 1;
+let DEBUGLEVEL = 1;
+
 function debug(level, varargs) {
   if (DEBUGLEVEL >= level) {
-    var args = Array.prototype.slice.call(arguments, 1);
+    let args = Array.prototype.slice.call(arguments, 1);
     args[0] = `RECAP debug [${level}]: `+args[0];
     return console.log.apply(this, args);
   }
