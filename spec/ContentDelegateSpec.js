@@ -1,23 +1,23 @@
 describe('The ContentDelegate class', function() {
-  var docketQueryUrl = 'https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?531591';
-  var docketQueryPath = '/cgi-bin/DktRpt.pl?531591';
-  var docketDisplayUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?' +
-                          '101092135737069-L_1_0-1');
-  var docketDisplayPath = '/cgi-bin/DktRpt.pl?101092135737069-L_1_0-1';
-  var singleDocUrl = 'https://ecf.canb.uscourts.gov/doc1/034031424909';
-  var singleDocPath = '/doc1/034031424909';
-  var nonsenseUrl = 'http://something.uscourts.gov/foobar/baz';
+  const docketQueryUrl = 'https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?531591';
+  const docketQueryPath = '/cgi-bin/DktRpt.pl?531591';
+  const docketDisplayUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?' +
+      '101092135737069-L_1_0-1');
+  const docketDisplayPath = '/cgi-bin/DktRpt.pl?101092135737069-L_1_0-1';
+  const singleDocUrl = 'https://ecf.canb.uscourts.gov/doc1/034031424909';
+  const singleDocPath = '/doc1/034031424909';
+  const nonsenseUrl = 'http://something.uscourts.gov/foobar/baz';
   // Smallest possible PDF according to:
   // http://stackoverflow.com/questions/17279712/what-is-the-smallest-possible-valid-pdf
-  var pdf_data = ('%PDF-1.\ntrailer<</Root<</Pages<</Kids' +
-                  '[<</MediaBox[0 0 3 3]>>]>>>>>>\n');
+  const pdf_data = ('%PDF-1.\ntrailer<</Root<</Pages<</Kids' +
+      '[<</MediaBox[0 0 3 3]>>]>>>>>>\n');
 
-  var nonsenseUrlContentDelegate = new ContentDelegate(nonsenseUrl);
-  var docketQueryContentDelegate = new ContentDelegate(
+  let nonsenseUrlContentDelegate = new ContentDelegate(nonsenseUrl);
+  let docketQueryContentDelegate = new ContentDelegate(
       docketQueryUrl, docketQueryPath, 'canb', '531591', []);
-  var docketDisplayContentDelegate = new ContentDelegate(
+  let docketDisplayContentDelegate = new ContentDelegate(
       docketDisplayUrl, docketDisplayPath, 'canb', '531591', []);
-  var singleDocContentDelegate =
+  let singleDocContentDelegate =
       new ContentDelegate(singleDocUrl, singleDocPath, 'canb', '531591', []);
 
   function setupChromeSpy() {
@@ -45,20 +45,20 @@ describe('The ContentDelegate class', function() {
   });
 
   it('gets created with necessary arguments', function() {
-    var expected_url = 'https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?531591';
-    var expected_path = '/cgi-bin/DktRpt.pl?531591';
-    var expected_court = 'canb';
-    var expected_pacer_case_id = '531591';
-    var expected_pacer_doc_id = '127015406472';
-    var link_0 = document.createElement('a');
+    const expected_url = 'https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?531591';
+    const expected_path = '/cgi-bin/DktRpt.pl?531591';
+    const expected_court = 'canb';
+    const expected_pacer_case_id = '531591';
+    const expected_pacer_doc_id = '127015406472';
+    let link_0 = document.createElement('a');
     link_0.href = 'http://foo/bar/0';
-    var link_1 = document.createElement('a');
+    let link_1 = document.createElement('a');
     link_1.href = 'http://foo/bar/1';
-    var expected_links = [ link_0, link_1 ];
+    let expected_links = [link_0, link_1];
 
-    var cd = new ContentDelegate(expected_url, expected_path, expected_court,
-                                 expected_pacer_case_id, expected_pacer_doc_id,
-                                 expected_links);
+    let cd = new ContentDelegate(expected_url, expected_path, expected_court,
+        expected_pacer_case_id, expected_pacer_doc_id,
+        expected_links);
     expect(cd.url).toBe(expected_url);
     expect(cd.path).toBe(expected_path);
     expect(cd.court).toBe(expected_court);
@@ -68,7 +68,7 @@ describe('The ContentDelegate class', function() {
   });
 
   describe('handleDocketQueryUrl', function() {
-    var form;
+    let form;
     beforeEach(function() {
       form = document.createElement('form');
       document.body.appendChild(form);
@@ -77,7 +77,7 @@ describe('The ContentDelegate class', function() {
     afterEach(function() { form.parentNode.removeChild(form); });
 
     it('has no effect when not on a docket query url', function() {
-      var cd = nonsenseUrlContentDelegate;
+      let cd = nonsenseUrlContentDelegate;
       spyOn(cd.recap, 'getAvailabilityForDocket');
       spyOn(PACER, 'hasPacerCookie').and.returnValue(true);
       cd.handleDocketQueryUrl();
@@ -85,7 +85,7 @@ describe('The ContentDelegate class', function() {
     });
 
     it('inserts the RECAP banner on an appropriate page', function() {
-      var cd = docketQueryContentDelegate;
+      let cd = docketQueryContentDelegate;
       spyOn(PACER, 'hasPacerCookie').and.returnValue(true);
       cd.handleDocketQueryUrl();
       jasmine.Ajax.requests.mostRecent().respondWith({
@@ -97,10 +97,10 @@ describe('The ContentDelegate class', function() {
              '"/download\/gov.uscourts.' +
              'canb.531591\/gov.uscourts.canb.531591.docket.html"}]}')
       });
-      var banner = document.querySelector('.recap-banner');
+      let banner = document.querySelector('.recap-banner');
       expect(banner).not.toBeNull();
       expect(banner.innerHTML).toContain('04/16/15');
-      var link = banner.querySelector('a');
+      let link = banner.querySelector('a');
       expect(link).not.toBeNull();
       expect(link.href).toBe(
           'https://www.courtlistener.com/download/gov.uscourts.' +
@@ -108,7 +108,7 @@ describe('The ContentDelegate class', function() {
     });
 
     it('has no effect when on a docket query that has no RECAP', function() {
-      var cd = docketQueryContentDelegate;
+      let cd = docketQueryContentDelegate;
       spyOn(PACER, 'hasPacerCookie').and.returnValue(true);
       cd.handleDocketQueryUrl();
       jasmine.Ajax.requests.mostRecent().respondWith({
@@ -116,7 +116,7 @@ describe('The ContentDelegate class', function() {
         'contentType' : 'application/json',
         'responseText' : '{}'
       });
-      var banner = document.querySelector('.recap-banner');
+      let banner = document.querySelector('.recap-banner');
       expect(banner).toBeNull();
     });
   });
@@ -136,14 +136,14 @@ describe('The ContentDelegate class', function() {
     afterEach(function() { delete window.chrome; });
 
     it('has no effect when not on a docket display url', function() {
-      var cd = nonsenseUrlContentDelegate;
+      let cd = nonsenseUrlContentDelegate;
       spyOn(cd.recap, 'uploadDocket');
       cd.handleDocketDisplayPage();
       expect(cd.recap.uploadDocket).not.toHaveBeenCalled();
     });
 
     it('has no effect when there is no casenum', function() {
-      var cd = new ContentDelegate(docketDisplayUrl);
+      let cd = new ContentDelegate(docketDisplayUrl);
       spyOn(cd.recap, 'uploadDocket');
       cd.handleDocketDisplayPage();
       expect(cd.recap.uploadDocket).not.toHaveBeenCalled();
@@ -155,7 +155,7 @@ describe('The ContentDelegate class', function() {
       afterEach(function() { history.replaceState({}, ''); });
 
       it('has no effect', function() {
-        var cd = docketDisplayContentDelegate;
+        let cd = docketDisplayContentDelegate;
         spyOn(cd.recap, 'uploadDocket');
         cd.handleDocketDisplayPage();
         expect(cd.recap.uploadDocket).not.toHaveBeenCalled();
@@ -163,7 +163,7 @@ describe('The ContentDelegate class', function() {
     });
 
     it('calls uploadDocket and responds to a positive result', function() {
-      var cd = docketDisplayContentDelegate;
+      let cd = docketDisplayContentDelegate;
       spyOn(cd.notifier, 'showUpload');
       spyOn(cd.recap, 'uploadDocket')
           .and.callFake(function(_, _, _, _, cb) { cb(true); });
@@ -176,7 +176,7 @@ describe('The ContentDelegate class', function() {
     });
 
     it('calls uploadDocket and responds to a negative result', function() {
-      var cd = docketDisplayContentDelegate;
+      let cd = docketDisplayContentDelegate;
       spyOn(cd.notifier, 'showUpload');
       spyOn(cd.recap, 'uploadDocket')
           .and.callFake(function(_, _, _, _, cb) { cb(false); });
@@ -190,7 +190,7 @@ describe('The ContentDelegate class', function() {
   });
 
   describe('handleAttachmentMenuPage', function() {
-    var form;
+    let form;
     beforeEach(function() {
       form = document.createElement('form');
       document.body.appendChild(form);
@@ -211,7 +211,7 @@ describe('The ContentDelegate class', function() {
 
     describe('when there is NO appropriate form', function() {
       it('has no effect when the URL is wrong', function() {
-        var cd = nonsenseUrlContentDelegate;
+        let cd = nonsenseUrlContentDelegate;
         spyOn(cd.recap, 'uploadAttachmentMenu');
         cd.handleAttachmentMenuPage();
         expect(cd.recap.uploadAttachmentMenu).not.toHaveBeenCalled();
@@ -226,7 +226,7 @@ describe('The ContentDelegate class', function() {
     });
 
     describe('when there IS an appropriate form', function() {
-      var input;
+      let input;
       beforeEach(function() {
         input = document.createElement('input');
         input.value = 'Download All';
@@ -236,21 +236,21 @@ describe('The ContentDelegate class', function() {
       afterEach(function() { form.removeChild(input); });
 
       it('has no effect when the URL is wrong', function() {
-        var cd = nonsenseUrlContentDelegate;
+        let cd = nonsenseUrlContentDelegate;
         spyOn(cd.recap, 'uploadAttachmentMenu');
         cd.handleAttachmentMenuPage();
         expect(cd.recap.uploadAttachmentMenu).not.toHaveBeenCalled();
       });
 
       it('uploads the page when the URL is right', function() {
-        var cd = singleDocContentDelegate;
+        let cd = singleDocContentDelegate;
         spyOn(cd.recap, 'uploadAttachmentMenu');
         cd.handleAttachmentMenuPage();
         expect(cd.recap.uploadAttachmentMenu).toHaveBeenCalled();
       });
 
       it('calls the upload method and responds to positive result', function() {
-        var cd = singleDocContentDelegate;
+        let cd = singleDocContentDelegate;
         uploadFake = function(_, _, _, callback) { callback(true); };
         spyOn(cd.recap, 'uploadAttachmentMenu').and.callFake(uploadFake);
         spyOn(cd.notifier, 'showUpload');
@@ -264,7 +264,7 @@ describe('The ContentDelegate class', function() {
       });
 
       it('calls the upload method and responds to negative result', function() {
-        var cd = singleDocContentDelegate;
+        let cd = singleDocContentDelegate;
         uploadFake = function(_, _, _, callback) { callback(false); };
         spyOn(cd.recap, 'uploadAttachmentMenu').and.callFake(uploadFake);
         spyOn(cd.notifier, 'showUpload');
@@ -279,7 +279,7 @@ describe('The ContentDelegate class', function() {
   });
 
   describe('handleSingleDocumentPageCheck', function() {
-    var form;
+    let form;
     beforeEach(function() {
       form = document.createElement('form');
       document.body.appendChild(form);
@@ -289,14 +289,14 @@ describe('The ContentDelegate class', function() {
 
     describe('when there is NO appropriate form', function() {
       it('has no effect when the URL is wrong', function() {
-        var cd = nonsenseUrlContentDelegate;
+        let cd = nonsenseUrlContentDelegate;
         spyOn(cd.recap, 'getAvailabilityForDocuments');
         cd.handleSingleDocumentPageCheck();
         expect(cd.recap.getAvailabilityForDocuments).not.toHaveBeenCalled();
       });
 
       it('has no effect with a proper URL', function() {
-        var cd = singleDocContentDelegate;
+        let cd = singleDocContentDelegate;
         spyOn(cd.recap, 'getAvailabilityForDocuments');
         cd.handleSingleDocumentPageCheck();
         expect(cd.recap.getAvailabilityForDocuments).not.toHaveBeenCalled();
@@ -304,7 +304,7 @@ describe('The ContentDelegate class', function() {
     });
 
     describe('when there IS an appropriate form', function() {
-      var input;
+      let input;
       beforeEach(function() {
         input = document.createElement('input');
         input.value = 'View Document';
@@ -325,14 +325,14 @@ describe('The ContentDelegate class', function() {
       });
 
       it('has no effect when the URL is wrong', function() {
-        var cd = nonsenseUrlContentDelegate;
+        let cd = nonsenseUrlContentDelegate;
         spyOn(cd.recap, 'getAvailabilityForDocuments');
         cd.handleSingleDocumentPageCheck();
         expect(cd.recap.getAvailabilityForDocuments).not.toHaveBeenCalled();
       });
 
       it('checks availability for the page when the URL is right', function() {
-        var cd = singleDocContentDelegate;
+        let cd = singleDocContentDelegate;
         spyOn(cd.recap, 'getAvailabilityForDocuments');
         cd.handleSingleDocumentPageCheck();
         expect(cd.recap.getAvailabilityForDocuments).toHaveBeenCalled();
@@ -344,14 +344,14 @@ describe('The ContentDelegate class', function() {
         afterEach(function() { delete window.pacer_doc_id });
 
         it('responds to a positive result', function() {
-          var fakePacerDocId = 531591;
-          var cd = singleDocContentDelegate;
-          var fake = function(_, _, callback) {
-            var response = {
-              results : [ {
-                pacer_doc_id : fakePacerDocId,
-                filepath_local : 'download/1234'
-              } ]
+          const fakePacerDocId = 531591;
+          let cd = singleDocContentDelegate;
+          let fake = function (_, _, callback) {
+            let response = {
+              results: [{
+                pacer_doc_id: fakePacerDocId,
+                filepath_local: 'download/1234'
+              }]
             };
             callback(response);
           };
@@ -360,9 +360,9 @@ describe('The ContentDelegate class', function() {
           cd.handleSingleDocumentPageCheck();
 
           expect(cd.recap.getAvailabilityForDocuments).toHaveBeenCalled();
-          var banner = document.querySelector('.recap-banner');
+          let banner = document.querySelector('.recap-banner');
           expect(banner).not.toBeNull();
-          var link = banner.querySelector('a');
+          let link = banner.querySelector('a');
           expect(link).not.toBeNull();
           expect(link.href).toBe('https://www.courtlistener.com/download/1234');
         });
@@ -371,7 +371,7 @@ describe('The ContentDelegate class', function() {
   });
 
   describe('handleSingleDocumentPageView', function() {
-    var form;
+    let form;
     beforeEach(function() {
       form = document.createElement('form');
       document.body.appendChild(form);
@@ -381,14 +381,14 @@ describe('The ContentDelegate class', function() {
 
     describe('when there is NO appropriate form', function() {
       it('has no effect when the URL is wrong', function() {
-        var cd = nonsenseUrlContentDelegate;
+        let cd = nonsenseUrlContentDelegate;
         spyOn(document, 'createElement');
         cd.handleSingleDocumentPageView();
         expect(document.createElement).not.toHaveBeenCalled();
       });
 
       it('has no effect with a proper URL', function() {
-        var cd = singleDocContentDelegate;
+        let cd = singleDocContentDelegate;
         spyOn(cd.recap, 'getAvailabilityForDocuments');
         cd.handleSingleDocumentPageView();
         expect(cd.recap.getAvailabilityForDocuments).not.toHaveBeenCalled();
@@ -396,7 +396,7 @@ describe('The ContentDelegate class', function() {
     });
 
     describe('when there IS an appropriate form', function() {
-      var input;
+      let input;
       beforeEach(function() {
         input = document.createElement('input');
         input.value = 'View Document';
@@ -417,8 +417,8 @@ describe('The ContentDelegate class', function() {
       });
 
       it('creates a non-empty script element', function() {
-        var cd = singleDocContentDelegate;
-        var scriptSpy = {};
+        let cd = singleDocContentDelegate;
+        let scriptSpy = {};
         spyOn(document, 'createElement').and.returnValue(scriptSpy);
         spyOn(document.body, 'appendChild');
         cd.handleSingleDocumentPageView();
@@ -429,7 +429,7 @@ describe('The ContentDelegate class', function() {
       });
 
       it('adds an event listener for the message in the script', function() {
-        var cd = singleDocContentDelegate;
+        let cd = singleDocContentDelegate;
         spyOn(window, 'addEventListener');
         cd.handleSingleDocumentPageView();
 
@@ -440,9 +440,9 @@ describe('The ContentDelegate class', function() {
   });
 
   describe('onDocumentViewSubmit', function() {
-    var form;
-    var form_id = '1234';
-    var event = {data : {id : form_id}};
+    let form;
+    const form_id = '1234';
+    let event = {data: {id: form_id}};
 
     beforeEach(function() {
       form = document.createElement('form');
@@ -460,10 +460,10 @@ describe('The ContentDelegate class', function() {
     afterEach(function() { form.parentNode.removeChild(form); });
 
     it('sets the onsubmit attribute of the page form', function() {
-      var expected_on_submit = 'expectedOnSubmit();';
+      let expected_on_submit = 'expectedOnSubmit();';
       form.setAttribute('onsubmit', expected_on_submit);
       spyOn(form, 'setAttribute');
-      var cd = singleDocContentDelegate;
+      let cd = singleDocContentDelegate;
       cd.onDocumentViewSubmit(event);
 
       expect(form.setAttribute)
@@ -473,7 +473,7 @@ describe('The ContentDelegate class', function() {
     });
 
     it('calls showPdfPage when the response is a PDF', function() {
-      var cd = singleDocContentDelegate;
+      let cd = singleDocContentDelegate;
       spyOn(cd, 'showPdfPage');
       cd.onDocumentViewSubmit(event);
 
@@ -486,10 +486,10 @@ describe('The ContentDelegate class', function() {
     });
 
     it('calls showPdfPage when the response is HTML', function() {
-      var cd = singleDocContentDelegate;
-      var fakeOnLoad = jasmine.createSpy();
-      var fakeFileReader = {
-        readAsText : function() {
+      let cd = singleDocContentDelegate;
+      let fakeOnLoad = jasmine.createSpy();
+      let fakeFileReader = {
+        readAsText: function () {
           this.result = '<html></html>';
           this.onload();
         }
@@ -509,13 +509,13 @@ describe('The ContentDelegate class', function() {
   });
 
   describe('showPdfPage', function() {
-    var pre = ('<head><style>body { margin: 0; } iframe { border: none; }' +
-               '</style></head><body>');
-    var iframe = '<iframe src="data:pdf"';
-    var post = ' width="100%" height="100%"></iframe></body>';
-    var html = pre + iframe + post;
-    var cd = singleDocContentDelegate;
-    var documentElement;
+    const pre = ('<head><style>body { margin: 0; } iframe { border: none; }' +
+        '</style></head><body>');
+    const iframe = '<iframe src="data:pdf"';
+    const post = ' width="100%" height="100%"></iframe></body>';
+    let html = pre + iframe + post;
+    let cd = singleDocContentDelegate;
+    let documentElement;
 
     beforeEach(function() {
       documentElement = jasmine.createSpy();
@@ -524,21 +524,25 @@ describe('The ContentDelegate class', function() {
 
     it('correctly extracts the data before and after the iframe', function() {
       let waiting = '<p>Waiting for download...<p>';
-      var expected_iframe = '<iframe src="about:blank"';
+      let expected_iframe = '<iframe src="about:blank"';
       expect(documentElement.innerHTML)
           .toBe(pre + waiting + expected_iframe + post);
     });
 
     describe('when it downloads the PDF in the iframe', function() {
-      var docid = '127015406472';
-      var casenum = '437098';
-      var docnum = '4';
-      var subdocnum = '0';
+      const docid = '127015406472';
+      const casenum = '437098';
+      const docnum = '4';
+      const subdocnum = '0';
 
       beforeEach(function() {
-        var fakeGet = function(_, callback) { callback(casenum); };
-        var fakeUpload = function(_, _, _, _, _, _,
-                                  callback) { callback(true); };
+        let fakeGet = function (_, callback) {
+          callback(casenum);
+        };
+        let fakeUpload = function (_, _, _, _, _, _,
+                                   callback) {
+          callback(true);
+        };
 
         spyOn(cd.recap, 'getPacerCaseIdFromPacerDocId').and.callFake(fakeGet);
         spyOn(cd.recap, 'uploadDocument').and.callFake(fakeUpload);
@@ -592,11 +596,11 @@ describe('The ContentDelegate class', function() {
   });
 
   function linksFromUrls(urls) {
-    var links = [];
-    for (var i = 0; i < urls.length; i++) {
-      var link = document.createElement('a');
+    let links = [];
+    for (let i = 0; i < urls.length; i++) {
+      let link = document.createElement('a');
       link.href = urls[i];
-      if (i == 0) {
+      if (i === 0) {
         link.dataset.pacer_doc_id = 1234;
       }
       links.push(link);
@@ -610,8 +614,8 @@ describe('The ContentDelegate class', function() {
   // 'addMouseoverToConvertibleLinks' went, and add tests for that.
 
   describe('handleRecapLinkClick', function() {
-    var cd = docketDisplayContentDelegate;
-    var linkUrl = singleDocUrl;
+    let cd = docketDisplayContentDelegate;
+    let linkUrl = singleDocUrl;
 
     afterEach(function() { delete window.chrome; });
 
@@ -628,7 +632,7 @@ describe('The ContentDelegate class', function() {
       });
 
       it('redirects to the link url immediately', function() {
-        var window_obj = {};
+        let window_obj = {};
         cd.handleRecapLinkClick(window_obj, linkUrl);
         expect(window_obj.location).toBe(linkUrl);
       });
@@ -651,9 +655,9 @@ describe('The ContentDelegate class', function() {
         expect($('#recap-shade').length).not.toBe(0);
         expect($('.recap-popup').length).not.toBe(0);
 
-        var foundLink = false;
+        let foundLink = false;
         $('.recap-popup a').each(function(i, link) {
-          if (link.href == linkUrl) {
+          if (link.href === linkUrl) {
             foundLink = true;
           }
         });
@@ -663,16 +667,16 @@ describe('The ContentDelegate class', function() {
   });
 
   describe('attachRecapLinkToEligibleDocs', function() {
-    var fake_urls = [ 'http://foo.fake/bar/0', 'http://foo.fake/bar/1' ];
+    const fake_urls = ['http://foo.fake/bar/0', 'http://foo.fake/bar/1'];
 
-    var urls = [
+    const urls = [
       'https://ecf.canb.uscourts.gov/doc1/034031424909',
-      'https://ecf.canb.uscourts.gov/doc1/034031438754',
+      'https://ecf.canb.uscourts.gov/doc1/034031438754'
     ];
 
     describe('when there are no valid urls', function() {
-      var links;
-      var cd;
+      let links;
+      let cd;
       beforeEach(function() {
         links = linksFromUrls(fake_urls);
         cd = new ContentDelegate(null, null, null, null, null, links);
@@ -685,8 +689,8 @@ describe('The ContentDelegate class', function() {
     });
 
     describe('when there are valid urls', function() {
-      var links;
-      var cd;
+      let links;
+      let cd;
       beforeEach(function() {
         links = linksFromUrls(urls);
         $('body').append(links);
