@@ -1,28 +1,29 @@
 // Public impure functions.  (See utils.js for details on defining services.)
 function Notifier() {
-  var showNotification = function (title, message, cb) {
+  let showNotification = function (title, message, cb) {
     console.info("RECAP: Running showNotification function. Expect a notification.");
-    var notificationOptions = {
+    let notificationOptions = {
       type: 'basic',
       title: title,
       message: message,
       iconUrl: chrome.extension.getURL('assets/images/icon-32.png'),
       priority: 0
     };
-    var notificationID = 'recap_notification';
+    let notificationID = 'recap_notification';
     chrome.notifications.create(
-      notificationID,
-      notificationOptions,
-      cb
+        notificationID,
+        notificationOptions,
+        cb
     );
     // Make it go away when clicked.
     chrome.notifications.onClicked.addListener(
-      function(notificationID){
-        chrome.notifications.clear(
-          notificationID,
-          function(){}
-        );
-      }
+        function (notificationID) {
+          chrome.notifications.clear(
+              notificationID,
+              function () {
+              }
+          );
+        }
     );
   };
   return {
