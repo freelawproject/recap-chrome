@@ -116,7 +116,7 @@
 }
 /* Gradient colours, shadow, and opacity imitate the Chrome PDF toolbar. */
 #recap-download {
-  font-family: helvetica, arial;
+  font-family: helvetica, arial, sans-serif;
   font-size: 13px;
   position: absolute;
   padding: 16px 48px 48px 16px;
