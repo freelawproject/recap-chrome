@@ -25,7 +25,7 @@ describe('The Recap export module', function() {
   };
   var FormDataConstructor = function() {
     return new FormDataFake();
-  }
+  };
 
   beforeEach(function() {
     jasmine.Ajax.install();

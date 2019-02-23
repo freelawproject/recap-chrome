@@ -218,8 +218,8 @@ describe('The PACER module', function() {
 
   describe('parseGoDLSFunction', function(){
     var goDLSSampleString = "goDLS('/doc1/09518360046','153992','264','','','1','',''); " +
-	"return(false);"
-    
+	"return(false);";
+
     it("gets the right values for an example DLS string", function() {
       expect(PACER.parseGoDLSFunction(goDLSSampleString)).toEqual({
         hyperlink: '/doc1/09518360046',
@@ -254,7 +254,7 @@ describe('The PACER module', function() {
                              'PacerPref=receipt=Y');
     var nonLoggedInCookie = ('PacerSession=unvalidated; PacerPref=receipt=Y');
     var nonsenseCookie = ('Foo=barbaz; Baz=bazbar; Foobar=Foobar');
-    
+
     it('returns true for a valid logged in cookie', function() {
       expect(PACER.hasPacerCookie(loggedInCookie)).toBe(true);
     });
