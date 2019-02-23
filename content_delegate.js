@@ -346,20 +346,20 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
   httpRequest(form.action, data, function (type, ab, xhr) {
     console.info('RECAP: Successfully submitted RECAP "View" button form: ' +
 		 xhr.statusText);
-    var blob = new Blob([new Uint8Array(ab)], {type: type});
+    let blob = new Blob([new Uint8Array(ab)], {type: type});
     // If we got a PDF, we wrap it in a simple HTML page.  This lets us treat
     // both cases uniformly: either way we have an HTML page with an <iframe>
     // in it, which is handled by showPdfPage.
     if (type === 'application/pdf') {
       // canb and ca9 return PDFs and trigger this code path.
-      var html = '<style>body { margin: 0; } iframe { border: none; }' +
-                 '</style><iframe src="' + URL.createObjectURL(blob) +
-                 '" width="100%" height="100%"></iframe>';
+      let html = '<style>body { margin: 0; } iframe { border: none; }' +
+          '</style><iframe src="' + URL.createObjectURL(blob) +
+          '" width="100%" height="100%"></iframe>';
       this.showPdfPage(document.documentElement, html, previousPageHtml,
         document_number, attachment_number, docket_number);
     } else {
       // dcd (and presumably others) trigger this code path.
-      var reader = new FileReader();
+      let reader = new FileReader();
       reader.onload = function() {
           this.showPdfPage(
             document.documentElement, reader.result, previousPageHtml,
