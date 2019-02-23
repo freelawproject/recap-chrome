@@ -238,13 +238,16 @@ let PACER = {
         // xxx does not match style above.
         let match = url.match(/[?&]caseNum=([-\d]+)/);
         if (match) {
-          // Appellate. Actually this is a docket number. Uhoh? xxx
-          debug(3, "Found caseNum via: " + match[0]);
-          return match[1];
-        } else if (match) {
-          debug(3, "Found caseId via: " + match[0]);
-          // Also seen in appellate. Note upppercase 'I' and hyphens. Actual caseID. xxx
-          return match[1];
+		  // Appellate. Actually this is a docket number. Uhoh? xxx
+		  debug(3, "Found caseNum via: " + match[0]);
+		  return match[1];
+        } else {
+		  match = url.match(/[?&]caseId=([-\d]+)/);
+		  if (match) {
+			  debug(3, "Found caseId via: " + match[0]);
+			  // Also seen in appellate. Note upppercase 'I' and hyphens. Actual caseID. xxx
+			  return match[1];
+		  }
         }
       }
     }
