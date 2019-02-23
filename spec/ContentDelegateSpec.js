@@ -51,9 +51,9 @@ describe('The ContentDelegate class', function() {
     var expected_pacer_case_id = '531591';
     var expected_pacer_doc_id = '127015406472';
     var link_0 = document.createElement('a');
-    link_0.href = 'http://foo/bar/0'
+    link_0.href = 'http://foo/bar/0';
     var link_1 = document.createElement('a');
-    link_1.href = 'http://foo/bar/1'
+    link_1.href = 'http://foo/bar/1';
     var expected_links = [ link_0, link_1 ];
 
     var cd = new ContentDelegate(expected_url, expected_path, expected_court,
@@ -451,7 +451,7 @@ describe('The ContentDelegate class', function() {
       let table = document.createElement('table');
       let tr_image = document.createElement('tr');
       let td_image = document.createElement('td');
-      td_image.innerHTML = 'Image 1234-9876'
+      td_image.innerHTML = 'Image 1234-9876';
       tr_image.appendChild(td_image);
       table.appendChild(tr_image);
       document.body.appendChild(table);
@@ -668,7 +668,7 @@ describe('The ContentDelegate class', function() {
     var urls = [
       'https://ecf.canb.uscourts.gov/doc1/034031424909',
       'https://ecf.canb.uscourts.gov/doc1/034031438754',
-    ]
+    ];
 
     describe('when there are no valid urls', function() {
       var links;
