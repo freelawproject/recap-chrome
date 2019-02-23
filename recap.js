@@ -1,16 +1,16 @@
 // Abstraction of the RECAP server APIs.
 // Public impure functions.  (See utils.js for details on defining services.)
 function Recap() {
-  var DEBUG=false, // When true, don't publish what's sent to the archive.
-    SERVER_ROOT = 'https://www.courtlistener.com/api/rest/v3/',
-    UPLOAD_TYPES = {
-      'DOCKET': 1,
-      'ATTACHMENT_PAGE': 2,
-      'PDF': 3,
-      'DOCKET_HISTORY_REPORT': 4,
-      'APPELLATE_DOCKET': 5,
-      'APPELLATE_ATTACHMENT_PAGE': 6,
-    };
+  let DEBUG = false, // When true, don't publish what's sent to the archive.
+      SERVER_ROOT = 'https://www.courtlistener.com/api/rest/v3/',
+      UPLOAD_TYPES = {
+        'DOCKET': 1,
+        'ATTACHMENT_PAGE': 2,
+        'PDF': 3,
+        'DOCKET_HISTORY_REPORT': 4,
+        'APPELLATE_DOCKET': 5,
+        'APPELLATE_ATTACHMENT_PAGE': 6
+      };
 
   return {
     //Given a pacer_doc_id, return the pacer_case_id that it is associated with
