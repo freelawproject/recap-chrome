@@ -22,14 +22,14 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'assets/js/FileSaver.js',
-      'notifier.js',
-      'pacer.js',
-      'recap.js',
-      'toolbar_button.js',
-      'utils.js',
+      'src/assets/js/FileSaver.js',
+      'src/notifier.js',
+      'src/pacer.js',
+      'src/recap.js',
+      'src/toolbar_button.js',
+      'src/utils.js',
       'test/mock-utils.js',
-      'content_delegate.js',
+      'src/content_delegate.js',
       'spec/*Spec.js',
     ],
 
@@ -42,7 +42,7 @@ module.exports = function(config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      '**/*.js': 'coverage'
+      'src/**/*.js': 'coverage'
     },
 
 
