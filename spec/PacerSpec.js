@@ -70,6 +70,28 @@ describe('The PACER module', function() {
     it('returns null for patent nonsense', function() {
       expect(PACER.getCaseNumberFromUrls([nonsenseUrl])).toBeUndefined();
     });
+
+    const cmecfUrl = ('https://ecf.cmecf.uscourts.gov/cgi-bin/' +
+      'HistDocQry.pl?0');
+
+    it('returns caseNum', function() {
+      expect(PACER.getCaseNumberFromUrls([cmecfUrl])).toBeUndefined();
+    });
+
+    const caseNumUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/' +
+      'HistDocQry.pl?caseNum=44-29');
+
+    it('returns caseNum', function() {
+      expect(PACER.getCaseNumberFromUrls([caseNumUrl])).toBe('44-29');
+    });
+    // relies on the leading dash to test against /[?&]caseId=([-\d]+)/
+    // instead of /[?&]caseid=(\d+)/i
+    const caseIdUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/' +
+      'HistDocQry.pl?caseId=-6721');
+
+    it('returns caseNum', function() {
+      expect(PACER.getCaseNumberFromUrls([caseIdUrl])).toBe('-6721');
+    });
   });
 
   describe('isDocketDisplayUrl', function() {
@@ -99,6 +121,20 @@ describe('The PACER module', function() {
 
     it('returns false for patent nonsense', function() {
       expect(PACER.isDocketDisplayUrl(nonsenseUrl)).toBeUndefined();
+    });
+
+    const caseDefault = 'https://ecf.ca1.uscourts.gov/n/beam/servlet/TransportRoom?' +
+      'servlet=Nonsense.jsp';
+
+    it('returns false for other jsp pages', function() {
+      expect(PACER.isDocketDisplayUrl(caseDefault)).toBe(false);
+    });
+
+    const caseSearch = 'https://ecf.ca1.uscourts.gov/n/beam/servlet/TransportRoom?' +
+      'servlet=CaseSearch.jsp';
+
+    it('returns false for other jsp pages', function() {
+      expect(PACER.isDocketDisplayUrl(caseSearch)).toBe(false);
     });
   });
 
@@ -218,8 +254,8 @@ describe('The PACER module', function() {
 
   describe('parseGoDLSFunction', function(){
     var goDLSSampleString = "goDLS('/doc1/09518360046','153992','264','','','1','',''); " +
-	"return(false);"
-    
+	"return(false);";
+
     it("gets the right values for an example DLS string", function() {
       expect(PACER.parseGoDLSFunction(goDLSSampleString)).toEqual({
         hyperlink: '/doc1/09518360046',
@@ -254,7 +290,7 @@ describe('The PACER module', function() {
                              'PacerPref=receipt=Y');
     var nonLoggedInCookie = ('PacerSession=unvalidated; PacerPref=receipt=Y');
     var nonsenseCookie = ('Foo=barbaz; Baz=bazbar; Foobar=Foobar');
-    
+
     it('returns true for a valid logged in cookie', function() {
       expect(PACER.hasPacerCookie(loggedInCookie)).toBe(true);
     });
@@ -265,6 +301,10 @@ describe('The PACER module', function() {
 
     it('returns false for a non-logged in cookie', function() {
       expect(PACER.hasPacerCookie(nonLoggedInCookie)).toBe(false);
+    });
+
+    it('returns false for nonsense cookie', function() {
+      expect(PACER.hasPacerCookie(nonsenseCookie)).toBe(false);
     });
   });
 
