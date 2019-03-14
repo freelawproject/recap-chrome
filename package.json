@@ -20,12 +20,12 @@
   },
   "homepage": "https://github.com/freelawproject/recap-chrome#readme",
   "devDependencies": {
-    "jasmine": "^2.8.0",
-    "karma": "^2.0.2",
+    "jasmine": "^3.3.1",
+    "karma": "^4.0.1",
     "karma-chrome-launcher": "^2.2.0",
-    "karma-jasmine": "^1.1.2",
+    "karma-jasmine": "^2.0.1",
     "karma-jasmine-ajax": "^0.1.13",
-    "karma-jquery": "^0.2.2",
+    "karma-jquery": "^0.2.3",
     "karma-coverage": "^1.1.2"
   }
 }

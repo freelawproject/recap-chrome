@@ -65,7 +65,10 @@ module.exports = function(config) {
     logLevel: config.LOG_INFO,
 
     client: {
-      captureConsole: false
+      captureConsole: false,
+      jasmine: {
+        random: false // run tests in order written, once tests are refactored this should change
+      }
     },
 
 
