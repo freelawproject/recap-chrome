@@ -5,6 +5,22 @@ describe('The PACER module', function() {
   var singleDocUrl = 'https://ecf.canb.uscourts.gov/doc1/034031424909';
   var appellateDocumentUrl = 'https://ecf.ca2.uscourts.gov/docs1/00205695758';
 
+  function addInputContainer() {
+    var inputContainer = document.createElement('div');
+    inputContainer.id = 'input-cont';
+    document.body.appendChild(inputContainer);
+  }
+
+  function removeInputContainer() {
+    document.getElementById('input-cont').remove();
+  }
+
+  function appendInputWithValue(value) {
+    var input = document.createElement('input');
+    input.value = value;
+    document.getElementById('input-cont').appendChild(input);
+  }
+
   describe('getCourtFromUrl', function() {
     it('matches a valid docket query URL', function() {
       expect(PACER.getCourtFromUrl(docketQueryUrl)).toBe('canb');
@@ -16,6 +32,15 @@ describe('The PACER module', function() {
 
     it('ignores patent nonsense', function() {
       expect(PACER.getCourtFromUrl(nonsenseUrl)).toBe(null);
+    });
+  });
+
+  describe('convertToCourtListenerCourt', function () {
+    it('should convert properly', function () {
+      expect(PACER.convertToCourtListenerCourt('azb')).toBe('arb');
+    });
+    it('should not change if not needed', function () {
+      expect(PACER.convertToCourtListenerCourt('akb')).toBe('akb');
     });
   });
 
@@ -58,6 +83,178 @@ describe('The PACER module', function() {
     });
   });
 
+  describe('isDocketDisplayUrl', function() {
+    var docketDisplayUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?' +
+      '101092135737069-L_1_0-1');
+
+    it('matches a docket display URL', function() {
+      expect(PACER.isDocketDisplayUrl(docketDisplayUrl)).toBe(true);
+    });
+
+    var appellateDocketDisplayUrl = (
+      'https://ecf.ca1.uscourts.gov/n/beam/servlet/TransportRoom?' +
+      'servlet=CaseSummary.jsp&caseNum=16-1567&incOrigDkt=Y&incDktEntries=Y'
+    );
+
+    it('returns true for a valid appellate docket URL', function() {
+      expect(PACER.isDocketDisplayUrl(appellateDocketDisplayUrl)).toBe(true);
+    });
+
+    it('returns false for a docket query URL', function() {
+      expect(PACER.isDocketDisplayUrl(docketQueryUrl)).toBeUndefined();
+    });
+
+    it('returns false for a document URL', function() {
+      expect(PACER.isDocketDisplayUrl(singleDocUrl)).toBeUndefined();
+    });
+
+    it('returns false for patent nonsense', function() {
+      expect(PACER.isDocketDisplayUrl(nonsenseUrl)).toBeUndefined();
+    });
+
+    const caseDefault = 'https://ecf.ca1.uscourts.gov/n/beam/servlet/TransportRoom?' +
+      'servlet=Nonsense.jsp';
+
+    it('returns false for other jsp pages', function() {
+      expect(PACER.isDocketDisplayUrl(caseDefault)).toBe(false);
+    });
+
+    const caseSearch = 'https://ecf.ca1.uscourts.gov/n/beam/servlet/TransportRoom?' +
+      'servlet=CaseSearch.jsp';
+
+    it('returns false for other jsp pages', function() {
+      expect(PACER.isDocketDisplayUrl(caseSearch)).toBe(false);
+    });
+  });
+
+  describe('isDocketHistoryDisplayUrl', function() {
+    const historyUrl = 'https://ecf.ca1.uscourts.gov/HistDocQry.pl?fred-fred';
+    it('should recognize a history url', function () {
+      expect(PACER.isDocketHistoryDisplayUrl(historyUrl)).toBe(true);
+    });
+  });
+
+  describe('isAttachmentMenuPage', function() {
+    describe('for documents with a matching input', function() {
+      beforeEach(function() {
+        addInputContainer();
+        appendInputWithValue('Download All');
+      });
+
+      afterEach(function() {
+        removeInputContainer();
+      });
+
+      it('returns true when the URL is valid', function() {
+        expect(PACER.isAttachmentMenuPage(singleDocUrl, document)).toBe(true);
+      });
+
+      it('returns false when the URL is invalid', function() {
+        expect(
+          PACER.isAttachmentMenuPage(docketQueryUrl, document)).toBe(false);
+      });
+    });
+
+    describe('for documents which have non-matching inputs', function() {
+      beforeEach(function() {
+        addInputContainer();
+        appendInputWithValue('Download One');
+        appendInputWithValue('Download Some');
+      });
+
+      afterEach(function() {
+        removeInputContainer();
+      });
+
+      it('returns false with valid URL', function() {
+        expect(PACER.isAttachmentMenuPage(singleDocUrl, document)).toBe(false);
+      });
+    });
+
+    it('returns false with a valid URL and non-matching document', function() {
+      expect(PACER.isAttachmentMenuPage(singleDocUrl, document)).toBe(false);
+    });
+  });
+
+  describe('isSingleDocumentPage', function() {
+    describe('for documents with a matching input', function() {
+      beforeEach(function() {
+        addInputContainer();
+        appendInputWithValue('View Document');
+      });
+
+      afterEach(function() {
+        removeInputContainer();
+      });
+
+      it('returns true when the URL is valid', function() {
+        expect(PACER.isSingleDocumentPage(singleDocUrl, document)).toBe(true);
+      });
+
+      it('return false when the URL is invalid', function() {
+        expect(
+          PACER.isSingleDocumentPage(docketQueryUrl, document)).toBe(false);
+      });
+    });
+
+    describe('for documents which have non-matching inputs', function() {
+      beforeEach(function() {
+        addInputContainer();
+        appendInputWithValue('Download One');
+        appendInputWithValue('Download Some');
+      });
+
+      afterEach(function() {
+        removeInputContainer();
+      });
+
+      it('returns false with valid URL', function() {
+        expect(PACER.isSingleDocumentPage(singleDocUrl, document)).toBe(false);
+      });
+    });
+
+    it('returns false with a valid URL and non-matching document', function() {
+      expect(PACER.isAttachmentMenuPage(singleDocUrl, document)).toBe(false);
+    });
+  });
+
+  describe('getDocumentIdFromUrl', function() {
+    it('returns the correct document id for a valid URL', function() {
+      expect(PACER.getDocumentIdFromUrl(singleDocUrl)).toBe('034031424909');
+    });
+
+    it('returns the correct document id for a valid appellate URL', function() {
+      expect(PACER.getDocumentIdFromUrl(appellateDocumentUrl)).toBe('00205695758');
+    });
+
+    it('coerces the fourth digit to zero', function() {
+      let fourthSetUrl = singleDocUrl.replace('034031424909', '034131424909');
+      expect(PACER.getDocumentIdFromUrl(fourthSetUrl)).toBe('034031424909');
+    });
+  });
+
+  describe('getDocumentIdFronForm', function () {
+    const goDLS = "goDLS('/doc1/09518360046','153992','264','','','1','','');";
+
+    beforeEach(function() {
+      var body = document.getElementsByTagName('body')[0];
+      var form = document.createElement('form');
+      body.appendChild(form);
+      var input = document.createElement('input');
+      form.append(input);
+      form.setAttribute('onSubmit', goDLS);
+      input.value = 'View Document';
+    });
+
+    afterEach(function() {
+      document.getElementsByTagName('form')[0].remove();
+    });
+
+    it('should return document id', function () {
+      expect(PACER.getDocumentIdFromForm(appellateDocumentUrl, document)).toBe('09508360046');
+    });
+  });
+
   describe('getCaseNumberFromUrl', function() {
     it('returns the right case number for a docket query URL', function() {
       expect(PACER.getCaseNumberFromUrls([docketQueryUrl])).toBe('531316');
@@ -94,151 +291,31 @@ describe('The PACER module', function() {
     });
   });
 
-  describe('isDocketDisplayUrl', function() {
-    var docketDisplayUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?' +
-                            '101092135737069-L_1_0-1');
+  describe('getCaseNumberFromInputs', function() {
+    const goDLS = "goDLS('/doc1/09518360046','153992','264','','','1','','');";
+    let input = document.createElement('input');
 
-    it('matches a docket display URL', function() {
-      expect(PACER.isDocketDisplayUrl(docketDisplayUrl)).toBe(true);
+    beforeEach(function() {
+      var body = document.getElementsByTagName('body')[0];
+      var form = document.createElement('form');
+      body.appendChild(form);
+      form.append(input);
+      form.setAttribute('onSubmit', goDLS);
     });
 
-    var appellateDocketDisplayUrl = (
-      'https://ecf.ca1.uscourts.gov/n/beam/servlet/TransportRoom?' +
-	'servlet=CaseSummary.jsp&caseNum=16-1567&incOrigDkt=Y&incDktEntries=Y'
-    );
-
-    it('returns true for a valid appellate docket URL', function() {
-      expect(PACER.isDocketDisplayUrl(appellateDocketDisplayUrl)).toBe(true);
+    afterEach(function() {
+      document.getElementsByTagName('form')[0].remove();
     });
 
-    it('returns false for a docket query URL', function() {
-      expect(PACER.isDocketDisplayUrl(docketQueryUrl)).toBeUndefined();
+    it('should return a case number for Download All', function () {
+      input.value = 'Download All';
+      input.setAttribute('onClick', '&caseid=44127');
+      expect(PACER.getCaseNumberFromInputs(appellateDocumentUrl, document)).toBe('44127');
     });
 
-    it('returns false for a document URL', function() {
-      expect(PACER.isDocketDisplayUrl(singleDocUrl)).toBeUndefined();
-    });
-
-    it('returns false for patent nonsense', function() {
-      expect(PACER.isDocketDisplayUrl(nonsenseUrl)).toBeUndefined();
-    });
-
-    const caseDefault = 'https://ecf.ca1.uscourts.gov/n/beam/servlet/TransportRoom?' +
-      'servlet=Nonsense.jsp';
-
-    it('returns false for other jsp pages', function() {
-      expect(PACER.isDocketDisplayUrl(caseDefault)).toBe(false);
-    });
-
-    const caseSearch = 'https://ecf.ca1.uscourts.gov/n/beam/servlet/TransportRoom?' +
-      'servlet=CaseSearch.jsp';
-
-    it('returns false for other jsp pages', function() {
-      expect(PACER.isDocketDisplayUrl(caseSearch)).toBe(false);
-    });
-  });
-
-  var inputContainer = document.createElement('div');
-  inputContainer.id = 'input-cont';
-  document.body.appendChild(inputContainer);
-  function appendInputWithValue(value) {
-    var input = document.createElement('input');
-    input.value = value;
-    document.getElementById('input-cont').appendChild(input);
-  }
-
-  describe('isAttachmentMenuPage', function() {
-    describe('for documents with a matching input', function() {
-      beforeEach(function() {
-        appendInputWithValue('Download All');
-      });
-
-      afterEach(function() {
-        document.getElementById('input-cont').innerHTML = '';
-      });
-
-      it('returns true when the URL is valid', function() {
-        expect(PACER.isAttachmentMenuPage(singleDocUrl, document)).toBe(true);
-      });
-
-      it('returns false when the URL is invalid', function() {
-        expect(
-          PACER.isAttachmentMenuPage(docketQueryUrl, document)).toBe(false);
-      });
-    });
-
-    describe('for documents which have non-matching inputs', function() {
-      beforeEach(function() {
-        appendInputWithValue('Download One');
-        appendInputWithValue('Download Some');
-      });
-
-      afterEach(function() {
-        document.getElementById('input-cont').innerHTML = '';
-      });
-
-      it('returns false with valid URL', function() {
-        expect(PACER.isAttachmentMenuPage(singleDocUrl, document)).toBe(false);
-      });
-    });
-
-    it('returns false with a valid URL and non-matching document', function() {
-      expect(PACER.isAttachmentMenuPage(singleDocUrl, document)).toBe(false);
-    });
-  });
-
-  describe('isSingleDocumentPage', function() {
-    describe('for documents with a matching input', function() {
-      beforeEach(function() {
-        appendInputWithValue('View Document');
-      });
-
-      afterEach(function() {
-        document.getElementById('input-cont').innerHTML = '';
-      });
-
-      it('returns true when the URL is valid', function() {
-        expect(PACER.isSingleDocumentPage(singleDocUrl, document)).toBe(true);
-      });
-
-      it('return false when the URL is invalid', function() {
-        expect(
-          PACER.isSingleDocumentPage(docketQueryUrl, document)).toBe(false);
-      });
-    });
-
-    describe('for documents which have non-matching inputs', function() {
-      beforeEach(function() {
-        appendInputWithValue('Download One');
-        appendInputWithValue('Download Some');
-      });
-
-      afterEach(function() {
-        document.getElementById('input-cont').innerHTML = '';
-      });
-
-      it('returns false with valid URL', function() {
-        expect(PACER.isSingleDocumentPage(singleDocUrl, document)).toBe(false);
-      });
-    });
-
-    it('returns false with a valid URL and non-matching document', function() {
-      expect(PACER.isAttachmentMenuPage(singleDocUrl, document)).toBe(false);
-    });
-  });
-
-  describe('getDocumentIdFromUrl', function() {
-    it('returns the correct document id for a valid URL', function() {
-      expect(PACER.getDocumentIdFromUrl(singleDocUrl)).toBe('034031424909');
-    });
-
-    it('returns the correct document id for a valid appellate URL', function() {
-      expect(PACER.getDocumentIdFromUrl(appellateDocumentUrl)).toBe('00205695758');
-    });
-
-    it('coerces the fourth digit to zero', function() {
-      let fourthSetUrl = singleDocUrl.replace('034031424909', '034131424909');
-      expect(PACER.getDocumentIdFromUrl(fourthSetUrl)).toBe('034031424909');
+    it('should return a case number for View Document', function () {
+      input.value = 'View Document';
+      expect(PACER.getCaseNumberFromInputs(appellateDocumentUrl, document)).toBe('153992');
     });
   });
 
@@ -280,7 +357,6 @@ describe('The PACER module', function() {
     it("returns false for an undefined DLS input", function() {
       expect(PACER.parseGoDLSFunction(undefined)).toBe(null);
     });
-
   });
 
   describe('hasPacerCookie', function() {
