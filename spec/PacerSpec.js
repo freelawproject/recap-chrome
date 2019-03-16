@@ -188,7 +188,16 @@ describe('The PACER module', function() {
       });
 
       it('returns true when the URL is valid', function() {
+        let table = document.createElement('table');
+        let tr_image = document.createElement('tr');
+        let td_image = document.createElement('td');
+        td_image.innerHTML = 'Image 1234-9876';
+        tr_image.appendChild(td_image);
+        table.appendChild(tr_image);
+        document.body.appendChild(table);
+
         expect(PACER.isSingleDocumentPage(singleDocUrl, document)).toBe(true);
+        table.remove();
       });
 
       it('return false when the URL is invalid', function() {
@@ -237,9 +246,8 @@ describe('The PACER module', function() {
     const goDLS = "goDLS('/doc1/09518360046','153992','264','','','1','','');";
 
     beforeEach(function() {
-      var body = document.getElementsByTagName('body')[0];
       var form = document.createElement('form');
-      body.appendChild(form);
+      document.body.appendChild(form);
       var input = document.createElement('input');
       form.append(input);
       form.setAttribute('onSubmit', goDLS);

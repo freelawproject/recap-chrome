@@ -44,27 +44,74 @@ describe('The ContentDelegate class', function() {
     removeChromeSpy();
   });
 
-  it('gets created with necessary arguments', function() {
+  describe('ContentDelegate constructor', function() {
     var expected_url = 'https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?531591';
     var expected_path = '/cgi-bin/DktRpt.pl?531591';
     var expected_court = 'canb';
     var expected_pacer_case_id = '531591';
     var expected_pacer_doc_id = '127015406472';
     var link_0 = document.createElement('a');
-    link_0.href = 'http://foo/bar/0'
+    link_0.href = 'http://foo/bar/0';
     var link_1 = document.createElement('a');
-    link_1.href = 'http://foo/bar/1'
-    var expected_links = [ link_0, link_1 ];
+    link_1.href = 'http://foo/bar/1';
+    var expected_links = [link_0, link_1];
 
-    var cd = new ContentDelegate(expected_url, expected_path, expected_court,
-                                 expected_pacer_case_id, expected_pacer_doc_id,
-                                 expected_links);
-    expect(cd.url).toBe(expected_url);
-    expect(cd.path).toBe(expected_path);
-    expect(cd.court).toBe(expected_court);
-    expect(cd.pacer_case_id).toBe(expected_pacer_case_id);
-    expect(cd.pacer_doc_id).toBe(expected_pacer_doc_id);
-    expect(cd.links).toEqual(expected_links);
+    it('gets created with necessary arguments', function () {
+      var cd = new ContentDelegate(expected_url, expected_path, expected_court,
+        expected_pacer_case_id, expected_pacer_doc_id,
+        expected_links);
+      expect(cd.url).toBe(expected_url);
+      expect(cd.path).toBe(expected_path);
+      expect(cd.court).toBe(expected_court);
+      expect(cd.pacer_case_id).toBe(expected_pacer_case_id);
+      expect(cd.pacer_doc_id).toBe(expected_pacer_doc_id);
+      expect(cd.links).toEqual(expected_links);
+      expect(cd.restricted).toBe(false);
+    });
+
+    it('should flag restriction for Warning!', function () {
+      var form = document.createElement('form');
+      var input = document.createElement('input');
+      form.appendChild(input);
+      document.body.appendChild(form);
+
+      var table = document.createElement('table');
+      var table_tr = document.createElement('tr');
+      var table_td = document.createElement('td');
+      table.appendChild(table_tr);
+      table_tr.appendChild(table_td);
+      document.body.appendChild(table);
+      table_td.textContent = "Warning!";
+
+      expect(document.body.innerText).not.toContain('will not be uploaded');
+      var cd = new ContentDelegate(expected_url, expected_path, expected_court,
+        expected_pacer_case_id, expected_pacer_doc_id, expected_links);
+      expect(cd.restricted).toBe(true);
+      expect(document.body.innerText).toContain('will not be uploaded');
+      table.remove();
+      form.remove();
+    });
+
+    it('should flag restriction for bold restriction', function () {
+      var form = document.createElement('form');
+      var input = document.createElement('input');
+      form.appendChild(input);
+      document.body.appendChild(form);
+
+      var paragraph = document.createElement('p');
+      var bold = document.createElement('b');
+      paragraph.appendChild(bold);
+      document.body.appendChild(paragraph);
+      bold.textContent = "SEALED";
+
+      expect(document.body.innerText).not.toContain('will not be uploaded');
+      var cd = new ContentDelegate(expected_url, expected_path, expected_court,
+        expected_pacer_case_id, expected_pacer_doc_id, expected_links);
+      expect(cd.restricted).toBe(true);
+      expect(document.body.innerText).toContain('will not be uploaded');
+      paragraph.remove();
+      form.remove();
+    });
   });
 
   describe('handleDocketQueryUrl', function() {
@@ -74,7 +121,9 @@ describe('The ContentDelegate class', function() {
       document.body.appendChild(form);
     });
 
-    afterEach(function() { form.parentNode.removeChild(form); });
+    afterEach(function() {
+      form.remove();
+    });
 
     it('has no effect when not on a docket query url', function() {
       var cd = nonsenseUrlContentDelegate;
@@ -133,7 +182,9 @@ describe('The ContentDelegate class', function() {
       };
     });
 
-    afterEach(function() { delete window.chrome; });
+    afterEach(function() {
+      delete window.chrome;
+    });
 
     it('has no effect when not on a docket display url', function() {
       var cd = nonsenseUrlContentDelegate;
@@ -150,9 +201,13 @@ describe('The ContentDelegate class', function() {
     });
 
     describe('when the history state is already set', function() {
-      beforeEach(function() { history.replaceState({uploaded : true}, ''); });
+      beforeEach(function() {
+        history.replaceState({uploaded : true}, '');
+      });
 
-      afterEach(function() { history.replaceState({}, ''); });
+      afterEach(function() {
+        history.replaceState({}, '');
+      });
 
       it('has no effect', function() {
         var cd = docketDisplayContentDelegate;
@@ -205,7 +260,7 @@ describe('The ContentDelegate class', function() {
     });
 
     afterEach(function() {
-      form.parentNode.removeChild(form);
+      form.remove();
       delete window.chrome;
     });
 
@@ -232,8 +287,6 @@ describe('The ContentDelegate class', function() {
         input.value = 'Download All';
         form.appendChild(input);
       });
-
-      afterEach(function() { form.removeChild(input); });
 
       it('has no effect when the URL is wrong', function() {
         var cd = nonsenseUrlContentDelegate;
@@ -285,7 +338,9 @@ describe('The ContentDelegate class', function() {
       document.body.appendChild(form);
     });
 
-    afterEach(function() { form.parentNode.removeChild(form); });
+    afterEach(function() {
+      form.remove();
+    });
 
     describe('when there is NO appropriate form', function() {
       it('has no effect when the URL is wrong', function() {
@@ -305,6 +360,8 @@ describe('The ContentDelegate class', function() {
 
     describe('when there IS an appropriate form', function() {
       var input;
+      var table;
+
       beforeEach(function() {
         input = document.createElement('input');
         input.value = 'View Document';
@@ -320,8 +377,7 @@ describe('The ContentDelegate class', function() {
       });
 
       afterEach(function() {
-        form.removeChild(input);
-        form.innerHTML = '';
+        table.remove();
       });
 
       it('has no effect when the URL is wrong', function() {
@@ -339,9 +395,13 @@ describe('The ContentDelegate class', function() {
       });
 
       describe('for pacer doc id 531591', function() {
-        beforeEach(function() { window.pacer_doc_id = 531591; });
+        beforeEach(function() {
+          window.pacer_doc_id = 531591;
+        });
 
-        afterEach(function() { delete window.pacer_doc_id });
+        afterEach(function() {
+          delete window.pacer_doc_id
+        });
 
         it('responds to a positive result', function() {
           var fakePacerDocId = 531591;
@@ -377,7 +437,9 @@ describe('The ContentDelegate class', function() {
       document.body.appendChild(form);
     });
 
-    afterEach(function() { form.parentNode.removeChild(form); });
+    afterEach(function() {
+      form.parentNode.removeChild(form);
+    });
 
     describe('when there is NO appropriate form', function() {
       it('has no effect when the URL is wrong', function() {
@@ -397,6 +459,8 @@ describe('The ContentDelegate class', function() {
 
     describe('when there IS an appropriate form', function() {
       var input;
+      var table;
+
       beforeEach(function() {
         input = document.createElement('input');
         input.value = 'View Document';
@@ -412,8 +476,10 @@ describe('The ContentDelegate class', function() {
       });
 
       afterEach(function() {
-        form.removeChild(input);
-        form.innerHTML = '';
+        table.remove();
+        let scripts = document.body.getElementsByTagName('script');
+        let lastScript = scripts[scripts.length - 1];
+        lastScript.remove();
       });
 
       it('creates a non-empty script element', function() {
@@ -443,21 +509,25 @@ describe('The ContentDelegate class', function() {
     var form;
     var form_id = '1234';
     var event = {data : {id : form_id}};
+    var table;
 
     beforeEach(function() {
       form = document.createElement('form');
       form.id = form_id;
       document.body.appendChild(form);
-      let table = document.createElement('table');
+      table = document.createElement('table');
       let tr_image = document.createElement('tr');
       let td_image = document.createElement('td');
-      td_image.innerHTML = 'Image 1234-9876'
+      td_image.innerHTML = 'Image 1234-9876';
       tr_image.appendChild(td_image);
       table.appendChild(tr_image);
       document.body.appendChild(table);
     });
 
-    afterEach(function() { form.parentNode.removeChild(form); });
+    afterEach(function() {
+      form.remove();
+      table.remove();
+    });
 
     it('sets the onsubmit attribute of the page form', function() {
       var expected_on_submit = 'expectedOnSubmit();';
@@ -604,10 +674,16 @@ describe('The ContentDelegate class', function() {
     return links;
   }
 
-  // TODO: Add tests for findAndStorePacerDocIds
+  describe('findAndStorePacerDocIds', function() {
+    it('should handle no cookie', function () {
+      spyOn(PACER, 'hasPacerCookie').and.returnValue(false);
+      expect(nonsenseUrlContentDelegate.findAndStorePacerDocIds()).toBe(undefined);
+    });
+    // TODO: Add more tests for findAndStorePacerDocIds
+  });
 
   // TODO: Figure out where the functionality of
-  // 'addMouseoverToConvertibleLinks' went, and add tests for that.
+  //  'addMouseoverToConvertibleLinks' went, and add tests for that.
 
   describe('handleRecapLinkClick', function() {
     var cd = docketDisplayContentDelegate;
@@ -658,6 +734,8 @@ describe('The ContentDelegate class', function() {
           }
         });
         expect(foundLink).toBe(true);
+        document.getElementById('recap-shade').remove();
+        document.getElementsByClassName('recap-popup')[0].remove();
       });
     });
   });
@@ -668,7 +746,7 @@ describe('The ContentDelegate class', function() {
     var urls = [
       'https://ecf.canb.uscourts.gov/doc1/034031424909',
       'https://ecf.canb.uscourts.gov/doc1/034031438754',
-    ]
+    ];
 
     describe('when there are no valid urls', function() {
       var links;
@@ -694,6 +772,12 @@ describe('The ContentDelegate class', function() {
         cd.pacer_doc_ids = [ 1234 ];
       });
 
+      afterEach(function() {
+        for (let link of links) {
+          link.remove();
+        }
+      });
+
       it('does not attach any links if no urls have recap', function() {
         spyOn(cd.recap, 'getAvailabilityForDocuments')
             .and.callFake(function(_, _, callback) {
@@ -715,6 +799,7 @@ describe('The ContentDelegate class', function() {
             });
         cd.attachRecapLinkToEligibleDocs();
         expect($('.recap-inline').length).toBe(1);
+        document.getElementsByClassName('recap-inline')[0].remove();
       });
 
       it('attaches a working click handler', function() {
@@ -729,6 +814,7 @@ describe('The ContentDelegate class', function() {
         cd.attachRecapLinkToEligibleDocs();
         $(links[0]).next().click();
         expect(cd.handleRecapLinkClick).toHaveBeenCalled();
+        document.getElementsByClassName('recap-inline')[0].remove();
       });
     });
   });
