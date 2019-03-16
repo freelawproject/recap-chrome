@@ -225,7 +225,7 @@ describe('The ContentDelegate class', function() {
       const cd = docketDisplayContentDelegate;
       spyOn(cd.notifier, 'showUpload');
       spyOn(cd.recap, 'uploadDocket')
-          .and.callFake(function(_, _, _, _, cb) { cb(true); });
+          .and.callFake(function(pc, pci, h, ut, cb) { cb(true); });
       spyOn(history, 'replaceState');
 
       cd.handleDocketDisplayPage();
@@ -238,7 +238,7 @@ describe('The ContentDelegate class', function() {
       const cd = docketDisplayContentDelegate;
       spyOn(cd.notifier, 'showUpload');
       spyOn(cd.recap, 'uploadDocket')
-          .and.callFake(function(_, _, _, _, cb) { cb(false); });
+          .and.callFake(function(pc, pci, h, ut, cb) { cb(false); });
       spyOn(history, 'replaceState');
 
       cd.handleDocketDisplayPage();
@@ -308,7 +308,7 @@ describe('The ContentDelegate class', function() {
 
       it('calls the upload method and responds to positive result', function() {
         const cd = singleDocContentDelegate;
-        uploadFake = function(_, _, _, callback) { callback(true); };
+        const uploadFake = function(pc, pci, h, callback) { callback(true); };
         spyOn(cd.recap, 'uploadAttachmentMenu').and.callFake(uploadFake);
         spyOn(cd.notifier, 'showUpload');
         spyOn(history, 'replaceState');
@@ -322,7 +322,7 @@ describe('The ContentDelegate class', function() {
 
       it('calls the upload method and responds to negative result', function() {
         const cd = singleDocContentDelegate;
-        uploadFake = function(_, _, _, callback) { callback(false); };
+        const uploadFake = function(pc, pci, h, callback) { callback(false); };
         spyOn(cd.recap, 'uploadAttachmentMenu').and.callFake(uploadFake);
         spyOn(cd.notifier, 'showUpload');
         spyOn(history, 'replaceState');
@@ -412,7 +412,7 @@ describe('The ContentDelegate class', function() {
         it('responds to a positive result', function() {
           const fakePacerDocId = 531591;
           const cd = singleDocContentDelegate;
-          const fake = function (_, _, callback) {
+          const fake = function (pc, pci, callback) {
             const response = {
               results: [{
                 pacer_doc_id: fakePacerDocId,
@@ -613,7 +613,7 @@ describe('The ContentDelegate class', function() {
         const fakeGet = function (_, callback) {
           callback(casenum);
         };
-        const fakeUpload = function (_, _, _, _, _, _, callback) {
+        const fakeUpload = function (pc, pci, pdi, dn, an, b, callback) {
           callback(true);
         };
 
@@ -793,7 +793,7 @@ describe('The ContentDelegate class', function() {
 
       it('does not attach any links if no urls have recap', function() {
         spyOn(cd.recap, 'getAvailabilityForDocuments')
-            .and.callFake(function(_, _, callback) {
+            .and.callFake(function(pc, pci, callback) {
               callback({
                 results : [],
               });
@@ -804,7 +804,7 @@ describe('The ContentDelegate class', function() {
 
       it('attaches a single link to the one url with recap', function() {
         spyOn(cd.recap, 'getAvailabilityForDocuments')
-            .and.callFake(function(_, _, callback) {
+            .and.callFake(function(pc, pci, callback) {
               callback({
                 results :
                     [ {pacer_doc_id : 1234, filepath_local : 'download/1234'} ],
@@ -818,7 +818,7 @@ describe('The ContentDelegate class', function() {
       it('attaches a working click handler', function() {
         spyOn(cd, 'handleRecapLinkClick');
         spyOn(cd.recap, 'getAvailabilityForDocuments')
-            .and.callFake(function(_, _, callback) {
+            .and.callFake(function(pc, pci, callback) {
               callback({
                 results :
                     [ {pacer_doc_id : 1234, filepath_local : 'download/1234'} ],
