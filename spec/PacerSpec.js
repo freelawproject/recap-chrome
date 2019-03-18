@@ -1,12 +1,12 @@
 describe('The PACER module', function() {
-  var nonsenseUrl = 'http://something.uscourts.gov/foobar/baz';
-  var docketQueryUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/' +
-                           'HistDocQry.pl?531316');
-  var singleDocUrl = 'https://ecf.canb.uscourts.gov/doc1/034031424909';
-  var appellateDocumentUrl = 'https://ecf.ca2.uscourts.gov/docs1/00205695758';
+  const nonsenseUrl = 'http://something.uscourts.gov/foobar/baz';
+  const docketQueryUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/' +
+    'HistDocQry.pl?531316');
+  const singleDocUrl = 'https://ecf.canb.uscourts.gov/doc1/034031424909';
+  const appellateDocumentUrl = 'https://ecf.ca2.uscourts.gov/docs1/00205695758';
 
   function addInputContainer() {
-    var inputContainer = document.createElement('div');
+    const inputContainer = document.createElement('div');
     inputContainer.id = 'input-cont';
     document.body.appendChild(inputContainer);
   }
@@ -16,7 +16,7 @@ describe('The PACER module', function() {
   }
 
   function appendInputWithValue(value) {
-    var input = document.createElement('input');
+    const input = document.createElement('input');
     input.value = value;
     document.getElementById('input-cont').appendChild(input);
   }
@@ -53,8 +53,8 @@ describe('The PACER module', function() {
       expect(PACER.isDocumentUrl(appellateDocumentUrl)).toBe(true);
     });
 
-    var showDocUrl = ('https://ecf.cacd.uscourts.gov/cgi-bin/show_doc.pl?' +
-                      'caseid=560453&de_seq_num=24&dm_id=15521444&doc_num=7');
+    const showDocUrl = ('https://ecf.cacd.uscourts.gov/cgi-bin/show_doc.pl?' +
+      'caseid=560453&de_seq_num=24&dm_id=15521444&doc_num=7');
 
     it('matches a valid show_doc document URL', function() {
       expect(PACER.isDocumentUrl(showDocUrl)).toBe(true);
@@ -84,14 +84,14 @@ describe('The PACER module', function() {
   });
 
   describe('isDocketDisplayUrl', function() {
-    var docketDisplayUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?' +
+    const docketDisplayUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?' +
       '101092135737069-L_1_0-1');
 
     it('matches a docket display URL', function() {
       expect(PACER.isDocketDisplayUrl(docketDisplayUrl)).toBe(true);
     });
 
-    var appellateDocketDisplayUrl = (
+    const appellateDocketDisplayUrl = (
       'https://ecf.ca1.uscourts.gov/n/beam/servlet/TransportRoom?' +
       'servlet=CaseSummary.jsp&caseNum=16-1567&incOrigDkt=Y&incDktEntries=Y'
     );
@@ -188,7 +188,16 @@ describe('The PACER module', function() {
       });
 
       it('returns true when the URL is valid', function() {
+        let table = document.createElement('table');
+        let tr_image = document.createElement('tr');
+        let td_image = document.createElement('td');
+        td_image.innerHTML = 'Image 1234-9876';
+        tr_image.appendChild(td_image);
+        table.appendChild(tr_image);
+        document.body.appendChild(table);
+
         expect(PACER.isSingleDocumentPage(singleDocUrl, document)).toBe(true);
+        table.remove();
       });
 
       it('return false when the URL is invalid', function() {
@@ -237,10 +246,9 @@ describe('The PACER module', function() {
     const goDLS = "goDLS('/doc1/09518360046','153992','264','','','1','','');";
 
     beforeEach(function() {
-      var body = document.getElementsByTagName('body')[0];
-      var form = document.createElement('form');
-      body.appendChild(form);
-      var input = document.createElement('input');
+      const form = document.createElement('form');
+      document.body.appendChild(form);
+      const input = document.createElement('input');
       form.append(input);
       form.setAttribute('onSubmit', goDLS);
       input.value = 'View Document';
@@ -293,12 +301,11 @@ describe('The PACER module', function() {
 
   describe('getCaseNumberFromInputs', function() {
     const goDLS = "goDLS('/doc1/09518360046','153992','264','','','1','','');";
-    let input = document.createElement('input');
+    const input = document.createElement('input');
 
     beforeEach(function() {
-      var body = document.getElementsByTagName('body')[0];
-      var form = document.createElement('form');
-      body.appendChild(form);
+      const form = document.createElement('form');
+      document.body.appendChild(form);
       form.append(input);
       form.setAttribute('onSubmit', goDLS);
     });
@@ -330,8 +337,8 @@ describe('The PACER module', function() {
   });
 
   describe('parseGoDLSFunction', function(){
-    var goDLSSampleString = "goDLS('/doc1/09518360046','153992','264','','','1','',''); " +
-	"return(false);";
+    const goDLSSampleString = "goDLS('/doc1/09518360046','153992','264','','','1','',''); " +
+      "return(false);";
 
     it("gets the right values for an example DLS string", function() {
       expect(PACER.parseGoDLSFunction(goDLSSampleString)).toEqual({
@@ -360,12 +367,12 @@ describe('The PACER module', function() {
   });
 
   describe('hasPacerCookie', function() {
-    var loggedInCookie = ('PacerSession=B7yuvmcj2F...9p5nDzEXsHE; ' +
-                          'PacerPref=receipt=Y');
-    var altLoggedInCookie = ('PacerUser=B7yuvmcj2F...9p5nDzEXsHE; ' +
-                             'PacerPref=receipt=Y');
-    var nonLoggedInCookie = ('PacerSession=unvalidated; PacerPref=receipt=Y');
-    var nonsenseCookie = ('Foo=barbaz; Baz=bazbar; Foobar=Foobar');
+    const loggedInCookie = ('PacerSession=B7yuvmcj2F...9p5nDzEXsHE; ' +
+      'PacerPref=receipt=Y');
+    const altLoggedInCookie = ('PacerUser=B7yuvmcj2F...9p5nDzEXsHE; ' +
+      'PacerPref=receipt=Y');
+    const nonLoggedInCookie = ('PacerSession=unvalidated; PacerPref=receipt=Y');
+    const nonsenseCookie = ('Foo=barbaz; Baz=bazbar; Foobar=Foobar');
 
     it('returns true for a valid logged in cookie', function() {
       expect(PACER.hasPacerCookie(loggedInCookie)).toBe(true);

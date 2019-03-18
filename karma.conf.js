@@ -66,9 +66,6 @@ module.exports = function(config) {
 
     client: {
       captureConsole: false,
-      jasmine: {
-        random: false // run tests in order written, once tests are refactored this should change
-      }
     },
 
 
