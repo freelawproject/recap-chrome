@@ -121,6 +121,8 @@ let PACER = {
 
         default:
           debug(4, `Assuming servlet ${servlet} is not a docket.`);
+          return false;
+
         case 'CaseSearch.jsp':
         case 'ShowDoc':
         case 'ShowDocMulti':
@@ -217,6 +219,7 @@ let PACER = {
       let hostname = getHostname(url);
       // JS is trash. It lacks a way of getting the TLD, so we use endsWith.
       if (hostname.endsWith('uscourts.gov')) {
+        let match;
         for (let re of [
           // Appellate CMECF sends us some odd URLs, be aware:
           // https://ecf.mad.uscourts.gov/cgi-bin/DktRpt.pl?caseNumber=1:17-cv-11842-PBS&caseId=0
@@ -224,7 +227,7 @@ let PACER = {
           /[?&]caseid=(\d+)/i, // match on caseid GET param
           /\?(\d+)(?:&.*)?$/,  // match on DktRpt.pl?178502&blah urls
         ]){
-          let match = url.match(re);
+          match = url.match(re);
           if (match){
             debug(3, "Found caseid via: " + match[0]);
             if (match[1] === '0'){
@@ -235,15 +238,16 @@ let PACER = {
             return match[1];
           }
         }
-        // xxx does not match style above.
-        let match;
-        if (match = url.match(/[?&]caseNum=([-\d]+)/)) {
+        match = url.match(/[?&]caseNum=([-\d]+)/);
+        if (match) {
           // Appellate. Actually this is a docket number. Uhoh? xxx
           debug(3, "Found caseNum via: " + match[0]);
           return match[1];
-        } else if (match = url.match(/[?&]caseId=([-\d]+)/)) {
+        }
+        match = url.match(/[?&]caseId=([-\d]+)/);
+        if (match) {
           debug(3, "Found caseId via: " + match[0]);
-          // Also seen in appellate. Note upppercase 'I' and hyphens. Actual caseID. xxx
+          // Also seen in appellate. Note uppercase 'I' and hyphens. Actual caseID. xxx
           return match[1];
         }
       }
