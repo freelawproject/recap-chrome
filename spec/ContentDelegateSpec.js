@@ -5,6 +5,8 @@ describe('The ContentDelegate class', function() {
   const docketQueryPath = '/cgi-bin/DktRpt.pl?531591';
   const docketDisplayUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?' +
     '101092135737069-L_1_0-1');
+  const historyDocketDisplayUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/HistDocQry.pl?' +
+    '101092135737069-L_1_0-1');
   const docketDisplayPath = '/cgi-bin/DktRpt.pl?101092135737069-L_1_0-1';
   const singleDocUrl = 'https://ecf.canb.uscourts.gov/doc1/034031424909';
   const singleDocPath = '/doc1/034031424909';
@@ -21,6 +23,8 @@ describe('The ContentDelegate class', function() {
     docketQueryUrl, docketQueryPath, 'canb', '531591', []);
   const docketDisplayContentDelegate = new ContentDelegate(
     docketDisplayUrl, docketDisplayPath, 'canb', '531591', []);
+  const historyDocketDisplayContentDelegate = new ContentDelegate(
+    historyDocketDisplayUrl, docketDisplayPath, 'canb', '531591', []);
   const singleDocContentDelegate =
     new ContentDelegate(singleDocUrl, singleDocPath, 'canb', '531591', []);
 
@@ -200,45 +204,23 @@ describe('The ContentDelegate class', function() {
   });
 
   describe('handleDocketDisplayPage', function() {
-    beforeEach(function() {
-      window.chrome = {
-        storage : {
-          local : {
-            get : jasmine.createSpy().and.callFake(function(
-                _, cb) { cb({options : {}}); })
-          }
-        }
-      };
-    });
-
-    afterEach(function() {
-      delete window.chrome;
-    });
-
-    it('has no effect when not on a docket display url', function() {
-      const cd = nonsenseUrlContentDelegate;
-      spyOn(cd.recap, 'uploadDocket');
-      cd.handleDocketDisplayPage();
-      expect(cd.recap.uploadDocket).not.toHaveBeenCalled();
-    });
-
-    it('has no effect when there is no casenum', function() {
-      const cd = new ContentDelegate(docketDisplayUrl);
-      spyOn(cd.recap, 'uploadDocket');
-      cd.handleDocketDisplayPage();
-      expect(cd.recap.uploadDocket).not.toHaveBeenCalled();
-    });
-
-    describe('when the history state is already set', function() {
+    describe('option disabled', function() {
       beforeEach(function() {
-        history.replaceState({uploaded : true}, '');
+        window.chrome = {
+          storage : {
+            local : {
+              get : jasmine.createSpy().and.callFake(function(
+                _, cb) { cb({options : {recap_disabled: true}}); })
+            }
+          }
+        };
       });
 
       afterEach(function() {
-        history.replaceState({}, '');
+        delete window.chrome;
       });
 
-      it('has no effect', function() {
+      it('has no effect recap_disabled option is set', function() {
         const cd = docketDisplayContentDelegate;
         spyOn(cd.recap, 'uploadDocket');
         cd.handleDocketDisplayPage();
@@ -246,30 +228,91 @@ describe('The ContentDelegate class', function() {
       });
     });
 
-    it('calls uploadDocket and responds to a positive result', function() {
-      const cd = docketDisplayContentDelegate;
-      spyOn(cd.notifier, 'showUpload');
-      spyOn(cd.recap, 'uploadDocket')
+    describe('option enabled', function() {
+      beforeEach(function() {
+        window.chrome = {
+          storage : {
+            local : {
+              get : jasmine.createSpy().and.callFake(function(
+                  _, cb) { cb({options : {}}); })
+            }
+          }
+        };
+      });
+
+      afterEach(function() {
+        delete window.chrome;
+      });
+
+      it('has no effect when not on a docket display url', function() {
+        const cd = nonsenseUrlContentDelegate;
+        spyOn(cd.recap, 'uploadDocket');
+        cd.handleDocketDisplayPage();
+        expect(cd.recap.uploadDocket).not.toHaveBeenCalled();
+      });
+
+      it('has no effect when there is no casenum', function() {
+        const cd = new ContentDelegate(docketDisplayUrl);
+        spyOn(cd.recap, 'uploadDocket');
+        cd.handleDocketDisplayPage();
+        expect(cd.recap.uploadDocket).not.toHaveBeenCalled();
+      });
+
+      describe('when the history state is already set', function() {
+        beforeEach(function() {
+          history.replaceState({uploaded : true}, '');
+        });
+
+        afterEach(function() {
+          history.replaceState({}, '');
+        });
+
+        it('has no effect', function() {
+          const cd = docketDisplayContentDelegate;
+          spyOn(cd.recap, 'uploadDocket');
+          cd.handleDocketDisplayPage();
+          expect(cd.recap.uploadDocket).not.toHaveBeenCalled();
+        });
+      });
+
+      it('calls uploadDocket and responds to a positive result', function() {
+        const cd = docketDisplayContentDelegate;
+        spyOn(cd.notifier, 'showUpload');
+        spyOn(cd.recap, 'uploadDocket')
+            .and.callFake(function(pc, pci, h, ut, cb) { cb(true); });
+        spyOn(history, 'replaceState');
+
+        cd.handleDocketDisplayPage();
+        expect(cd.recap.uploadDocket).toHaveBeenCalled();
+        expect(cd.notifier.showUpload).toHaveBeenCalled();
+        expect(history.replaceState).toHaveBeenCalledWith({uploaded : true}, '');
+      });
+
+      it('calls uploadDocket and responds to a positive historical result', function() {
+        const cd = historyDocketDisplayContentDelegate;
+        spyOn(cd.notifier, 'showUpload');
+        spyOn(cd.recap, 'uploadDocket')
           .and.callFake(function(pc, pci, h, ut, cb) { cb(true); });
-      spyOn(history, 'replaceState');
+        spyOn(history, 'replaceState');
 
-      cd.handleDocketDisplayPage();
-      expect(cd.recap.uploadDocket).toHaveBeenCalled();
-      expect(cd.notifier.showUpload).toHaveBeenCalled();
-      expect(history.replaceState).toHaveBeenCalledWith({uploaded : true}, '');
-    });
+        cd.handleDocketDisplayPage();
+        expect(cd.recap.uploadDocket).toHaveBeenCalled();
+        expect(cd.notifier.showUpload).toHaveBeenCalled();
+        expect(history.replaceState).toHaveBeenCalledWith({uploaded : true}, '');
+      });
 
-    it('calls uploadDocket and responds to a negative result', function() {
-      const cd = docketDisplayContentDelegate;
-      spyOn(cd.notifier, 'showUpload');
-      spyOn(cd.recap, 'uploadDocket')
-          .and.callFake(function(pc, pci, h, ut, cb) { cb(false); });
-      spyOn(history, 'replaceState');
+      it('calls uploadDocket and responds to a negative result', function() {
+        const cd = docketDisplayContentDelegate;
+        spyOn(cd.notifier, 'showUpload');
+        spyOn(cd.recap, 'uploadDocket')
+            .and.callFake(function(pc, pci, h, ut, cb) { cb(false); });
+        spyOn(history, 'replaceState');
 
-      cd.handleDocketDisplayPage();
-      expect(cd.recap.uploadDocket).toHaveBeenCalled();
-      expect(cd.notifier.showUpload).not.toHaveBeenCalled();
-      expect(history.replaceState).not.toHaveBeenCalled();
+        cd.handleDocketDisplayPage();
+        expect(cd.recap.uploadDocket).toHaveBeenCalled();
+        expect(cd.notifier.showUpload).not.toHaveBeenCalled();
+        expect(history.replaceState).not.toHaveBeenCalled();
+      });
     });
   });
 
