@@ -834,7 +834,7 @@ describe('The ContentDelegate class', function() {
         test_links // links
       );
 
-      let documents;
+      let documents = {};
       spyOn(PACER, 'hasPacerCookie').and.returnValue(true);
       spyOn(PACER, 'parseGoDLSFunction').and.returnValue({'de_caseid': '1234'});
       const cd = docketQueryWithLinksContentDelegate;
@@ -861,7 +861,7 @@ describe('The ContentDelegate class', function() {
         'redfox', // pacer_doc_id
         test_links // links
       );
-      let documents;
+      let documents = {};
       spyOn(PACER, 'hasPacerCookie').and.returnValue(true);
       const cd = docketQueryWithLinksContentDelegate;
       chrome.storage.local.set = function (docs, cb) {
