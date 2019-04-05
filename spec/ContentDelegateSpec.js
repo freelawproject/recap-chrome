@@ -133,10 +133,33 @@ describe('The ContentDelegate class', function() {
 
     it('has no effect when not on a docket query url', function() {
       const cd = nonsenseUrlContentDelegate;
+      spyOn(PACER, 'hasPacerCookie');
+      spyOn(PACER, 'isDocketQueryUrl').and.returnValue(false);
+      cd.handleDocketQueryUrl();
+      expect(PACER.hasPacerCookie).not.toHaveBeenCalled();
+    });
+
+    it('checks for a Pacer cookie', function() {
+      // test is dependent on function order of operations, but does exercise all existing branches
+      const cd = nonsenseUrlContentDelegate;
       spyOn(cd.recap, 'getAvailabilityForDocket');
-      spyOn(PACER, 'hasPacerCookie').and.returnValue(true);
+      spyOn(PACER, 'hasPacerCookie').and.returnValue(false);
+      spyOn(PACER, 'isDocketQueryUrl').and.returnValue(true);
       cd.handleDocketQueryUrl();
       expect(cd.recap.getAvailabilityForDocket).not.toHaveBeenCalled();
+    });
+
+    it('handles zero results from getAvailabilityForDocket', function() {
+      const cd = docketQueryContentDelegate;
+      spyOn(PACER, 'hasPacerCookie').and.returnValue(true);
+      cd.handleDocketQueryUrl();
+      jasmine.Ajax.requests.mostRecent().respondWith({
+        'status' : 200,
+        'contentType' : 'application/json',
+        'responseText' :
+          ('{"count": 0, "results": []}')
+      });
+      expect(form.innerHTML).toBe('');
     });
 
     it('inserts the RECAP banner on an appropriate page', function() {
