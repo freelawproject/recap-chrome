@@ -10,6 +10,10 @@ describe('The ContentDelegate class', function() {
   const docketDisplayPath = '/cgi-bin/DktRpt.pl?101092135737069-L_1_0-1';
   const singleDocUrl = 'https://ecf.canb.uscourts.gov/doc1/034031424909';
   const singleDocPath = '/doc1/034031424909';
+
+  const appellateURL = ''; // Todo get good example value
+  const appellatePath = ''; // Todo get good example value
+
   const nonsenseUrl = 'http://something.uscourts.gov/foobar/baz';
   // Smallest possible PDF according to:
   // http://stackoverflow.com/questions/17279712/what-is-the-smallest-possible-valid-pdf
@@ -25,6 +29,8 @@ describe('The ContentDelegate class', function() {
     docketDisplayUrl, docketDisplayPath, 'canb', '531591', []);
   const historyDocketDisplayContentDelegate = new ContentDelegate(
     historyDocketDisplayUrl, docketDisplayPath, 'canb', '531591', []);
+  const appellateContentDelegate = new ContentDelegate(
+    appellateURL, appellatePath, 'ca9', '1919', []);
   const singleDocContentDelegate =
     new ContentDelegate(singleDocUrl, singleDocPath, 'canb', '531591', []);
 
@@ -676,6 +682,16 @@ describe('The ContentDelegate class', function() {
       table.remove();
     });
 
+    it('handles appellate check', function() {
+      const cd = appellateContentDelegate;
+      spyOn(console, 'log');
+      restore = DEBUGLEVEL;
+      DEBUGLEVEL = 4;
+      cd.onDocumentViewSubmit(event);
+      expect(console.log).toHaveBeenCalledWith('RECAP debug [4]: Appellate parsing not yet implemented');
+      DEBUGLEVEL = restore;
+    });
+
     it('sets the onsubmit attribute of the page form', function() {
       const expected_on_submit = 'expectedOnSubmit();';
       form.setAttribute('onsubmit', expected_on_submit);
@@ -735,6 +751,12 @@ describe('The ContentDelegate class', function() {
     beforeEach(function() {
       documentElement = jasmine.createSpy();
       cd.showPdfPage(documentElement, html, '');
+    });
+
+    it('handles no iframe', function() {
+      let inner = '<span>html</span>';
+      cd.showPdfPage(documentElement, pre + inner + post);
+      expect(documentElement.innerHTML).toBe(pre + inner + post);
     });
 
     it('correctly extracts the data before and after the iframe', function() {
