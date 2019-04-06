@@ -552,6 +552,24 @@ describe('The ContentDelegate class', function() {
           expect(link).not.toBeNull();
           expect(link.href).toBe('https://www.courtlistener.com/download/1234');
         });
+
+        it('responds to a negative result', function() {
+          const fakePacerDocId = 531591;
+          const cd = singleDocContentDelegate;
+          const fake = function (pc, pci, callback) {
+            const response = {
+              results: [{}]
+            };
+            callback(response);
+          };
+          spyOn(cd.recap, 'getAvailabilityForDocuments').and.callFake(fake);
+
+          cd.handleSingleDocumentPageCheck();
+
+          expect(cd.recap.getAvailabilityForDocuments).toHaveBeenCalled();
+          const banner = document.querySelector('.recap-banner');
+          expect(banner).toBeNull();
+        });
       });
     });
   });
