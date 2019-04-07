@@ -560,7 +560,6 @@ describe('The ContentDelegate class', function() {
         });
 
         it('responds to a negative result', function() {
-          const fakePacerDocId = 531591;
           const cd = singleDocContentDelegate;
           const fake = function (pc, pci, callback) {
             const response = {
