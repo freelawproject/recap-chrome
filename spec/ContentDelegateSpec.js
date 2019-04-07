@@ -1,4 +1,4 @@
-/*global jasmine */
+/*global jasmine, DEBUGLEVEL */
 
 describe('The ContentDelegate class', function() {
   const docketQueryUrl = 'https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?531591';
@@ -594,7 +594,7 @@ describe('The ContentDelegate class', function() {
       const cd = appellateContentDelegate;
       spyOn(console, 'log');
       spyOn(PACER, 'isSingleDocumentPage').and.returnValue(true);
-      restore = DEBUGLEVEL;
+      let restore = DEBUGLEVEL;
       DEBUGLEVEL = 4;
       cd.handleSingleDocumentPageView();
       expect(console.log).toHaveBeenCalledWith('RECAP debug [4]: No interposition for appellate downloads yet');
@@ -695,7 +695,7 @@ describe('The ContentDelegate class', function() {
     it('handles appellate check', function() {
       const cd = appellateContentDelegate;
       spyOn(console, 'log');
-      restore = DEBUGLEVEL;
+      let restore = DEBUGLEVEL;
       DEBUGLEVEL = 4;
       cd.onDocumentViewSubmit(event);
       expect(console.log).toHaveBeenCalledWith('RECAP debug [4]: Appellate parsing not yet implemented');
