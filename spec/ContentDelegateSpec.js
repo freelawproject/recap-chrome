@@ -1,13 +1,19 @@
-/*global jasmine */
+/*global jasmine, DEBUGLEVEL */
 
 describe('The ContentDelegate class', function() {
   const docketQueryUrl = 'https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?531591';
   const docketQueryPath = '/cgi-bin/DktRpt.pl?531591';
   const docketDisplayUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?' +
     '101092135737069-L_1_0-1');
+  const historyDocketDisplayUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/HistDocQry.pl?' +
+    '101092135737069-L_1_0-1');
   const docketDisplayPath = '/cgi-bin/DktRpt.pl?101092135737069-L_1_0-1';
   const singleDocUrl = 'https://ecf.canb.uscourts.gov/doc1/034031424909';
   const singleDocPath = '/doc1/034031424909';
+
+  const appellateURL = ''; // Todo get good example value
+  const appellatePath = ''; // Todo get good example value
+
   const nonsenseUrl = 'http://something.uscourts.gov/foobar/baz';
   // Smallest possible PDF according to:
   // http://stackoverflow.com/questions/17279712/what-is-the-smallest-possible-valid-pdf
@@ -15,10 +21,16 @@ describe('The ContentDelegate class', function() {
     '[<</MediaBox[0 0 3 3]>>]>>>>>>\n');
 
   const nonsenseUrlContentDelegate = new ContentDelegate(nonsenseUrl);
+  const noPacerDocIdContentDelegate = new ContentDelegate(
+    docketQueryUrl, docketQueryPath, 'canb', undefined, []);
   const docketQueryContentDelegate = new ContentDelegate(
     docketQueryUrl, docketQueryPath, 'canb', '531591', []);
   const docketDisplayContentDelegate = new ContentDelegate(
     docketDisplayUrl, docketDisplayPath, 'canb', '531591', []);
+  const historyDocketDisplayContentDelegate = new ContentDelegate(
+    historyDocketDisplayUrl, docketDisplayPath, 'canb', '531591', []);
+  const appellateContentDelegate = new ContentDelegate(
+    appellateURL, appellatePath, 'ca9', '1919', []);
   const singleDocContentDelegate =
     new ContentDelegate(singleDocUrl, singleDocPath, 'canb', '531591', []);
 
@@ -131,10 +143,33 @@ describe('The ContentDelegate class', function() {
 
     it('has no effect when not on a docket query url', function() {
       const cd = nonsenseUrlContentDelegate;
+      spyOn(PACER, 'hasPacerCookie');
+      spyOn(PACER, 'isDocketQueryUrl').and.returnValue(false);
+      cd.handleDocketQueryUrl();
+      expect(PACER.hasPacerCookie).not.toHaveBeenCalled();
+    });
+
+    it('checks for a Pacer cookie', function() {
+      // test is dependent on function order of operations, but does exercise all existing branches
+      const cd = nonsenseUrlContentDelegate;
       spyOn(cd.recap, 'getAvailabilityForDocket');
-      spyOn(PACER, 'hasPacerCookie').and.returnValue(true);
+      spyOn(PACER, 'hasPacerCookie').and.returnValue(false);
+      spyOn(PACER, 'isDocketQueryUrl').and.returnValue(true);
       cd.handleDocketQueryUrl();
       expect(cd.recap.getAvailabilityForDocket).not.toHaveBeenCalled();
+    });
+
+    it('handles zero results from getAvailabilityForDocket', function() {
+      const cd = docketQueryContentDelegate;
+      spyOn(PACER, 'hasPacerCookie').and.returnValue(true);
+      cd.handleDocketQueryUrl();
+      jasmine.Ajax.requests.mostRecent().respondWith({
+        'status' : 200,
+        'contentType' : 'application/json',
+        'responseText' :
+          ('{"count": 0, "results": []}')
+      });
+      expect(form.innerHTML).toBe('');
     });
 
     it('inserts the RECAP banner on an appropriate page', function() {
@@ -175,45 +210,23 @@ describe('The ContentDelegate class', function() {
   });
 
   describe('handleDocketDisplayPage', function() {
-    beforeEach(function() {
-      window.chrome = {
-        storage : {
-          local : {
-            get : jasmine.createSpy().and.callFake(function(
-                _, cb) { cb({options : {}}); })
-          }
-        }
-      };
-    });
-
-    afterEach(function() {
-      delete window.chrome;
-    });
-
-    it('has no effect when not on a docket display url', function() {
-      const cd = nonsenseUrlContentDelegate;
-      spyOn(cd.recap, 'uploadDocket');
-      cd.handleDocketDisplayPage();
-      expect(cd.recap.uploadDocket).not.toHaveBeenCalled();
-    });
-
-    it('has no effect when there is no casenum', function() {
-      const cd = new ContentDelegate(docketDisplayUrl);
-      spyOn(cd.recap, 'uploadDocket');
-      cd.handleDocketDisplayPage();
-      expect(cd.recap.uploadDocket).not.toHaveBeenCalled();
-    });
-
-    describe('when the history state is already set', function() {
+    describe('option disabled', function() {
       beforeEach(function() {
-        history.replaceState({uploaded : true}, '');
+        window.chrome = {
+          storage : {
+            local : {
+              get : jasmine.createSpy().and.callFake(function(
+                _, cb) { cb({options : {recap_disabled: true}}); })
+            }
+          }
+        };
       });
 
       afterEach(function() {
-        history.replaceState({}, '');
+        delete window.chrome;
       });
 
-      it('has no effect', function() {
+      it('has no effect recap_disabled option is set', function() {
         const cd = docketDisplayContentDelegate;
         spyOn(cd.recap, 'uploadDocket');
         cd.handleDocketDisplayPage();
@@ -221,116 +234,229 @@ describe('The ContentDelegate class', function() {
       });
     });
 
-    it('calls uploadDocket and responds to a positive result', function() {
-      const cd = docketDisplayContentDelegate;
-      spyOn(cd.notifier, 'showUpload');
-      spyOn(cd.recap, 'uploadDocket')
+    describe('option enabled', function() {
+      beforeEach(function() {
+        window.chrome = {
+          storage : {
+            local : {
+              get : jasmine.createSpy().and.callFake(function(
+                  _, cb) { cb({options : {}}); })
+            }
+          }
+        };
+      });
+
+      afterEach(function() {
+        delete window.chrome;
+      });
+
+      it('has no effect when not on a docket display url', function() {
+        const cd = nonsenseUrlContentDelegate;
+        spyOn(cd.recap, 'uploadDocket');
+        cd.handleDocketDisplayPage();
+        expect(cd.recap.uploadDocket).not.toHaveBeenCalled();
+      });
+
+      it('has no effect when there is no casenum', function() {
+        const cd = new ContentDelegate(docketDisplayUrl);
+        spyOn(cd.recap, 'uploadDocket');
+        cd.handleDocketDisplayPage();
+        expect(cd.recap.uploadDocket).not.toHaveBeenCalled();
+      });
+
+      describe('when the history state is already set', function() {
+        beforeEach(function() {
+          history.replaceState({uploaded : true}, '');
+        });
+
+        afterEach(function() {
+          history.replaceState({}, '');
+        });
+
+        it('has no effect', function() {
+          const cd = docketDisplayContentDelegate;
+          spyOn(cd.recap, 'uploadDocket');
+          cd.handleDocketDisplayPage();
+          expect(cd.recap.uploadDocket).not.toHaveBeenCalled();
+        });
+      });
+
+      it('calls uploadDocket and responds to a positive result', function() {
+        const cd = docketDisplayContentDelegate;
+        spyOn(cd.notifier, 'showUpload');
+        spyOn(cd.recap, 'uploadDocket')
+            .and.callFake(function(pc, pci, h, ut, cb) { cb(true); });
+        spyOn(history, 'replaceState');
+
+        cd.handleDocketDisplayPage();
+        expect(cd.recap.uploadDocket).toHaveBeenCalled();
+        expect(cd.notifier.showUpload).toHaveBeenCalled();
+        expect(history.replaceState).toHaveBeenCalledWith({uploaded : true}, '');
+      });
+
+      it('calls uploadDocket and responds to a positive historical result', function() {
+        const cd = historyDocketDisplayContentDelegate;
+        spyOn(cd.notifier, 'showUpload');
+        spyOn(cd.recap, 'uploadDocket')
           .and.callFake(function(pc, pci, h, ut, cb) { cb(true); });
-      spyOn(history, 'replaceState');
+        spyOn(history, 'replaceState');
 
-      cd.handleDocketDisplayPage();
-      expect(cd.recap.uploadDocket).toHaveBeenCalled();
-      expect(cd.notifier.showUpload).toHaveBeenCalled();
-      expect(history.replaceState).toHaveBeenCalledWith({uploaded : true}, '');
-    });
+        cd.handleDocketDisplayPage();
+        expect(cd.recap.uploadDocket).toHaveBeenCalled();
+        expect(cd.notifier.showUpload).toHaveBeenCalled();
+        expect(history.replaceState).toHaveBeenCalledWith({uploaded : true}, '');
+      });
 
-    it('calls uploadDocket and responds to a negative result', function() {
-      const cd = docketDisplayContentDelegate;
-      spyOn(cd.notifier, 'showUpload');
-      spyOn(cd.recap, 'uploadDocket')
-          .and.callFake(function(pc, pci, h, ut, cb) { cb(false); });
-      spyOn(history, 'replaceState');
+      it('calls uploadDocket and responds to a negative result', function() {
+        const cd = docketDisplayContentDelegate;
+        spyOn(cd.notifier, 'showUpload');
+        spyOn(cd.recap, 'uploadDocket')
+            .and.callFake(function(pc, pci, h, ut, cb) { cb(false); });
+        spyOn(history, 'replaceState');
 
-      cd.handleDocketDisplayPage();
-      expect(cd.recap.uploadDocket).toHaveBeenCalled();
-      expect(cd.notifier.showUpload).not.toHaveBeenCalled();
-      expect(history.replaceState).not.toHaveBeenCalled();
+        cd.handleDocketDisplayPage();
+        expect(cd.recap.uploadDocket).toHaveBeenCalled();
+        expect(cd.notifier.showUpload).not.toHaveBeenCalled();
+        expect(history.replaceState).not.toHaveBeenCalled();
+      });
     });
   });
 
   describe('handleAttachmentMenuPage', function() {
-    let form;
-    beforeEach(function() {
-      form = document.createElement('form');
-      document.body.appendChild(form);
-      window.chrome = {
-        storage : {
-          local : {
-            get : jasmine.createSpy().and.callFake(function(
-                _, cb) { cb({options : {}}); })
-          }
-        }
-      };
-    });
-
-    afterEach(function() {
-      form.remove();
-      delete window.chrome;
-    });
-
-    describe('when there is NO appropriate form', function() {
-      it('has no effect when the URL is wrong', function() {
-        const cd = nonsenseUrlContentDelegate;
-        spyOn(cd.recap, 'uploadAttachmentMenu');
-        cd.handleAttachmentMenuPage();
-        expect(cd.recap.uploadAttachmentMenu).not.toHaveBeenCalled();
-      });
-
-      it('has no effect with a proper URL', function() {
-        const cd = singleDocContentDelegate;
-        spyOn(cd.recap, 'uploadAttachmentMenu');
-        cd.handleAttachmentMenuPage();
-        expect(cd.recap.uploadAttachmentMenu).not.toHaveBeenCalled();
-      });
-    });
-
-    describe('when there IS an appropriate form', function() {
+    describe('option disabled', function() {
+      let form;
       let input;
+
       beforeEach(function() {
+        form = document.createElement('form');
+        document.body.appendChild(form);
+        window.chrome = {
+          storage : {
+            local : {
+              get : jasmine.createSpy().and.callFake(function(
+                _, cb) { cb({options : {recap_disabled: true}}); })
+            }
+          }
+        };
         input = document.createElement('input');
         input.value = 'Download All';
         form.appendChild(input);
       });
 
-      it('has no effect when the URL is wrong', function() {
-        const cd = nonsenseUrlContentDelegate;
+      afterEach(function() {
+        form.remove();
+        delete window.chrome;
+      });
+
+      it('has no effect recap_disabled option is set', function() {
+        const cd = singleDocContentDelegate;
         spyOn(cd.recap, 'uploadAttachmentMenu');
         cd.handleAttachmentMenuPage();
         expect(cd.recap.uploadAttachmentMenu).not.toHaveBeenCalled();
       });
+    });
 
-      it('uploads the page when the URL is right', function() {
-        const cd = singleDocContentDelegate;
-        spyOn(cd.recap, 'uploadAttachmentMenu');
-        cd.handleAttachmentMenuPage();
-        expect(cd.recap.uploadAttachmentMenu).toHaveBeenCalled();
+    describe('option enabled', function () {
+      let form;
+      beforeEach(function() {
+        form = document.createElement('form');
+        document.body.appendChild(form);
+        window.chrome = {
+          storage : {
+            local : {
+              get : jasmine.createSpy().and.callFake(function(
+                  _, cb) { cb({options : {}}); })
+            }
+          }
+        };
       });
 
-      it('calls the upload method and responds to positive result', function() {
-        const cd = singleDocContentDelegate;
-        const uploadFake = function(pc, pci, h, callback) { callback(true); };
-        spyOn(cd.recap, 'uploadAttachmentMenu').and.callFake(uploadFake);
-        spyOn(cd.notifier, 'showUpload');
-        spyOn(history, 'replaceState');
-
-        cd.handleAttachmentMenuPage();
-        expect(cd.recap.uploadAttachmentMenu).toHaveBeenCalled();
-        expect(cd.notifier.showUpload).toHaveBeenCalled();
-        expect(history.replaceState)
-            .toHaveBeenCalledWith({uploaded : true}, '');
+      afterEach(function() {
+        form.remove();
+        delete window.chrome;
       });
 
-      it('calls the upload method and responds to negative result', function() {
-        const cd = singleDocContentDelegate;
-        const uploadFake = function(pc, pci, h, callback) { callback(false); };
-        spyOn(cd.recap, 'uploadAttachmentMenu').and.callFake(uploadFake);
-        spyOn(cd.notifier, 'showUpload');
-        spyOn(history, 'replaceState');
+      describe('when the history state is already set', function() {
+        beforeEach(function() {
+          history.replaceState({uploaded : true}, '');
+        });
 
-        cd.handleAttachmentMenuPage();
-        expect(cd.recap.uploadAttachmentMenu).toHaveBeenCalled();
-        expect(cd.notifier.showUpload).not.toHaveBeenCalled();
-        expect(history.replaceState).not.toHaveBeenCalled();
+        afterEach(function() {
+          history.replaceState({}, '');
+        });
+
+        it('has no effect', function() {
+          const cd = docketDisplayContentDelegate;
+          spyOn(cd.recap, 'uploadAttachmentMenu');
+          cd.handleAttachmentMenuPage();
+          expect(cd.recap.uploadAttachmentMenu).not.toHaveBeenCalled();
+        });
+      });
+
+      describe('when there is NO appropriate form', function() {
+        it('has no effect when the URL is wrong', function() {
+          const cd = nonsenseUrlContentDelegate;
+          spyOn(cd.recap, 'uploadAttachmentMenu');
+          cd.handleAttachmentMenuPage();
+          expect(cd.recap.uploadAttachmentMenu).not.toHaveBeenCalled();
+        });
+
+        it('has no effect with a proper URL', function() {
+          const cd = singleDocContentDelegate;
+          spyOn(cd.recap, 'uploadAttachmentMenu');
+          cd.handleAttachmentMenuPage();
+          expect(cd.recap.uploadAttachmentMenu).not.toHaveBeenCalled();
+        });
+      });
+
+      describe('when there IS an appropriate form', function() {
+        let input;
+        beforeEach(function() {
+          input = document.createElement('input');
+          input.value = 'Download All';
+          form.appendChild(input);
+        });
+
+        it('has no effect when the URL is wrong', function() {
+          const cd = nonsenseUrlContentDelegate;
+          spyOn(cd.recap, 'uploadAttachmentMenu');
+          cd.handleAttachmentMenuPage();
+          expect(cd.recap.uploadAttachmentMenu).not.toHaveBeenCalled();
+        });
+
+        it('uploads the page when the URL is right', function() {
+          const cd = singleDocContentDelegate;
+          spyOn(cd.recap, 'uploadAttachmentMenu');
+          cd.handleAttachmentMenuPage();
+          expect(cd.recap.uploadAttachmentMenu).toHaveBeenCalled();
+        });
+
+        it('calls the upload method and responds to positive result', function() {
+          const cd = singleDocContentDelegate;
+          const uploadFake = function(pc, pci, h, callback) { callback(true); };
+          spyOn(cd.recap, 'uploadAttachmentMenu').and.callFake(uploadFake);
+          spyOn(cd.notifier, 'showUpload');
+          spyOn(history, 'replaceState');
+
+          cd.handleAttachmentMenuPage();
+          expect(cd.recap.uploadAttachmentMenu).toHaveBeenCalled();
+          expect(cd.notifier.showUpload).toHaveBeenCalled();
+          expect(history.replaceState)
+              .toHaveBeenCalledWith({uploaded : true}, '');
+        });
+
+        it('calls the upload method and responds to negative result', function() {
+          const cd = singleDocContentDelegate;
+          const uploadFake = function(pc, pci, h, callback) { callback(false); };
+          spyOn(cd.recap, 'uploadAttachmentMenu').and.callFake(uploadFake);
+          spyOn(cd.notifier, 'showUpload');
+          spyOn(history, 'replaceState');
+
+          cd.handleAttachmentMenuPage();
+          expect(cd.recap.uploadAttachmentMenu).toHaveBeenCalled();
+          expect(cd.notifier.showUpload).not.toHaveBeenCalled();
+          expect(history.replaceState).not.toHaveBeenCalled();
+        });
       });
     });
   });
@@ -432,6 +558,23 @@ describe('The ContentDelegate class', function() {
           expect(link).not.toBeNull();
           expect(link.href).toBe('https://www.courtlistener.com/download/1234');
         });
+
+        it('responds to a negative result', function() {
+          const cd = singleDocContentDelegate;
+          const fake = function (pc, pci, callback) {
+            const response = {
+              results: [{}]
+            };
+            callback(response);
+          };
+          spyOn(cd.recap, 'getAvailabilityForDocuments').and.callFake(fake);
+
+          cd.handleSingleDocumentPageCheck();
+
+          expect(cd.recap.getAvailabilityForDocuments).toHaveBeenCalled();
+          const banner = document.querySelector('.recap-banner');
+          expect(banner).toBeNull();
+        });
       });
     });
   });
@@ -445,6 +588,17 @@ describe('The ContentDelegate class', function() {
 
     afterEach(function() {
       form.remove();
+    });
+
+    it('handles appellate check', function() {
+      const cd = appellateContentDelegate;
+      spyOn(console, 'log');
+      spyOn(PACER, 'isSingleDocumentPage').and.returnValue(true);
+      let restore = DEBUGLEVEL;
+      DEBUGLEVEL = 4;
+      cd.handleSingleDocumentPageView();
+      expect(console.log).toHaveBeenCalledWith('RECAP debug [4]: No interposition for appellate downloads yet');
+      DEBUGLEVEL = restore;
     });
 
     describe('when there is NO appropriate form', function() {
@@ -538,6 +692,16 @@ describe('The ContentDelegate class', function() {
       table.remove();
     });
 
+    it('handles appellate check', function() {
+      const cd = appellateContentDelegate;
+      spyOn(console, 'log');
+      let restore = DEBUGLEVEL;
+      DEBUGLEVEL = 4;
+      cd.onDocumentViewSubmit(event);
+      expect(console.log).toHaveBeenCalledWith('RECAP debug [4]: Appellate parsing not yet implemented');
+      DEBUGLEVEL = restore;
+    });
+
     it('sets the onsubmit attribute of the page form', function() {
       const expected_on_submit = 'expectedOnSubmit();';
       form.setAttribute('onsubmit', expected_on_submit);
@@ -597,6 +761,12 @@ describe('The ContentDelegate class', function() {
     beforeEach(function() {
       documentElement = jasmine.createSpy();
       cd.showPdfPage(documentElement, html, '');
+    });
+
+    it('handles no iframe', function() {
+      let inner = '<span>html</span>';
+      cd.showPdfPage(documentElement, pre + inner + post);
+      expect(documentElement.innerHTML).toBe(pre + inner + post);
     });
 
     it('correctly extracts the data before and after the iframe', function() {
@@ -687,7 +857,74 @@ describe('The ContentDelegate class', function() {
       spyOn(PACER, 'hasPacerCookie').and.returnValue(false);
       expect(nonsenseUrlContentDelegate.findAndStorePacerDocIds()).toBe(undefined);
     });
-    // TODO: Add more tests for findAndStorePacerDocIds
+    it('should handle pages without case ids', function() {
+      const cd = noPacerDocIdContentDelegate;
+      spyOn(PACER, 'hasPacerCookie').and.returnValue(true);
+      spyOn(cd.recap, 'getPacerCaseIdFromPacerDocId');
+      chrome.storage.local.set = function (docs, cb) {
+        cb();
+      };
+      cd.findAndStorePacerDocIds();
+      expect(cd.recap.getPacerCaseIdFromPacerDocId).toHaveBeenCalled();
+    });
+    it('should iterate links for DLS', function() {
+      const link_2 = document.createElement('a');
+      link_2.href = 'https://ecf.canb.uscourts.gov/notacase/034031424909';
+      const link_3 = document.createElement('a');
+      link_3.href = 'https://ecf.canb.uscourts.gov/doc1/034031424910';
+      const link_4 = document.createElement('a');
+      link_4.href = 'https://ecf.canb.uscourts.gov/doc1/034031424911';
+      const test_links = [link_2, link_3, link_4];
+      const docketQueryWithLinksContentDelegate = new ContentDelegate(
+        docketQueryUrl, // url
+        docketQueryPath, // path
+        'canb', // court
+        null, // pacer_case_id
+        null, // pacer_doc_id
+        test_links // links
+      );
+
+      let documents = {};
+      spyOn(PACER, 'hasPacerCookie').and.returnValue(true);
+      spyOn(PACER, 'parseGoDLSFunction').and.returnValue({'de_caseid': '1234'});
+      const cd = docketQueryWithLinksContentDelegate;
+      chrome.storage.local.set = function (docs, cb) {
+        documents = docs;
+        cb();
+      };
+      cd.findAndStorePacerDocIds();
+      expect(documents).toEqual({"034031424910": "1234", "034031424911": "1234"});
+    });
+    it('should iterate links for PACER case id', function() {
+      const link_2 = document.createElement('a');
+      link_2.href = 'https://ecf.canb.uscourts.gov/notacase/034031424909';
+      const link_3 = document.createElement('a');
+      link_3.href = 'https://ecf.canb.uscourts.gov/doc1/034031424910';
+      const link_4 = document.createElement('a');
+      link_4.href = 'https://ecf.canb.uscourts.gov/doc1/034031424911';
+      const test_links = [link_2, link_3, link_4];
+      const docketQueryWithLinksContentDelegate = new ContentDelegate(
+        docketQueryUrl, // url
+        docketQueryPath, // path
+        'canb', // court
+        '123456', // pacer_case_id
+        'redfox', // pacer_doc_id
+        test_links // links
+      );
+      let documents = {};
+      spyOn(PACER, 'hasPacerCookie').and.returnValue(true);
+      const cd = docketQueryWithLinksContentDelegate;
+      chrome.storage.local.set = function (docs, cb) {
+        documents = docs;
+        cb();
+      };
+      cd.findAndStorePacerDocIds();
+      expect(documents).toEqual({
+        "redfox": "123456",
+        "034031424910": "123456",
+        "034031424911": "123456"
+      });
+    });
   });
 
   // TODO: Figure out where the functionality of
