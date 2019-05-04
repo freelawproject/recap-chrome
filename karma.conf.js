@@ -5,7 +5,7 @@ module.exports = function(config) {
   config.set({
 
     // base path that will be used to resolve all patterns (eg. files, exclude)
-    basePath: '',
+    basePath: 'src/',
 
 
     plugins: [
@@ -22,15 +22,15 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'src/assets/js/FileSaver.js',
-      'src/notifier.js',
-      'src/pacer.js',
-      'src/recap.js',
-      'src/toolbar_button.js',
-      'src/utils.js',
-      'test/mock-utils.js',
-      'src/content_delegate.js',
-      'spec/*Spec.js',
+      'assets/js/FileSaver.js',
+      'notifier.js',
+      'pacer.js',
+      'recap.js',
+      'toolbar_button.js',
+      'utils.js',
+      '../test/mock-utils.js',
+      'content_delegate.js',
+      '../spec/*Spec.js',
     ],
 
 
@@ -42,7 +42,7 @@ module.exports = function(config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      'src/**/*.js': 'coverage'
+      '**/*.js': 'coverage'
     },
 
 
