@@ -12,16 +12,18 @@ module.exports = function(config) {
       'karma-jasmine',
       'karma-jasmine-ajax',
       'karma-chrome-launcher',
+      'karma-firefox-launcher',
       'karma-jquery',
       'karma-coverage'
     ],
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ['jasmine-ajax', 'jasmine', 'jquery-3.2.1'],
+    frameworks: ['jasmine-ajax', 'jasmine'],
 
     // list of files / patterns to load in the browser
     files: [
+      'assets/js/jquery.js',
       'assets/js/FileSaver.js',
       'notifier.js',
       'pacer.js',
@@ -75,7 +77,7 @@ module.exports = function(config) {
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['Chrome'],
+    browsers: ['Chrome', 'Firefox', 'Chrome_CI'],
 
     customLaunchers: {
       Chrome_CI: {
