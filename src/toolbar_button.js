@@ -59,12 +59,6 @@ function updateToolbarButton(tab) {
           '19': 'assets/images/grey-19.png',
           '38': 'assets/images/grey-38.png'
         });
-      } else if (PACER.isAppellateCourt(court)) {
-        // Appellate court. Show warning.
-        setTitleIcon('Appellate courts are not supported', {
-          '19': 'assets/images/warning-19.png',
-          '38': 'assets/images/warning-38.png'
-        });
       } else {
         // It's a valid PACER URL. Therefore either show the nice blue icon or
         // show the blue icon with a warning, if receipts are disabled.
