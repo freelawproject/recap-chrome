@@ -651,16 +651,6 @@ describe('The ContentDelegate class', function() {
       table.remove();
     });
 
-    it('handles appellate check', function() {
-      const cd = appellateContentDelegate;
-      spyOn(console, 'log');
-      let restore = DEBUGLEVEL;
-      DEBUGLEVEL = 4;
-      cd.onDocumentViewSubmit(event);
-      expect(console.log).toHaveBeenCalledWith('RECAP debug [4]: Appellate parsing not yet implemented');
-      DEBUGLEVEL = restore;
-    });
-
     it('sets the onsubmit attribute of the page form', function() {
       const expected_on_submit = 'expectedOnSubmit();';
       form.setAttribute('onsubmit', expected_on_submit);
