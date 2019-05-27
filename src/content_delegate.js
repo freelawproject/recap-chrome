@@ -484,11 +484,6 @@ ContentDelegate.prototype.showPdfPage = function(
 // view page.  The "View Document" button calls the goDLS() function, which
 // creates a <form> element and calls submit() on it, so we hook into submit().
 ContentDelegate.prototype.handleSingleDocumentPageView = function() {
-  if (PACER.isAppellateCourt(this.court)) {
-    debug(4,"No interposition for appellate downloads yet");
-    return;
-  }
-
   // Monkey-patch the <form> prototype so that its submit() method sends a
   // message to this content script instead of submitting the form.  To do this
   // in the page context instead of this script's, we inject a <script> element.
