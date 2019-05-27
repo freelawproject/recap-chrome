@@ -317,7 +317,7 @@ let PACER = {
 
   // Returns true if the given court identifier is for an appellate court.
   isAppellateCourt: function (court) {
-    return !!PACER.APPELLATE_COURTS[court];
+    return PACER.APPELLATE_COURTS.includes(court);
   },
 
   // These are all the supported PACER court identifiers, together with their
@@ -337,10 +337,29 @@ let PACER = {
     'arwd': 'W.D.Ark.',
     'azb': 'Bankr.D.Ariz.',
     'azd': 'D.Ariz.',
+
+    'ca1': 'need abbreviation',
+    'ca2': 'need abbreviation',
+    'ca3': 'need abbreviation',
+    'ca4': 'need abbreviation',
+    'ca5': 'need abbreviation',
+    'ca6': 'need abbreviation',
+    'ca7': 'need abbreviation',
+    'ca8': 'need abbreviation',
+    'ca9': 'need abbreviation',
+    'ca10': 'need abbreviation',
+    'ca11': 'need abbreviation',
+
     'cacb': 'Bankr.C.D.Cal.',
     'cacd': 'C.D.Cal.',
+
+    'cadc': 'need abbreviation',
+
     'caeb': 'Bankr.E.D.Cal.',
     'caed': 'E.D.Cal.',
+
+    'cafc': 'need abbreviation',
+
     'canb': 'Bankr.N.D.Cal.',
     'cand': 'N.D.Cal.',
     'casb': 'Bankr.S.D.Cal.',
@@ -516,19 +535,5 @@ let PACER = {
   },
 
   // PACER court identifiers for appellate courts.
-  APPELLATE_COURTS: {
-    'ca1': 1,
-    'ca2': 1,
-    'ca3': 1,
-    'ca4': 1,
-    'ca5': 1,
-    'ca6': 1,
-    'ca7': 1,
-    'ca8': 1,
-    'ca9': 1,
-    'ca10': 1,
-    'ca11': 1,
-    'cadc': 1,
-    'cafc': 1
-  }
+  APPELLATE_COURTS: ['ca1', 'ca2', 'ca3', 'ca4', 'ca5', 'ca6', 'ca7', 'ca8', 'ca9', 'ca10', 'ca11', 'cadc', 'cafc']
 };
