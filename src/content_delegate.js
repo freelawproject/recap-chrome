@@ -330,7 +330,16 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
     attachment_number = matches[2];
     docket_number = $.trim($('tr:contains(Case Number) td:nth(1)').text());
   } else { // Appellate
-    debug(4,"Appellate parsing not yet implemented");
+    // url is like https://ecf.ca9.uscourts.gov/n/beam/servlet/TransportRoom?servlet=ShowDoc&pacer=i&dls_id=009030932429
+    // form has "Search Criteria:" look for "Case: 19-55529, Document: 10"
+    let document_number_regex = new RegExp('dls_id=(\d+)');
+    let receipt_search_criteria = $.trim($('td:contains(Search Critera) td:nth(1)').text());
+    let attachment_number_regex = new RegExp('Document: (\d+)$');
+    let docket_number_regex = new RegExp('Case: (\d-),');
+
+    document_number = document_number_regex.match(this.url)[0];
+    attachment_number = attachment_number_regex.match(receipt_search_criteria)[0];
+    docket_number = docket_number_regex.match(receipt_search_criteria)[0];
   }
 
   // Now do the form request to get to the view page.  Some PACER sites will
