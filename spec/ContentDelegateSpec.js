@@ -472,22 +472,6 @@ describe('The ContentDelegate class', function() {
       form.remove();
     });
 
-    describe('when there is NO appropriate form', function() {
-      it('has no effect when the URL is wrong', function() {
-        const cd = nonsenseUrlContentDelegate;
-        spyOn(cd.recap, 'getAvailabilityForDocuments');
-        cd.handleSingleDocumentPageCheck();
-        expect(cd.recap.getAvailabilityForDocuments).not.toHaveBeenCalled();
-      });
-
-      it('has no effect with a proper URL', function() {
-        const cd = singleDocContentDelegate;
-        spyOn(cd.recap, 'getAvailabilityForDocuments');
-        cd.handleSingleDocumentPageCheck();
-        expect(cd.recap.getAvailabilityForDocuments).not.toHaveBeenCalled();
-      });
-    });
-
     describe('when there IS an appropriate form', function() {
       let input;
       let table;
@@ -510,13 +494,6 @@ describe('The ContentDelegate class', function() {
         // no need to remove input because it is added to
         // the form and removed in the outer scope
         table.remove();
-      });
-
-      it('has no effect when the URL is wrong', function() {
-        const cd = nonsenseUrlContentDelegate;
-        spyOn(cd.recap, 'getAvailabilityForDocuments');
-        cd.handleSingleDocumentPageCheck();
-        expect(cd.recap.getAvailabilityForDocuments).not.toHaveBeenCalled();
       });
 
       it('checks availability for the page when the URL is right', function() {
@@ -602,13 +579,6 @@ describe('The ContentDelegate class', function() {
     });
 
     describe('when there is NO appropriate form', function() {
-      it('has no effect when the URL is wrong', function() {
-        const cd = nonsenseUrlContentDelegate;
-        spyOn(document, 'createElement');
-        cd.handleSingleDocumentPageView();
-        expect(document.createElement).not.toHaveBeenCalled();
-      });
-
       it('has no effect with a proper URL', function() {
         const cd = singleDocContentDelegate;
         spyOn(cd.recap, 'getAvailabilityForDocuments');
