@@ -275,10 +275,6 @@ ContentDelegate.prototype.handleAttachmentMenuPage = function() {
 
 // If this page offers a single document, ask RECAP whether it has the document.
 ContentDelegate.prototype.handleSingleDocumentPageCheck = function() {
-  if (!PACER.isSingleDocumentPage(this.url, document)) {
-    return;
-  }
-
   let callback = $.proxy(function (api_results) {
     console.info(`RECAP: Got results from API. Running callback on API results to ` +
                  `insert link`);
@@ -488,10 +484,6 @@ ContentDelegate.prototype.showPdfPage = function(
 // view page.  The "View Document" button calls the goDLS() function, which
 // creates a <form> element and calls submit() on it, so we hook into submit().
 ContentDelegate.prototype.handleSingleDocumentPageView = function() {
-  if (!PACER.isSingleDocumentPage(this.url, document)) {
-    return;
-  }
-
   if (PACER.isAppellateCourt(this.court)) {
     debug(4,"No interposition for appellate downloads yet");
     return;

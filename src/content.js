@@ -26,13 +26,15 @@ if (PACER.hasPacerCookie(document.cookie)) {
   // RECAP.
   content_delegate.handleAttachmentMenuPage();
 
-  // If this page offers a single document, ask RECAP whether it has the document.
-  content_delegate.handleSingleDocumentPageCheck();
+  if (PACER.isSingleDocumentPage(url, document)) {
+    // If this page offers a single document, ask RECAP whether it has the document.
+    content_delegate.handleSingleDocumentPageCheck();
 
-  // If this page offers a single document, intercept navigation to the document
-  // view page.  The "View Document" button calls the goDLS() function, which
-  // creates a <form> element and calls submit() on it, so we hook into submit().
-  content_delegate.handleSingleDocumentPageView();
+    // If this page offers a single document, intercept navigation to the document
+    // view page.  The "View Document" button calls the goDLS() function, which
+    // creates a <form> element and calls submit() on it, so we hook into submit().
+    content_delegate.handleSingleDocumentPageView();
+  }
 
   // Check every link in the document to see if there is a free RECAP document
   // available. If there is, put a link with a RECAP icon.
