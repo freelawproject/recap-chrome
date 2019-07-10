@@ -330,12 +330,13 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
     attachment_number = matches[2];
     docket_number = $.trim($('tr:contains(Case Number) td:nth(1)').text());
   } else { // Appellate
-    // url is like https://ecf.ca9.uscourts.gov/n/beam/servlet/TransportRoom?servlet=ShowDoc/009030932429&caseid=19-55529
+    // url is like https://ecf.ca9.uscourts.gov/n/beam/servlet/TransportRoom?servlet=ShowDoc&pacer=i&dls_id=009030932429 pacer version 1.2
+    // url is like https://ecf.ca9.uscourts.gov/n/beam/servlet/TransportRoom?servlet=ShowDoc/009030932429&caseid=19-55529 pacer version 1.3
     // form has "Search Criteria:" look for "Case: 19-55529, Document: 10"
-    let document_number_regex = /ShowDoc\/(\d+)/;
+    let document_number_regex = /(?:ShowDoc\/|dls_id=)(\d+)/;
     let receipt_search_criteria = $.trim($('th font:contains(Search Criteria)').parent().next('td').text());
-    let attachment_number_regex = /Document: (\d+)$/;
-    let docket_number_regex = /Case: (\d+),/;
+    let attachment_number_regex = /Document: (\d+)/;
+    let docket_number_regex = /Case: ([-\d]+),/;
 
     let document_number_matches = document_number_regex.exec(this.url);
     let attachment_number_matches = attachment_number_regex.exec(receipt_search_criteria);
