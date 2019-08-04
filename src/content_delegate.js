@@ -352,7 +352,7 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
     // in it, which is handled by showPdfPage.
     if (type === 'application/pdf') {
       // canb and ca9 return PDFs and trigger this code path.
-      var html = '<style>body { margin: 0; } iframe { border: none; }' +
+      let html = '<style>body { margin: 0; } iframe { border: none; }' +
                  '</style><iframe src="' + URL.createObjectURL(blob) +
                  '" width="100%" height="100%"></iframe>';
       this.showPdfPage(document.documentElement, html, previousPageHtml,
@@ -366,15 +366,15 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
           // this was first display by the Northern District of Georgia
           // https://github.com/freelawproject/recap/issues/277
           const redirectResult = Array.from(html.matchAll(/(?:window\.location\s=\s")(.*)(?:\")/g));
-          if(redirectResult && redirectResult.length>0) {
-            let url = redirectResult[0][1];
+          if (redirectResult.length > 0) {
+            const url = redirectResult[0][1];
             html = '<style>body { margin: 0; } iframe { border: none; }' +
-                 '</style><iframe src="' + url +
-                 '" width="100%" height="100%"></iframe>';
+                   '</style><iframe src="' + url +
+                   '" width="100%" height="100%"></iframe>';
           }
           this.showPdfPage(
-              document.documentElement, html, previousPageHtml,
-              document_number, attachment_number, docket_number);
+            document.documentElement, html, previousPageHtml,
+            document_number, attachment_number, docket_number);
       }.bind(this);
       reader.readAsText(blob);  // convert blob to HTML text
     }
