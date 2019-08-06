@@ -23,7 +23,7 @@ function getTabById(tabId, cb){
 function updateToolbarButton(tab) {
   // Updates the toolbar button for a tab to reflect the tab's login status.
   let setTitleIcon = function (title, icon) {
-    chrome.browserAction.setTitle({title: 'RECAP: ' + title});
+    chrome.browserAction.setTitle({title: `RECAP: ${title}`});
     chrome.browserAction.setIcon({path: icon});
   };
 

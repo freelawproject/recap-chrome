@@ -178,7 +178,7 @@ let PACER = {
                      hasImageReceipt &&
                      (lastInput === 'View Document') ||
                      (lastInput === 'Accept Charges and Retrieve'));
-    debug(4," lastInput "+lastInput);
+    debug(4,` lastInput ${lastInput}`);
     return !!pageCheck;
   },
 
@@ -189,7 +189,7 @@ let PACER = {
       // PACER sites use the fourth digit of the pacer_doc_id to flag whether
       // the user has been shown a receipt page.  We don't care about that, so
       // we always set the fourth digit to 0 when getting a doc ID.
-      return match[1].slice(0, 3) + '0' + match[1].slice(4);
+      return `${match[1].slice(0, 3)}0${match[1].slice(4)}`;
     }
   },
 
@@ -229,7 +229,7 @@ let PACER = {
         ]){
           match = url.match(re);
           if (match){
-            debug(3, "Found caseid via: " + match[0]);
+            debug(3, `Found caseid via: ${match[0]}`);
             if (match[1] === '0'){
               // Appellate CMECF calls District CMECF with caseId=0 when it doesn't
               // know the caseid. Ignore that special case here.
@@ -241,12 +241,12 @@ let PACER = {
         match = url.match(/[?&]caseNum=([-\d]+)/);
         if (match) {
           // Appellate. Actually this is a docket number. Uhoh? xxx
-          debug(3, "Found caseNum via: " + match[0]);
+          debug(3, `Found caseNum via: ${match[0]}`);
           return match[1];
         }
         match = url.match(/[?&]caseId=([-\d]+)/);
         if (match) {
-          debug(3, "Found caseId via: " + match[0]);
+          debug(3, `Found caseId via: ${match[0]}`);
           // Also seen in appellate. Note uppercase 'I' and hyphens. Actual caseID. xxx
           return match[1];
         }

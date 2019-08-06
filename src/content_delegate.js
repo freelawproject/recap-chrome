@@ -119,7 +119,7 @@ ContentDelegate.prototype.findAndStorePacerDocIds = function() {
 
   // Try getting a mapping from a pacer_doc_id in the URL to a
   if (this.pacer_doc_id && page_pacer_case_id) {
-    debug(3, 'Z doc ' + this.pacer_doc_id + ' to ' + page_pacer_case_id);
+    debug(3, `Z doc ${this.pacer_doc_id} to ${page_pacer_case_id}`);
     docsToCases[this.pacer_doc_id] = page_pacer_case_id;
   }
 
@@ -135,17 +135,16 @@ ContentDelegate.prototype.findAndStorePacerDocIds = function() {
 
       if (goDLS && goDLS.de_caseid) {
         docsToCases[pacer_doc_id] = goDLS.de_caseid;
-        debug(3, 'Y doc ' + pacer_doc_id + ' to ' + goDLS.de_caseid);
+        debug(3, `Y doc ${pacer_doc_id} to ${goDLS.de_caseid}`);
       } else if (page_pacer_case_id) {
         docsToCases[pacer_doc_id] = page_pacer_case_id;
-        debug(3,'X doc ' + pacer_doc_id + ' to '
-              + page_pacer_case_id);
+        debug(3,`X doc ${pacer_doc_id} to ${page_pacer_case_id}`);
       }
     }
   }
   chrome.storage.local.set(docsToCases, function(){
     console.info(`RECAP: Saved the pacer_doc_id to pacer_case_id mappings to local ` +
-                 `storage: ` + Object.keys(docsToCases).length);
+                 `storage: ${Object.keys(docsToCases).length}`);
   });
 };
 
@@ -177,7 +176,7 @@ ContentDelegate.prototype.handleDocketQueryUrl = function() {
       $('<a/>', {
         title: 'Docket is available for free in the RECAP Archive.',
         target: '_blank',
-        href: "https://www.courtlistener.com" + first_result.absolute_url
+        href: `https://www.courtlistener.com${first_result.absolute_url}`
       }).append(
         $('<img/>', {src: chrome.extension.getURL('assets/images/icon-16.png')})
       ).append(
@@ -236,7 +235,7 @@ ContentDelegate.prototype.handleDocketDisplayPage = function() {
           callback);
       }
     } else {
-      console.info(`RECAP: Not uploading docket. RECAP is disabled.`)
+      console.info(`RECAP: Not uploading docket. RECAP is disabled.`);
     }
   }.bind(this));
 };
@@ -268,7 +267,7 @@ ContentDelegate.prototype.handleAttachmentMenuPage = function() {
       this.recap.uploadAttachmentMenu(this.court, this.pacer_case_id,
         document.documentElement.innerHTML, callback);
     } else {
-      console.info("RECAP: Not uploading attachment menu. RECAP is disabled.")
+      console.info("RECAP: Not uploading attachment menu. RECAP is disabled.");
     }
   }.bind(this));
 };
@@ -289,7 +288,7 @@ ContentDelegate.prototype.handleSingleDocumentPageCheck = function() {
       return;
     }
 
-    let href = "https://www.courtlistener.com/" + result.filepath_local;
+    let href = `https://www.courtlistener.com/${result.filepath_local}`;
     // Insert a RECAP download link at the bottom of the form.
     $('<div class="recap-banner"/>').append(
       $('<a/>', {
@@ -344,22 +343,20 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
   $('body').css('cursor', 'wait');
   let data = new FormData(form);
   httpRequest(form.action, data, function (type, ab, xhr) {
-    console.info('RECAP: Successfully submitted RECAP "View" button form: ' +
-		 xhr.statusText);
-    var blob = new Blob([new Uint8Array(ab)], {type: type});
+    console.info(`RECAP: Successfully submitted RECAP "View" button form: ${xhr.statusText}`);
+    const blob = new Blob([new Uint8Array(ab)], {type: type});
     // If we got a PDF, we wrap it in a simple HTML page.  This lets us treat
     // both cases uniformly: either way we have an HTML page with an <iframe>
     // in it, which is handled by showPdfPage.
     if (type === 'application/pdf') {
       // canb and ca9 return PDFs and trigger this code path.
-      let html = '<style>body { margin: 0; } iframe { border: none; }' +
-                 '</style><iframe src="' + URL.createObjectURL(blob) +
-                 '" width="100%" height="100%"></iframe>';
+      const html = `<style>body { margin: 0; } iframe { border: none; }</style>
+                  <iframe src="${URL.createObjectURL(blob)}" width="100%" height="100%"></iframe>`;
       this.showPdfPage(document.documentElement, html, previousPageHtml,
         document_number, attachment_number, docket_number);
     } else {
       // dcd (and presumably others) trigger this code path.
-      var reader = new FileReader();
+      const reader = new FileReader();
       reader.onload = function() {
           let html=reader.result;
           // check if we have an HTML page which redirects the user to the PDF
@@ -368,9 +365,8 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
           const redirectResult = Array.from(html.matchAll(/window\.location\s*=\s*["']([^"']+)["'];?/g));
           if (redirectResult.length > 0) {
             const url = redirectResult[0][1];
-            html = '<style>body { margin: 0; } iframe { border: none; }' +
-                   '</style><iframe src="' + url +
-                   '" width="100%" height="100%"></iframe>';
+            html = `<style>body { margin: 0; } iframe { border: none; }</style>
+                    <iframe src="${url}" width="100%" height="100%"></iframe>`;
           }
           this.showPdfPage(
             document.documentElement, html, previousPageHtml,
@@ -398,15 +394,11 @@ ContentDelegate.prototype.showPdfPage = function(
   }
 
   // Show the page with a blank <iframe> while waiting for the download.
-  documentElement.innerHTML =
-    match[1] +
-    '<p>Waiting for download...<p><iframe src="about:blank"' +
-    match[3];
+  documentElement.innerHTML = `${match[1]}<p>Waiting for download...<p><iframe src="about:blank"${match[3]}`;
 
   // Download the file from the <iframe> URL.
   httpRequest(match[2], null, function (type, ab, xhr) {
-    console.info(
-      "RECAP: Successfully got PDF as arraybuffer via ajax request.");
+    console.info("RECAP: Successfully got PDF as arraybuffer via ajax request.");
 
     // Make the Back button redisplay the previous page.
     window.onpopstate = function(event) {
@@ -424,14 +416,25 @@ ContentDelegate.prototype.showPdfPage = function(
       this.pacer_doc_id, function(pacer_case_id){
         console.info(`RECAP: Stored pacer_case_id is ${pacer_case_id}`);
         let displayPDF = function (items) {
-          let filename;
+          let filename, pieces;
           if (items.options.ia_style_filenames) {
-            filename = 'gov.uscourts.' + this.court + '.' +
-              (pacer_case_id || 'unknown-case-id') + '.' +
-              document_number + '.' + (attachment_number || '0') + '.pdf';
+            pieces = [
+              'gov',
+              'uscourts',
+              this.court,
+              (pacer_case_id || 'unknown-case-id'),
+              document_number,
+              (attachment_number || '0')
+            ];
+            filename = `${pieces.join('.')}.pdf`;
           } else if (items.options.lawyer_style_filenames) {
-            filename = PACER.COURT_ABBREVS[this.court] + '_' + docket_number +
-              '_' + document_number + '_' + (attachment_number || '0') + '.pdf';
+            pieces = [
+              PACER.COURT_ABBREVS[this.court],
+              docket_number,
+              document_number,
+              (attachment_number || '0')
+            ];
+            filename = `${pieces.join('_')}.pdf`;
           }
 
           let external_pdf = items.options.external_pdf;
@@ -443,21 +446,18 @@ ContentDelegate.prototype.showPdfPage = function(
           }
           if (!external_pdf) {
             let blobUrl = URL.createObjectURL(blob);
-            let downloadLink = '<div id="recap-download" class="initial">' +
-                '<a href="' + blobUrl + '" download="' + filename + '">' +
-                'Save as ' + filename + '</a></div>';
-            html = match[1] + downloadLink + '<iframe onload="' +
-              'setTimeout(function() {' +
-              "  document.getElementById('recap-download').className = '';" +
-              '}, 7500)" src="' + blobUrl + '"' + match[3];
+            let downloadLink = `<div id="recap-download" class="initial">
+                                  <a href="${blobUrl}" download="${filename}">Save as ${filename}</a>
+                                </div>`;
+            html = `${match[1]}${downloadLink}<iframe onload="setTimeout(function() {
+                      document.getElementById('recap-download').className = '';
+                    }, 7500)" src="${blobUrl}"${match[3]}`;
             documentElement.innerHTML = html;
             history.pushState({content: html}, '');
           } else {
             // Saving to an external PDF.
             saveAs(blob, filename);
-	    documentElement.innerHTML = match[1] +
-	      '<p><iframe src="about:blank"'
-	      + match[3];  // Clear "Waiting..." message
+	          documentElement.innerHTML = `${match[1]}<p><iframe src="about:blank"${match[3]}`; // Clear "Waiting..." message
           }
         }.bind(this);
 
@@ -587,7 +587,7 @@ ContentDelegate.prototype.attachRecapLinkToEligibleDocs = function() {
       if (!result){
         continue;
       }
-      let href = "https://www.courtlistener.com/" + result.filepath_local;
+      let href = `https://www.courtlistener.com/${result.filepath_local}`;
       let recap_link = $('<a/>', {
         'class': 'recap-inline',
         'title': 'Available for free from the RECAP Archive.',

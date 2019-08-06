@@ -1,7 +1,7 @@
 // Abstraction of the RECAP server APIs.
 // Public impure functions.  (See utils.js for details on defining services.)
 function Recap() {
-  var DEBUG=false, // When true, don't publish what's sent to the archive.
+  const DEBUG=false, // When true, don't publish what's sent to the archive.
     SERVER_ROOT = 'https://www.courtlistener.com/api/rest/v3/',
     UPLOAD_TYPES = {
       'DOCKET': 1,
@@ -29,7 +29,7 @@ function Recap() {
       console.info(`RECAP: Getting availability of docket ${pacer_case_id} at ` +
                    `${pacer_court}`);
       $.ajax({
-          url: SERVER_ROOT + 'dockets/',
+          url: `${SERVER_ROOT}dockets/`,
           data: {
             pacer_case_id: pacer_case_id,
             // Ensure RECAP is a source so we don't get back IDB-only dockets.
@@ -58,7 +58,7 @@ function Recap() {
       let cl_court = PACER.convertToCourtListenerCourt(pacer_court);
       if (cl_court) {
         $.ajax({
-            url: SERVER_ROOT + 'recap-query/',
+            url: `${SERVER_ROOT}recap-query/`,
             data: {
               pacer_doc_id__in: pacer_doc_ids.join(','),
               docket_entry__docket__court: cl_court
@@ -87,7 +87,7 @@ function Recap() {
       formData.append('filepath_local', new Blob([html], {type: 'text/plain'}));
       formData.append('debug', DEBUG);
       $.ajax({
-        url: SERVER_ROOT + 'recap/',
+        url: `${SERVER_ROOT}recap/`,
         method: 'POST',
         processData: false,
         contentType: false,
@@ -117,7 +117,7 @@ function Recap() {
       formData.append('filepath_local', new Blob([html], {type: 'text/html'}));
       formData.append('debug', DEBUG);
       $.ajax({
-        url: SERVER_ROOT + 'recap/',
+        url: `${SERVER_ROOT}recap/`,
         method: 'POST',
         processData: false,
         contentType: false,
@@ -155,7 +155,7 @@ function Recap() {
       formData.append('upload_type', UPLOAD_TYPES['PDF']);
       formData.append('debug', DEBUG);
       $.ajax({
-        url: SERVER_ROOT + 'recap/',
+        url: `${SERVER_ROOT}recap/`,
         method: 'POST',
         processData: false,
         contentType: false,
