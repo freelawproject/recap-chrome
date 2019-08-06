@@ -77,7 +77,7 @@ When a new version is needed, the release process is:
 1. Make sure you don't have any working/testing code in your tree that could get zipped up in the next step.
 1. Zip up the archive with the rather archaic:
 
-        zip -FSr recap.zip src/* --exclude=*node_modules*
+        zip -FSr recap.zip *
 
 1. Upload that to the [Chrome Market][market].
 1. Upload that to addons.mozilla.org

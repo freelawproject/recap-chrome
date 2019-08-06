@@ -2,6 +2,6 @@
 .grunt
 node_modules
 coverage
-/recap.zip
+/src/recap.zip
 /recap-chrome.iml
 /.idea/
