@@ -32,6 +32,21 @@
     "karma-jasmine": "^2.0.1",
     "karma-jasmine-ajax": "^0.1.13",
     "karma-jquery": "^0.2.3",
-    "karma-coverage": "^1.1.2"
-  }
+    "karma-coverage": "^1.1.2",
+    "vendor-copy": "^2.0.0"
+  },
+  "vendorCopy": [
+    {
+      "from": "node_modules/jquery/dist/jquery.js",
+      "to": "src/assets/js/jquery.js"
+    },
+    {
+      "from": "node_modules/file-saver/FileSaver.js",
+      "to": "src/assets/js/FileSaver.js"
+    },
+    {
+      "from": "node_modules/moment/moment.js",
+      "to": "src/assets/js/moment.js"
+    }
+  ]
 }
