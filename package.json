@@ -42,7 +42,7 @@
       "to": "src/assets/js/jquery.js"
     },
     {
-      "from": "node_modules/file-saver/FileSaver.js",
+      "from": "node_modules/file-saver/src/FileSaver.js",
       "to": "src/assets/js/FileSaver.js"
     },
     {
