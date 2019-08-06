@@ -48,6 +48,12 @@ ContentDelegate.prototype.checkRestrictions = function() {
   // "document is restricted", "SEALED", or "do not allow it to be seen".
   // Case-insensitively.
 
+  // The regexes below are pretty broad by design.
+  // Only trigger this code on doc1 pages.
+  if (!PACER.isSingleDocumentPage(this.url, document)) {
+    return false;
+  }
+
   let restrictedDoc = false;
 
   for (let td of

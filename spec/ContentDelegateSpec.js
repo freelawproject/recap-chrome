@@ -62,6 +62,7 @@ describe('The ContentDelegate class', function() {
 
   describe('ContentDelegate constructor', function() {
     const expected_url = 'https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?531591';
+    const restricted_url = 'https://ecf.canb.uscourts.gov/doc1/04503837920';
     const expected_path = '/cgi-bin/DktRpt.pl?531591';
     const expected_court = 'canb';
     const expected_pacer_case_id = '531591';
@@ -88,6 +89,7 @@ describe('The ContentDelegate class', function() {
     it('should flag restriction for Warning!', function () {
       const form = document.createElement('form');
       const input = document.createElement('input');
+      input.value = 'View Document';
       form.appendChild(input);
       document.body.appendChild(form);
 
@@ -97,10 +99,10 @@ describe('The ContentDelegate class', function() {
       table.appendChild(table_tr);
       table_tr.appendChild(table_td);
       document.body.appendChild(table);
-      table_td.textContent = "Warning!";
+      table_td.textContent = "Warning! Image";
 
       expect(document.body.innerText).not.toContain('will not be uploaded');
-      const cd = new ContentDelegate(expected_url, expected_path, expected_court,
+      const cd = new ContentDelegate(restricted_url, expected_path, expected_court,
         expected_pacer_case_id, expected_pacer_doc_id, expected_links);
       expect(cd.restricted).toBe(true);
       expect(document.body.innerText).toContain('will not be uploaded');
@@ -111,8 +113,13 @@ describe('The ContentDelegate class', function() {
     it('should flag restriction for bold restriction', function () {
       const form = document.createElement('form');
       const input = document.createElement('input');
+      input.value = 'View Document';
       form.appendChild(input);
       document.body.appendChild(form);
+
+      const table_td = document.createElement('td');
+      document.body.appendChild(table_td);
+      table_td.textContent = "Image";
 
       const paragraph = document.createElement('p');
       const bold = document.createElement('b');
@@ -121,7 +128,7 @@ describe('The ContentDelegate class', function() {
       bold.textContent = "SEALED";
 
       expect(document.body.innerText).not.toContain('will not be uploaded');
-      const cd = new ContentDelegate(expected_url, expected_path, expected_court,
+      const cd = new ContentDelegate(restricted_url, expected_path, expected_court,
         expected_pacer_case_id, expected_pacer_doc_id, expected_links);
       expect(cd.restricted).toBe(true);
       expect(document.body.innerText).toContain('will not be uploaded');
@@ -997,13 +1004,14 @@ describe('The ContentDelegate class', function() {
       'https://ecf.canb.uscourts.gov/doc1/034031424909',
       'https://ecf.canb.uscourts.gov/doc1/034031438754',
     ];
+    const expected_url = 'https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?531591';
 
     describe('when there are no valid urls', function() {
       let links;
       let cd;
       beforeEach(function() {
         links = linksFromUrls(fake_urls);
-        cd = new ContentDelegate(null, null, null, null, null, links);
+        cd = new ContentDelegate(expected_url, null, null, null, null, links);
         cd.attachRecapLinkToEligibleDocs();
       });
 
@@ -1018,7 +1026,7 @@ describe('The ContentDelegate class', function() {
       beforeEach(function() {
         links = linksFromUrls(urls);
         $('body').append(links);
-        cd = new ContentDelegate(null, null, null, null, null, links);
+        cd = new ContentDelegate(expected_url, null, null, null, null, links);
         cd.pacer_doc_ids = [ 1234 ];
       });
 
