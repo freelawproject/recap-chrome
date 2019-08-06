@@ -317,12 +317,27 @@ let PACER = {
 
   // Returns true if the given court identifier is for an appellate court.
   isAppellateCourt: function (court) {
-    return !!PACER.APPELLATE_COURTS[court];
+    return PACER.APPELLATE_COURTS.includes(court);
   },
 
   // These are all the supported PACER court identifiers, together with their
   // West-style court name abbreviations.
   COURT_ABBREVS: {
+    // Appellate Courts
+    'ca1': '1st-Cir.',
+    'ca2': '2d-Cir.',
+    'ca3': '3rd-Cir.',
+    'ca4': '4th-Cir.',
+    'ca5': '5th-Cir.',
+    'ca6': '6th-Cir.',
+    'ca7': '7th-Cir.',
+    'ca8': '8th-Cir.',
+    'ca9': '9th-Cir.',
+    'ca10': '10th-Cir.',
+    'ca11': '11th-Cir.',
+    'cadc': 'D.C.-Cir.',
+    'cafc': 'Fed.-Cir.',
+    // District Courts
     'akb': 'Bankr.D.Alaska',
     'akd': 'D.Alaska',
     'almb': 'Bankr.M.D.Ala.',
@@ -516,19 +531,5 @@ let PACER = {
   },
 
   // PACER court identifiers for appellate courts.
-  APPELLATE_COURTS: {
-    'ca1': 1,
-    'ca2': 1,
-    'ca3': 1,
-    'ca4': 1,
-    'ca5': 1,
-    'ca6': 1,
-    'ca7': 1,
-    'ca8': 1,
-    'ca9': 1,
-    'ca10': 1,
-    'ca11': 1,
-    'cadc': 1,
-    'cafc': 1
-  }
+  APPELLATE_COURTS: ['ca1', 'ca2', 'ca3', 'ca4', 'ca5', 'ca6', 'ca7', 'ca8', 'ca9', 'ca10', 'ca11', 'cadc', 'cafc']
 };
