@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/freelawproject/recap-chrome#readme",
   "dependencies": {
-    "file-saver": "1.3.2",
+    "file-saver": "2.0.2",
     "jquery": "~3.4.0",
     "moment": "~2.24.0"
   },
@@ -42,7 +42,7 @@
       "to": "src/assets/js/jquery.js"
     },
     {
-      "from": "node_modules/file-saver/FileSaver.js",
+      "from": "node_modules/file-saver/src/FileSaver.js",
       "to": "src/assets/js/FileSaver.js"
     },
     {
