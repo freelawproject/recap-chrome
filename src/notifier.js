@@ -1,15 +1,15 @@
 // Public impure functions.  (See utils.js for details on defining services.)
 function Notifier() {
-  var showNotification = function (title, message, cb) {
+  const showNotification = function (title, message, cb) {
     console.info("RECAP: Running showNotification function. Expect a notification.");
-    var notificationOptions = {
+    const notificationOptions = {
       type: 'basic',
       title: title,
       message: message,
       iconUrl: chrome.extension.getURL('assets/images/icon-32.png'),
       priority: 0
     };
-    var notificationID = 'recap_notification';
+    const notificationID = 'recap_notification';
     chrome.notifications.create(
       notificationID,
       notificationOptions,

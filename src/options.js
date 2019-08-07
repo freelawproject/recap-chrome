@@ -66,5 +66,5 @@ function showHideReceiptsWarning (tabs){
 
 (function () {
   let ver = document.getElementById('version');
-  ver.textContent = '(version ' + chrome.runtime.getManifest().version + ')';
+  ver.textContent = `(version ${chrome.runtime.getManifest().version})`;
 })();

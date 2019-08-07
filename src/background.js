@@ -6,8 +6,7 @@ function setDefaultOptions(details) {
   // Set options to their default values.
   console.debug("RECAP: Setting default options after upgrade.");
   chrome.storage.local.get('options', function (items) {
-    console.debug("RECAP: Attempted to get 'options' key from local storage. Got: " +
-      items);
+    console.debug(`RECAP: Attempted to get 'options' key from local storage. Got: ${items}`);
     let defaults = {
       external_pdf: false,
       recap_disabled: false,
