@@ -8,6 +8,9 @@
 </head>
 
 <body id="options-body">
+
+  <h2>Settings</h2>
+
   <fieldset><legend>Notifications and popups</legend>
     <label for="show_notifications"
            title="Show a notification whenever an item is uploaded to the RECAP Archive on CourtListener.com">
@@ -78,6 +81,22 @@
 
   <p id="receipts_disabled" class="alert hidden"><i class="fa fa-warning gold"></i>&nbsp;Receipts are disabled in your PACER profile. While receipts are disabled, we are unable to upload PDFs that you purchase. To change this setting, please go to the billing preferences in your PACER account.
   </p>
+
+  <h2>The RECAP Archive</h2>
+
+  <fieldset>
+    <div>
+      <form action="https://www.courtlistener.com/" method="GET" target="_blank">
+        <input name="q" type="search" placeholder="Search..." />
+        <button>search</button>
+      </form>
+    </div>
+    <a href="https://www.courtlistener.com/help/search-operators/"
+       target="_blank"
+       rel="noopener"
+    >Search Query Help</a>
+  </fieldset>
+
 
   <div id="donate-plea" class="text-center">
     <a href="https://free.law/donate/?referrer=recap-extension">
