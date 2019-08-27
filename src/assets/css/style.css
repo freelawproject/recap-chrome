@@ -17,10 +17,6 @@
 /*
    CSS For the options page
 */
-#options-body #donate-plea {
-  margin: 1em;
-}
-
 #options-body {
   background-color: white;
   color: black;
@@ -85,6 +81,10 @@
 #nav-recap #search-container {
   width: 100%;
   padding: 0px 20px;
+}
+
+#options-body main {
+  padding: 20px;
 }
 
 #options-body footer {
