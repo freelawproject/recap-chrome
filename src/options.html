@@ -36,18 +36,19 @@
 	 title="Tells RECAP to save PDFs as downloaded files, rather than set up for in-browser viewing. If you see filenames with random characters, check this box.">
       <input type="checkbox" id="external_pdf">
       Force external PDF viewing (download PDFs)<br></label>
-      <input type="radio" id="ia_style_filenames"
-             name="filename_style" value="ia_style_filenames">
-      <label for="ia_style_filenames">Use Internet Archive style naming (e.g.
-        gov.uscourts.cand.201881.46.0.pdf)</label>
-    </div>
-    <div>
-      <input type="radio" id="lawyer_style_filenames"
-             name="filename_style" value="lawyer_style_filenames">
-      <label for="lawyer_style_filenames">Use Lawyer style naming (e.g.
-        N.D.Cal._3&#8209;08&#8209;cv&#8209;03251_46_0.pdf)</label>
     </div>
   </fieldset>
+          <div id="filename_style_container">
+            <p><strong>Naming Style</strong> (e.g. <code id="filename_example">gov.uscourts.cand.201881.46.0.pdf</code>)</p>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input position-relative" type="radio" id="ia_style_filenames" name="filename_style" value="ia_style_filenames">
+              <label class="form-check-label" for="ia_style_filenames">Internet Archive style</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input position-relative" type="radio" id="lawyer_style_filenames" name="filename_style" value="lawyer_style_filenames">
+              <label class="form-check-label" for="lawyer_style_filenames">Lawyer style</label>
+            </div>
+          </div>
 
   <!-- TBD: Optimize PACER.
        See https://github.com/freelawproject/recap/issues/207 -->
