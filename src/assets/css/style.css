@@ -23,6 +23,16 @@
   width: 580px;
 }
 
+#options-body .btn-primary {
+  background-color: #428bca;
+  border-color: #357ebd;
+}
+
+#options-body .custom-control-input:checked~.custom-control-label::before {
+  background-color: #428bca;
+  border-color: #357ebd;
+}
+
 #options-body #container {
   margin:  20px;
   display: grid;
