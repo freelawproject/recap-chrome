@@ -25,9 +25,11 @@
   background-color: white;
   color: black;
   width: 580px;
-  padding: 20px;
 }
 
+#options-body #main {
+  margin:20px;
+}
 
 #options-body .alert {
   background: lightyellow;
@@ -64,6 +66,19 @@
   position: absolute;
   bottom: 20px;
   right: 20px;
+}
+
+#nav-recap-tabContent .tab-pane {
+  min-height: 250px;
+}
+
+#nav-recap {
+  padding-top: 20px;
+}
+
+#nav-recap #search-container {
+  width: 100%;
+  padding: 0px 20px;
 }
 
 /*

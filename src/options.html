@@ -5,66 +5,112 @@
   <title>RECAP Options</title>
   <link rel="stylesheet" href="assets/css/font-awesome.css">
   <link rel="stylesheet" href="assets/css/style.css">
+  <link href="assets/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body id="options-body">
-  <fieldset><legend>Notifications and popups</legend>
-    <label for="show_notifications"
-           title="Show a notification whenever an item is uploaded to the RECAP Archive on CourtListener.com">
-      <div class="item">
-            <span class="icon">
-              <input id="show_notifications" type="checkbox">
-            </span>
-            Notify me when RECAP uploads a file to the Archive
-      </div>
-    </label>
-    <label for="recap_link_popups"
-       title="Pop up a dialog whenever you click a RECAP link to a free document">
-      <div class="item">
-            <span class="icon">
-              <input id="recap_link_popups" type="checkbox">
-            </span>
-            Confirm before opening free documents
-      </div>
-    </label>
-  </fieldset>
+  <div id="main">
+    <nav>
+        <div class="nav nav-tabs" id="nav-recap-tab" role="tablist">
+          <a id="nav-recap-tab" class="col-sm text-center nav-item nav-link active"
+            data-toggle="tab" role="tab" href="#nav-recap"
+            aria-controls="nav-recap" aria-selected="false">
+            RECAP Archive
+          </a>
+          <a id="nav-settings-tab" class="col-sm text-center nav-item nav-link"
+            data-toggle="tab" role="tab" href="#nav-settings"
+            aria-controls="nav-settings" aria-selected="true">
+            Settings
+          </a>
+        </div>
+      </nav>
+      <div class="tab-content" id="nav-recap-tabContent">
+        <div id="nav-recap" class="tab-pane fade show active"
+          role="tabpanel" aria-labelledby="nav-recap-tab">
 
-  <fieldset><legend>PDF Files</legend>
-    <div>
-      <label
-	 class="hidden" id="external_pdf_label"
-	 title="Tells RECAP to save PDFs as downloaded files, rather than set up for in-browser viewing. If you see filenames with random characters, check this box.">
-      <input type="checkbox" id="external_pdf">
-      Force external PDF viewing (download PDFs)<br></label>
-    </div>
-  </fieldset>
-          <div id="filename_style_container">
-            <p><strong>Naming Style</strong> (e.g. <code id="filename_example">gov.uscourts.cand.201881.46.0.pdf</code>)</p>
-            <div class="form-check form-check-inline">
-              <input class="form-check-input position-relative" type="radio" id="ia_style_filenames" name="filename_style" value="ia_style_filenames">
-              <label class="form-check-label" for="ia_style_filenames">Internet Archive style</label>
+          <form action="https://www.courtlistener.com/" method="get" target="_blank"
+            id="search-form" class="form-inline" role="form">
+            <div id="search-container" class="text-center">
+              <div class="input-group input-group-lg">
+                <input class="form-control"
+                        value=""
+                        name="q"
+                        id="id_q"
+                        autocomplete="off"
+                        type="text">
+                <div class="input-group-append">
+                  <button type="submit" class="btn btn-primary"
+                    name="search" id="search-button">
+                    <i class="fa fa-search"></i>&nbsp;Search
+                  </button>
+                </div>
+              </div>
             </div>
-            <div class="form-check form-check-inline">
-              <input class="form-check-input position-relative" type="radio" id="lawyer_style_filenames" name="filename_style" value="lawyer_style_filenames">
-              <label class="form-check-label" for="lawyer_style_filenames">Lawyer style</label>
-            </div>
-          </div>
+          </form>
 
-  <!-- TBD: Optimize PACER.
-       See https://github.com/freelawproject/recap/issues/207 -->
-  <fieldset class="hidden"><legend>Optimize PACER</legend>
-    <div>
-      <input id="uncheck_parties" type="checkbox">
-      <label for="uncheck_parties">Uncheck parties and counsel, automatically</label>
-    </div>
-    <div>
-      <input id="mike_stuff" type="checkbox">
-      <label for="mike_stuff">Some other stuff Mike likes.</label>
-    </div>
-  </fieldset>
+        </div>
+        <div id="nav-settings" class="tab-pane fade"
+          role="tabpanel" aria-labelledby="nav-settings-tab">
+
+          <fieldset>
+            <legend>Notifications and popups</legend>
+            <label for="show_notifications"
+                    title="Show a notification whenever an item is uploaded to the RECAP Archive on CourtListener.com">
+              <div class="item">
+                    <span class="icon">
+                      <input id="show_notifications" type="checkbox">
+                    </span>
+                    Notify me when RECAP uploads a file to the Archive
+              </div>
+            </label>
+            <label for="recap_link_popups"
+                title="Pop up a dialog whenever you click a RECAP link to a free document">
+              <div class="item">
+                    <span class="icon">
+                      <input id="recap_link_popups" type="checkbox">
+                    </span>
+                    Confirm before opening free documents
+              </div>
+            </label>
+          </fieldset>
+
+          <fieldset><legend>PDF Files</legend>
+            <div>
+              <label
+            class="hidden" id="external_pdf_label"
+            title="Tells RECAP to save PDFs as downloaded files, rather than set up for in-browser viewing. If you see filenames with random characters, check this box.">
+              <input type="checkbox" id="external_pdf">
+              Force external PDF viewing (download PDFs)<br></label>
+            </div>
+            <div id="filename_style_container">
+              <p><strong>Naming Style</strong> (e.g. <code id="filename_example">gov.uscourts.cand.201881.46.0.pdf</code>)</p>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input position-relative" type="radio" id="ia_style_filenames" name="filename_style" value="ia_style_filenames">
+                <label class="form-check-label" for="ia_style_filenames">Internet Archive style</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input position-relative" type="radio" id="lawyer_style_filenames" name="filename_style" value="lawyer_style_filenames">
+                <label class="form-check-label" for="lawyer_style_filenames">Lawyer style</label>
+              </div>
+            </div>
+          </fieldset>
+
+          <!-- TBD: Optimize PACER.
+                See https://github.com/freelawproject/recap/issues/207 -->
+          <fieldset class="hidden"><legend>Optimize PACER</legend>
+            <div>
+              <input id="uncheck_parties" type="checkbox">
+              <label for="uncheck_parties">Uncheck parties and counsel, automatically</label>
+            </div>
+            <div>
+              <input id="mike_stuff" type="checkbox">
+              <label for="mike_stuff">Some other stuff Mike likes.</label>
+            </div>
+          </fieldset>
+        </div>
       </div>
-    </label>
-  </fieldset>
+    </div>
+  </div>
 
   <p id="receipts_disabled" class="alert hidden"><i class="fa fa-warning gold"></i>&nbsp;Receipts are disabled in your PACER profile. While receipts are disabled, we are unable to upload PDFs that you purchase. To change this setting, please go to the billing preferences in your PACER account.
   </p>
