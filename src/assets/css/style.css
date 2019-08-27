@@ -31,6 +31,12 @@
   margin:20px;
 }
 
+#options-body button {
+  background-image: none;
+  box-shadow: none;
+  text-shadow: none;
+}
+
 #options-body .alert {
   background: lightyellow;
 }
