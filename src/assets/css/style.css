@@ -25,11 +25,9 @@
   background-color: white;
   color: black;
   width: 580px;
+  padding: 20px;
 }
 
-#options-body fieldset {
-  margin: 10px 5px;
-}
 
 #options-body .alert {
   background: lightyellow;
@@ -60,6 +58,12 @@
   font-family: helvetica, arial, serif;
   font-size: 10px;
   padding: 10px;
+}
+
+#options-body #disable_recap_toggle {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
 }
 
 /*
