@@ -9,8 +9,9 @@
 </head>
 
 <body id="options-body">
-  <div id="main">
-    <nav>
+  <div id="container">
+    <header>
+      <nav>
         <div class="nav nav-tabs" id="nav-recap-tab" role="tablist">
           <a id="nav-recap-tab" class="col-sm text-center nav-item nav-link active"
             data-toggle="tab" role="tab" href="#nav-recap"
@@ -24,20 +25,19 @@
           </a>
         </div>
       </nav>
+    </header>
+    <main>
       <div class="tab-content" id="nav-recap-tabContent">
         <div id="nav-recap" class="tab-pane fade show active"
           role="tabpanel" aria-labelledby="nav-recap-tab">
 
+          <h4>Search millions of PACER documents and dockets.</h4>
           <form action="https://www.courtlistener.com/" method="get" target="_blank"
             id="search-form" class="form-inline" role="form">
             <div id="search-container" class="text-center">
               <div class="input-group input-group-lg">
-                <input class="form-control"
-                        value=""
-                        name="q"
-                        id="id_q"
-                        autocomplete="off"
-                        type="text">
+                <input id="id_q" class="form-control" value=""
+                  name="q" autocomplete="off" type="text">
                 <div class="input-group-append">
                   <button type="submit" class="btn btn-primary"
                     name="search" id="search-button">
@@ -109,46 +109,49 @@
           </fieldset>
         </div>
       </div>
-    </div>
-  </div>
 
-  <p id="receipts_disabled" class="alert hidden"><i class="fa fa-warning gold"></i>&nbsp;Receipts are disabled in your PACER profile. While receipts are disabled, we are unable to upload PDFs that you purchase. To change this setting, please go to the billing preferences in your PACER account.
-  </p>
+      <p id="receipts_disabled" class="alert hidden"><i class="fa fa-warning gold"></i>&nbsp;Receipts are disabled in your PACER profile. While receipts are disabled, we are unable to upload PDFs that you purchase. To change this setting, please go to the billing preferences in your PACER account.
+      </p>
 
-  <div id="donate-plea" class="text-center">
-    <a href="https://free.law/donate/?referrer=recap-extension"
-      target="_blank"
-      rel="noopener">
-      <img alt="Donate to support the Free Law Project" class="pad20" src="assets/images/donate-button.png">
-    </a>
-    <a href="https://free.law/recap/"
-      target="_blank"
-      rel="noopener">
-      <img alt="free.law/recap" class="pad20" src="assets/images/recap-logo-143x85.png">
-    </a>
-  </div>
+      <div id="donate-plea" class="text-center">
+        <a href="https://free.law/donate/?referrer=recap-extension"
+          target="_blank"
+          rel="noopener">
+          <img alt="Donate to support the Free Law Project" class="pad20" src="assets/images/donate-button.png">
+        </a>
+        <a href="https://free.law/recap/"
+          target="_blank"
+          rel="noopener">
+          <img alt="free.law/recap" class="pad20" src="assets/images/recap-logo-143x85.png">
+        </a>
+      </div>
+    </main>
 
-  <div class="text-center">
-    <a href="https://twitter.com/freelawproject"
-       class="fa-stack fa-lg"
-       target="_blank"
-       rel="noopener">
-      <i class="fa fa-circle fa-stack-2x gray"></i>
-      <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
-    </a>
-    <a href="https://free.law/newsletter/" class="fa-stack fa-lg"
-       target="_blank"
-       rel="noopener">
-      <i class="fa fa-circle fa-stack-2x gray"></i>
-      <i class="fa fa-newspaper-o fa-stack-1x fa-inverse"></i>
-    </a>
-  </div>
+    <footer>
+      <div id="disable_recap_toggle" class="custom-control custom-switch d-flex flex-row-reverse">
+        <input type="checkbox" class="custom-control-input" id="recap_disabled">
+        <label class="custom-control-label" for="recap_disabled">Upload to RECAP</label>
+      </div>
 
-  <div id="version" class="text-center gray"></div>
+      <div id="version" class="text-center gray"></div>
 
-  <div class="custom-control custom-switch d-flex flex-row-reverse" id="disable_recap_toggle">
-    <input type="checkbox" class="custom-control-input" id="recap_disabled">
-    <label class="custom-control-label" for="recap_disabled">Upload to RECAP</label>
+      <div id="badges" class="text-center">
+        <a href="https://twitter.com/freelawproject"
+          class="fa-stack fa-lg"
+          target="_blank"
+          rel="noopener">
+          <i class="fa fa-circle fa-stack-2x gray"></i>
+          <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+        </a>
+        <a href="https://free.law/newsletter/" class="fa-stack fa-lg"
+          target="_blank"
+          rel="noopener">
+          <i class="fa fa-circle fa-stack-2x gray"></i>
+          <i class="fa fa-newspaper-o fa-stack-1x fa-inverse"></i>
+        </a>
+      </div>
+
+    </footer>
   </div>
 
   <script src="pacer.js"></script>
