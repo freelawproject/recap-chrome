@@ -11,6 +11,8 @@
 <body id="options-body">
   <div id="container">
     <header>
+
+      <!-- Navigation Tabs -->
       <nav>
         <div class="nav nav-tabs" id="nav-recap-tab" role="tablist">
           <a id="nav-recap-tab" class="col-sm text-center nav-item nav-link active"
@@ -26,29 +28,42 @@
         </div>
       </nav>
     </header>
+
+    <!-- Main Tab Content + Donation plea -->
     <main>
       <div class="tab-content" id="nav-recap-tabContent">
+
+        <!-- The Search Tab -->
         <div id="nav-recap" class="tab-pane fade show active"
           role="tabpanel" aria-labelledby="nav-recap-tab">
 
           <h4 class="text-center">Search millions of PACER<br/>documents and dockets.</h4>
+
           <form action="https://www.courtlistener.com/" method="get" target="_blank"
             id="search-form" class="form-inline" role="form">
+
             <div id="search-container" class="text-center">
               <div class="input-group input-group-lg">
-                <input id="id_q" class="form-control" value=""
-                  name="q" autocomplete="off" type="text">
+                <input id="id_q" class="form-control" value="" name="q" autocomplete="off" type="text">
                 <div class="input-group-append">
-                  <button type="submit" class="btn btn-primary"
-                    name="search" id="search-button">
+                  <button type="submit" class="btn btn-primary" name="search" id="search-button">
                     <i class="fa fa-search"></i>&nbsp;Search
                   </button>
                 </div>
               </div>
             </div>
+
+            <div id="more-search-buttons">
+              <a href="https://www.courtlistener.com/recap/" target="_blank" rel="noopener"
+                 class="btn btn-primary btn-sm" role="button">Advanced Search</a>
+              <a href="https://www.courtlistener.com/help/search-operators/" target="_blank" rel="noopener"
+                 class="btn btn-primary btn-sm" role="button">Search Help</a>
+            </div>
           </form>
 
         </div>
+
+        <!-- The Settings Tab -->
         <div id="nav-settings" class="tab-pane fade"
           role="tabpanel" aria-labelledby="nav-settings-tab">
 
@@ -110,8 +125,13 @@
         </div>
       </div>
 
-      <p id="receipts_disabled" class="alert hidden"><i class="fa fa-warning gold"></i>&nbsp;Receipts are disabled in your PACER profile. While receipts are disabled, we are unable to upload PDFs that you purchase. To change this setting, please go to the billing preferences in your PACER account.
+      <!-- Everything below this point is intended to remain in view at all times. -->
+
+      <p id="receipts_disabled" class="alert hidden">
+        <i class="fa fa-warning gold"></i>&nbsp;Receipts are disabled in your PACER profile. While receipts are disabled, we are unable to upload PDFs that you purchase. To change this setting, please go to the billing preferences in your PACER account.
       </p>
+
+      <!-- The Donation Plea -->
 
       <div id="donate-plea" class="text-center">
         <a href="https://free.law/donate/?referrer=recap-extension"
