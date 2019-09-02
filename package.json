@@ -26,7 +26,7 @@
     "moment": "~2.24.0"
   },
   "devDependencies": {
-    "eslint": "^6.2.2",
+    "eslint": "^6.3.0",
     "jasmine": "^3.4.0",
     "karma": "^4.2.0",
     "karma-chrome-launcher": "^3.1.0",
