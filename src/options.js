@@ -41,8 +41,7 @@ function updateNamingStyle(args) {
   } else if (args.options.lawyer_style_filenames) {
     example = 'N.D.Cal._3-08-cv-03251_46_0.pdf';
   } else {
-    debugger;
-    console.log(args.options);
+    console.warn(args.options);
   }
   exampleEl.textContent = example;
 }
