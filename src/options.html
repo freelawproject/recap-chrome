@@ -17,13 +17,18 @@
         <div class="nav nav-tabs" id="nav-recap-tab" role="tablist">
           <a id="nav-recap-tab" class="col-sm text-center nav-item nav-link active"
             data-toggle="tab" role="tab" href="#nav-recap"
-            aria-controls="nav-recap" aria-selected="false">
+            aria-controls="nav-recap" aria-selected="true">
             RECAP Archive
           </a>
           <a id="nav-settings-tab" class="col-sm text-center nav-item nav-link"
             data-toggle="tab" role="tab" href="#nav-settings"
-            aria-controls="nav-settings" aria-selected="true">
+            aria-controls="nav-settings" aria-selected="false">
             Settings
+          </a>
+          <a id="nav-donate-tab" class="col-sm text-center nav-item nav-link"
+          data-toggle="tab" role="tab" href="#nav-donate"
+          aria-controls="nav-donate" aria-selected="false">
+            Donate
           </a>
         </div>
       </nav>
@@ -123,6 +128,20 @@
             </div>
           </fieldset>
         </div>
+
+        <div id="nav-donate" class="tab-pane fade"
+          role="tabpanel" aria-labelledby="nav-settings-tab">
+          <h2>Donate to Free Law Project</h2>
+          <p>Support our efforts to make high quality legal data widely available.
+             Help us reform and enhance the legal ecosystem.</p>
+
+          <p>CourtListener and RECAP are run by Free Law Project, a U.S. 501(c)(3) non-profit,
+             tax id #46-3342480.</p>
+
+          <form method="GET" action="">
+
+          </form>
+        </div>
       </div>
 
       <!-- Everything below this point is intended to remain in view at all times. -->
@@ -131,26 +150,12 @@
         <i class="fa fa-warning gold"></i>&nbsp;Receipts are disabled in your PACER profile. While receipts are disabled, we are unable to upload PDFs that you purchase. To change this setting, please go to the billing preferences in your PACER account.
       </p>
 
-      <!-- The Donation Plea -->
-
-      <div id="donate-plea" class="text-center">
-        <a href="https://free.law/donate/?referrer=recap-extension"
-          target="_blank"
-          rel="noopener">
-          <img alt="Donate to support the Free Law Project" class="pad20" src="assets/images/donate-button.png">
-        </a>
-        <a href="https://free.law/recap/"
-          target="_blank"
-          rel="noopener">
-          <img alt="free.law/recap" class="pad20" src="assets/images/recap-logo-143x85.png">
-        </a>
-      </div>
     </main>
 
     <footer>
       <div id="disable_recap_toggle" class="custom-control custom-switch d-flex flex-row-reverse">
         <input type="checkbox" class="custom-control-input" id="recap_disabled">
-        <label class="custom-control-label" for="recap_disabled">Upload to RECAP</label>
+        <label class="custom-control-label" for="recap_disabled">Enable Uploads</label>
       </div>
 
       <div id="version" class="text-center gray"></div>

@@ -21,6 +21,7 @@
   background-color: white;
   color: black;
   width: 580px;
+  height: 600px;
 }
 
 #options-body .btn-primary {
@@ -34,9 +35,10 @@
 }
 
 #options-body #container {
-  margin:  20px;
+  padding:  20px;
+  height: 100%;
   display: grid;
-  grid-row: 42px auto 42px;
+  grid-template-rows: [header] 42px [main] auto [footer] 42px;
 }
 
 #options-body button {
@@ -63,7 +65,7 @@
 }
 
 #options-body .pad20 {
-    padding: 20px;
+  padding: 20px;
 }
 
 #options-body a {
@@ -75,9 +77,15 @@
   font-size: 10px;
 }
 
+#options-body legend {
+  margin: 0;
+}
+
+#options-body fieldset {
+  padding: 10px 0px;
+}
 
 #nav-recap-tabContent .tab-pane {
-  min-height: 250px;
 }
 
 #nav-recap {
