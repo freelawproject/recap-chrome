@@ -85,10 +85,6 @@
       "is_default": false
     }
   },
-  "options_ui": {
-    "page": "options.html",
-    "chrome_style": true
-  },
   "web_accessible_resources": [
     "assets/images/*.png"
   ]
