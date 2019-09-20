@@ -98,12 +98,15 @@
   padding: 0px 20px;
 }
 
-#nav-recap #more-search-buttons {
-  padding: 20px;
+#nav-recap #more-search-buttons,
+#nav-donate #donate-button-wrapper {
   width: 100%;
   display: flex;
   justify-content: center;
 }
+
+#nav-recap #more-search-buttons{ padding: 20px; }
+
 
 #nav-recap #more-search-buttons a { margin: 0px 10px; }
 
