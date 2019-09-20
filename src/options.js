@@ -6,11 +6,11 @@ let inputs = document.getElementsByTagName('input');
 function load_options() {
   chrome.storage.local.get('options', function (items) {
     for (let i = 0; i < inputs.length; i++) {
-      if (inputs[i].type === "checkbox" ||
-          inputs[i].type === "radio") {
+      if (inputs[i].type === 'checkbox' ||
+          inputs[i].type === 'radio') {
         inputs[i].checked = items.options[inputs[i].id];
-      } else if (inputs[i].type === "text") {
-        inputs[i].value = items.options[inputs[i].id] || "";
+      } else if (inputs[i].type === 'text') {
+        inputs[i].value = items.options[inputs[i].id] || '';
       }
     }
   });
@@ -19,10 +19,10 @@ function load_options() {
 function save_options() {
   let options = {};
   for (let i = 0; i < inputs.length; i++) {
-    if (inputs[i].type === "checkbox" ||
-        inputs[i].type === "radio"){
+    if (inputs[i].type === 'checkbox' ||
+        inputs[i].type === 'radio'){
       options[inputs[i].id] = inputs[i].checked;
-    } else if (inputs[i].type === "text") {
+    } else if (inputs[i].type === 'text') {
       options[inputs[i].id] = inputs[i].value;
     }
   }
@@ -33,16 +33,46 @@ function save_options() {
   });
 }
 
+function updateNamingStyle(args) {
+  const exampleEl = document.getElementById('filename_example');
+  let example = '';
+  if (args.options.ia_style_filenames) {
+    example = 'gov.uscourts.cand.201881.46.0.pdf';
+  } else if (args.options.lawyer_style_filenames) {
+    example = 'N.D.Cal._3-08-cv-03251_46_0.pdf';
+  } else {
+    console.warn(args.options);
+  }
+  exampleEl.textContent = example;
+}
+
+function handle_storage_changes(changed_args) {
+  const change_handler = function(options){
+    // add other functions to process options changes here.
+    updateNamingStyle(options);
+  };
+
+  if (changed_args && changed_args.options) {
+    change_handler({options: changed_args.options.newValue});
+  } else {
+    // if this gets called outside of the listener, pull the options
+    // directly instead and invoke the change_handler
+    chrome.storage.local.get('options', change_handler);
+  }
+}
+
 if (navigator.userAgent.indexOf('Chrome') < 0) {
-    // Autodetect in Chrome. Otherwise offer an option (Firefix and friends)
-    let external_pdf = document.getElementById('external_pdf_label');
-    external_pdf.classList.remove('hidden');
+  // Autodetect in Chrome. Otherwise offer an option (Firefox and friends)
+  let external_pdf = document.getElementById('external_pdf_label');
+  external_pdf.classList.remove('hidden');
 }
 
 load_options();
+handle_storage_changes();
 for (let i = 0; i < inputs.length; i++) {
   inputs[i].addEventListener('change', save_options);
 }
+chrome.storage.onChanged.addListener(handle_storage_changes);
 
 // Show or hide the receipts warning
 chrome.tabs.query({active: true, currentWindow: true}, showHideReceiptsWarning);

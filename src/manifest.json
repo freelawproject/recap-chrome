@@ -41,6 +41,7 @@
     "matches": ["*://*.uscourts.gov/*"],
     "include_globs": ["*://ecf.*", "*://ecf-train.*", "*://pacer.*"],
     "css": [
+      "assets/css/bootstrap.min.css",
       "assets/css/style.css",
       "assets/css/font-awesome.css"
     ],
@@ -49,6 +50,7 @@
       "assets/js/FileSaver.js",
       "assets/js/moment.js",
       "assets/js/livestamp.js",
+      "assets/js/bootstrap.bundle.js",
       "utils.js",
       "notifier.js",
       "toolbar_button.js",
@@ -82,10 +84,6 @@
       "encoding": "UTF-8",
       "is_default": false
     }
-  },
-  "options_ui": {
-    "page": "options.html",
-    "chrome_style": true
   },
   "web_accessible_resources": [
     "assets/images/*.png"
