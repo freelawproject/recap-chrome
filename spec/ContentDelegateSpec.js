@@ -817,12 +817,16 @@ describe('The ContentDelegate class', function() {
         if ((navigator.userAgent.indexOf('Chrome') >= 0) &&
             !navigator.plugins.namedItem('Chrome PDF Viewer')) {
           // isExternalPdf, file is saved with saveAs
+          // Test fails on Chrome 78.0.3904 because carriage returns
+          // are present in the grabbed html. A quick fix is to use
+          // a set of non-null characters [^\0] instead of the dot
+          // operator -- see https://www.regular-expressions.info/dot.html
           expect(documentElement.innerHTML)
-              .toMatch(/<iframe.*?src="about:blank".*?><\/iframe>/);
+              .toMatch(/<iframe[^\0]*?src="about:blank"[^\0]*?><\/iframe>/);
           expect(window.saveAs).toHaveBeenCalled();
         } else {
           expect(documentElement.innerHTML)
-              .toMatch(/<iframe.*?src="data:blob".*?><\/iframe>/);
+              .toMatch(/<iframe[^\0]*?src="data:blob"[^\0]*?><\/iframe>/);
         }
       });
 
