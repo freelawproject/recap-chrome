@@ -233,7 +233,7 @@ describe('The ContentDelegate class', function() {
         delete window.chrome;
       });
 
-      it('has no effect recap_enabled option is not set', function() {
+      it('has no effect when recap_enabled option is false', function() {
         const cd = docketDisplayContentDelegate;
         spyOn(cd.recap, 'uploadDocket');
         cd.handleDocketDisplayPage();
@@ -788,7 +788,7 @@ describe('The ContentDelegate class', function() {
       const waiting = '<p>Waiting for download...<p>';
       const expected_iframe = '<iframe src="about:blank"';
       expect(documentElement.innerHTML)
-          .toBe(pre + waiting + expected_iframe + post);
+        .toBe(pre + waiting + expected_iframe + post);
     });
 
     describe('when it downloads the PDF in the iframe', function() {
@@ -830,11 +830,11 @@ describe('The ContentDelegate class', function() {
           // a set of non-null characters [^\0] instead of the dot
           // operator -- see https://www.regular-expressions.info/dot.html
           expect(documentElement.innerHTML)
-              .toMatch(/<iframe[^\0]*?src="about:blank"[^\0]*?><\/iframe>/);
+            .toMatch(/<iframe[^\0]*?src="about:blank"[^\0]*?><\/iframe>/);
           expect(window.saveAs).toHaveBeenCalled();
         } else {
           expect(documentElement.innerHTML)
-              .toMatch(/<iframe[^\0]*?src="data:blob"[^\0]*?><\/iframe>/);
+            .toMatch(/<iframe[^\0]*?src="data:blob"[^\0]*?><\/iframe>/);
         }
       });
 
@@ -849,11 +849,13 @@ describe('The ContentDelegate class', function() {
         }
       });
 
-      it('uploads the PDF to RECAP',
-         function() { expect(cd.recap.uploadDocument).toHaveBeenCalled(); });
+      it('uploads the PDF to RECAP', function() {
+        expect(cd.recap.uploadDocument).toHaveBeenCalled();
+      });
 
-      it('calls the notifier once the upload finishes',
-         function() { expect(cd.notifier.showUpload).toHaveBeenCalled(); });
+      it('calls the notifier once the upload finishes', function() {
+        expect(cd.notifier.showUpload).toHaveBeenCalled();
+      });
     });
   });
 
