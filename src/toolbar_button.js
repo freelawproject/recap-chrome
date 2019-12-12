@@ -45,7 +45,7 @@ function updateToolbarButton(tab) {
       setDefaultOptions({});
     }
 
-    if (items && items['options'] && items['options']['recap_disabled']){
+    if (items && items['options'] && !items['options']['recap_enabled']){
       setTitleIcon('RECAP is temporarily disabled', {
         '19': 'assets/images/disabled-19.png',
         '38': 'assets/images/disabled-38.png'

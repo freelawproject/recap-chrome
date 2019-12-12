@@ -9,7 +9,7 @@ function setDefaultOptions(details) {
     console.debug(`RECAP: Attempted to get 'options' key from local storage. Got: ${items}`);
     let defaults = {
       external_pdf: false,
-      recap_disabled: false,
+      recap_enabled: true,
       recap_link_popups: true,
       show_notifications: true,
 
@@ -23,6 +23,25 @@ function setDefaultOptions(details) {
       console.debug("RECAP: Set the defaults on new install successfully.");
     } else {
       console.debug("RECAP: Existing install. Attempting to set new defaults, if any");
+
+      // it's weird that we have a `recap_disabled` option
+      // when it should be `recap_enabled`.
+      //
+      // In order to flip the polarity, we'll read out the
+      // `recap_disabled` option (which has previously been set,
+      // so everyone should have it)
+      let optionToUpgrade = 'recap_disabled';
+      // if the option is a Boolean (as it should be)
+      if (typeof(items.options[optionToUpgrade]) === 'boolean') {
+        // set the inverse option `recap_enabled` to
+        // the inverse of `recap_disabled`
+        items.options.recap_enabled = !(items.options[optionToUpgrade]);
+      } else {
+        // if for some reason it's _not_ a boolean, let's default to uploading.
+        items.options.recap_enabled = true;
+      }
+
+      // okay now set the rest of the defaults that are missing.
       for (let key in defaults) {
         if (!(key in items.options)) {
           items.options[key] = defaults[key];

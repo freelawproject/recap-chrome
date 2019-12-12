@@ -219,7 +219,7 @@ ContentDelegate.prototype.handleDocketDisplayPage = function() {
   }
 
   chrome.storage.local.get('options', function (items) {
-    if (!items['options']['recap_disabled']) {
+    if (items['options']['recap_enabled']) {
       let callback = $.proxy(function (ok) {
         if (ok) {
           history.replaceState({uploaded: true}, '');
@@ -258,7 +258,7 @@ ContentDelegate.prototype.handleAttachmentMenuPage = function() {
   }
 
   chrome.storage.local.get('options', function (items) {
-    if (!items['options']['recap_disabled']) {
+    if (items['options']['recap_enabled']) {
       let callback = $.proxy(function (ok) {
         if (ok) {
           history.replaceState({uploaded: true}, '');
@@ -470,7 +470,7 @@ ContentDelegate.prototype.showPdfPage = function(
         chrome.storage.local.get('options', displayPDF);
 
         let uploadDocument = function(items){
-          if (!items['options']['recap_disabled'] && !this.restricted) {
+          if (items['options']['recap_enabled'] && !this.restricted) {
             // If we have the pacer_case_id, upload the file to RECAP.
             // We can't pass an ArrayBuffer directly to the background
             // page, so we have to convert to a regular array.
