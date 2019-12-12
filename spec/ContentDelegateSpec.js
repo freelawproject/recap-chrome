@@ -247,7 +247,7 @@ describe('The ContentDelegate class', function() {
           storage : {
             local : {
               get : jasmine.createSpy().and.callFake(function(
-                  _, cb) { cb({options : {}}); })
+                _, cb) { cb({options : {recap_enabled: true}}); })
             }
           }
         };
@@ -372,7 +372,7 @@ describe('The ContentDelegate class', function() {
           storage : {
             local : {
               get : jasmine.createSpy().and.callFake(function(
-                  _, cb) { cb({options : {}}); })
+                _, cb) { cb({options : {recap_enabled: true}}); })
             }
           }
         };
@@ -767,6 +767,14 @@ describe('The ContentDelegate class', function() {
 
     beforeEach(function() {
       documentElement = jasmine.createSpy();
+      window.chrome = {
+        storage : {
+          local : {
+            get : jasmine.createSpy().and.callFake(function(
+              _, cb) { cb({options : {recap_enabled: true}}); })
+          }
+        }
+      };
       cd.showPdfPage(documentElement, html, '');
     });
 
