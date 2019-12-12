@@ -4,9 +4,10 @@ exportInstance(Recap);
 
 function setDefaultOptions(details) {
   // Set options to their default values.
-  console.debug("RECAP: Setting default options after upgrade.");
+  console.debug('RECAP: Setting default options after install/upgrade.');
   chrome.storage.local.get('options', function (items) {
-    console.debug(`RECAP: Attempted to get 'options' key from local storage. Got: ${items}`);
+    console.debug('RECAP: Attempted to get \'options\' key from local ' +
+      `storage. Got: ${items}`);
     let defaults = {
       external_pdf: false,
       recap_enabled: true,
@@ -18,11 +19,12 @@ function setDefaultOptions(details) {
       lawyer_style_filenames: true,
     };
     if ($.isEmptyObject(items)) {
-      console.debug("RECAP: New install. Attempting to set defaults.");
+      console.debug('RECAP: New install. Attempting to set defaults.');
       chrome.storage.local.set({options: defaults});
-      console.debug("RECAP: Set the defaults on new install successfully.");
+      console.debug('RECAP: Set the defaults on new install successfully.');
     } else {
-      console.debug("RECAP: Existing install. Attempting to set new defaults, if any");
+      console.debug('RECAP: Existing install. Attempting to set new ' +
+        'defaults, if any');
 
       // it's weird that we have a `recap_disabled` option
       // when it should be `recap_enabled`.
@@ -47,7 +49,7 @@ function setDefaultOptions(details) {
           items.options[key] = defaults[key];
         }
       }
-      console.debug("RECAP: Persisting new settings object.");
+      console.debug('RECAP: Persisting new settings object.');
       chrome.storage.local.set({options: items.options});
     }
   });
@@ -55,7 +57,8 @@ function setDefaultOptions(details) {
 
 function showNotificationTab(details){
   // Show some kind of notification tab to the user after install/upgrade.
-  console.debug("RECAP: showing install/upgrade notification if version matches");
+  console.debug('RECAP: showing install/upgrade notification if ' +
+    'version matches');
   let currentVersion = chrome.runtime.getManifest().version;
   if (details.reason === 'update' && currentVersion === '1.2.3'){
     // This version is when we pushed for donations. Show that page.
