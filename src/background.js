@@ -9,7 +9,7 @@ function setDefaultOptions(details) {
     console.debug(`RECAP: Attempted to get 'options' key from local storage. Got: ${items}`);
     let defaults = {
       external_pdf: false,
-      recap_disabled: false,
+      recap_enabled: true,
       recap_link_popups: true,
       show_notifications: true,
 

@@ -223,7 +223,7 @@ describe('The ContentDelegate class', function() {
           storage : {
             local : {
               get : jasmine.createSpy().and.callFake(function(
-                _, cb) { cb({options : {recap_disabled: true}}); })
+                _, cb) { cb({options : {recap_enabled: false}}); })
             }
           }
         };
@@ -233,7 +233,7 @@ describe('The ContentDelegate class', function() {
         delete window.chrome;
       });
 
-      it('has no effect recap_disabled option is set', function() {
+      it('has no effect recap_enabled option is not set', function() {
         const cd = docketDisplayContentDelegate;
         spyOn(cd.recap, 'uploadDocket');
         cd.handleDocketDisplayPage();
@@ -341,7 +341,7 @@ describe('The ContentDelegate class', function() {
           storage : {
             local : {
               get : jasmine.createSpy().and.callFake(function(
-                _, cb) { cb({options : {recap_disabled: true}}); })
+                _, cb) { cb({options : {recap_enabled: false}}); })
             }
           }
         };
@@ -355,7 +355,7 @@ describe('The ContentDelegate class', function() {
         delete window.chrome;
       });
 
-      it('has no effect recap_disabled option is set', function() {
+      it('has no effect recap_enabled option is not set', function() {
         const cd = singleDocContentDelegate;
         spyOn(cd.recap, 'uploadAttachmentMenu');
         cd.handleAttachmentMenuPage();
