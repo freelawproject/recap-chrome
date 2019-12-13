@@ -41,7 +41,6 @@
     "matches": ["*://*.uscourts.gov/*"],
     "include_globs": ["*://ecf.*", "*://ecf-train.*", "*://pacer.*"],
     "css": [
-      "assets/css/bootstrap.min.css",
       "assets/css/style.css",
       "assets/css/font-awesome.css"
     ],
