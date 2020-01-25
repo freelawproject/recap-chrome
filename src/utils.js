@@ -147,18 +147,6 @@ $.ajaxSetup({
 });
 
 
-// Converts an ArrayBuffer to a regular array of unsigned bytes.  Array.apply()
-// causes a "maximum call stack size exceeded" error for buffers of only 300k,
-// so we need this ridiculous circumlocution of breaking the data into chunks.
-function arrayBufferToArray(ab) {
-  let chunks = [];
-  for (let i = 0; i < ab.byteLength; i += 100000) {
-    let slice = new Uint8Array(ab, i, Math.min(100000, ab.byteLength - i));
-    chunks.push(Array.apply(null, slice));  // convert each chunk separately
-  }
-  return [].concat.apply([], chunks);  // concatenate all the chunks together
-}
-
 // Debug logging function. First argument is a debug level, remainder are variable args
 // for console.log(). If the global debug level matches the first arg, calls console.log().
 // Example usage:
