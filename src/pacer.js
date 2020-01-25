@@ -169,6 +169,17 @@ let PACER = {
     return !!pageCheck;
   },
 
+  // Returns true if this is a "Download Documents" page (confirmation of
+  // pricing for all documents to receive a zip file with all of them)
+  isDownloadAllDocumentsPage: function(url, document) {
+    let inputs = document.getElementsByTagName("input")
+    let pageCheck =
+      !!url.match(/\/show_multidocs\.pl\?\w+-[\w-]+$/) &&
+      inputs.length &&
+      inputs[inputs.length -1].value === "Download Documents"
+    return !!pageCheck
+  }
+
   // Returns true if this is a page for downloading a single document.
   // district:
   //   https://ecf.dcd.uscourts.gov/doc1/04503837920
