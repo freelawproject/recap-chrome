@@ -216,16 +216,18 @@ describe('The Recap export module', function() {
     });
 
     const bytes = new Uint8Array([100, 100, 200, 200, 300]);
+    const blob = new Blob([html], {type: type}, filename);
+    const blobUrl = URL.createObjectUrl
 
-    it('requests the correct URL', function() {
-      recap.uploadDocument(
-        court, pacer_case_id, pacer_doc_id, docnum, attachnum, bytes,
+    it('requests the correct URL', async function() {
+      await recap.uploadDocument(
+        court, pacer_case_id, pacer_doc_id, docnum, attachnum, blobUrl,
         function() {});
       expect(jasmine.Ajax.requests.mostRecent().url).toBe(
         'https://www.courtlistener.com/api/rest/v3/recap/');
     });
 
-    it('sends the correct FormData', function() {
+    it('sends the correct FormData', async function() {
       const expected = new FormDataFake();
       expected.append('court', court);
       expected.append('pacer_case_id', pacer_case_id);
@@ -233,14 +235,13 @@ describe('The Recap export module', function() {
       expected.append('document_number', docnum);
       expected.append('attachment_number', attachnum);
       expected.append('upload_type', 3);
-      expected.append('filepath_local', new Blob(
-        [html], {type: type}), filename);
+      expected.append('filepath_local', blob)
 
       // pacer_court, pacer_case_id, pacer_doc_id,
-      // document_number, attachment_number, bytes, cb
+      // document_number, attachment_number, blobUrl, cb
 
-      recap.uploadDocument(
-        court, pacer_case_id, pacer_doc_id, docnum, attachnum, bytes,
+      await recap.uploadDocument(
+        court, pacer_case_id, pacer_doc_id, docnum, attachnum, blobUrl,
         function() {});
       const actualData = jasmine.Ajax.requests.mostRecent().data();
       expect(actualData).toEqual(jasmine.objectContaining(expected));
