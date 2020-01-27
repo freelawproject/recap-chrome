@@ -362,8 +362,26 @@ ContentDelegate.prototype.handleSingleDocumentPageCheck = function() {
 };
 
 ContentDelegate.prototype.onDownloadAllSubmit = function(event) {
-  // Grab the docket_number
-  // Upload it RECAP
+  // return if not the download all page
+  if (!PACER.isDownloadAllDocumentsPage(this.url, document)) {
+    return;
+  }
+
+  console.log("YOU ARE ON THE DOWNLOAD ALL DOCUMENTS PAGE");
+  // case_id included as class variable this.case_id
+
+  // do we need to intercept the zip file before it gets sent to user?
+
+  // Save a copy of the page source, altered so that the "Download Documents"
+  // button initiates the page redirect but does not auto-download the file
+  let originalForm = document.forms[0];
+  let originalOnClick = originalForm.getAttribute("onclick");
+
+  // preventDownload
+  // download occurs after page redirect
+  // the Download Confirmation Page opens an iFrame with the file url
+
+  // If Recap enabled, upload it
 };
 
 ContentDelegate.prototype.onDocumentViewSubmit = function(event) {

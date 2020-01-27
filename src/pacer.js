@@ -18,11 +18,11 @@
 //                                        |    particular document (aka doc1
 //                                        |    page.
 //                                        |     |
-//                                        |-----'--> Single document page
-//                                        |           |
-//                                        |           '--> PDF view page (*)
-//                                        |
-//                                        |_____'--> Download all documents page
+//                                        '-----|--> Single document page
+//                                              |     |
+//                                              |     '--> PDF view page (*)
+//                                              |
+//                                              '--> Download all documents page
 //                                                    |
 //                                                    '--> Download confirmation page (*)
 //
@@ -172,13 +172,13 @@ let PACER = {
   // Returns true if this is a "Download Documents" page (confirmation of
   // pricing for all documents to receive a zip file with all of them)
   isDownloadAllDocumentsPage: function(url, document) {
-    let inputs = document.getElementsByTagName("input")
+    let inputs = document.getElementsByTagName("input");
     let pageCheck =
       !!url.match(/\/show_multidocs\.pl\?\w+-[\w-]+$/) &&
       inputs.length &&
-      inputs[inputs.length -1].value === "Download Documents"
-    return !!pageCheck
-  }
+      inputs[inputs.length - 1].value === "Download Documents";
+    return !!pageCheck;
+  },
 
   // Returns true if this is a page for downloading a single document.
   // district:
