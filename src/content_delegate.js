@@ -373,13 +373,48 @@ ContentDelegate.prototype.onDownloadAllSubmit = function(event) {
   // do we need to intercept the zip file before it gets sent to user?
 
   // Save a copy of the page source, altered so that the "Download Documents"
-  // button initiates the page redirect but does not auto-download the file
-  let originalForm = document.forms[0];
-  let originalOnClick = originalForm.getAttribute("onclick");
+  // button goes forward in history but does not
+  const originalForm = document.forms[0];
+  const originalFormButton = originalForm.elements[0];
+  const downloadRedirectUrl = originalFormButton.getAttribute("onclick");
+  originalFormButton.setAttribute("onclick", "history.forward(); return false");
 
-  // preventDownload
-  // download occurs after page redirect
-  // the Download Confirmation Page opens an iFrame with the file url
+  // unsure if needed for zip file downloading
+  const previousPageHtml = document.documentElement.innerHTML;
+  originalFormButton.setAttribute("onclick", downloadRedirectUrl);
+
+  const form = document.getElementById(event.data.id);
+
+  // implement appellate court check
+
+  // Now do the form request to get to the view page. PACER sites will
+  // return an HTML page containing an <iframe> that loads the ZIP document.
+  // TODO: Confirm that zip downloading is consistent across jurisdictions
+  // NOTE: Syntax modeled after previous class functions
+
+  $("body").css("cursor", "wait");
+  const data = new FormData(form);
+
+  httpRequest(form.elements[0].onclick, data, function(type, ab, xhr) {
+    console.info(
+      `RECAP: Succesfully submitted RECAP "Download Documents" button form: ${xhr.statusText}`
+    );
+    // result as blob to pass into the file reader
+    const nextPageBlob = new Blob([new Uint8Array(ab)], { type: type });
+    const reader = new FileReader();
+    // reader callback executed when reader first attempts to read blob
+    reader.onload = () => {
+      const html = reader.result;
+
+      this.showZipPage(
+        document.documentElement,
+        html,
+        previousPageHtml,
+        docket_number,
+        document_number
+      );
+    };
+  });
 
   // If Recap enabled, upload it
 };
