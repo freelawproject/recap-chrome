@@ -174,7 +174,7 @@ let PACER = {
   isDownloadAllDocumentsPage: function(url, document) {
     let inputs = document.getElementsByTagName("input");
     let pageCheck =
-      !!url.match(/\/show_multidocs\.pl\?\w+-[\w-]+$/) &&
+      !!url.match(/\/show_multidocs\.pl\?/) &&
       inputs.length &&
       inputs[inputs.length - 1].value === "Download Documents";
     return !!pageCheck;

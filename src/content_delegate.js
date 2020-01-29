@@ -361,7 +361,8 @@ ContentDelegate.prototype.handleSingleDocumentPageCheck = function() {
   );
 };
 
-ContentDelegate.prototype.onDownloadAllSubmit = function(event) {
+ContentDelegate.prototype.handleOnDownloadAllSubmit = function(event) {
+  console.log(PACER.isDownloadAllDocumentsPage(this.url, document));
   // return if not the download all page
   if (!PACER.isDownloadAllDocumentsPage(this.url, document)) {
     return;
