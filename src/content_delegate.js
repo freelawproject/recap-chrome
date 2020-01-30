@@ -468,8 +468,13 @@ ContentDelegate.prototype.showPdfPage = function(
         }.bind(this);
 
         chrome.storage.local.get('options', displayPDF);
-
+        const nonce = "EB23C5DF"
+        const data = { [nonce]: arrayBufferToArray(ab) }
+        chrome.storage.local.set(data, function() {
+          console.log('Blob is set to', data)
+        })
         let uploadDocument = function(items){
+          // store the blob in chrome storage for background worker
           if (items['options']['recap_enabled'] && !this.restricted) {
             // If we have the pacer_case_id, upload the file to RECAP.
             // We can't pass an ArrayBuffer directly to the background
@@ -482,11 +487,10 @@ ContentDelegate.prototype.showPdfPage = function(
               }
             }.bind(this);
 
-            // In modern JS, you can pass the blob through the DOM using a url
-            const blobUrl = URL.createObjectURL(blob)
+
             this.recap.uploadDocument(
               this.court, pacer_case_id, this.pacer_doc_id, document_number,
-              attachment_number, blobUrl, onUploadOk
+              attachment_number, nonce, onUploadOk
             );
           } else {
             console.info("RECAP: Not uploading PDF. RECAP is disabled.");
