@@ -155,11 +155,9 @@ function Recap() {
         if (attachment_number && attachment_number !== '0'){
           formData.append('attachment_number', attachment_number);
         }
-        console.log(bytes[nonce])
         const ab = new Uint8Array(bytes[nonce])
-        console.log(ab)
         const blob = new Blob([ab])
-        console.log("This is the value from chrome storage", blob)
+        console.log("RECAP: Retrieved blob from storage", blob)
 
         formData.append('filepath_local', blob);
         formData.append('upload_type', UPLOAD_TYPES['PDF']);

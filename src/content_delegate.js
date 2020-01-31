@@ -415,8 +415,8 @@ ContentDelegate.prototype.showPdfPage = function(
     history.replaceState({content: previousPageHtml}, '');
 
     // store the result in chrome local storage
-    //
-    const nonce = "EB23C5DF"
+
+    const nonce = "blob_upload_storage"
     const data = { [nonce]: ab }
 
     chrome.storage.local.set(data, function() {
