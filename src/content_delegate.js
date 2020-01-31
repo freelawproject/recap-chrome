@@ -414,10 +414,20 @@ ContentDelegate.prototype.showPdfPage = function(
     };
     history.replaceState({content: previousPageHtml}, '');
 
+    // store the result in chrome local storage
+
+    const nonce = "blob_upload_storage"
+    const data = { [nonce]: ab }
+
+    chrome.storage.local.set(data, function() {
+      console.log(`Blob saved: ${data.nonce.length}`)
+    })
+
     // Get the PACER case ID and, on completion, define displayPDF()
     // to either display the PDF in the provided <iframe>, or, if
     // external_pdf is set, save it using FileSaver.js's saveAs().
     let blob = new Blob([new Uint8Array(ab)], {type: type});
+
     this.recap.getPacerCaseIdFromPacerDocId(
       this.pacer_doc_id, function(pacer_case_id){
         console.info(`RECAP: Stored pacer_case_id is ${pacer_case_id}`);
@@ -468,8 +478,8 @@ ContentDelegate.prototype.showPdfPage = function(
         }.bind(this);
 
         chrome.storage.local.get('options', displayPDF);
-
         let uploadDocument = function(items){
+          // store the blob in chrome storage for background worker
           if (items['options']['recap_enabled'] && !this.restricted) {
             // If we have the pacer_case_id, upload the file to RECAP.
             // We can't pass an ArrayBuffer directly to the background
@@ -482,14 +492,10 @@ ContentDelegate.prototype.showPdfPage = function(
               }
             }.bind(this);
 
-            // In Chrome, blobs can't be passed from content scripts
-            // to background scripts, so we have to convert to an
-            // array and pass that, then convert back to a blob when
-            // we add the data to the FormData object.
-            let bytes = arrayBufferToArray(ab);
+
             this.recap.uploadDocument(
               this.court, pacer_case_id, this.pacer_doc_id, document_number,
-              attachment_number, bytes, onUploadOk
+              attachment_number, nonce, onUploadOk
             );
           } else {
             console.info("RECAP: Not uploading PDF. RECAP is disabled.");

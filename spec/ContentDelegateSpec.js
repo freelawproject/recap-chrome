@@ -40,12 +40,12 @@ describe('The ContentDelegate class', function() {
       storage : {
         local : {
           get : jasmine.createSpy().and.callFake(function(
-              _, cb) { cb({options : {}}); })
+              _, cb) { cb({options : {}}); }),
+          set : jasmine.createSpy('set').and.callFake(function() {})
         }
       }
     }
   }
-
   function removeChromeSpy() {
     delete window.chrome;
   }
@@ -223,7 +223,8 @@ describe('The ContentDelegate class', function() {
           storage : {
             local : {
               get : jasmine.createSpy().and.callFake(function(
-                _, cb) { cb({options : {recap_enabled: false}}); })
+                _, cb) { cb({options : {recap_enabled: false}}); }),
+              set : jasmine.createSpy('set').and.callFake(function() {})
             }
           }
         };
@@ -247,7 +248,8 @@ describe('The ContentDelegate class', function() {
           storage : {
             local : {
               get : jasmine.createSpy().and.callFake(function(
-                _, cb) { cb({options : {recap_enabled: true}}); })
+                _, cb) { cb({options : {recap_enabled: true}}); }),
+              set : jasmine.createSpy('set').and.callFake(function() {})
             }
           }
         };
@@ -341,7 +343,8 @@ describe('The ContentDelegate class', function() {
           storage : {
             local : {
               get : jasmine.createSpy().and.callFake(function(
-                _, cb) { cb({options : {recap_enabled: false}}); })
+                _, cb) { cb({options : {recap_enabled: false}}); }),
+              set : jasmine.createSpy('set').and.callFake(function() {})
             }
           }
         };
@@ -372,7 +375,8 @@ describe('The ContentDelegate class', function() {
           storage : {
             local : {
               get : jasmine.createSpy().and.callFake(function(
-                _, cb) { cb({options : {recap_enabled: true}}); })
+                _, cb) { cb({options : {recap_enabled: true}}); }),
+              set : jasmine.createSpy('set').and.callFake(function() {})
             }
           }
         };
@@ -771,7 +775,8 @@ describe('The ContentDelegate class', function() {
         storage : {
           local : {
             get : jasmine.createSpy().and.callFake(function(
-              _, cb) { cb({options : {recap_enabled: true}}); })
+              _, cb) { cb({options : {recap_enabled: true}}); }),
+            set : jasmine.createSpy('set').and.callFake(function() {})
           }
         }
       };
@@ -984,7 +989,8 @@ describe('The ContentDelegate class', function() {
           storage : {
             local : {
               get : jasmine.createSpy().and.callFake(function(
-                  _, cb) { cb({options : {recap_link_popups : true}}); })
+                  _, cb) { cb({options : {recap_link_popups : true}}); }),
+              set : jasmine.createSpy('set').and.callFake(function() {})
             }
           }
         };

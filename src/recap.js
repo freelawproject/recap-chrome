@@ -134,42 +134,53 @@ function Recap() {
       });
     },
 
-    // Uploads a PDF document to the RECAP server, calling the callback with
+    // Asynchronously uploads a PDF document to the RECAP server, calling the callback with
     // a boolean success flag.
     uploadDocument: function(pacer_court, pacer_case_id, pacer_doc_id,
-                             document_number, attachment_number, bytes, cb) {
+                             document_number, attachment_number, nonce, cb) {
       console.info(`RECAP: Attempting PDF upload to RECAP Archive with details: ` +
                    `pacer_court: ${pacer_court}, pacer_case_id: ` +
                    `${pacer_case_id}, pacer_doc_id: ${pacer_doc_id}, ` +
                    `document_number: ${document_number}, ` +
                    `attachment_number: ${attachment_number}.`);
-      let formData = new FormData();
-      formData.append('court', PACER.convertToCourtListenerCourt(pacer_court));
-      pacer_case_id && formData.append('pacer_case_id', pacer_case_id);
-      pacer_doc_id && formData.append('pacer_doc_id', pacer_doc_id);
-      document_number && formData.append('document_number', document_number);
-      if (attachment_number && attachment_number !== '0'){
-        formData.append('attachment_number', attachment_number);
-      }
-      formData.append('filepath_local', new Blob([new Uint8Array(bytes)]));
-      formData.append('upload_type', UPLOAD_TYPES['PDF']);
-      formData.append('debug', DEBUG);
-      $.ajax({
-        url: `${SERVER_ROOT}recap/`,
-        method: 'POST',
-        processData: false,
-        contentType: false,
-        data: formData,
-        success: function(data, textStatus, xhr){
-          console.info(`RECAP: Successfully uploaded PDF: '${textStatus}' ` +
-                       `with processing queue id of ${data['id']}`);
-          cb(data || null);
-        },
-        error: function(xhr, textStatus, errorThrown){
-          console.error(`RECAP: Ajax error uploading PDF. Status: ${textStatus}.` +
-                        `Error: ${errorThrown}`);
+      // wrap the upload function as the callback of the local storage retrieval
+      chrome.storage.local.get(nonce, (bytes) => {
+
+        let formData = new FormData();
+        formData.append('court', PACER.convertToCourtListenerCourt(pacer_court));
+        pacer_case_id && formData.append('pacer_case_id', pacer_case_id);
+        pacer_doc_id && formData.append('pacer_doc_id', pacer_doc_id);
+        document_number && formData.append('document_number', document_number);
+
+        if (attachment_number && attachment_number !== '0'){
+          formData.append('attachment_number', attachment_number);
         }
+        const ab = new Uint8Array(bytes[nonce])
+        const blob = new Blob([ab])
+        console.log("RECAP: Retrieved blob from storage", blob)
+
+        formData.append('filepath_local', blob);
+        formData.append('upload_type', UPLOAD_TYPES['PDF']);
+        formData.append('debug', DEBUG);
+
+        $.ajax({
+          url: `${SERVER_ROOT}recap/`,
+          method: 'POST',
+          processData: false,
+          contentType: false,
+          data: formData,
+          success: function(data, textStatus, xhr){
+            console.info(`RECAP: Successfully uploaded PDF: '${textStatus}' ` +
+                        `with processing queue id of ${data['id']}`);
+            cb(data || null);
+          },
+          error: function(xhr, textStatus, errorThrown){
+            console.error(`RECAP: Ajax error uploading PDF. Status: ${textStatus}.` +
+                          `Error: ${errorThrown}`);
+          }
+        });
+
       });
-    },
+    }
   };
 }
