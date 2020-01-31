@@ -414,10 +414,20 @@ ContentDelegate.prototype.showPdfPage = function(
     };
     history.replaceState({content: previousPageHtml}, '');
 
+    // store the result in chrome local storage
+    //
+    const nonce = "EB23C5DF"
+    const data = { [nonce]: ab }
+
+    chrome.storage.local.set(data, function() {
+      console.log(`Blob saved: ${data.nonce.length}`)
+    })
+
     // Get the PACER case ID and, on completion, define displayPDF()
     // to either display the PDF in the provided <iframe>, or, if
     // external_pdf is set, save it using FileSaver.js's saveAs().
     let blob = new Blob([new Uint8Array(ab)], {type: type});
+
     this.recap.getPacerCaseIdFromPacerDocId(
       this.pacer_doc_id, function(pacer_case_id){
         console.info(`RECAP: Stored pacer_case_id is ${pacer_case_id}`);
@@ -468,11 +478,6 @@ ContentDelegate.prototype.showPdfPage = function(
         }.bind(this);
 
         chrome.storage.local.get('options', displayPDF);
-        const nonce = "EB23C5DF"
-        const data = { [nonce]: arrayBufferToArray(ab) }
-        chrome.storage.local.set(data, function() {
-          console.log('Blob is set to', data)
-        })
         let uploadDocument = function(items){
           // store the blob in chrome storage for background worker
           if (items['options']['recap_enabled'] && !this.restricted) {
