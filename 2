@@ -713,18 +713,27 @@ ContentDelegate.prototype.handleZipFilePageView = function() {
   const inputs = [...document.getElementsByTagName('input')]
   console.log(inputs, onclickUrl)
 
-  const scriptText = `[...document.getElementsByTagName('input')].map(
+  inputs.map(
     input => {
-      console.log(input);
-      if (input.type === 'button' && input.value === "Download Documents") {
-        input.value = "WHEEEEE"
+      if (input.type === 'button' && input.value === "Download Documents" && !!input.formAction) {
+        onClickUrl = input.formAction
+        input.onclick = function() { window.postMessage(`{ id: ${ 'input' + new Date().getTime() } }`, "*") }
       }
     }
-  )`
+  )
 
-  const script = document.createElement("script")
-  script.innerText = scriptText
-  document.body.appendChild(script)
+
+  const script = document.createElement("script");
+  console.log(inputs, onclickUrl)
+
+
+
+  script.innerText =
+    'document.querySelector("input").__proto__.click = function () {' +
+    '  this.id = "input" + new Date().getTime();' +
+    '  window.postMessage({id: this.id}, "*");' +
+    "};";
+  document.body.appendChild(script);
 
   // When we receive the message from the above submit method, submit the form
   // via XHR so we can get the document before the browser does.

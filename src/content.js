@@ -33,15 +33,18 @@ if (PACER.hasPacerCookie(document.cookie)) {
   // RECAP.
   content_delegate.handleAttachmentMenuPage();
 
-  content_delegate.handleOnDownloadAllSubmit();
-
   // If this page offers a single document, ask RECAP whether it has the document.
   content_delegate.handleSingleDocumentPageCheck();
+
+  // If the page offers the ability to download a zip file, intercept navigation
+  // to the post-submit page.
+  content_delegate.handleZipFilePageView();
 
   // If this page offers a single document, intercept navigation to the document
   // view page.  The "View Document" button calls the goDLS() function, which
   // creates a <form> element and calls submit() on it, so we hook into submit().
   content_delegate.handleSingleDocumentPageView();
+
 
   // Check every link in the document to see if there is a free RECAP document
   // available. If there is, put a link with a RECAP icon.
