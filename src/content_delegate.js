@@ -362,18 +362,8 @@ ContentDelegate.prototype.handleSingleDocumentPageCheck = function() {
 };
 
 ContentDelegate.prototype.onDownloadAllSubmit = function(event) {
-  console.log("YOU ARE ON THE DOWNLOAD ALL DOCUMENTS PAGE");
+  console.log("YOU ARE ON THE DOWNLOAD ALL DOCUMENTS PAGE", event);
   // case_id included as class variable this.case_id
-
-  // do we need to intercept the zip file before it gets sent to user?
-
-
-  // unsure if needed for zip file downloading
-  const previousPageHtml = document.documentElement.innerHTML;
-  originalFormButton.setAttribute("onclick", downloadRedirectUrl);
-
-  console.log(event.data);
-  const form = document.getElementById(event.data.id);
 
   // implement appellate court check
 
@@ -408,22 +398,6 @@ ContentDelegate.prototype.onDownloadAllSubmit = function(event) {
   });
 
   // If Recap enabled, upload it
-};
-
-ContentDelegate.prototype.showZipPage = function(
-  documentElement,
-  html,
-  previousPageHtml,
-  docket_number,
-  document_number
-) {
-  console.log(
-    documentElement,
-    html,
-    previousPageHtml,
-    docket_number,
-    document_number
-  );
 };
 
 ContentDelegate.prototype.onDocumentViewSubmit = function(event) {
@@ -708,22 +682,26 @@ ContentDelegate.prototype.handleZipFilePageView = function() {
   // There are 2 "Download Documents" inputs on the page
   // We save the url from one of them, and then replace their
   // onclick methods with a window trigger
-  let onclickUrl
-  // use es6 spread operator to create an array from HTMLCollection
-  const inputs = [...document.getElementsByTagName('input')]
-  console.log(inputs, onclickUrl)
 
-  const scriptText = `[...document.getElementsByTagName('input')].map(
-    input => {
-      console.log(input);
-      if (input.type === 'button' && input.value === "Download Documents") {
-        input.value = "WHEEEEE"
-      }
-    }
-  )`
+  // prettier-ignore
+  const dangerouslySetInnerHTML = [
+    'let forms = document.forms;',
+    'for (i = 0; i < forms.length; i++) {',
+      'let form = forms[i];',
+    'form.action = () => { window.postMessage({ id: "downloadZip"}, "*" ) }',
+    '}',
+    'let items = document.getElementsByTagName("input");',
+    'for (i = 0; i < items.length; i++) {',
+    'input = items[i];',
+      'if (input.type === "button" && input.value === "Download Documents") {',
+        'input.removeAttribute("onclick");',
+        'input.addEventListener("click", () => window.postMessage({ id: "downloadZip" }))',
+      '};',
+    '}'
+  ].join('')
 
   const script = document.createElement("script")
-  script.innerText = scriptText
+  script.innerText = dangerouslySetInnerHTML
   document.body.appendChild(script)
 
   // When we receive the message from the above submit method, submit the form
