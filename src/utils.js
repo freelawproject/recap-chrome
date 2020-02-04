@@ -146,7 +146,6 @@ $.ajaxSetup({
   }
 });
 
-
 // Converts an ArrayBuffer to a regular array of unsigned bytes.  Array.apply()
 // causes a "maximum call stack size exceeded" error for buffers of only 300k,
 // so we need this ridiculous circumlocution of breaking the data into chunks.

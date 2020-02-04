@@ -204,22 +204,33 @@ describe('The Recap export module', function() {
   describe('uploadDocument', function() {
     let existingFormData;
 
+    const bytes = new Uint8Array([100, 100, 200, 200, 300]);
+    const blob = new Blob([html], {type: type}, filename);
+    const nonce = 'blob_upload_storage'
+
     beforeEach(function() {
-      setupChromeSpy();
+      window.chrome = {
+        storage: {
+          local: {
+            get: jasmine.createSpy('get').and.callFake((_, cb) => cb({ [nonce]: blob })),
+            set: jasmine.createSpy('set')
+          }
+        }
+      }
       existingFormData = window.FormData;
       window.FormData = FormDataFake;
     });
 
     afterEach(function() {
       window.FormData = existingFormData;
-      removeChromeSpy();
+      delete window.chrome;
     });
 
-    const bytes = new Uint8Array([100, 100, 200, 200, 300]);
+
 
     it('requests the correct URL', function() {
       recap.uploadDocument(
-        court, pacer_case_id, pacer_doc_id, docnum, attachnum, bytes,
+        court, pacer_case_id, pacer_doc_id, docnum, attachnum, nonce,
         function() {});
       expect(jasmine.Ajax.requests.mostRecent().url).toBe(
         'https://www.courtlistener.com/api/rest/v3/recap/');
@@ -233,14 +244,16 @@ describe('The Recap export module', function() {
       expected.append('document_number', docnum);
       expected.append('attachment_number', attachnum);
       expected.append('upload_type', 3);
-      expected.append('filepath_local', new Blob(
-        [html], {type: type}), filename);
+      // intentionally omitting test of chrome storage promises
+      // we pass the actual blob to the form instead of mocking
+      // the setting and retrieval of items in chrome storage
+      expected.append('filepath_local', blob)
 
       // pacer_court, pacer_case_id, pacer_doc_id,
-      // document_number, attachment_number, bytes, cb
+      // document_number, attachment_number, nonce, cb
 
       recap.uploadDocument(
-        court, pacer_case_id, pacer_doc_id, docnum, attachnum, bytes,
+        court, pacer_case_id, pacer_doc_id, docnum, attachnum, nonce,
         function() {});
       const actualData = jasmine.Ajax.requests.mostRecent().data();
       expect(actualData).toEqual(jasmine.objectContaining(expected));

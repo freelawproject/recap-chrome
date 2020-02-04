@@ -516,51 +516,55 @@ ContentDelegate.prototype.showPdfPage = function(
   documentElement.innerHTML = `${match[1]}<p>Waiting for download...<p><iframe src="about:blank"${match[3]}`;
 
   // Download the file from the <iframe> URL.
-  httpRequest(
-    match[2],
-    null,
-    function(type, ab, xhr) {
-      console.info(
-        "RECAP: Successfully got PDF as arraybuffer via ajax request."
-      );
+  httpRequest(match[2], null, function (type, ab, xhr) {
+    console.info("RECAP: Successfully got PDF as arraybuffer via ajax request.");
 
-      // Make the Back button redisplay the previous page.
-      window.onpopstate = function(event) {
-        if (event.state.content) {
-          documentElement.innerHTML = event.state.content;
-        }
-      };
-      history.replaceState({ content: previousPageHtml }, "");
+    // Make the Back button redisplay the previous page.
+    window.onpopstate = function(event) {
+      if (event.state.content) {
+        documentElement.innerHTML = event.state.content;
+      }
+    };
+    history.replaceState({content: previousPageHtml}, '');
 
-      // Get the PACER case ID and, on completion, define displayPDF()
-      // to either display the PDF in the provided <iframe>, or, if
-      // external_pdf is set, save it using FileSaver.js's saveAs().
-      let blob = new Blob([new Uint8Array(ab)], { type: type });
-      this.recap.getPacerCaseIdFromPacerDocId(
-        this.pacer_doc_id,
-        function(pacer_case_id) {
-          console.info(`RECAP: Stored pacer_case_id is ${pacer_case_id}`);
-          let displayPDF = function(items) {
-            let filename, pieces;
-            if (items.options.ia_style_filenames) {
-              pieces = [
-                "gov",
-                "uscourts",
-                this.court,
-                pacer_case_id || "unknown-case-id",
-                document_number,
-                attachment_number || "0"
-              ];
-              filename = `${pieces.join(".")}.pdf`;
-            } else if (items.options.lawyer_style_filenames) {
-              pieces = [
-                PACER.COURT_ABBREVS[this.court],
-                docket_number,
-                document_number,
-                attachment_number || "0"
-              ];
-              filename = `${pieces.join("_")}.pdf`;
-            }
+    // store the result in chrome local storage
+
+    const nonce = "blob_upload_storage"
+    const data = { [nonce]: ab }
+
+    chrome.storage.local.set(data, function() {
+      console.log(`Blob saved: ${data.nonce.length}`)
+    })
+
+    // Get the PACER case ID and, on completion, define displayPDF()
+    // to either display the PDF in the provided <iframe>, or, if
+    // external_pdf is set, save it using FileSaver.js's saveAs().
+    let blob = new Blob([new Uint8Array(ab)], {type: type});
+
+    this.recap.getPacerCaseIdFromPacerDocId(
+      this.pacer_doc_id, function(pacer_case_id){
+        console.info(`RECAP: Stored pacer_case_id is ${pacer_case_id}`);
+        let displayPDF = function (items) {
+          let filename, pieces;
+          if (items.options.ia_style_filenames) {
+            pieces = [
+              'gov',
+              'uscourts',
+              this.court,
+              (pacer_case_id || 'unknown-case-id'),
+              document_number,
+              (attachment_number || '0')
+            ];
+            filename = `${pieces.join('.')}.pdf`;
+          } else if (items.options.lawyer_style_filenames) {
+            pieces = [
+              PACER.COURT_ABBREVS[this.court],
+              docket_number,
+              document_number,
+              (attachment_number || '0')
+            ];
+            filename = `${pieces.join('_')}.pdf`;
+          }
 
             let external_pdf = items.options.external_pdf;
             if (
@@ -579,54 +583,43 @@ ContentDelegate.prototype.showPdfPage = function(
               html = `${match[1]}${downloadLink}<iframe onload="setTimeout(function() {
                       document.getElementById('recap-download').className = '';
                     }, 7500)" src="${blobUrl}"${match[3]}`;
-              documentElement.innerHTML = html;
-              history.pushState({ content: html }, "");
-            } else {
-              // Saving to an external PDF.
-              saveAs(blob, filename);
-              documentElement.innerHTML = `${match[1]}<p><iframe src="about:blank"${match[3]}`; // Clear "Waiting..." message
-            }
-          }.bind(this);
+            documentElement.innerHTML = html;
+            history.pushState({content: html}, '');
+          } else {
+            // Saving to an external PDF.
+            saveAs(blob, filename);
+	          documentElement.innerHTML = `${match[1]}<p><iframe src="about:blank"${match[3]}`; // Clear "Waiting..." message
+          }
+        }.bind(this);
 
-          chrome.storage.local.get("options", displayPDF);
+        chrome.storage.local.get('options', displayPDF);
+        let uploadDocument = function(items){
+          // store the blob in chrome storage for background worker
+          if (items['options']['recap_enabled'] && !this.restricted) {
+            // If we have the pacer_case_id, upload the file to RECAP.
+            // We can't pass an ArrayBuffer directly to the background
+            // page, so we have to convert to a regular array.
+            let onUploadOk = function (ok) {
+              if (ok) {
+                this.notifier.showUpload(
+                  'PDF uploaded to the public RECAP Archive.', function () {
+                  }.bind(this));
+              }
+            }.bind(this);
 
-          let uploadDocument = function(items) {
-            if (items["options"]["recap_enabled"] && !this.restricted) {
-              // If we have the pacer_case_id, upload the file to RECAP.
-              // We can't pass an ArrayBuffer directly to the background
-              // page, so we have to convert to a regular array.
-              let onUploadOk = function(ok) {
-                if (ok) {
-                  this.notifier.showUpload(
-                    "PDF uploaded to the public RECAP Archive.",
-                    function() {}.bind(this)
-                  );
-                }
-              }.bind(this);
 
-              // In Chrome, blobs can't be passed from content scripts
-              // to background scripts, so we have to convert to an
-              // array and pass that, then convert back to a blob when
-              // we add the data to the FormData object.
-              let bytes = arrayBufferToArray(ab);
-              this.recap.uploadDocument(
-                this.court,
-                pacer_case_id,
-                this.pacer_doc_id,
-                document_number,
-                attachment_number,
-                bytes,
-                onUploadOk
-              );
-            } else {
-              console.info("RECAP: Not uploading PDF. RECAP is disabled.");
-            }
-          }.bind(this);
-          chrome.storage.local.get("options", uploadDocument);
-        }.bind(this)
-      );
-    }.bind(this)
-  );
+            this.recap.uploadDocument(
+              this.court, pacer_case_id, this.pacer_doc_id, document_number,
+              attachment_number, nonce, onUploadOk
+            );
+          } else {
+            console.info("RECAP: Not uploading PDF. RECAP is disabled.");
+          }
+        }.bind(this);
+        chrome.storage.local.get('options', uploadDocument);
+
+      }.bind(this));
+  }.bind(this));
 };
 
 // If this page offers a single document, intercept navigation to the document
