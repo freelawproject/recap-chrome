@@ -172,5 +172,8 @@ function Recap() {
         }
       });
     },
+    uploadZipFile: function(pacer_court, pacer_case_id, document_number, nonce, cb) {
+
+    }
   };
 }

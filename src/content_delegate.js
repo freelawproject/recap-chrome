@@ -362,7 +362,7 @@ ContentDelegate.prototype.handleSingleDocumentPageCheck = function() {
 };
 
 ContentDelegate.prototype.onDownloadAllSubmit = function(event) {
-  console.log("YOU ARE ON THE DOWNLOAD ALL DOCUMENTS PAGE", event);
+  console.log("YOU ARE ON THE DOWNLOAD ALL DOCUMENTS PAGE", event.data.id);
   // case_id included as class variable this.case_id
 
   // implement appellate court check
@@ -373,29 +373,27 @@ ContentDelegate.prototype.onDownloadAllSubmit = function(event) {
   // NOTE: Syntax modeled after previous class functions
 
   $("body").css("cursor", "wait");
-  const data = new FormData(form);
 
-  httpRequest(form.elements[0].onclick, data, function(type, ab, xhr) {
-    console.info(
-      `RECAP: Succesfully submitted RECAP "Download Documents" button form: ${xhr.statusText}`
-    );
+  const html = fetch(event.data.id).then(res => res.text());
 
-    // result as blob to pass into the file reader
-    const nextPageBlob = new Blob([new Uint8Array(ab)], { type: type });
-    const reader = new FileReader();
-    // reader callback executed when reader first attempts to read blob
-    reader.onload = () => {
-      const html = reader.result;
+  const page = document.createElement("html");
+  page.innerHTML = html;
 
-      this.showZipPage(
-        document.documentElement,
-        html,
-        previousPageHtml,
-        docket_number,
-        document_number
-      );
-    };
-  });
+  const frames = page.querySelectorAll("iframe");
+  const zipUrl = frames[0].src
+
+  httpRequest(
+    zipUrl,
+    null,
+    function(type, ab, xhr) {
+      console.info('RECAP: Downloading zip file')
+      const blob = new Blob([new Uint8Array(ab)], { type: type });
+      // if a zip upload it to recap
+      if (blob) {
+
+      }
+    }
+  )
 
   // If Recap enabled, upload it
 };
@@ -671,38 +669,39 @@ ContentDelegate.prototype.handleZipFilePageView = function() {
     return;
   }
 
-  // env-dev
-  console.log("You are on the download zip page");
+  // extract the url from the onclick attribute from one of the two
+  // "Download Documents" buttons
+  const inputs = [...document.getElementsByTagName("input")];
+  const targetInput = inputs.find(
+    input => input.type === "button" && input.value === "Download Documents"
+  );
+  const url = targetInput
+    .getAttribute("onclick")
+    .replace(/p.*\//, "") // remove parent.location='/cgi-bin/
+    .replace(/\'(?=$)/, ""); // remove endquote
 
-  // Find the "Download Documents" button,
-  // change the click method to trigger the onDownloadAllSubmit function
-  // Fire the onDownloadAllSubmit when user click
-
-
-  // There are 2 "Download Documents" inputs on the page
-  // We save the url from one of them, and then replace their
-  // onclick methods with a window trigger
-
+  // now we replace the onclick method of the "Download Documents" buttons
+  // with the postMessage function and zero out the form action buttons
   // prettier-ignore
   const dangerouslySetInnerHTML = [
     'let forms = document.forms;',
     'for (i = 0; i < forms.length; i++) {',
       'let form = forms[i];',
-    'form.action = () => { window.postMessage({ id: "downloadZip"}, "*" ) }',
+      'form.removeAttribute("action")',
     '}',
     'let items = document.getElementsByTagName("input");',
     'for (i = 0; i < items.length; i++) {',
-    'input = items[i];',
+      'input = items[i];',
       'if (input.type === "button" && input.value === "Download Documents") {',
         'input.removeAttribute("onclick");',
-        'input.addEventListener("click", () => window.postMessage({ id: "downloadZip" }))',
+        `input.addEventListener("click", () => window.postMessage({ id: ${JSON.stringify(url)}}))`,
       '};',
     '}'
   ].join('')
 
-  const script = document.createElement("script")
-  script.innerText = dangerouslySetInnerHTML
-  document.body.appendChild(script)
+  const script = document.createElement("script");
+  script.innerText = dangerouslySetInnerHTML;
+  document.body.appendChild(script);
 
   // When we receive the message from the above submit method, submit the form
   // via XHR so we can get the document before the browser does.
