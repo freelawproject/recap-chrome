@@ -389,13 +389,40 @@ ContentDelegate.prototype.onDownloadAllSubmit = function(event) {
       console.info('RECAP: Downloading zip file')
       const blob = new Blob([new Uint8Array(ab)], { type: type });
       // if a zip upload it to recap
+      console.log(blob)
       if (blob) {
+    // store the result in chrome local storage
 
-      }
-    }
+    const nonce = "blob_upload_storage"
+    const data = { [nonce]: ab }
+
+    const id = this.recap.getPacerCaseIdFromPacerDocId(
+      this.pacer_doc_id, function(pacer_case_id){
+        console.info(`RECAP: Stored pacer_case_id is ${pacer_case_id}`);
+      })
+
+        chrome.storage.local.get('options', displayPDF);
+        let uploadDocument = function(items){
+          // store the blob in chrome storage for background worker
+          if (items['options']['recap_enabled'] && !this.restricted) {
+            // If we have the pacer_case_id, upload the file to RECAP.
+            // We can't pass an ArrayBuffer directly to the background
+            // page, so we have to convert to a regular array.
+            let onUploadOk = function (ok) {
+              if (ok) {
+                this.notifier.showUpload(
+                  'PDF uploaded to the public RECAP Archive.', function () {
+                  }.bind(this));
+              }
+            }.bind(this);
+
+
+    chrome.storage.local.set(data, function() {
+      console.log(`Blob saved: ${data.nonce.length}`)
+    })
+    this.recap.uploadZipFile(this.court, pacer_case_id, this.pacer_doc_id, nonce, onUploadOk)
+    }}
   )
-
-  // If Recap enabled, upload it
 };
 
 ContentDelegate.prototype.onDocumentViewSubmit = function(event) {
