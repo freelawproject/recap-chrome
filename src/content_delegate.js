@@ -1,5 +1,15 @@
 // Abstraction of content scripts to make them modular and testable.
 
+const getItemsFromStorage = (keys) => new Promise((resolve, reject) =>
+  chrome.storage.local.get(null, result => {
+    console.log(result)
+    resolve(result)
+  }
+))
+
+const saveItemToStorage = (dataObj) => new Promise((resolve, reject) =>
+  chrome.storage.local.set(dataObj, () => resolve(console.log('RECAP: Item saved in storage'))))
+
 let ContentDelegate = function(
   url,
   path,
@@ -361,68 +371,65 @@ ContentDelegate.prototype.handleSingleDocumentPageCheck = function() {
   );
 };
 
-ContentDelegate.prototype.onDownloadAllSubmit = function(event) {
-  console.log("YOU ARE ON THE DOWNLOAD ALL DOCUMENTS PAGE", event.data.id);
-  // case_id included as class variable this.case_id
-
-  // implement appellate court check
-
-  // Now do the form request to get to the view page. PACER sites will
-  // return an HTML page containing an <iframe> that loads the ZIP document.
+  // TODO: implement appellate court check
   // TODO: Confirm that zip downloading is consistent across jurisdictions
-  // NOTE: Syntax modeled after previous class functions
+ContentDelegate.prototype.onDownloadAllSubmit = async function(event) {
+  // helper functions
+  // extract the zip by creating an html Element and then querying for the frame
+  const extractUrl = (html) => {
+    const page = document.createElement("html");
+    page.innerHTML = html;
+    const frames = page.querySelectorAll("iframe");
+    return frames[0].src
+  }
 
+  // save the file to localStorage
+  const saveFileToStorage = async (data) => {
+    try {
+      await chrome.storage.local.set(data)
+    } catch(err) {
+      console.error('RECAP: Error saving to local storage')
+    }
+  }
+
+  // runtime start
   $("body").css("cursor", "wait");
+  console.log("YOU ARE ON THE DOWNLOAD ALL DOCUMENTS PAGE", event.data.id);
+  try {
 
-  const html = fetch(event.data.id).then(res => res.text());
+    // fetch the html page which contains the <iframe> link to the zip document.
+    const zipUrl = await fetch(event.data.id).then(res => res.text()).then(html => extractUrl(html));
 
-  const page = document.createElement("html");
-  page.innerHTML = html;
-
-  const frames = page.querySelectorAll("iframe");
-  const zipUrl = frames[0].src
-
-  httpRequest(
-    zipUrl,
-    null,
-    function(type, ab, xhr) {
+    //download zip file
+    const zipFile = await fetch(zipUrl).then(res => {
       console.info('RECAP: Downloading zip file')
-      const blob = new Blob([new Uint8Array(ab)], { type: type });
-      // if a zip upload it to recap
-      console.log(blob)
-      if (blob) {
-    // store the result in chrome local storage
-
-    const nonce = "blob_upload_storage"
-    const data = { [nonce]: ab }
-
-    const id = this.recap.getPacerCaseIdFromPacerDocId(
-      this.pacer_doc_id, function(pacer_case_id){
-        console.info(`RECAP: Stored pacer_case_id is ${pacer_case_id}`);
-      })
-
-        chrome.storage.local.get('options', displayPDF);
-        let uploadDocument = function(items){
-          // store the blob in chrome storage for background worker
-          if (items['options']['recap_enabled'] && !this.restricted) {
-            // If we have the pacer_case_id, upload the file to RECAP.
-            // We can't pass an ArrayBuffer directly to the background
-            // page, so we have to convert to a regular array.
-            let onUploadOk = function (ok) {
-              if (ok) {
-                this.notifier.showUpload(
-                  'PDF uploaded to the public RECAP Archive.', function () {
-                  }.bind(this));
-              }
-            }.bind(this);
-
-
-    chrome.storage.local.set(data, function() {
-      console.log(`Blob saved: ${data.nonce.length}`)
+      res.blob()
     })
-    this.recap.uploadZipFile(this.court, pacer_case_id, this.pacer_doc_id, nonce, onUploadOk)
-    }}
-  )
+
+    const payload = await getItemsFromStorage([this.pacer_doc_id, 'options'])
+    console.log(payload)
+    // load options
+    const pacerCaseId = payload[this.pacer_doc_id]
+    const options = payload['options']
+    console.log(options['recap_enabled'], this.restricted)
+    if (options['recap_enabled'] && !this.restricted) {
+      const nonce = "blob_upload_storage"
+      const data = { [nonce]: zipFile }
+
+      saveItemToStorage(data).then(() =>
+        this.recap.uploadZipFile(
+          this.court, // string
+          pacerCaseId, // string
+          this.pacer_doc_id, // string
+          nonce, // string
+          (ok) => ok && // function
+            this.notifier.showUpload('zip uploaded to the Public Recap Archive', () => {})
+        )
+      )
+    }
+  } catch(err) {
+    console.log(err)
+  }
 };
 
 ContentDelegate.prototype.onDocumentViewSubmit = function(event) {
