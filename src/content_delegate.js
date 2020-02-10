@@ -7,8 +7,15 @@ const getItemsFromStorage = (keys) => new Promise((resolve, reject) =>
   }
 ))
 
-const saveItemToStorage = (dataObj) => new Promise((resolve, reject) =>
-  chrome.storage.local.set(dataObj, () => resolve(console.log('RECAP: Item saved in storage'))))
+const saveItemToStorage = (dataObj) => new Promise(
+  (resolve, reject) =>
+    chrome.storage.local.set(
+      dataObj,
+      () => resolve(
+        console.log('RECAP: Item saved in storage', dataObj)
+      )
+    )
+)
 
 let ContentDelegate = function(
   url,
@@ -374,7 +381,7 @@ ContentDelegate.prototype.handleSingleDocumentPageCheck = function() {
   // TODO: implement appellate court check
   // TODO: Confirm that zip downloading is consistent across jurisdictions
 ContentDelegate.prototype.onDownloadAllSubmit = async function(event) {
-  // helper functions
+  // helper function
   // extract the zip by creating an html Element and then querying for the frame
   const extractUrl = (html) => {
     const page = document.createElement("html");
@@ -383,48 +390,39 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function(event) {
     return frames[0].src
   }
 
-  // save the file to localStorage
-  const saveFileToStorage = async (data) => {
-    try {
-      await chrome.storage.local.set(data)
-    } catch(err) {
-      console.error('RECAP: Error saving to local storage')
-    }
-  }
-
   // runtime start
   $("body").css("cursor", "wait");
-  console.log("YOU ARE ON THE DOWNLOAD ALL DOCUMENTS PAGE", event.data.id);
-  try {
+  console.log("RECAP: Successfully submitted zip file request");
 
+  try {
     // fetch the html page which contains the <iframe> link to the zip document.
     const zipUrl = await fetch(event.data.id).then(res => res.text()).then(html => extractUrl(html));
-
     //download zip file
-    const zipFile = await fetch(zipUrl).then(res => {
-      console.info('RECAP: Downloading zip file')
-      res.blob()
-    })
+    const nonce = "blob_upload_storage"
+    const zipFile = await fetch(zipUrl)
+      .then(res => {
+        console.info('RECAP: Downloaded zip file')
+        return res.arrayBuffer()
+      })
+      .then(buffer => {
+        const data = arrayBufferToArray(buffer)
+        console.log(data)
+        saveItemToStorage({ [nonce]: data })
+      })
 
     const payload = await getItemsFromStorage([this.pacer_doc_id, 'options'])
-    console.log(payload)
     // load options
     const pacerCaseId = payload[this.pacer_doc_id]
     const options = payload['options']
-    console.log(options['recap_enabled'], this.restricted)
-    if (options['recap_enabled'] && !this.restricted) {
-      const nonce = "blob_upload_storage"
-      const data = { [nonce]: zipFile }
 
-      saveItemToStorage(data).then(() =>
-        this.recap.uploadZipFile(
-          this.court, // string
-          pacerCaseId, // string
-          this.pacer_doc_id, // string
-          nonce, // string
-          (ok) => ok && // function
-            this.notifier.showUpload('zip uploaded to the Public Recap Archive', () => {})
-        )
+    if (options['recap_enabled'] && !this.restricted) {
+      this.recap.uploadZipFile(
+        this.court, // string
+        pacerCaseId, // string
+        this.pacer_doc_id, // string
+        nonce, // string
+        (ok) => ok && // function
+          this.notifier.showUpload('zip uploaded to the Public Recap Archive', () => {})
       )
     }
   } catch(err) {

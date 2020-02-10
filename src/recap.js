@@ -186,7 +186,7 @@ function Recap() {
     uploadZipFile: function(pacer_court, pacer_case_id, document_number, nonce, cb) {
       console.log("RECAP: Uploading file to pacer")
 
-      chrome.storage.local.get(null, (bytes) => {
+      chrome.storage.local.get(nonce, (bytes) => {
         console.log(bytes)
         const ab = new Uint8Array(bytes[nonce])
         const blob = new Blob([ab])
