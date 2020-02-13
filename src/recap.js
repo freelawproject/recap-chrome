@@ -10,6 +10,7 @@ function Recap() {
       'DOCKET_HISTORY_REPORT': 4,
       'APPELLATE_DOCKET': 5,
       'APPELLATE_ATTACHMENT_PAGE': 6,
+      'ZIP': 11,
     };
 
   return {
@@ -181,6 +182,39 @@ function Recap() {
         });
 
       });
+    },
+    // Upload a zip file to the RECAP server, calling the cb with ok flag
+    uploadZipFile: async function(pacer_court, pacer_case_id, document_number, nonce, cb) {
+      console.info(`RECAP: Attempting PDF upload to RECAP Archive with details: ` +
+                   `pacer_court: ${pacer_court}, pacer_case_id: ` +
+                   `${pacer_case_id}, pacer_doc_id: ${pacer_doc_id}`)
+
+      const bytes = await getItemsFromStorage([nonce])
+      // wrap upload function in the storage call
+      console.log("RECAP: Retrieving blob from storage")
+      const ab = new Uint8Array(bytes[nonce])
+      const blob = new Blob([ab])
+
+      let formData = new FormData();
+      formData.append('court', PACER.convertToCourtListenerCourt(pacer_court));
+      pacer_case_id && formData.append('pacer_case_id', pacer_case_id);
+      document_number && formData.append('document_number', document_number);
+      formData.append('filepath_local', blob);
+      formData.append('upload_type', UPLOAD_TYPES['ZIP']);
+      formData.append('debug', DEBUG);
+
+      const fetchOptions = {
+        method: 'POST',
+        body: JSON.stringify(formData),
+        headers: {
+          'Authorization': `Token ${RECAP_TOKEN}`
+        }
+      }
+
+      fetch(`${SERVER_ROOT}recap/`, fetchOptions)
+        .then(res => res.json())
+        .then(result => console.log("RECAP: Zip file uploaded successfully"))
+        .catch(error => console.log(`RECAP: The following error occurred: ${error}`))
     }
   };
 }

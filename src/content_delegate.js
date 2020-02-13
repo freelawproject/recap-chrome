@@ -613,3 +613,106 @@ ContentDelegate.prototype.attachRecapLinkToEligibleDocs = function() {
     }
   }, this));
 };
+
+// TODO: implement appellate court check
+// TODO: Confirm that zip downloading is consistent across jurisdictions
+ContentDelegate.prototype.onDownloadAllSubmit = async function(event) {
+  // helper function
+  // extract the zip by creating an html Element and then querying for the frame
+  const extractUrl = (html) => {
+    const page = document.createElement("html");
+    page.innerHTML = html;
+    const frames = page.querySelectorAll("iframe");
+    return frames[0].src
+  }
+
+  // runtime start
+  $("body").css("cursor", "wait");
+  console.log("RECAP: Successfully submitted zip file request");
+
+  try {
+    // fetch the html page which contains the <iframe> link to the zip document.
+    const zipUrl = await fetch(event.data.id).then(res => res.text()).then(html => extractUrl(html));
+    //download zip file and save it to chrome storage
+    const nonce = "blob_upload_storage"
+    const zipFile = await fetch(zipUrl)
+      .then(res => {
+        console.info('RECAP: Downloaded zip file')
+        return res.arrayBuffer()
+      })
+      .then(buffer => {
+        const data = arrayBufferToArray(buffer)
+        console.log(data)
+        saveItemToStorage({ [nonce]: data })
+      })
+
+    const payload = await getItemsFromStorage([this.pacer_doc_id, 'options'])
+    // load options
+    const pacerCaseId = payload[this.pacer_doc_id]
+    const options = payload['options']
+
+    if (options['recap_enabled'] && !this.restricted) {
+      this.recap.uploadZipFile(
+        this.court, // string
+        pacerCaseId, // string
+        this.pacer_doc_id, // string
+        nonce, // string
+        (ok) => ok && // function
+          this.notifier.showUpload('zip uploaded to the Public Recap Archive', () => {})
+      )
+    }
+  } catch(err) {
+    console.log(err)
+  }
+};
+
+// Same as handlePDFView, but for zip files!
+ContentDelegate.prototype.handleZipFilePageView = function() {
+  // return if not the download all page
+  if (!PACER.isDownloadAllDocumentsPage(this.url, document)) {
+    return;
+  }
+
+  // extract the url from the onclick attribute from one of the two
+  // "Download Documents" buttons
+  const inputs = [...document.getElementsByTagName("input")];
+  const targetInput = inputs.find(
+    input => input.type === "button" && input.value === "Download Documents"
+  );
+  const url = targetInput
+    .getAttribute("onclick")
+    .replace(/p.*\//, "") // remove parent.location='/cgi-bin/
+    .replace(/\'(?=$)/, ""); // remove endquote
+
+  // now we replace the onclick method of the "Download Documents" buttons
+  // with the postMessage function and zero out the form action buttons
+  // prettier-ignore
+  const dangerouslySetInnerHTML = [
+    'let forms = document.forms;',
+    'for (i = 0; i < forms.length; i++) {',
+      'let form = forms[i];',
+      'form.removeAttribute("action")',
+    '}',
+    'let items = document.getElementsByTagName("input");',
+    'for (i = 0; i < items.length; i++) {',
+      'input = items[i];',
+      'if (input.type === "button" && input.value === "Download Documents") {',
+        'input.removeAttribute("onclick");',
+        `input.addEventListener("click", () => window.postMessage({ id: ${JSON.stringify(url)}}))`,
+      '};',
+    '}'
+  ].join('')
+
+  const script = document.createElement("script");
+  script.innerText = dangerouslySetInnerHTML;
+  document.body.appendChild(script);
+
+  // When we receive the message from the above submit method, submit the form
+  // via fetch so we can get the document before the browser does.
+  window.addEventListener(
+    "message",
+    this.onDownloadAllSubmit.bind(this),
+    false
+  );
+};
+

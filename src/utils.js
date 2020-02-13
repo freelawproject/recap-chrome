@@ -125,6 +125,25 @@ function httpRequest(url, postData, callback) {
   }
 }
 
+// helper functions for chrome local storage
+
+const getItemsFromStorage = (keys) => new Promise((resolve, reject) =>
+  chrome.storage.local.get(null, result => {
+    console.log(result)
+    resolve(result)
+  }
+))
+
+const saveItemToStorage = (dataObj) => new Promise(
+  (resolve, reject) =>
+    chrome.storage.local.set(
+      dataObj,
+      () => resolve(
+        console.log('RECAP: Item saved in storage', dataObj)
+      )
+    )
+)
+
 // Default settings for any jquery $.ajax call.
 $.ajaxSetup({
   // The dataType parameter is a security measure requested by Opera code

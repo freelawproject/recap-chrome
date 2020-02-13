@@ -22,6 +22,10 @@ if (PACER.hasPacerCookie(document.cookie)) {
   // If this is a docket page, upload it to RECAP.
   content_delegate.handleDocketDisplayPage();
 
+  // If the page offers the ability to download a zip file, intercept navigation
+  // to the post-submit page.
+  content_delegate.handleZipFilePageView();
+
   // If this is a document's menu of attachments (subdocuments), upload it to
   // RECAP.
   content_delegate.handleAttachmentMenuPage();
