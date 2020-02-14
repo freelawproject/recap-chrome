@@ -11,6 +11,10 @@ describe('The ContentDelegate class', function() {
   const singleDocUrl = 'https://ecf.canb.uscourts.gov/doc1/034031424909';
   const singleDocPath = '/doc1/034031424909';
 
+  const zipDocUrl = ""
+  const zipDocPath = ""
+
+
   const appellateURL = ''; // Todo get good example value
   const appellatePath = ''; // Todo get good example value
 
@@ -33,6 +37,8 @@ describe('The ContentDelegate class', function() {
     appellateURL, appellatePath, 'ca9', '1919', []);
   const singleDocContentDelegate =
     new ContentDelegate(singleDocUrl, singleDocPath, 'canb', '531591', []);
+  const zipFileContentDelegate =
+    new ContentDelegate(zipDocUrl, zipDocPath, )
 
   function setupChromeSpy() {
     window.chrome = {
@@ -758,6 +764,44 @@ describe('The ContentDelegate class', function() {
       });
       expect(cd.showPdfPage).toHaveBeenCalled();
     });
+  });
+
+  describe('onDownloadAllSubmit', function() {
+    const pre = ('<head><title>test</title><style>body { margin: 0; } iframe { border: none; }' +
+      '</style></head><body>');
+    const iframe = '<iframe src="data:pdf"';
+    const post = ' width="100%" height="100%"></iframe></body>';
+    const html = pre + iframe + post;
+    const cd = zipFileContentDelegate;
+    const eventUrl = "";
+
+    beforeEach(function() {
+      window.chrome = {
+        storage: {
+          local: {
+            get : jasmine.createSpy().and.callFake(function(
+              _, cb) { cb({options : {recap_enabled: true}}); }),
+            set : jasmine.createSpy('set').and.callFake(function() {})
+          }
+        }
+      }
+      cd.onDownloadAllSubmit(eventUrl)
+    });
+
+    it('fetches the page html and extracts the zipFile url', function() {});
+
+    it('downloads the zipFile and stores it in chrome storage', function() {});
+
+    it('checks options to see if recap is enabled', function() {});
+
+    it('uploads the Zip file to RECAP', function() {});
+
+    it('redirects the user to the download page and forwards the zip file', function() {})
+
+    it('calls the notifier once the upload finishes', function() {
+      expect(cd.notifier.showUpload).toHaveBeenCalled();
+    });
+
   });
 
   describe('showPdfPage', function() {

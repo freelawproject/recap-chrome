@@ -403,7 +403,7 @@ ContentDelegate.prototype.showPdfPage = function(
   documentElement.innerHTML = `${match[1]}<p>Waiting for download...<p><iframe src="about:blank"${match[3]}`;
 
   // Download the file from the <iframe> URL.
-  httpRequest(match[2], null, async function (type, ab, xhr) {
+  httpRequest(match[2], null, function (type, ab, xhr) {
     console.info("RECAP: Successfully got PDF as arraybuffer via ajax request.");
 
     // Make the Back button redisplay the previous page.
@@ -417,7 +417,7 @@ ContentDelegate.prototype.showPdfPage = function(
     // store the result in chrome local storage
     const nonce = "blob_upload_storage"
     const data = arrayBufferToArray(ab)
-    await saveItemToStorage({ [nonce]: data })
+    saveItemToStorage({ [nonce]: data })
 
     // Get the PACER case ID and, on completion, define displayPDF()
     // to either display the PDF in the provided <iframe>, or, if
