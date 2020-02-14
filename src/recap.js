@@ -10,7 +10,7 @@ function Recap() {
       'DOCKET_HISTORY_REPORT': 4,
       'APPELLATE_DOCKET': 5,
       'APPELLATE_ATTACHMENT_PAGE': 6,
-      'ZIP': 11,
+      'ZIP': 10,
     };
 
   return {
