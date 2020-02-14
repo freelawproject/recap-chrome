@@ -199,13 +199,13 @@ function Recap() {
       formData.append('court', PACER.convertToCourtListenerCourt(pacer_court));
       pacer_case_id && formData.append('pacer_case_id', pacer_case_id);
       pacer_doc_id && formData.append('pacer_doc_id', pacer_doc_id);
-      formData.append('filepath_local', blob);
       formData.append('upload_type', UPLOAD_TYPES['ZIP']);
       formData.append('debug', DEBUG);
+      await formData.append('filepath_local', blob);
 
       const fetchOptions = {
         method: 'POST',
-        body: JSON.stringify(formData),
+        body: formData,
         headers: {
           'Authorization': `Token ${RECAP_TOKEN}`
         }
