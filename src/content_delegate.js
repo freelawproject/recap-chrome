@@ -638,7 +638,6 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function(event) {
       })
       .then(buffer => {
         const data = arrayBufferToArray(buffer)
-        console.log(data)
         saveItemToStorage({ [nonce]: data })
       })
 

@@ -132,7 +132,6 @@ const RECAP_TOKEN = "45c7946dd8400ad62662565cf79da3c081d9b0e5"
 
 const getItemsFromStorage = (keys) => new Promise((resolve, reject) =>
   chrome.storage.local.get(null, result => {
-    console.log(result)
     resolve(result)
   }
 ))
