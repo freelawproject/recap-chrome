@@ -11,7 +11,6 @@ let pacer_case_id = PACER.getCaseNumberFromInputs(url, document) ||
   PACER.getCaseNumberFromUrls([url, document.referrer]);
 let pacer_doc_id = PACER.getDocumentIdFromForm(url, document) ||
   PACER.getDocumentIdFromUrl(url);
-console.log('pacer_doc_id is', pacer_doc_id)
 let links = document.body.getElementsByTagName('a');
 let content_delegate = new ContentDelegate(
   url, path, court, pacer_case_id, pacer_doc_id, links);

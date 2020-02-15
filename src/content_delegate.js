@@ -116,6 +116,8 @@ ContentDelegate.prototype.findAndStorePacerDocIds = function() {
     return;
   }
 
+
+
   // Not all pages have a case ID, and there are corner-cases in merged dockets
   // where there are links to documents on another case.
   let page_pacer_case_id = this.pacer_case_id ||
@@ -148,6 +150,15 @@ ContentDelegate.prototype.findAndStorePacerDocIds = function() {
       }
     }
   }
+
+  // identify current doc Number with simple key in chrome storage
+  // TODO: merge this with the docsToCases assignment above
+  const urlMatch = document.URL.match(/(?<=doc1\/)\d*/)
+  if (!!urlMatch) {
+    const data = { docId: urlMatch[0] }
+    saveItemToStorage(data)
+  }
+
   chrome.storage.local.set(docsToCases, function(){
     console.info(`RECAP: Saved the pacer_doc_id to pacer_case_id mappings to local ` +
                  `storage: ${Object.keys(docsToCases).length}`);
