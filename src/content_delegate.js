@@ -641,10 +641,12 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function(event) {
         saveItemToStorage({ [nonce]: data })
       })
 
-    const payload = await getItemsFromStorage([this.pacer_doc_id, 'options'])
+    const payload = await getItemsFromStorage(['options'])
     // load options
-    const pacerCaseId = payload[this.pacer_doc_id]
     const options = payload['options']
+
+    const pacerCaseId = (event.data.id).match(/(?<=caseid\=)\d*/)[0]
+    console.log(pacerCaseId)
 
     if (options['recap_enabled'] && !this.restricted) {
       this.recap.uploadZipFile(
