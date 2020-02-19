@@ -116,8 +116,6 @@ ContentDelegate.prototype.findAndStorePacerDocIds = function () {
     return;
   }
 
-
-
   // Not all pages have a case ID, and there are corner-cases in merged dockets
   // where there are links to documents on another case.
   let page_pacer_case_id = this.pacer_case_id ||
@@ -152,12 +150,9 @@ ContentDelegate.prototype.findAndStorePacerDocIds = function () {
   }
 
   // identify current doc Number with simple key in chrome storage
-  // TODO: merge this with the docsToCases assignment above
   const urlMatch = PACER.getDocumentIdFromUrl(document.URL)
   if (!!urlMatch) {
-    console.log(urlMatch)
-    const data = {docId: urlMatch}
-    saveItemToStorage(data)
+    saveItemToStorage({docId: urlMatch})
   }
 
   chrome.storage.local.set(docsToCases, function () {
@@ -634,6 +629,15 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
     return frames[0].src
   }
 
+
+  // helper function
+  // convert string to html document
+  const stringToDocBody = (str) => {
+    const parser = new DOMParser();
+    const newDoc = parser.parseFromString(str, 'text/html')
+    return newDoc.body
+  }
+
   // runtime start
   $("body").css("cursor", "wait");
   console.log("RECAP: Successfully submitted zip file request");
@@ -662,22 +666,19 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
     const pacerCaseId = (event.data.id).match(/(?<=caseid\=)\d*/)[0]
 
     if (options['recap_enabled'] && !this.restricted) {
-      const blob = new Blob([zipFile], {type: 'application/zip'})
-      const blobUrl = URL.createObjectURL(blob)
 
       this.recap.uploadZipFile(
         this.court, // string
         pacerCaseId, // string
         nonce, // string
         (ok) => {
-          if (ok) { // function
+          if (ok) {
             // replace the iframe src link with local zip file link
-            const revisedPage = htmlPage.replace(/(?<=src=\").*zip/, blobUrl)
-            const element = document.documentElement
-            element.innerHtml = revisedPage
-            // forward zip file to browser
-            //
-            // push user to new history
+            const blob = new Blob([zipFile], {type: 'application/zip'})
+            const blobUrl = URL.createObjectURL(blob)
+            const revisedHtmlPage = htmlPage.replace(/(?<=src=\").*zip/, blobUrl)
+            document.body = stringToDocBody(revisedHtmlPage)
+            // show notifier
             this.notifier.showUpload('Zip uploaded to the Public Recap Archive', () => {})
           }
         }
