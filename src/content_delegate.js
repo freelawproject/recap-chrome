@@ -620,8 +620,7 @@ ContentDelegate.prototype.attachRecapLinkToEligibleDocs = function () {
 // TODO: implement appellate court check
 // TODO: Confirm that zip downloading is consistent across jurisdictions
 ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
-  // helper function
-  // extract the zip by creating an html Element and then querying for the frame
+  // helper function - extract the zip by creating an html Element and then querying for the frame
   const extractUrl = (html) => {
     const page = document.createElement("html");
     page.innerHTML = html;
@@ -629,9 +628,7 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
     return frames[0].src
   }
 
-
-  // helper function
-  // convert string to html document
+  // helper function - convert string to html document
   const stringToDocBody = (str) => {
     const parser = new DOMParser();
     const newDoc = parser.parseFromString(str, 'text/html')
@@ -640,25 +637,30 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
 
   // runtime start
   $("body").css("cursor", "wait");
-  console.log("RECAP: Successfully submitted zip file request");
+  // Make the Back button redisplay the previous page.
+  window.onpopstate = function (event) {
+    if (event.state.content) {
+      document.documentElement.innerHTML = event.state.content;
+    }
+  };
+  history.replaceState({content: document.documentElement.innerHTML}, '');
 
   try {
     // fetch the html page which contains the <iframe> link to the zip document.
     const htmlPage = await fetch(event.data.id).then(res => res.text())
+    console.log("RECAP: Successfully submitted zip file request");
     const zipUrl = extractUrl(htmlPage);
 
     //download zip file and save it to chrome storage
     const nonce = "blob_upload_storage"
     const zipFile = await fetch(zipUrl)
-      .then(res => {
-        console.info('RECAP: Downloaded zip file')
-        return res.arrayBuffer()
-      })
+      .then(res => res.arrayBuffer())
       .then(buffer => {
-        const data = arrayBufferToArray(buffer)
-        saveItemToStorage({[nonce]: data})
-        return data
+        console.info('RECAP: Downloaded zip file')
+        saveItemToStorage({[nonce]: arrayBufferToArray(buffer)})
+        return new Blob([buffer], {type: 'application/zip'})
       })
+    const blobUrl = URL.createObjectURL(zipFile)
 
     // load options
     const payload = await getItemsFromStorage(['options'])
@@ -671,13 +673,12 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
         this.court, // string
         pacerCaseId, // string
         nonce, // string
-        (ok) => {
+        (ok) => { // callback
           if (ok) {
             // replace the iframe src link with local zip file link
-            const blob = new Blob([zipFile], {type: 'application/zip'})
-            const blobUrl = URL.createObjectURL(blob)
             const revisedHtmlPage = htmlPage.replace(/(?<=src=\").*zip/, blobUrl)
             document.body = stringToDocBody(revisedHtmlPage)
+            history.pushState({content: document.body.innerHTML}, '');
             // show notifier
             this.notifier.showUpload('Zip uploaded to the Public Recap Archive', () => {})
           }
