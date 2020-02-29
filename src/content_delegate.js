@@ -712,6 +712,8 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
             history.pushState({content: document.body.innerHTML}, '');
             // show notifier
             this.notifier.showUpload('Zip uploaded to the Public Recap Archive', () => {})
+            saveItemToStorage({[nonce]: ""})
+            saveItemToStorage({'docId': ""})
           }
         }
       )
