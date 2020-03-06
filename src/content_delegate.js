@@ -613,3 +613,23 @@ ContentDelegate.prototype.attachRecapLinkToEligibleDocs = function() {
     }
   }, this));
 };
+
+ContentDelegate.prototype.handleClaimsPageView = async function(){
+  // return if not a claims register page
+  if (!PACER.isClaimsRegisterPage(this.url, document)) {
+    return
+  }
+
+  // render the page as a string and upload it to recap
+  const claimsPageHtml = document.documentElement.outerHtml
+
+  // return ok and dispatch the notifier if upload is ok
+  const callback = (ok) => {
+    if (ok) {
+      this.notifier.showUpload('Claims Page uploaded to the Public Recap Archive', () => {})
+    } else {
+      console.error("Page not uploaded to RECAP.")
+    }
+  }
+  this.recap.uploadClaimsRegister(this.court, this.pacer_case_id, claimsPageHtml, callback)
+}
