@@ -10,7 +10,7 @@ let ContentDelegate = function (url, path, court, pacer_case_id, pacer_doc_id,
     this.pacer_doc_id = pacer_doc_id;
     this.pacer_doc_ids = [pacer_doc_id];
   } else {
-    this.pacer_doc_ids = []
+    this.pacer_doc_ids = [];
   }
   this.links = links || [];
 
@@ -150,9 +150,9 @@ ContentDelegate.prototype.findAndStorePacerDocIds = function () {
   }
 
   // identify current doc Number with simple key in chrome storage
-  const urlMatch = PACER.getDocumentIdFromUrl(document.URL)
+  const urlMatch = PACER.getDocumentIdFromUrl(document.URL);
   if (!!urlMatch) {
-    saveItemToStorage({docId: urlMatch})
+    saveItemToStorage({docId: urlMatch});
   }
 
   chrome.storage.local.set(docsToCases, function () {
@@ -422,9 +422,9 @@ ContentDelegate.prototype.showPdfPage = function (
     history.replaceState({content: previousPageHtml}, '');
 
     // store the result in chrome local storage
-    const nonce = "blob_upload_storage"
-    const data = arrayBufferToArray(ab)
-    saveItemToStorage({[nonce]: data})
+    const nonce = "blob_upload_storage";
+    const data = arrayBufferToArray(ab);
+    saveItemToStorage({[nonce]: data});
 
     // Get the PACER case ID and, on completion, define displayPDF()
     // to either display the PDF in the provided <iframe>, or, if
@@ -625,15 +625,15 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
     const page = document.createElement("html");
     page.innerHTML = html;
     const frames = page.querySelectorAll("iframe");
-    return frames[0].src
-  }
+    return frames[0].src;
+  };
 
   // helper function - convert string to html document
   const stringToDocBody = (str) => {
     const parser = new DOMParser();
-    const newDoc = parser.parseFromString(str, 'text/html')
-    return newDoc.body
-  }
+    const newDoc = parser.parseFromString(str, 'text/html');
+    return newDoc.body;
+  };
 
   // helper function - returns filename based on user preferences
   const generateFileName = (options, pacerCaseId) => {
@@ -643,22 +643,22 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
         'uscourts',
         this.court,
         (pacerCaseId || 'unknown-case-id')
-      ].join('.').concat('.zip')
+      ].join('.').concat('.zip');
     } else if (options.lawyer_style_filenames) {
-      const firstTable = document.getElementsByTagName('table')[0]
-      const firstTableRows = firstTable.querySelectorAll('tr')
+      const firstTable = document.getElementsByTagName('table')[0];
+      const firstTableRows = firstTable.querySelectorAll('tr');
       // 4th from bottom
-      const matchedRow = firstTableRows[firstTableRows.length - 4]
-      const cells = matchedRow.querySelectorAll('td')
-      const document_number = cells[0].innerText.match(/\d+(?=\-)/)[0]
-      const docket_number = cells[1].innerText
+      const matchedRow = firstTableRows[firstTableRows.length - 4];
+      const cells = matchedRow.querySelectorAll('td');
+      const document_number = cells[0].innerText.match(/\d+(?=\-)/)[0];
+      const docket_number = cells[1].innerText;
       return [
         PACER.COURT_ABBREVS[this.court],
         docket_number,
         document_number,
-      ].join('_').concat('.zip')
+      ].join('_').concat('.zip');
     }
-  }
+  };
 
   // Make the Back button redisplay the previous page.
   window.onpopstate = function (event) {
@@ -672,25 +672,25 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
     // runtime start
     $("body").css("cursor", "wait");
     // fetch the html page which contains the <iframe> link to the zip document.
-    const htmlPage = await fetch(event.data.id).then(res => res.text())
+    const htmlPage = await fetch(event.data.id).then(res => res.text());
     console.log("RECAP: Successfully submitted zip file request");
     const zipUrl = extractUrl(htmlPage);
 
     //download zip file and save it to chrome storage
-    const nonce = "blob_upload_storage"
+    const nonce = "blob_upload_storage";
     const zipFile = await fetch(zipUrl)
       .then(res => res.arrayBuffer())
       .then(buffer => {
-        console.info('RECAP: Downloaded zip file')
-        saveItemToStorage({[nonce]: arrayBufferToArray(buffer)})
-        return new Blob([buffer], {type: 'application/zip'})
+        console.info('RECAP: Downloaded zip file');
+        saveItemToStorage({[nonce]: arrayBufferToArray(buffer)});
+        return new Blob([buffer], {type: 'application/zip'});
       })
-    const blobUrl = URL.createObjectURL(zipFile)
-    const pacerCaseId = (event.data.id).match(/(?<=caseid\=)\d*/)[0]
+    const blobUrl = URL.createObjectURL(zipFile);
+    const pacerCaseId = (event.data.id).match(/caseid\=\d*/)[0].replace(/caseid\=/, "");
 
     // load options
-    const payload = await getItemsFromStorage(['options'])
-    const options = payload['options']
+    const payload = await getItemsFromStorage(['options']);
+    const options = payload['options'];
 
     if (options['recap_enabled'] && !this.restricted) {
       this.recap.uploadZipFile(
@@ -699,27 +699,27 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
         nonce, // string
         (ok) => { // callback
           if (ok) {
-            const filename = generateFileName(options, pacerCaseId)
+            const filename = generateFileName(options, pacerCaseId);
             // convert htmlPage to document
             const link =
-              `<a id="recap-download" href=${blobUrl} download=${filename} width="0" height="0"/>`
-            const htmlBody = stringToDocBody(htmlPage)
-            const frame = htmlBody.querySelector('iframe')
-            frame.insertAdjacentHTML('beforebegin', link)
-            frame.src = ""
-            frame.onload = () => document.getElementById('recap-download').click()
-            document.body = htmlBody
+              `<a id="recap-download" href=${blobUrl} download=${filename} width="0" height="0"/>`;
+            const htmlBody = stringToDocBody(htmlPage);
+            const frame = htmlBody.querySelector('iframe');
+            frame.insertAdjacentHTML('beforebegin', link);
+            frame.src = "";
+            frame.onload = () => document.getElementById('recap-download').click();
+            document.body = htmlBody;
             history.pushState({content: document.body.innerHTML}, '');
             // show notifier
-            this.notifier.showUpload('Zip uploaded to the Public Recap Archive', () => {})
-            saveItemToStorage({[nonce]: ""})
-            saveItemToStorage({'docId': ""})
+            this.notifier.showUpload('Zip uploaded to the Public Recap Archive', () => {});
+            saveItemToStorage({[nonce]: ""});
+            saveItemToStorage({'docId': ""});
           }
         }
-      )
+      );
     }
   } catch (err) {
-    console.error(err)
+    console.error(err);
   }
 };
 
@@ -758,7 +758,7 @@ ContentDelegate.prototype.handleZipFilePageView = function () {
     `input.addEventListener("click", () => window.postMessage({ id: ${JSON.stringify(url)}}))`,
     '};',
     '}'
-  ].join('')
+  ].join('');
 
   const script = document.createElement("script");
   script.innerText = dangerouslySetInnerHTML;
