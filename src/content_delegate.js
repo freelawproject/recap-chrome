@@ -672,7 +672,12 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
     // runtime start
     $("body").css("cursor", "wait");
     // fetch the html page which contains the <iframe> link to the zip document.
-    const htmlPage = await fetch(event.data.id).then(res => res.text());
+
+    // in Firefox, use content.fetch for content-specific fetch requests
+    // https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#XHR_and_Fetch
+    const browserSpecificFetch = (navigator.userAgent.indexOf('Chrome') < 0) ? content.fetch : window.fetch
+
+    const htmlPage = await browserSpecificFetch(event.data.id).then(res => res.text());
     console.log("RECAP: Successfully submitted zip file request");
     const zipUrl = extractUrl(htmlPage);
 
