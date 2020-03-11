@@ -729,7 +729,7 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
   }
 };
 
-// Same as handlePDFView, but for zip files!
+// Same as handleSingleDocumentPageView, but for zip files
 ContentDelegate.prototype.handleZipFilePageView = function () {
   // return if not the download all page
   if (!PACER.isDownloadAllDocumentsPage(this.url, document)) {
@@ -779,4 +779,3 @@ ContentDelegate.prototype.handleZipFilePageView = function () {
     false
   );
 };
-
