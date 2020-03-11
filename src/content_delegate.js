@@ -422,7 +422,7 @@ ContentDelegate.prototype.showPdfPage = function (
     history.replaceState({content: previousPageHtml}, '');
 
     // store the result in chrome local storage
-    const nonce = "blob_upload_storage";
+    const nonce = "pdf_upload_storage";
     const data = arrayBufferToArray(ab);
     saveItemToStorage({[nonce]: data});
 
@@ -682,7 +682,7 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
     const zipUrl = extractUrl(htmlPage);
 
     //download zip file and save it to chrome storage
-    const nonce = "blob_upload_storage";
+    const nonce = "zip_upload_storage";
     const zipFile = await fetch(zipUrl)
       .then(res => res.arrayBuffer())
       .then(buffer => {
