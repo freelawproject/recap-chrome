@@ -189,15 +189,15 @@ function Recap() {
         `pacer_court: ${pacer_court}, pacer_case_id: ${pacer_case_id}`)
 
       // async call for the blob
-      const bytes = await getItemsFromStorage([nonce, 'docId'])
+      const payload = await getItemsFromStorage([nonce, 'docId'])
       console.log("RECAP: Retrieving blob from storage")
-      const ab = new Uint8Array(bytes[nonce])
+      const ab = new Uint8Array(payload[nonce])
       const blob = new Blob([ab])
 
       let formData = new FormData();
       formData.append('court', PACER.convertToCourtListenerCourt(pacer_court));
       pacer_case_id && formData.append('pacer_case_id', pacer_case_id);
-      const docId = bytes['docId']
+      const docId = payload['docId']
       formData.append('pacer_doc_id', docId);
       formData.append('upload_type', UPLOAD_TYPES['ZIP']);
       formData.append('debug', DEBUG);
@@ -207,7 +207,7 @@ function Recap() {
         method: 'POST',
         body: formData,
         headers: {
-          'Authorization': `Token ${RECAP_TOKEN}`
+          'Authorization': `Token ${N87GC2}`
         }
       }
 

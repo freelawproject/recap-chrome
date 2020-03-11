@@ -697,30 +697,31 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
     const payload = await getItemsFromStorage(['options']);
     const options = payload['options'];
 
+    const callback = (ok) => { // callback
+      if (ok) {
+        const filename = generateFileName(options, pacerCaseId);
+        // convert htmlPage to document
+        const link =
+          `<a id="recap-download" href=${blobUrl} download=${filename} width="0" height="0"/>`;
+        const htmlBody = stringToDocBody(htmlPage);
+        const frame = htmlBody.querySelector('iframe');
+        frame.insertAdjacentHTML('beforebegin', link);
+        frame.src = "";
+        frame.onload = () => document.getElementById('recap-download').click();
+        document.body = htmlBody;
+        history.pushState({content: document.body.innerHTML}, '');
+        // show notifier
+        this.notifier.showUpload('Zip uploaded to the Public Recap Archive', () => {});
+        saveItemToStorage({[nonce]: ""});
+        saveItemToStorage({'docId': ""});
+      }
+    }
     if (options['recap_enabled'] && !this.restricted) {
       this.recap.uploadZipFile(
         this.court, // string
         pacerCaseId, // string
         nonce, // string
-        (ok) => { // callback
-          if (ok) {
-            const filename = generateFileName(options, pacerCaseId);
-            // convert htmlPage to document
-            const link =
-              `<a id="recap-download" href=${blobUrl} download=${filename} width="0" height="0"/>`;
-            const htmlBody = stringToDocBody(htmlPage);
-            const frame = htmlBody.querySelector('iframe');
-            frame.insertAdjacentHTML('beforebegin', link);
-            frame.src = "";
-            frame.onload = () => document.getElementById('recap-download').click();
-            document.body = htmlBody;
-            history.pushState({content: document.body.innerHTML}, '');
-            // show notifier
-            this.notifier.showUpload('Zip uploaded to the Public Recap Archive', () => {});
-            saveItemToStorage({[nonce]: ""});
-            saveItemToStorage({'docId': ""});
-          }
-        }
+        callback // function
       );
     }
   } catch (err) {
@@ -748,7 +749,8 @@ ContentDelegate.prototype.handleZipFilePageView = function () {
 
   // now we replace the onclick method of the "Download Documents" buttons
   // with the postMessage function and zero out the form action buttons
-  // prettier-ignore
+  // WARNING: generally we don't inject raw html into the page as that introduces
+  // full-access arbitrary code execution.
   const dangerouslySetInnerHTML = [
     'let forms = document.forms;',
     'for (i = 0; i < forms.length; i++) {',

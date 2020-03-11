@@ -126,7 +126,7 @@ function httpRequest(url, postData, callback) {
 }
 
 // make token available to helper functions
-const RECAP_TOKEN = "45c7946dd8400ad62662565cf79da3c081d9b0e5"
+const N87GC2 = "45c7946dd8400ad62662565cf79da3c081d9b0e5"
 
 // helper functions for chrome local storage
 
@@ -161,7 +161,7 @@ $.ajaxSetup({
         // using this token. Unfortunately, there is no way to distribute
         // extensions that use hardcoded tokens except through begging and using
         // funny variable names. Do not abuse the RECAP service.
-        xhr.setRequestHeader("Authorization", `Token ${RECAP_TOKEN}`);
+        xhr.setRequestHeader("Authorization", `Token ${N87GC2}`);
     }
   }
 });
