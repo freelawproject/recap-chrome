@@ -492,6 +492,8 @@ ContentDelegate.prototype.showPdfPage = function (
                 this.notifier.showUpload(
                   'PDF uploaded to the public RECAP Archive.', function () {
                   }.bind(this));
+                saveItemToStorage({[nonce]: ""});
+                saveItemToStorage({'docId': ""});
               }
             }.bind(this);
 
