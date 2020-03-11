@@ -217,7 +217,7 @@ function Recap() {
           console.log("RECAP: Zip file uploaded successfully")
           cb(result || null)
         })
-        .catch(error => console.log(`RECAP: The following error occurred: ${error}`))
+        .catch(error => console.log(`RECAP: Error during zip upload: ${error}`))
     }
   };
 }
