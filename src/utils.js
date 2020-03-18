@@ -90,21 +90,21 @@ function getHostname(url){
 // POST otherwise.  postData can be any type accepted by XMLHttpRequest.send().
 function httpRequest(url, postData, callback) {
   let type = null,
-      result = null,
-      xhr;
+    result = null,
+    xhr;
 
-    // Firefox requires a special call to get an XMLHttpRequest() that
-    // sends Referer headers, which is CMECF needs because of their
-    // choice in how to fix the 2017 cross-site/same-origin security
-    // vulnerability.
-    try {
-        // Firefox. See: https://discourse.mozilla.org/t/webextension-xmlhttprequest-issues-no-cookies-or-referrer-solved/11224/18
-        xhr = XPCNativeWrapper(new window.wrappedJSObject.XMLHttpRequest());
-    }
-    catch (evt) {
-        // Chrome.
-        xhr = new XMLHttpRequest();
-    }
+  // Firefox requires a special call to get an XMLHttpRequest() that
+  // sends Referer headers, which is CMECF needs because of their
+  // choice in how to fix the 2017 cross-site/same-origin security
+  // vulnerability.
+  try {
+    // Firefox. See: https://discourse.mozilla.org/t/webextension-xmlhttprequest-issues-no-cookies-or-referrer-solved/11224/18
+    xhr = XPCNativeWrapper(new window.wrappedJSObject.XMLHttpRequest());
+  } 
+  catch (evt) {
+    // Chrome.
+    xhr = new XMLHttpRequest();
+  }
 
   xhr.responseType = 'arraybuffer';
   xhr.onreadystatechange = function () {
@@ -130,22 +130,47 @@ const N87GC2 = "45c7946dd8400ad62662565cf79da3c081d9b0e5"
 
 // helper functions for chrome local storage
 
-const getItemsFromStorage = (keys) => new Promise((resolve, reject) =>
+const getItemsFromStorage = (key) => new Promise((resolve, reject) => {
   chrome.storage.local.get(null, result => {
-    resolve(result)
-  }
-))
+    resolve(result[key])
+  })
+})
 
-const saveItemToStorage = (dataObj) => new Promise(
-  (resolve, reject) =>
-    chrome.storage.local.set(
-      dataObj,
-      () => resolve(
-        console.log('RECAP: Item saved in storage', dataObj)
-      )
+const saveItemToStorage = (dataObj) => new Promise((resolve, reject) =>
+  chrome.storage.local.set(
+    dataObj,
+    () => resolve(
+      console.log(`RECAP: Item saved in storage at tabId: ${Object.keys(dataObj)[0]}`)
     )
-)
+  )
+);
 
+const destroyTabStorage = key => {
+  console.log(key)
+  new Promise((resolve, reject) => {
+    chrome.storage.local.remove(
+      key, 
+      () => resolve(console.log(`Removed object with tabId: ${key}`))
+    )
+  });
+}
+// initialize the store with an empty object
+const getTabIdForContentScript = () => new Promise(resolve => {
+  chrome.runtime.sendMessage(
+    { message: 'requestTabId' },
+    (msg) => resolve(msg)
+  );
+});
+
+// object takes shape of { [tabId]: { ...data } }
+const updateTabStorage = async object => {
+  const tabId = Object.keys(object)[0];
+  const updatedVars = object[tabId];
+  console.log(updatedVars)
+  const store = await getItemsFromStorage(tabId);
+  // keep store immutable
+  await saveItemToStorage({ [tabId]: { ...store, ...updatedVars } });
+};
 // Default settings for any jquery $.ajax call.
 $.ajaxSetup({
   // The dataType parameter is a security measure requested by Opera code
@@ -157,11 +182,11 @@ $.ajaxSetup({
   beforeSend: function (xhr, settings) {
     let hostname = getHostname(settings.url);
     if (hostname === "www.courtlistener.com") {
-        // If you are reading this code, we ask that you please refrain from
-        // using this token. Unfortunately, there is no way to distribute
-        // extensions that use hardcoded tokens except through begging and using
-        // funny variable names. Do not abuse the RECAP service.
-        xhr.setRequestHeader("Authorization", `Token ${N87GC2}`);
+      // If you are reading this code, we ask that you please refrain from
+      // using this token. Unfortunately, there is no way to distribute
+      // extensions that use hardcoded tokens except through begging and using
+      // funny variable names. Do not abuse the RECAP service.
+      xhr.setRequestHeader("Authorization", `Token ${N87GC2}`);
     }
   }
 });
@@ -178,6 +203,11 @@ function arrayBufferToArray(ab) {
   return [].concat.apply([], chunks);  // concatenate all the chunks together
 }
 
+const blobFromArrayBuffer = ab => {
+  const intArray = new Uint8Array(ab);
+  const blob = new Blob([intArray]);
+  return blob;
+};
 // Debug logging function. First argument is a debug level, remainder are variable args
 // for console.log(). If the global debug level matches the first arg, calls console.log().
 // Example usage:

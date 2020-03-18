@@ -1,7 +1,8 @@
 // Abstraction of content scripts to make them modular and testable.
 
-let ContentDelegate = function (url, path, court, pacer_case_id, pacer_doc_id,
+let ContentDelegate = function (tabId, url, path, court, pacer_case_id, pacer_doc_id,
   links) {
+  this.tabId = tabId;
   this.url = url;
   this.path = path;
   this.court = court;
@@ -148,16 +149,12 @@ ContentDelegate.prototype.findAndStorePacerDocIds = function () {
       }
     }
   }
-
-  // identify current doc Number with simple key in chrome storage
-  const urlMatch = PACER.getDocumentIdFromUrl(document.URL);
-  if (!!urlMatch) {
-    saveItemToStorage({docId: urlMatch});
-  }
-
-  chrome.storage.local.set(docsToCases, function () {
-    console.info(`RECAP: Saved the pacer_doc_id to pacer_case_id mappings to local ` +
-      `storage: ${Object.keys(docsToCases).length}`);
+  // save JSON object in chrome storage under the tabId
+  updateTabStorage({
+    [this.tabId]: { 
+      docId: pacer_doc_id, 
+      ...docsToCases, 
+    }
   });
 };
 
@@ -422,9 +419,8 @@ ContentDelegate.prototype.showPdfPage = function (
     history.replaceState({content: previousPageHtml}, '');
 
     // store the result in chrome local storage
-    const nonce = "pdf_upload_storage";
     const data = arrayBufferToArray(ab);
-    saveItemToStorage({[nonce]: data});
+    updateTabStorage({ [this.tabId]: { ['pdf_blob']: data }});
 
     // Get the PACER case ID and, on completion, define displayPDF()
     // to either display the PDF in the provided <iframe>, or, if
@@ -492,15 +488,13 @@ ContentDelegate.prototype.showPdfPage = function (
                 this.notifier.showUpload(
                   'PDF uploaded to the public RECAP Archive.', function () {
                   }.bind(this));
-                saveItemToStorage({[nonce]: ""});
-                saveItemToStorage({'docId': ""});
+                destroyTabStorage(this.tabId);
               }
             }.bind(this);
 
-
             this.recap.uploadDocument(
               this.court, pacer_case_id, this.pacer_doc_id, document_number,
-              attachment_number, nonce, onUploadOk
+              attachment_number, onUploadOk
             );
           } else {
             console.info("RECAP: Not uploading PDF. RECAP is disabled.");
@@ -622,7 +616,7 @@ ContentDelegate.prototype.attachRecapLinkToEligibleDocs = function () {
 // TODO: implement appellate court check
 // TODO: Confirm that zip downloading is consistent across jurisdictions
 ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
-  // helper function - extract the zip by creating an html Element and then querying for the frame
+  // helper function - extract the zip by creating html and querying the frame
   const extractUrl = (html) => {
     const page = document.createElement("html");
     page.innerHTML = html;
@@ -638,27 +632,32 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
   };
 
   // helper function - returns filename based on user preferences
-  const generateFileName = (options, pacerCaseId) => {
-    if (options.ia_style_filenames) {
-      return [
-        'gov',
-        'uscourts',
-        this.court,
-        (pacerCaseId || 'unknown-case-id')
-      ].join('.').concat('.zip');
-    } else if (options.lawyer_style_filenames) {
-      const firstTable = document.getElementsByTagName('table')[0];
-      const firstTableRows = firstTable.querySelectorAll('tr');
-      // 4th from bottom
-      const matchedRow = firstTableRows[firstTableRows.length - 4];
-      const cells = matchedRow.querySelectorAll('td');
-      const document_number = cells[0].innerText.match(/\d+(?=\-)/)[0];
-      const docket_number = cells[1].innerText;
-      return [
-        PACER.COURT_ABBREVS[this.court],
-        docket_number,
-        document_number,
-      ].join('_').concat('.zip');
+  const generateFileName = async (options, pacerCaseId) => {
+    try {
+      if (options.ia_style_filenames) {
+        return [
+          'gov',
+          'uscourts',
+          this.court,
+          (pacerCaseId || 'unknown-case-id')
+        ].join('.').concat('.zip');
+      } else if (options.lawyer_style_filenames) {
+        const firstTable = document.getElementsByTagName('table')[0];
+        const firstTableRows = firstTable.querySelectorAll('tr');
+        // 4th from bottom
+        const matchedRow = firstTableRows[firstTableRows.length - 4];
+        const cells = matchedRow.querySelectorAll('td');
+        const document_number = cells[0].innerText.match(/\d+(?=\-)/)[0];
+        const docket_number = cells[1].innerText;
+        return [
+          PACER.COURT_ABBREVS[this.court],
+          docket_number,
+          document_number,
+        ].join('_').concat('.zip');
+      }
+    } catch (err) {
+      console.log('Filename generation failed, defaulting to pacerCaseId');
+      return `${pacerCaseId}.zip`;
     }
   };
 
@@ -673,33 +672,29 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
   try {
     // runtime start
     $("body").css("cursor", "wait");
-    // fetch the html page which contains the <iframe> link to the zip document.
-
     // in Firefox, use content.fetch for content-specific fetch requests
     // https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#XHR_and_Fetch
     const browserSpecificFetch = (navigator.userAgent.indexOf('Chrome') < 0) ? content.fetch : window.fetch
 
+    // fetch the html page which contains the <iframe> link to the zip document.
     const htmlPage = await browserSpecificFetch(event.data.id).then(res => res.text());
     console.log("RECAP: Successfully submitted zip file request");
     const zipUrl = extractUrl(htmlPage);
-
     //download zip file and save it to chrome storage
-    const nonce = "zip_upload_storage";
-    const zipFile = await fetch(zipUrl)
-      .then(res => res.arrayBuffer())
-      .then(buffer => {
-        console.info('RECAP: Downloaded zip file');
-        saveItemToStorage({[nonce]: arrayBufferToArray(buffer)});
-        return new Blob([buffer], {type: 'application/zip'});
-      })
-    const blobUrl = URL.createObjectURL(zipFile);
+    const buffer = await fetch(zipUrl).then(res => res.arrayBuffer());
+    console.info('RECAP: Downloaded zip file');
+    // save blob in storage under tabId
+    // we store it as an array to chunk the message
+    await updateTabStorage({ 
+      [this.tabId]: { ['zip_blob']: arrayBufferToArray(buffer) }
+    });
+    
+    const blob = new Blob([buffer], {type: 'application/zip'});
+    const blobUrl = URL.createObjectURL(blob);
     const pacerCaseId = (event.data.id).match(/caseid\=\d*/)[0].replace(/caseid\=/, "");
 
     // load options
-    const payload = await getItemsFromStorage(['options']);
-    const options = payload['options'];
-
-    const callback = (ok) => { // callback
+    const callback = (ok) => { // callback 
       if (ok) {
         const filename = generateFileName(options, pacerCaseId);
         // convert htmlPage to document
@@ -714,15 +709,14 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
         history.pushState({content: document.body.innerHTML}, '');
         // show notifier
         this.notifier.showUpload('Zip uploaded to the Public Recap Archive', () => {});
-        saveItemToStorage({[nonce]: ""});
-        saveItemToStorage({'docId': ""});
+        destroyTabStorage(this.tabId);
       }
     }
+    const options = await getItemsFromStorage('options') 
     if (options['recap_enabled'] && !this.restricted) {
       this.recap.uploadZipFile(
         this.court, // string
         pacerCaseId, // string
-        nonce, // string
         callback // function
       );
     }
@@ -751,7 +745,7 @@ ContentDelegate.prototype.handleZipFilePageView = function () {
 
   // now we replace the onclick method of the "Download Documents" buttons
   // with the postMessage function and zero out the form action buttons
-  // WARNING: generally we don't inject raw html into the page as that introduces
+  // WARNING: generally we don't inject raw html into the page as that introduces 
   // full-access arbitrary code execution.
   const dangerouslySetInnerHTML = [
     'let forms = document.forms;',
@@ -764,7 +758,9 @@ ContentDelegate.prototype.handleZipFilePageView = function () {
     'input = items[i];',
     'if (input.type === "button" && input.value === "Download Documents") {',
     'input.removeAttribute("onclick");',
-    `input.addEventListener("click", () => window.postMessage({ id: ${JSON.stringify(url)}}))`,
+    'input.addEventListener(',
+    `"click", () => window.postMessage({ id: ${JSON.stringify(url)}})`,
+    ')',
     '};',
     '}'
   ].join('');

@@ -12,16 +12,24 @@ function Recap() {
       'APPELLATE_ATTACHMENT_PAGE': 6,
       'ZIP': 10,
     };
-
   return {
+
     //Given a pacer_doc_id, return the pacer_case_id that it is associated with
-    getPacerCaseIdFromPacerDocId: function (pacer_doc_id, cb) {
-      chrome.storage.local.get(pacer_doc_id, function (items) {
-        let pacer_case_id = items[pacer_doc_id];
-        console.info(`RECAP: Got case number '${pacer_case_id}' for pacer_doc_id: ` +
-          `'${pacer_doc_id}'`);
-        cb(pacer_case_id);
-      });
+    getPacerCaseIdFromPacerDocId: async function (pacer_doc_id, cb) {
+      const tabId = cb.tab.id
+      console.log(tabId)
+      try {
+        const tabStore = await getTabStorage(tabId);
+        const pacerCaseId = tabStore[pacer_doc_id];
+        console.info([
+          'RECAP: Got case number', pacerCaseId,
+          'for pacer_doc_id:', pacer_doc_id].join(' ')
+        );
+        return cb(pacerCaseId);
+      } catch(err) {
+        console.error('No stored pacer_case_id found in chrome storage');
+        return cb(null);
+      };
     },
 
     // Asks RECAP whether it has a docket page for the specified case.  If it
@@ -137,87 +145,77 @@ function Recap() {
 
     // Asynchronously uploads a PDF document to the RECAP server, calling the callback with
     // a boolean success flag.
-    uploadDocument: function (pacer_court, pacer_case_id, pacer_doc_id,
-      document_number, attachment_number, nonce, cb) {
+    uploadDocument: async function (pacer_court, pacer_case_id, pacer_doc_id,
+      document_number, attachment_number, cb) {
       console.info(`RECAP: Attempting PDF upload to RECAP Archive with details: ` +
         `pacer_court: ${pacer_court}, pacer_case_id: ` +
         `${pacer_case_id}, pacer_doc_id: ${pacer_doc_id}, ` +
         `document_number: ${document_number}, ` +
         `attachment_number: ${attachment_number}.`);
-      // wrap the upload function as the callback of the local storage retrieval
-      chrome.storage.local.get(nonce, (bytes) => {
+      try {
+        const tabId = cb.tab.id;
+        const tabStorage = await getItemsFromStorage(tabId);
+        const ab = tabStorage['pdf_blob'];
+        const blob = blobFromArrayBuffer(ab);
 
         let formData = new FormData();
         formData.append('court', PACER.convertToCourtListenerCourt(pacer_court));
         pacer_case_id && formData.append('pacer_case_id', pacer_case_id);
         pacer_doc_id && formData.append('pacer_doc_id', pacer_doc_id);
         document_number && formData.append('document_number', document_number);
-
         if (attachment_number && attachment_number !== '0') {
           formData.append('attachment_number', attachment_number);
         }
-        const ab = new Uint8Array(bytes[nonce])
-        const blob = new Blob([ab])
-        console.log("RECAP: Retrieved blob from storage", blob)
-
         formData.append('filepath_local', blob);
         formData.append('upload_type', UPLOAD_TYPES['PDF']);
         formData.append('debug', DEBUG);
 
-        $.ajax({
-          url: `${SERVER_ROOT}recap/`,
+        const result = await fetch(`${SERVER_ROOT}recap/`, {
           method: 'POST',
-          processData: false,
-          contentType: false,
-          data: formData,
-          success: function (data, textStatus, xhr) {
-            console.info(`RECAP: Successfully uploaded PDF: '${textStatus}' ` +
-              `with processing queue id of ${data['id']}`);
-            cb(data || null);
-          },
-          error: function (xhr, textStatus, errorThrown) {
-            console.error(`RECAP: Ajax error uploading PDF. Status: ${textStatus}.` +
-              `Error: ${errorThrown}`);
-          }
-        });
-
-      });
+          body: formData,
+          headers: { 'Authorization': `Token ${N87GC2}`}
+        })
+        console.info(`RECAP: Successfully uploaded PDF: 'Success' ` +
+          `with processing queue id of ${result.json().id}`);
+        cb(result.json() || null);
+      } catch(error) {
+        console.log(`RECAP: Error uploading PDF: ${error}`)
+      }
     },
     // Upload a zip file to the RECAP server, calling the cb with ok flag
-    uploadZipFile: async function (pacer_court, pacer_case_id, nonce, cb) {
+    uploadZipFile: async function (pacer_court, pacer_case_id, cb) {
       console.info(`RECAP: Attempting PDF upload to RECAP Archive with details: ` +
         `pacer_court: ${pacer_court}, pacer_case_id: ${pacer_case_id}`)
+      // extract the tabId from the enhanced callback
+      const tabId = cb.tab.id;
+      // wait for chrome.storage.local to load the tabStorage 
+      await getItemsFromStorage(tabId)
+        .then(tabStorage => {
+          // create the formData
+          const ab = tabStorage['zip_blob'];
+          const docId = tabStorage['docId'];
+          const blob = blobFromArrayBuffer(ab);
 
-      // async call for the blob
-      const payload = await getItemsFromStorage([nonce, 'docId'])
-      console.log("RECAP: Retrieving blob from storage")
-      const ab = new Uint8Array(payload[nonce])
-      const blob = new Blob([ab])
-
-      let formData = new FormData();
-      formData.append('court', PACER.convertToCourtListenerCourt(pacer_court));
-      pacer_case_id && formData.append('pacer_case_id', pacer_case_id);
-      const docId = payload['docId']
-      formData.append('pacer_doc_id', docId);
-      formData.append('upload_type', UPLOAD_TYPES['ZIP']);
-      formData.append('debug', DEBUG);
-      formData.append('filepath_local', blob);
-
-      const fetchOptions = {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'Authorization': `Token ${N87GC2}`
-        }
-      }
-
-      fetch(`${SERVER_ROOT}recap/`, fetchOptions)
+          const formData = new FormData();
+          formData.append('court', PACER.convertToCourtListenerCourt(pacer_court));
+          pacer_case_id && formData.append('pacer_case_id', pacer_case_id);
+          formData.append('pacer_doc_id', docId);
+          formData.append('upload_type', UPLOAD_TYPES['ZIP']);
+          formData.append('debug', DEBUG);
+          formData.append('filepath_local', blob);
+          return formData;
+        })
+        .then(data => fetch(`${SERVER_ROOT}recap/`, {
+          method: 'POST',
+          body: data,
+          headers: {'Authorization': `Token ${N87GC2}`}
+        }))
         .then(res => res.json())
         .then(result => {
-          console.log("RECAP: Zip file uploaded successfully")
-          cb(result || null)
-        })
-        .catch(error => console.log(`RECAP: Error during zip upload: ${error}`))
+          console.info(`RECAP: Successfully uploaded Zip: 'Success' ` +
+          `with processing queue id of ${result.id}`);
+          cb(result || null);
+        });
     }
   };
 }
