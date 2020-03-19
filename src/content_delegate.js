@@ -151,9 +151,9 @@ ContentDelegate.prototype.findAndStorePacerDocIds = function () {
   }
   // save JSON object in chrome storage under the tabId
   updateTabStorage({
-    [this.tabId]: { 
-      docId: pacer_doc_id, 
-      ...docsToCases, 
+    [this.tabId]: {
+      docId: pacer_doc_id,
+      ...docsToCases,
     }
   });
 };
@@ -393,7 +393,7 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
 //
 // The documentElement is provided via dependency injection so that it
 // can be properly mocked in tests.
-ContentDelegate.prototype.showPdfPage = function (
+ContentDelegate.prototype.showPdfPage = async function (
   documentElement, html, previousPageHtml, document_number, attachment_number,
   docket_number) {
   // Find the <iframe> URL in the HTML string.
@@ -407,7 +407,7 @@ ContentDelegate.prototype.showPdfPage = function (
   documentElement.innerHTML = `${match[1]}<p>Waiting for download...<p><iframe src="about:blank"${match[3]}`;
 
   // Download the file from the <iframe> URL.
-  httpRequest(match[2], null, function (type, ab, xhr) {
+  httpRequest(match[2], null, async function (type, ab, xhr) {
     console.info("RECAP: Successfully got PDF as arraybuffer via ajax request.");
 
     // Make the Back button redisplay the previous page.
@@ -420,7 +420,7 @@ ContentDelegate.prototype.showPdfPage = function (
 
     // store the result in chrome local storage
     const data = arrayBufferToArray(ab);
-    updateTabStorage({ [this.tabId]: { ['pdf_blob']: data }});
+    await updateTabStorage({ [this.tabId]: { ['pdf_blob']: data }});
 
     // Get the PACER case ID and, on completion, define displayPDF()
     // to either display the PDF in the provided <iframe>, or, if
@@ -428,7 +428,7 @@ ContentDelegate.prototype.showPdfPage = function (
     let blob = new Blob([new Uint8Array(ab)], {type: type});
 
     this.recap.getPacerCaseIdFromPacerDocId(
-      this.pacer_doc_id, function (pacer_case_id) {
+      this.pacer_doc_id, async function (pacer_case_id) {
         console.info(`RECAP: Stored pacer_case_id is ${pacer_case_id}`);
         let displayPDF = function (items) {
           let filename, pieces;
@@ -477,30 +477,29 @@ ContentDelegate.prototype.showPdfPage = function (
         }.bind(this);
 
         chrome.storage.local.get('options', displayPDF);
-        let uploadDocument = function (items) {
-          // store the blob in chrome storage for background worker
-          if (items['options']['recap_enabled'] && !this.restricted) {
-            // If we have the pacer_case_id, upload the file to RECAP.
-            // We can't pass an ArrayBuffer directly to the background
-            // page, so we have to convert to a regular array.
-            let onUploadOk = function (ok) {
-              if (ok) {
-                this.notifier.showUpload(
-                  'PDF uploaded to the public RECAP Archive.', function () {
-                  }.bind(this));
-                destroyTabStorage(this.tabId);
-              }
-            }.bind(this);
+
+        // TODO: rewrite filename function to take advantage of the returned options object
+        const options = await getItemsFromStorage('options')
+        // store the blob in chrome storage for background worker
+        if (options['recap_enabled'] && !this.restricted) {
+          // If we have the pacer_case_id, upload the file to RECAP.
+          // We can't pass an ArrayBuffer directly to the background
+          // page, so we have to convert to a regular array.
+          const callback = function (ok) {
+            if (ok) {
+              this.notifier.showUpload(
+                'PDF uploaded to the public RECAP Archive.', function () {
+                }.bind(this));
+            }
+          }.bind(this);
 
             this.recap.uploadDocument(
               this.court, pacer_case_id, this.pacer_doc_id, document_number,
-              attachment_number, onUploadOk
+              attachment_number, callback
             );
           } else {
             console.info("RECAP: Not uploading PDF. RECAP is disabled.");
           }
-        }.bind(this);
-        chrome.storage.local.get('options', uploadDocument);
 
       }.bind(this));
   }.bind(this));
@@ -672,6 +671,7 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
   try {
     // runtime start
     $("body").css("cursor", "wait");
+
     // in Firefox, use content.fetch for content-specific fetch requests
     // https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#XHR_and_Fetch
     const browserSpecificFetch = (navigator.userAgent.indexOf('Chrome') < 0) ? content.fetch : window.fetch
@@ -685,39 +685,38 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
     console.info('RECAP: Downloaded zip file');
     // save blob in storage under tabId
     // we store it as an array to chunk the message
-    await updateTabStorage({ 
+    await updateTabStorage({
       [this.tabId]: { ['zip_blob']: arrayBufferToArray(buffer) }
     });
-    
+
     const blob = new Blob([buffer], {type: 'application/zip'});
     const blobUrl = URL.createObjectURL(blob);
     const pacerCaseId = (event.data.id).match(/caseid\=\d*/)[0].replace(/caseid\=/, "");
 
     // load options
-    const callback = (ok) => { // callback 
-      if (ok) {
-        const filename = generateFileName(options, pacerCaseId);
-        // convert htmlPage to document
-        const link =
-          `<a id="recap-download" href=${blobUrl} download=${filename} width="0" height="0"/>`;
-        const htmlBody = stringToDocBody(htmlPage);
-        const frame = htmlBody.querySelector('iframe');
-        frame.insertAdjacentHTML('beforebegin', link);
-        frame.src = "";
-        frame.onload = () => document.getElementById('recap-download').click();
-        document.body = htmlBody;
-        history.pushState({content: document.body.innerHTML}, '');
-        // show notifier
-        this.notifier.showUpload('Zip uploaded to the Public Recap Archive', () => {});
-        destroyTabStorage(this.tabId);
-      }
-    }
-    const options = await getItemsFromStorage('options') 
+    const options = await getItemsFromStorage('options')
     if (options['recap_enabled'] && !this.restricted) {
       this.recap.uploadZipFile(
         this.court, // string
         pacerCaseId, // string
-        callback // function
+        (ok) => { // callback
+          if (ok) {
+            const filename = generateFileName(options, pacerCaseId);
+            // convert htmlPage to document
+            const link =
+              `<a id="recap-download" href=${blobUrl} download=${filename} width="0" height="0"/>`;
+            const htmlBody = stringToDocBody(htmlPage);
+            const frame = htmlBody.querySelector('iframe');
+            frame.insertAdjacentHTML('beforebegin', link);
+            frame.src = "";
+            frame.onload = () => document.getElementById('recap-download').click();
+            document.body = htmlBody;
+            history.pushState({content: document.body.innerHTML}, '');
+            // show notifier
+            this.notifier.showUpload('Zip uploaded to the Public Recap Archive', () => {});
+            console.log(this.tabId)
+          }
+    }
       );
     }
   } catch (err) {
@@ -745,7 +744,7 @@ ContentDelegate.prototype.handleZipFilePageView = function () {
 
   // now we replace the onclick method of the "Download Documents" buttons
   // with the postMessage function and zero out the form action buttons
-  // WARNING: generally we don't inject raw html into the page as that introduces 
+  // WARNING: generally we don't inject raw html into the page as that introduces
   // full-access arbitrary code execution.
   const dangerouslySetInnerHTML = [
     'let forms = document.forms;',

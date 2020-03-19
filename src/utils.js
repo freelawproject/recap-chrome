@@ -100,7 +100,7 @@ function httpRequest(url, postData, callback) {
   try {
     // Firefox. See: https://discourse.mozilla.org/t/webextension-xmlhttprequest-issues-no-cookies-or-referrer-solved/11224/18
     xhr = XPCNativeWrapper(new window.wrappedJSObject.XMLHttpRequest());
-  } 
+  }
   catch (evt) {
     // Chrome.
     xhr = new XMLHttpRequest();
@@ -146,10 +146,9 @@ const saveItemToStorage = (dataObj) => new Promise((resolve, reject) =>
 );
 
 const destroyTabStorage = key => {
-  console.log(key)
   new Promise((resolve, reject) => {
     chrome.storage.local.remove(
-      key, 
+      [key],
       () => resolve(console.log(`Removed object with tabId: ${key}`))
     )
   });
