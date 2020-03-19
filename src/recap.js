@@ -27,7 +27,7 @@ function Recap() {
         );
         return cb(pacerCaseId);
       } catch(err) {
-        console.error('No stored pacer_case_id found in chrome storage');
+        console.log('No stored pacer_case_id found in chrome storage');
         return cb(null);
       };
     },

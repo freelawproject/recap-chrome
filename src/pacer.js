@@ -12,6 +12,9 @@
 //        |                         |
 //        `--> History query form --|
 //                                  |
+//                                  |--> Possible interstitial large docket page
+//                                  |
+//                                  |
 //                                  '--> Docket, i.e. list of documents or
 //                                       History Report (*)
 //                                        |
@@ -20,8 +23,12 @@
 //                                        |    page.
 //                                        |     |
 //                                        `-----'--> Single document page
-//                                                    |
-//                                                    '--> PDF view page (*)
+//                                              |     |
+//                                              |      '--> PDF view page (*)
+//                                              |
+//                                              |--> All documents zip page
+//                                                   |
+//                                                   '--> Zip file download page (*)
 //
 // Pages marked (*) cost money.  The "Single document page" is a page that
 // tells you how much a document will cost before you get to view the PDF.

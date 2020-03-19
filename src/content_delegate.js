@@ -1,4 +1,18 @@
-// Abstraction of content scripts to make them modular and testable.
+//  Abstraction of content scripts to make them modular and testable.
+//  Functions:
+//  checkRestrictions
+//  findAndStorePacerIds
+//  handleDocketQueryUrl
+//  handleDocketDisplayPage
+//  handleAttachmentPageMenu
+//  handleSingleDocumentPageCheck
+//  handleOnDocumentViewSubmit
+//  showPdfPage
+//  handleSingleDocumentPageView
+//  handleRecapLinkClick
+//  attachRecapLinkToEligibleDocs
+//  onDownloadAllSubmit
+//  handleZipFilePageView
 
 let ContentDelegate = function (tabId, url, path, court, pacer_case_id, pacer_doc_id,
   links) {
@@ -206,7 +220,28 @@ ContentDelegate.prototype.handleDocketQueryUrl = function () {
 };
 
 // If this is a docket page, upload it to RECAP.
-ContentDelegate.prototype.handleDocketDisplayPage = function () {
+ContentDelegate.prototype.handleDocketDisplayPage = async function () {
+  // helper function pulled from PACER.getCaseNumberFromUrls
+  const caseIdFromDocketPageUrl = () => {
+    // destructure the returned HTMLCollection into an array
+    const links = [...document.getElementsByTagName('a')];
+    const leadCaseLink = links.find(link => link.href.match(/\/DktRpt\.pl?/));
+    const match = leadCaseLink.href.match(/\?(\d+)(?:&.*)?$/)  // match on DktRpt.pl?178502&blah urls
+    if (match) {
+      debug(3, `Found case via: ${match[0]}`)
+      return match[1];
+    }
+  };
+
+  // check for more than one radioDateInput and return if true
+  // (you are on an interstitial page)
+  const radioDateInputs = [...document.getElementsByTagName('input')].filter(
+    input => input.name === 'date_from' && input.type === 'radio'
+  );
+  if (radioDateInputs.length > 1) {
+    return;
+  };
+
   if (history.state && history.state.uploaded) {
     return;
   }
@@ -217,8 +252,14 @@ ContentDelegate.prototype.handleDocketDisplayPage = function () {
     return;
   }
   let isAppellate = PACER.isAppellateCourt(this.court);
-  if (!this.pacer_case_id) {
-    // If we don't have the pacer_case_id, punt.
+
+ 
+  // if the content_delegate didn't pull the case Id on initialization,
+  // check the page for a lead case dktrpt url.
+  const pacerCaseId = this.pacer_case_id ? this.pacer_case_id : caseIdFromDocketPageUrl()
+  
+  if (!pacerCaseId) {
+    // If we don't have any pacerCaseId punt.
     return;
   }
 
@@ -234,12 +275,12 @@ ContentDelegate.prototype.handleDocketDisplayPage = function () {
         }
       }, this);
       if (isDocketDisplayUrl) {
-        this.recap.uploadDocket(this.court, this.pacer_case_id,
+        this.recap.uploadDocket(this.court, pacerCaseId,
           document.documentElement.innerHTML,
           (isAppellate ? 'APPELLATE_DOCKET' : 'DOCKET'),
           callback);
       } else if (isDocketHistoryDisplayUrl) {
-        this.recap.uploadDocket(this.court, this.pacer_case_id,
+        this.recap.uploadDocket(this.court, pacerCaseId,
           document.documentElement.innerHTML,
           'DOCKET_HISTORY_REPORT',
           callback);
