@@ -17,9 +17,8 @@ function Recap() {
     //Given a pacer_doc_id, return the pacer_case_id that it is associated with
     getPacerCaseIdFromPacerDocId: async function (pacer_doc_id, cb) {
       const tabId = cb.tab.id
-      console.log(tabId)
+      const tabStore = await getItemsFromStorage(tabId);
       try {
-        const tabStore = await getTabStorage(tabId);
         const pacerCaseId = tabStore[pacer_doc_id];
         console.info([
           'RECAP: Got case number', pacerCaseId,
