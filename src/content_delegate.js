@@ -253,11 +253,11 @@ ContentDelegate.prototype.handleDocketDisplayPage = async function () {
   }
   let isAppellate = PACER.isAppellateCourt(this.court);
 
- 
+
   // if the content_delegate didn't pull the case Id on initialization,
   // check the page for a lead case dktrpt url.
-  const pacerCaseId = this.pacer_case_id ? this.pacer_case_id : caseIdFromDocketPageUrl()
-  
+  const pacerCaseId = this.pacer_case_id ? this.pacer_case_id : PACER.caseIdFromDocketPageUrl(document);
+
   if (!pacerCaseId) {
     // If we don't have any pacerCaseId punt.
     return;
