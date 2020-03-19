@@ -187,12 +187,12 @@ function Recap() {
           body: data,
           headers: { 'Authorization': `Token ${N87GC2}`}
         }))
-        .then( res => res.json() )
+        .then(res => res.json())
         .then( result => {
           console.info(`RECAP: Successfully uploaded PDF: 'Success' ` +
             `with processing queue id of ${result.id}`);
-          destroyTabStorage(cb.tab.id);
           cb(result || null);
+          destroyTabStorage(cb.tab.id);
         })
         .catch(error => console.log(`RECAP: Error uploading PDF: ${error}`));
     },
@@ -236,8 +236,8 @@ function Recap() {
         .then(result => {
           console.info(`RECAP: Successfully uploaded Zip: 'Success' ` +
           `with processing queue id of ${result.id}`);
-          destroyTabStorage(cb.tab.id);
           cb(result || null);
+          destroyTabStorage(cb.tab.id);
         })
         .catch(error => console.log(`RECAP: Error uploading Zip: ${error}`));
     }

@@ -493,14 +493,13 @@ ContentDelegate.prototype.showPdfPage = async function (
             }
           }.bind(this);
 
-            this.recap.uploadDocument(
-              this.court, pacer_case_id, this.pacer_doc_id, document_number,
-              attachment_number, callback
-            );
-          } else {
-            console.info("RECAP: Not uploading PDF. RECAP is disabled.");
-          }
-
+          this.recap.uploadDocument(
+            this.court, pacer_case_id, this.pacer_doc_id, document_number,
+            attachment_number, callback
+          );
+        } else {
+          console.info("RECAP: Not uploading PDF. RECAP is disabled.");
+        }
       }.bind(this));
   }.bind(this));
 };
@@ -714,7 +713,6 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
             history.pushState({content: document.body.innerHTML}, '');
             // show notifier
             this.notifier.showUpload('Zip uploaded to the Public Recap Archive', () => {});
-            console.log(this.tabId)
           }
     }
       );

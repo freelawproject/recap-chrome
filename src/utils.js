@@ -146,12 +146,14 @@ const saveItemToStorage = (dataObj) => new Promise((resolve, reject) =>
 );
 
 const destroyTabStorage = key => {
-  new Promise((resolve, reject) => {
-    chrome.storage.local.remove(
-      [key],
-      () => resolve(console.log(`Removed object with tabId: ${key}`))
-    )
-  });
+  chrome.storage.local.get(null, store => {
+    if (store[key]) {
+      chrome.storage.local.remove(
+        key.toString(),
+        () => console.log(`Removed item from storage with key ${key}`)
+      )
+    }
+  })
 }
 // initialize the store with an empty object
 const getTabIdForContentScript = () => new Promise(resolve => {
@@ -165,7 +167,6 @@ const getTabIdForContentScript = () => new Promise(resolve => {
 const updateTabStorage = async object => {
   const tabId = Object.keys(object)[0];
   const updatedVars = object[tabId];
-  console.log(updatedVars)
   const store = await getItemsFromStorage(tabId);
   // keep store immutable
   await saveItemToStorage({ [tabId]: { ...store, ...updatedVars } });
