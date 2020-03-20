@@ -664,7 +664,6 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
 
   // helper function - returns filename based on user preferences
   const generateFileName = (options, pacerCaseId) => {
-    console.log( `${pacerCaseId}.zip`);
     if (options.ia_style_filenames) {
       return [
         'gov',
@@ -721,7 +720,6 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
     const blob = new Blob([buffer], {type: 'application/zip'});
     const blobUrl = URL.createObjectURL(blob);
     const pacerCaseId = (event.data.id).match(/caseid\=\d*/)[0].replace(/caseid\=/, "");
-    console.log(pacerCaseId)
 
     // load options
     const options = await getItemsFromStorage('options')
@@ -734,7 +732,6 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
         pacerCaseId, // string
         (ok) => { // callback
           if (ok) {
-            console.log(pacerCaseId)
             // convert htmlPage to document
             const link =
               `<a id="recap-download" href=${blobUrl} download=${filename} width="0" height="0"/>`;
