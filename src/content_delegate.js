@@ -221,20 +221,16 @@ ContentDelegate.prototype.handleDocketQueryUrl = function () {
 
 // If this is a docket page, upload it to RECAP.
 ContentDelegate.prototype.handleDocketDisplayPage = async function () {
-  // helper function pulled from PACER.getCaseNumberFromUrls
-  const caseIdFromDocketPageUrl = () => {
-    // destructure the returned HTMLCollection into an array
-    const links = [...document.getElementsByTagName('a')];
-    const leadCaseLink = links.find(link => link.href.match(/\/DktRpt\.pl?/));
-    const match = leadCaseLink.href.match(/\?(\d+)(?:&.*)?$/)  // match on DktRpt.pl?178502&blah urls
-    if (match) {
-      debug(3, `Found case via: ${match[0]}`)
-      return match[1];
-    }
-  };
+
+  // If it's not a docket display URL or a docket history URL, punt.
+  let isDocketDisplayUrl = PACER.isDocketDisplayUrl(this.url);
+  let isDocketHistoryDisplayUrl = PACER.isDocketHistoryDisplayUrl(this.url);
+  if (!(isDocketHistoryDisplayUrl || isDocketDisplayUrl)) {
+    return;
+  }
 
   // check for more than one radioDateInput and return if true
-  // (you are on an interstitial page)
+  // (you are on an interstitial page so no docket to display)
   const radioDateInputs = [...document.getElementsByTagName('input')].filter(
     input => input.name === 'date_from' && input.type === 'radio'
   );
@@ -242,21 +238,17 @@ ContentDelegate.prototype.handleDocketDisplayPage = async function () {
     return;
   };
 
+  // if you've already uploaded the page, return
   if (history.state && history.state.uploaded) {
     return;
   }
-  let isDocketDisplayUrl = PACER.isDocketDisplayUrl(this.url);
-  let isDocketHistoryDisplayUrl = PACER.isDocketHistoryDisplayUrl(this.url);
-  if (!(isDocketHistoryDisplayUrl || isDocketDisplayUrl)) {
-    // If it's not a docket display URL or a docket history URL, punt.
-    return;
-  }
-  let isAppellate = PACER.isAppellateCourt(this.court);
 
+  // check if appellate
+  let isAppellate = PACER.isAppellateCourt(this.court);
 
   // if the content_delegate didn't pull the case Id on initialization,
   // check the page for a lead case dktrpt url.
-  const pacerCaseId = this.pacer_case_id ? this.pacer_case_id : PACER.caseIdFromDocketPageUrl(document);
+  const pacerCaseId = this.pacer_case_id ? this.pacer_case_id : PACER.getCaseIdFromDocketPageUrl(document);
 
   if (!pacerCaseId) {
     // If we don't have any pacerCaseId punt.
@@ -671,32 +663,28 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
   };
 
   // helper function - returns filename based on user preferences
-  const generateFileName = async (options, pacerCaseId) => {
-    try {
-      if (options.ia_style_filenames) {
-        return [
-          'gov',
-          'uscourts',
-          this.court,
-          (pacerCaseId || 'unknown-case-id')
-        ].join('.').concat('.zip');
-      } else if (options.lawyer_style_filenames) {
-        const firstTable = document.getElementsByTagName('table')[0];
-        const firstTableRows = firstTable.querySelectorAll('tr');
-        // 4th from bottom
-        const matchedRow = firstTableRows[firstTableRows.length - 4];
-        const cells = matchedRow.querySelectorAll('td');
-        const document_number = cells[0].innerText.match(/\d+(?=\-)/)[0];
-        const docket_number = cells[1].innerText;
-        return [
-          PACER.COURT_ABBREVS[this.court],
-          docket_number,
-          document_number,
-        ].join('_').concat('.zip');
-      }
-    } catch (err) {
-      console.log('Filename generation failed, defaulting to pacerCaseId');
-      return `${pacerCaseId}.zip`;
+  const generateFileName = (options, pacerCaseId) => {
+    console.log( `${pacerCaseId}.zip`);
+    if (options.ia_style_filenames) {
+      return [
+        'gov',
+        'uscourts',
+        this.court,
+        (pacerCaseId || 'unknown-case-id')
+      ].join('.').concat('.zip');
+    } else if (options.lawyer_style_filenames) {
+      const firstTable = document.getElementsByTagName('table')[0];
+      const firstTableRows = firstTable.querySelectorAll('tr');
+      // 4th from bottom
+      const matchedRow = firstTableRows[firstTableRows.length - 4];
+      const cells = matchedRow.querySelectorAll('td');
+      const document_number = cells[0].innerText.match(/\d+(?=\-)/)[0];
+      const docket_number = cells[1].innerText;
+      return [
+        PACER.COURT_ABBREVS[this.court],
+        docket_number,
+        document_number,
+      ].join('_').concat('.zip');
     }
   };
 
@@ -709,12 +697,12 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
   history.replaceState({content: document.documentElement.innerHTML}, '');
 
   try {
-    // runtime start
+    // tell the user to wait
     $("body").css("cursor", "wait");
 
     // in Firefox, use content.fetch for content-specific fetch requests
     // https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#XHR_and_Fetch
-    const browserSpecificFetch = (navigator.userAgent.indexOf('Chrome') < 0) ? content.fetch : window.fetch
+    const browserSpecificFetch = (navigator.userAgent.indexOf('Chrome') < 0) ? content.fetch : window.fetch;
 
     // fetch the html page which contains the <iframe> link to the zip document.
     const htmlPage = await browserSpecificFetch(event.data.id).then(res => res.text());
@@ -729,19 +717,24 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
       [this.tabId]: { ['zip_blob']: arrayBufferToArray(buffer) }
     });
 
+    // create the blob and inject it into the page
     const blob = new Blob([buffer], {type: 'application/zip'});
     const blobUrl = URL.createObjectURL(blob);
     const pacerCaseId = (event.data.id).match(/caseid\=\d*/)[0].replace(/caseid\=/, "");
+    console.log(pacerCaseId)
 
     // load options
     const options = await getItemsFromStorage('options')
+    // generate the filename
+    const filename = generateFileName(options, pacerCaseId);
+
     if (options['recap_enabled'] && !this.restricted) {
       this.recap.uploadZipFile(
         this.court, // string
         pacerCaseId, // string
         (ok) => { // callback
           if (ok) {
-            const filename = generateFileName(options, pacerCaseId);
+            console.log(pacerCaseId)
             // convert htmlPage to document
             const link =
               `<a id="recap-download" href=${blobUrl} download=${filename} width="0" height="0"/>`;
@@ -755,7 +748,7 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
             // show notifier
             this.notifier.showUpload('Zip uploaded to the Public Recap Archive', () => {});
           }
-    }
+        }
       );
     }
   } catch (err) {
