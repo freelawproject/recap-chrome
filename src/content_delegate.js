@@ -440,101 +440,105 @@ ContentDelegate.prototype.showPdfPage = async function (
   documentElement.innerHTML = `${match[1]}<p>Waiting for download...<p><iframe src="about:blank"${match[3]}`;
 
   // Download the file from the <iframe> URL.
-  httpRequest(match[2], null, async function (type, ab, xhr) {
-    console.info("RECAP: Successfully got PDF as arraybuffer via ajax request.");
+  const blob = await fetch(match[2]).then(res => res.blob());
+  let blobUrl = URL.createObjectURL(blob);
+  const buffer = await blob.text();
+  await updateTabStorage({ [this.tabId]: { ['pdf_blob']: buffer }})
+  console.info("RECAP: Successfully got PDF as arraybuffer via ajax request.");
+  // Make the Back button redisplay the previous page.
+  window.onpopstate = function (event) {
+    if (event.state.content) {
+      documentElement.innerHTML = event.state.content;
+    }
+  };
+  history.replaceState({content: previousPageHtml}, '');
+  // Get the PACER case ID and, on completion, define displayPDF()
+  // to either display the PDF in the provided <iframe>, or, if
+  // external_pdf is set, save it using FileSaver.js's saveAs().
 
-    // Make the Back button redisplay the previous page.
-    window.onpopstate = function (event) {
-      if (event.state.content) {
-        documentElement.innerHTML = event.state.content;
-      }
-    };
-    history.replaceState({content: previousPageHtml}, '');
+  const options = await getItemsFromStorage('options')
 
-    // store the result in chrome local storage
-    const data = arrayBufferToArray(ab);
-    await updateTabStorage({ [this.tabId]: { ['pdf_blob']: data }});
+  // abstracted - move to PACER
+  const generateFileName = (pacer_case_id) => {
+    let filename, pieces;
+    if (options.ia_style_filenames) {
+      pieces = [
+        'gov',
+        'uscourts',
+        this.court,
+        (pacer_case_id || 'unknown-case-id'),
+        document_number,
+        (attachment_number || '0')
+      ];
+      filename = `${pieces.join('.')}.pdf`;
+    } else if (options.lawyer_style_filenames) {
+      pieces = [
+        PACER.COURT_ABBREVS[this.court],
+        docket_number,
+        document_number,
+        (attachment_number || '0')
+      ];
+      filename = `${pieces.join('_')}.pdf`;
+    }
+    return filename
+  };
 
-    // Get the PACER case ID and, on completion, define displayPDF()
-    // to either display the PDF in the provided <iframe>, or, if
-    // external_pdf is set, save it using FileSaver.js's saveAs().
-    let blob = new Blob([new Uint8Array(ab)], {type: type});
+  const setInnerHtml = async (pacer_case_id) => {
+    const filename = generateFileName(pacer_case_id)
+    let external_pdf = options.external_pdf;
+    if ((navigator.userAgent.indexOf('Chrome') >= 0) &&
+      !navigator.plugins.namedItem('Chrome PDF Viewer')) {
+      // We are in Google Chrome, and the built-in PDF Viewer has been disabled.
+      // So we autodetect and force external_pdf true for proper filenames.
+      external_pdf = true;
+    }
+    if (!external_pdf) {
+      let downloadLink = `<div id="recap-download" class="initial">
+                            <a href="${blobUrl}" download="${filename}">Save as ${filename}</a>
+                          </div>`;
+      html = `${match[1]}${downloadLink}<iframe onload="setTimeout(function() {
+                document.getElementById('recap-download').className = '';
+              }, 7500)" src="${blobUrl}"${match[3]}`;
+      documentElement.innerHTML = html;
+      history.pushState({content: html}, '');
+    } else {
+      // Saving to an external PDF.
+      saveAs(blob, filename);
+      documentElement.innerHTML = `${match[1]}<p><iframe src="about:blank"${match[3]}`; // Clear "Waiting..." message
+    }
+  };
 
-    this.recap.getPacerCaseIdFromPacerDocId(
-      this.pacer_doc_id, async function (pacer_case_id) {
-        console.info(`RECAP: Stored pacer_case_id is ${pacer_case_id}`);
-        let displayPDF = function (items) {
-          let filename, pieces;
-          if (items.options.ia_style_filenames) {
-            pieces = [
-              'gov',
-              'uscourts',
-              this.court,
-              (pacer_case_id || 'unknown-case-id'),
-              document_number,
-              (attachment_number || '0')
-            ];
-            filename = `${pieces.join('.')}.pdf`;
-          } else if (items.options.lawyer_style_filenames) {
-            pieces = [
-              PACER.COURT_ABBREVS[this.court],
-              docket_number,
-              document_number,
-              (attachment_number || '0')
-            ];
-            filename = `${pieces.join('_')}.pdf`;
-          }
+  this.recap.getPacerCaseIdFromPacerDocId(
+    this.pacer_doc_id, 
+    async (pacer_case_id) => { // callback
+      console.info(`RECAP: Stored pacer_case_id is ${pacer_case_id}`);
 
-          let external_pdf = items.options.external_pdf;
-          if ((navigator.userAgent.indexOf('Chrome') >= 0) &&
-            !navigator.plugins.namedItem('Chrome PDF Viewer')) {
-            // We are in Google Chrome, and the built-in PDF Viewer has been disabled.
-            // So we autodetect and force external_pdf true for proper filenames.
-            external_pdf = true;
-          }
-          if (!external_pdf) {
-            let blobUrl = URL.createObjectURL(blob);
-            let downloadLink = `<div id="recap-download" class="initial">
-                                  <a href="${blobUrl}" download="${filename}">Save as ${filename}</a>
-                                </div>`;
-            html = `${match[1]}${downloadLink}<iframe onload="setTimeout(function() {
-                      document.getElementById('recap-download').className = '';
-                    }, 7500)" src="${blobUrl}"${match[3]}`;
-            documentElement.innerHTML = html;
-            history.pushState({content: html}, '');
-          } else {
-            // Saving to an external PDF.
-            saveAs(blob, filename);
-            documentElement.innerHTML = `${match[1]}<p><iframe src="about:blank"${match[3]}`; // Clear "Waiting..." message
-          }
-        }.bind(this);
-
-        chrome.storage.local.get('options', displayPDF);
-
-        // TODO: rewrite filename function to take advantage of the returned options object
-        const options = await getItemsFromStorage('options')
-        // store the blob in chrome storage for background worker
-        if (options['recap_enabled'] && !this.restricted) {
-          // If we have the pacer_case_id, upload the file to RECAP.
-          // We can't pass an ArrayBuffer directly to the background
-          // page, so we have to convert to a regular array.
-          const callback = function (ok) {
+      await setInnerHtml(pacer_case_id);
+      // store the blob in chrome storage for background worker
+      if (options['recap_enabled'] && !this.restricted) {
+        // If we have the pacer_case_id, upload the file to RECAP.
+        // We can't pass an ArrayBuffer directly to the background
+        // page, so we have to convert to a regular array.
+        this.recap.uploadDocument(
+          this.court, 
+          pacer_case_id, 
+          this.pacer_doc_id, 
+          document_number,
+          attachment_number, 
+          (ok) => {  // callback
             if (ok) {
               this.notifier.showUpload(
-                'PDF uploaded to the public RECAP Archive.', function () {
-                }.bind(this));
+                'PDF uploaded to the public RECAP Archive.', 
+                () => {}
+              )
             }
-          }.bind(this);
-
-          this.recap.uploadDocument(
-            this.court, pacer_case_id, this.pacer_doc_id, document_number,
-            attachment_number, callback
-          );
-        } else {
-          console.info("RECAP: Not uploading PDF. RECAP is disabled.");
-        }
-      }.bind(this));
-  }.bind(this));
+          }
+        )
+      } else {
+        console.info("RECAP: Not uploading PDF. RECAP is disabled.");
+      }
+    }
+  );
 };
 
 // If this page offers a single document, intercept navigation to the document
@@ -644,7 +648,6 @@ ContentDelegate.prototype.attachRecapLinkToEligibleDocs = function () {
     }, this));
 };
 
-// TODO: implement appellate court check
 // TODO: Confirm that zip downloading is consistent across jurisdictions
 ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
   // helper function - extract the zip by creating html and querying the frame

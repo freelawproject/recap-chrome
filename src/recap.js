@@ -166,8 +166,7 @@ function Recap() {
       getItemsFromStorage(cb.tab.id)
         .then(tabStorage => {
           // create form data
-          const ab = tabStorage['pdf_blob'];
-          const blob = blobFromArrayBuffer(ab);
+          const blob = new Blob([tabStorage['pdf_blob']], { type: 'application/pdf'});
           let formData = new FormData();
           formData.append('court', PACER.convertToCourtListenerCourt(pacer_court));
           pacer_case_id && formData.append('pacer_case_id', pacer_case_id);
