@@ -196,8 +196,10 @@ $.ajaxSetup({
 // so we need this ridiculous circumlocution of breaking the data into chunks.
 function arrayBufferToArray(ab) {
   let chunks = [];
-  for (let i = 0; i < ab.byteLength; i += 100000) {
-    let slice = new Uint8Array(ab, i, Math.min(100000, ab.byteLength - i));
+  for (let offset = 0; offset < ab.byteLength; offset += 100000) {
+    // don't set the length if the remaining bytes are less than the offset
+    const length = ab.byteLength - offset < 10000 ? null : 10000;
+    let slice = new Uint8Array(ab, offset, length);
     chunks.push(Array.apply(null, slice));  // convert each chunk separately
   }
   return [].concat.apply([], chunks);  // concatenate all the chunks together

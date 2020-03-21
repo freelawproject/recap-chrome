@@ -23,7 +23,7 @@ describe('The ContentDelegate class', function() {
   // http://stackoverflow.com/questions/17279712/what-is-the-smallest-possible-valid-pdf
   const pdf_data = ('%PDF-1.\ntrailer<</Root<</Pages<</Kids' +
     '[<</MediaBox[0 0 3 3]>>]>>>>>>\n');
-
+  
   const nonsenseUrlContentDelegate = new ContentDelegate(nonsenseUrl);
   const noPacerDocIdContentDelegate = new ContentDelegate(
     docketQueryUrl, docketQueryPath, 'canb', undefined, []);

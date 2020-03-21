@@ -760,6 +760,12 @@ ContentDelegate.prototype.handleZipFilePageView = function () {
     return;
   }
 
+  // return if on the appellate courts
+  if (PACER.isAppellateCourt(this.court)) {
+    debug(4, "No interposition for appellate downloads yet");
+    return;
+  }
+
   // extract the url from the onclick attribute from one of the two
   // "Download Documents" buttons
   const inputs = [...document.getElementsByTagName("input")];
