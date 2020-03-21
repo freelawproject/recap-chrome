@@ -164,9 +164,9 @@ function Recap() {
       // extract the tabId from the enhanced callback
       // wait for chrome.storage.local to load the tabStorage
       getItemsFromStorage(cb.tab.id)
-        .then(tabStorage => {
+        .then(async (tabStorage) => {
           // create form data
-          const blob = new Blob([tabStorage['pdf_blob']], { type: 'application/pdf'});
+          const blob = await fetch(tabStorage['pdf_blob']).then(res => res.blob())
           let formData = new FormData();
           formData.append('court', PACER.convertToCourtListenerCourt(pacer_court));
           pacer_case_id && formData.append('pacer_case_id', pacer_case_id);
@@ -210,12 +210,10 @@ function Recap() {
       // extract the tabId from the enhanced callback
       // wait for chrome.storage.local to load the tabStorage
       getItemsFromStorage(cb.tab.id)
-        .then(tabStorage => {
+        .then(async (tabStorage) => {
+          const docId = tabStorage['docId']
+          const blob = await fetch(tabStorage['zip_blob']).then(res => res.blob())
           // create the formData
-          const ab = tabStorage['zip_blob'];
-          const docId = tabStorage['docId'];
-          const blob = blobFromArrayBuffer(ab);
-
           const formData = new FormData();
           formData.append('court', PACER.convertToCourtListenerCourt(pacer_court));
           pacer_case_id && formData.append('pacer_case_id', pacer_case_id);

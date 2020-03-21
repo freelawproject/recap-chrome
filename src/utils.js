@@ -204,6 +204,14 @@ function arrayBufferToArray(ab) {
   }
   return [].concat.apply([], chunks);  // concatenate all the chunks together
 }
+const blobToDataURL = (blob) => {
+  return new Promise((resolve, reject) => {
+      let reader = new FileReader();
+      reader.onerror = reject;
+      reader.onload = (e) => resolve(reader.result);
+      reader.readAsDataURL(blob);
+  })
+}
 
 const blobFromArrayBuffer = ab => {
   const intArray = new Uint8Array(ab);
