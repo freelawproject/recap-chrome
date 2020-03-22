@@ -442,8 +442,8 @@ ContentDelegate.prototype.showPdfPage = async function (
   // Download the file from the <iframe> URL.
   const blob = await fetch(match[2]).then(res => res.blob());
   let blobUrl = URL.createObjectURL(blob);
-  const buffer = await blob.text();
-  await updateTabStorage({ [this.tabId]: { ['pdf_blob']: buffer }})
+  const dataUrl = await blobToDataURL(blob)
+  await updateTabStorage({ [this.tabId]: { ['pdf_blob']: dataUrl }})
   console.info("RECAP: Successfully got PDF as arraybuffer via ajax request.");
   // Make the Back button redisplay the previous page.
   window.onpopstate = function (event) {
@@ -711,16 +711,16 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
     console.log("RECAP: Successfully submitted zip file request");
     const zipUrl = extractUrl(htmlPage);
     //download zip file and save it to chrome storage
-    const buffer = await fetch(zipUrl).then(res => res.arrayBuffer());
+    const blob = await fetch(zipUrl).then(res => res.blob());
+    const dataUrl = await blobToDataURL(blob)
     console.info('RECAP: Downloaded zip file');
     // save blob in storage under tabId
     // we store it as an array to chunk the message
     await updateTabStorage({
-      [this.tabId]: { ['zip_blob']: arrayBufferToArray(buffer) }
+      [this.tabId]: { ['zip_blob']: dataUrl }
     });
 
     // create the blob and inject it into the page
-    const blob = new Blob([buffer], {type: 'application/zip'});
     const blobUrl = URL.createObjectURL(blob);
     const pacerCaseId = (event.data.id).match(/caseid\=\d*/)[0].replace(/caseid\=/, "");
 
