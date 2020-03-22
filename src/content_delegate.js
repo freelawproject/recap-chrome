@@ -440,7 +440,8 @@ ContentDelegate.prototype.showPdfPage = async function (
   documentElement.innerHTML = `${match[1]}<p>Waiting for download...<p><iframe src="about:blank"${match[3]}`;
 
   // Download the file from the <iframe> URL.
-  const blob = await fetch(match[2]).then(res => res.blob());
+  const browserSpecificFetch = (navigator.userAgent.indexOf('Chrome') < 0) ? content.fetch : window.fetch;
+  const blob = await browserSpecificFetch(match[2]).then(res => res.blob());
   let blobUrl = URL.createObjectURL(blob);
   const dataUrl = await blobToDataURL(blob)
   await updateTabStorage({ [this.tabId]: { ['pdf_blob']: dataUrl }})
