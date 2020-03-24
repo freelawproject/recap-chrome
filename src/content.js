@@ -35,7 +35,7 @@ if (PACER.hasPacerCookie(document.cookie)) {
   content_delegate.handleSingleDocumentPageView();
 
   // If this is a Clams Register, we upload it to RECAP
-  content_delege.handleClaimsPageView();
+  content_delegate.handleClaimsPageView();
 
   // Check every link in the document to see if there is a free RECAP document
   // available. If there is, put a link with a RECAP icon.

@@ -170,7 +170,7 @@ let PACER = {
       !!url.match(/\/SearchClaims\.pl\?/) &&
       headlines[0].innerText.match(/Claims Register/)
     return pageCheck
-  }
+  },
 
   // Returns true if this is a page for downloading a single document.
   // district:
