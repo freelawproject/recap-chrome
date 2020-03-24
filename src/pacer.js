@@ -225,18 +225,6 @@ let PACER = {
     }
   },
 
-  // used to grab the pacerCaseId from a docket page interrupted by
-  // an interstitial
-  getCaseIdFromDocketPageUrl: (document) => {
-    // destructure the returned HTMLCollection into an array
-    const links = [...document.getElementsByTagName('a')];
-    const leadCaseLink = links.find(link => link.href.match(/\/DktRpt\.pl?/));
-    const match = leadCaseLink.href.match(/\?(\d+)(?:&.*)?$/);  // match on DktRpt.pl?178502&blah urls
-    if (match) {
-      debug(3, `Found case via: ${match[0]}`);
-      return match[1];
-    };
-  },
   // Given a URL that satisfies isDocketQueryUrl, gets its case number.
   getCaseNumberFromUrls: function (urls) {
     // Iterate over an array of URLs and get the case number from the

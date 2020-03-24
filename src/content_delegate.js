@@ -164,11 +164,16 @@ ContentDelegate.prototype.findAndStorePacerDocIds = function () {
     }
   }
   // save JSON object in chrome storage under the tabId
+  // append caseId if a docketQueryUrl
+  const payload = {
+    docId: pacer_doc_id,
+    ...docsToCases
+  }
+  if (PACER.isDocketQueryUrl(this.url) && page_pacer_case_id) {
+    payload['caseId'] = page_pacer_case_id
+  }
   updateTabStorage({
-    [this.tabId]: {
-      docId: pacer_doc_id,
-      ...docsToCases,
-    }
+    [this.tabId]: payload
   });
 };
 
@@ -248,7 +253,8 @@ ContentDelegate.prototype.handleDocketDisplayPage = async function () {
 
   // if the content_delegate didn't pull the case Id on initialization,
   // check the page for a lead case dktrpt url.
-  const pacerCaseId = this.pacer_case_id ? this.pacer_case_id : PACER.getCaseIdFromDocketPageUrl(document);
+  const tabStorage = await getItemsFromStorage(this.tabId)
+  const pacerCaseId = this.pacer_case_id ? this.pacer_case_id : tabStorage.caseId;
 
   if (!pacerCaseId) {
     // If we don't have any pacerCaseId punt.
@@ -510,7 +516,7 @@ ContentDelegate.prototype.showPdfPage = async function (
   };
 
   this.recap.getPacerCaseIdFromPacerDocId(
-    this.pacer_doc_id, 
+    this.pacer_doc_id,
     async (pacer_case_id) => { // callback
       console.info(`RECAP: Stored pacer_case_id is ${pacer_case_id}`);
 
@@ -521,15 +527,15 @@ ContentDelegate.prototype.showPdfPage = async function (
         // We can't pass an ArrayBuffer directly to the background
         // page, so we have to convert to a regular array.
         this.recap.uploadDocument(
-          this.court, 
-          pacer_case_id, 
-          this.pacer_doc_id, 
+          this.court,
+          pacer_case_id,
+          this.pacer_doc_id,
           document_number,
-          attachment_number, 
+          attachment_number,
           (ok) => {  // callback
             if (ok) {
               this.notifier.showUpload(
-                'PDF uploaded to the public RECAP Archive.', 
+                'PDF uploaded to the public RECAP Archive.',
                 () => {}
               )
             }
