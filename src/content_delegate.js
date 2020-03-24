@@ -753,7 +753,7 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
             document.body = htmlBody;
             history.pushState({content: document.body.innerHTML}, '');
             // show notifier
-            this.notifier.showUpload('Zip uploaded to the Public Recap Archive', () => {});
+            this.notifier.showUpload('Zip uploaded to the public RECAP Archive', () => {});
           }
         }
       );
