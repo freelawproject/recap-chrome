@@ -620,11 +620,15 @@ ContentDelegate.prototype.handleClaimsPageView = function(){
     return;
   }
 
+  const pacerCaseId = this.pacer_case_id 
+    ? this.pacer_case_id 
+    : PACER.getCaseIdFromClaimsPage(document);
+
   // render the page as a string and upload it to recap
   const claimsPageHtml = document.documentElement.outerHTML;
   this.recap.uploadClaimsRegister(
     this.court, 
-    this.pacer_case_id, 
+    pacerCaseId, 
     claimsPageHtml, 
     (ok) => { // callback - dispatch the notifier if upload is ok
       if (ok) {

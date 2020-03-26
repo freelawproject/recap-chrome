@@ -66,6 +66,14 @@ let PACER = {
     return false;
   },
 
+  getCaseIdFromClaimsPage: function (document) {
+    const links = [...document.querySelectorAll('a')];
+    const docketLink = links.find(link => link.href.match(/DktRpt\.pl/));
+    if (docketLink) {
+      const match = docketLink.href.match(/\?\d+/)
+      return match[0].slice(1);
+    }
+  },
   // Returns true if the URL is for docket query page.
   isDocketQueryUrl: function (url) {
     // The part after the "?" is all digits.
