@@ -632,9 +632,9 @@ ContentDelegate.prototype.handleClaimsPageView = function(){
     claimsPageHtml, 
     (ok) => { // callback - dispatch the notifier if upload is ok
       if (ok) {
-        this.notifier.showUpload('Claims Page uploaded to the Public Recap Archive', () => {});
+        this.notifier.showUpload('Claims page uploaded to the public RECAP Archive', () => {});
       } else {
-        console.error("Page not uploaded to RECAP.");
+        console.error("Page not uploaded to the public RECAP archive.");
       }
     }
   );
