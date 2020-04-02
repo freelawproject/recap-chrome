@@ -133,13 +133,14 @@ ContentDelegate.prototype.findAndStorePacerDocIds = function () {
 
   // Not all pages have a case ID, and there are corner-cases in merged dockets
   // where there are links to documents on another case.
-  let page_pacer_case_id = this.pacer_case_id ||
-    this.recap.getPacerCaseIdFromPacerDocId(this.pacer_doc_id, function () {});
+  let page_pacer_case_id = this.pacer_case_id 
+    ? this.pacer_case_id 
+    : this.recap.getPacerCaseIdFromPacerDocId(this.pacer_doc_id, function () {});
 
   let docsToCases = {};
 
   // Try getting a mapping from a pacer_doc_id in the URL to a
-  if (this.pacer_doc_id && page_pacer_case_id) {
+  if (this.pacer_doc_id && page_pacer_case_id && typeof page_pacer_case_id === 'string') {
     debug(3, `Z doc ${this.pacer_doc_id} to ${page_pacer_case_id}`);
     docsToCases[this.pacer_doc_id] = page_pacer_case_id;
   }
@@ -166,11 +167,11 @@ ContentDelegate.prototype.findAndStorePacerDocIds = function () {
   // save JSON object in chrome storage under the tabId
   // append caseId if a docketQueryUrl
   const payload = {
-    docId: pacer_doc_id,
-    ...docsToCases
-  }
+    docId: this.pacer_doc_id,
+    docsToCases: docsToCases,
+  };
   if (PACER.isDocketQueryUrl(this.url) && page_pacer_case_id) {
-    payload['caseId'] = page_pacer_case_id
+    payload['caseId'] = page_pacer_case_id;
   }
   updateTabStorage({
     [this.tabId]: payload
@@ -230,7 +231,9 @@ ContentDelegate.prototype.handleDocketDisplayPage = async function () {
   // If it's not a docket display URL or a docket history URL, punt.
   let isDocketDisplayUrl = PACER.isDocketDisplayUrl(this.url);
   let isDocketHistoryDisplayUrl = PACER.isDocketHistoryDisplayUrl(this.url);
+  console.log(isDocketDisplayUrl, isDocketHistoryDisplayUrl, this.url)
   if (!(isDocketHistoryDisplayUrl || isDocketDisplayUrl)) {
+    console.log("DIED IN FIRST CHECK")
     return;
   }
 
@@ -240,6 +243,7 @@ ContentDelegate.prototype.handleDocketDisplayPage = async function () {
     input => input.name === 'date_from' && input.type === 'radio'
   );
   if (radioDateInputs.length > 1) {
+    console.log("DIED IN SECOND CHECK")
     return;
   };
 

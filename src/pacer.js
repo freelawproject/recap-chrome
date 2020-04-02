@@ -149,6 +149,8 @@ let PACER = {
         case 'ChangeClient.jsp':
           return false;
       }
+    } else {
+      return false;
     }
   },
 

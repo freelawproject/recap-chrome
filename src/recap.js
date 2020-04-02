@@ -16,10 +16,11 @@ function Recap() {
 
     //Given a pacer_doc_id, return the pacer_case_id that it is associated with
     getPacerCaseIdFromPacerDocId: async function (pacer_doc_id, cb) {
-      const tabId = cb.tab.id
+      const tabId = cb.tab.id;
       const tabStore = await getItemsFromStorage(tabId);
       try {
-        const pacerCaseId = tabStore[pacer_doc_id];
+        const docsToCases = tabStore.docsToCases;
+        const pacerCaseId = docsToCases[pacer_doc_id];
         console.info([
           'RECAP: Got case number', pacerCaseId,
           'for pacer_doc_id:', pacer_doc_id].join(' ')
@@ -166,7 +167,7 @@ function Recap() {
       getItemsFromStorage(cb.tab.id)
         .then(async (tabStorage) => {
           // create form data
-          const blob = await fetch(tabStorage['pdf_blob']).then(res => res.blob())
+          const blob = await fetch(tabStorage['pdf_blob']).then(res => res.blob());
           let formData = new FormData();
           formData.append('court', PACER.convertToCourtListenerCourt(pacer_court));
           pacer_case_id && formData.append('pacer_case_id', pacer_case_id);
@@ -188,7 +189,7 @@ function Recap() {
         .then(res => res.json())
         .then( result => {
           console.info(`RECAP: Successfully uploaded PDF: 'Success' ` +
-            `with processing queue id of ${result.id}`);
+            `${result}`);
           cb(result || null);
           destroyTabStorage(cb.tab.id);
         })

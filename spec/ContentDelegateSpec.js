@@ -1,44 +1,61 @@
 /*global jasmine, DEBUGLEVEL */
-
 describe('The ContentDelegate class', function() {
-  const docketQueryUrl = 'https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?531591';
-  const docketQueryPath = '/cgi-bin/DktRpt.pl?531591';
-  const docketDisplayUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?' +
-    '101092135737069-L_1_0-1');
-  const historyDocketDisplayUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/HistDocQry.pl?' +
-    '101092135737069-L_1_0-1');
-  const docketDisplayPath = '/cgi-bin/DktRpt.pl?101092135737069-L_1_0-1';
-  const singleDocUrl = 'https://ecf.canb.uscourts.gov/doc1/034031424909';
-  const singleDocPath = '/doc1/034031424909';
+  // 'tabId' values
+  const tabId = 1234;
+  
+  // 'path' values
+  const districtCourtURI =    'https://ecf.canb.uscourts.gov'; 
+  const singleDocPath =       '/doc1/034031424909';
+  const docketDisplayPath =   '/cgi-bin/DktRpt.pl?101092135737069-L_1_0-1';
+  const docketQueryPath =     '/cgi-bin/DktRpt.pl?531591';
+  const historyDocketPath =   '/cgi-bin/HistDocQry.pl?101092135737069-L_1_0-1';
+  
+  // 'url' values
+  const docketQueryUrl = districtCourtURI.concat(docketQueryPath);
+  const docketDisplayUrl = districtCourtURI.concat(docketDisplayPath);
+  const singleDocUrl = districtCourtURI.concat(singleDocPath);
+  const historyDocketDisplayUrl = districtCourtURI.concat(historyDocketPath); 
+  const nonsenseUrl = 'http://something.uscourts.gov/foobar/baz';
 
+  console.log(docketDisplayUrl);
+  
   const zipDocUrl = ""
   const zipDocPath = ""
-
 
   const appellateURL = ''; // Todo get good example value
   const appellatePath = ''; // Todo get good example value
 
-  const nonsenseUrl = 'http://something.uscourts.gov/foobar/baz';
   // Smallest possible PDF according to:
   // http://stackoverflow.com/questions/17279712/what-is-the-smallest-possible-valid-pdf
   const pdf_data = ('%PDF-1.\ntrailer<</Root<</Pages<</Kids' +
     '[<</MediaBox[0 0 3 3]>>]>>>>>>\n');
+ 
+  // 'instances'
+  const nonsenseUrlContentDelegate = new ContentDelegate(tabId, nonsenseUrl, []);
   
-  const nonsenseUrlContentDelegate = new ContentDelegate(nonsenseUrl);
-  const noPacerDocIdContentDelegate = new ContentDelegate(
-    docketQueryUrl, docketQueryPath, 'canb', undefined, []);
-  const docketQueryContentDelegate = new ContentDelegate(
+  const noPacerCaseIdContentDelegate = new ContentDelegate(
+    tabId, // tabId 
+    docketQueryUrl, // url 
+    docketQueryPath, // path
+    'canb', // court 
+    undefined, // pacer_case_id
+    undefined, // pacer_doc_id
+    [] // links
+  );
+  
+    const docketQueryContentDelegate = new ContentDelegate(tabId, 
     docketQueryUrl, docketQueryPath, 'canb', '531591', []);
-  const docketDisplayContentDelegate = new ContentDelegate(
+  const docketDisplayContentDelegate = new ContentDelegate(tabId, 
     docketDisplayUrl, docketDisplayPath, 'canb', '531591', []);
-  const historyDocketDisplayContentDelegate = new ContentDelegate(
+  const historyDocketDisplayContentDelegate = new ContentDelegate(tabId,
     historyDocketDisplayUrl, docketDisplayPath, 'canb', '531591', []);
   const appellateContentDelegate = new ContentDelegate(
-    appellateURL, appellatePath, 'ca9', '1919', []);
+    tabId, appellateURL, appellatePath, 'ca9', '1919', []);
   const singleDocContentDelegate =
-    new ContentDelegate(singleDocUrl, singleDocPath, 'canb', '531591', []);
+    new ContentDelegate(tabId, singleDocUrl, singleDocPath, 'canb', '531591', []);
+    //TODO
   const zipFileContentDelegate =
-    new ContentDelegate(zipDocUrl, zipDocPath, )
+    new ContentDelegate(tabId, zipDocUrl, zipDocPath);
 
   function setupChromeSpy() {
     window.chrome = {
@@ -78,11 +95,13 @@ describe('The ContentDelegate class', function() {
     const link_1 = document.createElement('a');
     link_1.href = 'http://foo/bar/1';
     const expected_links = [link_0, link_1];
+    const expected_tabId = 1234;
 
     it('gets created with necessary arguments', function () {
-      const cd = new ContentDelegate(expected_url, expected_path, expected_court,
+      const cd = new ContentDelegate(tabId, expected_url, expected_path, expected_court,
         expected_pacer_case_id, expected_pacer_doc_id,
         expected_links);
+      expect(cd.tabId).toBe(expected_tabId);
       expect(cd.url).toBe(expected_url);
       expect(cd.path).toBe(expected_path);
       expect(cd.court).toBe(expected_court);
@@ -108,7 +127,7 @@ describe('The ContentDelegate class', function() {
       table_td.textContent = "Warning! Image";
 
       expect(document.body.innerText).not.toContain('will not be uploaded');
-      const cd = new ContentDelegate(restricted_url, expected_path, expected_court,
+      const cd = new ContentDelegate(tabId, restricted_url, expected_path, expected_court,
         expected_pacer_case_id, expected_pacer_doc_id, expected_links);
       expect(cd.restricted).toBe(true);
       expect(document.body.innerText).toContain('will not be uploaded');
@@ -134,7 +153,7 @@ describe('The ContentDelegate class', function() {
       bold.textContent = "SEALED";
 
       expect(document.body.innerText).not.toContain('will not be uploaded');
-      const cd = new ContentDelegate(restricted_url, expected_path, expected_court,
+      const cd = new ContentDelegate(tabId, restricted_url, expected_path, expected_court,
         expected_pacer_case_id, expected_pacer_doc_id, expected_links);
       expect(cd.restricted).toBe(true);
       expect(document.body.innerText).toContain('will not be uploaded');
@@ -273,7 +292,7 @@ describe('The ContentDelegate class', function() {
       });
 
       it('has no effect when there is no casenum', function() {
-        const cd = new ContentDelegate(docketDisplayUrl);
+        const cd = new ContentDelegate(tabId, docketDisplayUrl);
         spyOn(cd.recap, 'uploadDocket');
         cd.handleDocketDisplayPage();
         expect(cd.recap.uploadDocket).not.toHaveBeenCalled();
@@ -295,44 +314,71 @@ describe('The ContentDelegate class', function() {
           expect(cd.recap.uploadDocket).not.toHaveBeenCalled();
         });
       });
+      // interstitial check is multiple inputs with name 'date_from' and type 'radio'
+      describe ('when the docket page is an interstitial page', function (){
+        beforeEach(function() {
+          const input = document.createElement('input');
+          input.id = "input1"
+          input.name = 'date_from';
+          input.type = 'radio';
+          const input2 = input.cloneNode();
+          input2.id = "input2";
+          document.body.appendChild(input);
+          document.body.appendChild(input2);
+        });
 
-      it('calls uploadDocket and responds to a positive result', function() {
-        const cd = docketDisplayContentDelegate;
-        spyOn(cd.notifier, 'showUpload');
-        spyOn(cd.recap, 'uploadDocket')
+        afterEach(function() {
+          document.getElementById('input1').remove();
+          document.getElementById('input2').remove();
+        });
+
+        it ('does not call uploadDocket', async function(){
+          const cd = docketDisplayContentDelegate;
+          spyOn(cd.recap, 'uploadDocket');
+          await cd.handleDocketDisplayPage();
+          expect(cd.recap.uploadDocket).not.toHaveBeenCalled();
+        });
+      });
+      describe('when the docket page is not an interstitial page', function() {
+        
+        it('calls uploadDocket and responds to a positive result', async function() {
+          const cd = docketDisplayContentDelegate;
+          spyOn(cd.notifier, 'showUpload');
+          spyOn(cd.recap, 'uploadDocket')
+              .and.callFake(function(pc, pci, h, ut, cb) { cb(true); });
+          spyOn(history, 'replaceState');
+
+          await cd.handleDocketDisplayPage();
+          expect(cd.recap.uploadDocket).toHaveBeenCalled();
+          expect(cd.notifier.showUpload).toHaveBeenCalled();
+          expect(history.replaceState).toHaveBeenCalledWith({uploaded : true}, '');
+        });
+
+        it('calls uploadDocket and responds to a positive historical result', async function() {
+          const cd = historyDocketDisplayContentDelegate;
+          spyOn(cd.notifier, 'showUpload');
+          spyOn(cd.recap, 'uploadDocket')
             .and.callFake(function(pc, pci, h, ut, cb) { cb(true); });
-        spyOn(history, 'replaceState');
+          spyOn(history, 'replaceState');
 
-        cd.handleDocketDisplayPage();
-        expect(cd.recap.uploadDocket).toHaveBeenCalled();
-        expect(cd.notifier.showUpload).toHaveBeenCalled();
-        expect(history.replaceState).toHaveBeenCalledWith({uploaded : true}, '');
-      });
+          await cd.handleDocketDisplayPage();
+          expect(cd.recap.uploadDocket).toHaveBeenCalled();
+          expect(cd.notifier.showUpload).toHaveBeenCalled();
+          expect(history.replaceState).toHaveBeenCalledWith({uploaded : true}, '');
+        });
 
-      it('calls uploadDocket and responds to a positive historical result', function() {
-        const cd = historyDocketDisplayContentDelegate;
-        spyOn(cd.notifier, 'showUpload');
-        spyOn(cd.recap, 'uploadDocket')
-          .and.callFake(function(pc, pci, h, ut, cb) { cb(true); });
-        spyOn(history, 'replaceState');
+        it('calls uploadDocket and responds to a negative result', async function() {
+          const cd = docketDisplayContentDelegate;
+          spyOn(cd.notifier, 'showUpload');
+          spyOn(cd.recap, 'uploadDocket')
+              .and.callFake(function(pc, pci, h, ut, cb) { cb(false); });
+          spyOn(history, 'replaceState');
 
-        cd.handleDocketDisplayPage();
-        expect(cd.recap.uploadDocket).toHaveBeenCalled();
-        expect(cd.notifier.showUpload).toHaveBeenCalled();
-        expect(history.replaceState).toHaveBeenCalledWith({uploaded : true}, '');
-      });
-
-      it('calls uploadDocket and responds to a negative result', function() {
-        const cd = docketDisplayContentDelegate;
-        spyOn(cd.notifier, 'showUpload');
-        spyOn(cd.recap, 'uploadDocket')
-            .and.callFake(function(pc, pci, h, ut, cb) { cb(false); });
-        spyOn(history, 'replaceState');
-
-        cd.handleDocketDisplayPage();
-        expect(cd.recap.uploadDocket).toHaveBeenCalled();
-        expect(cd.notifier.showUpload).not.toHaveBeenCalled();
-        expect(history.replaceState).not.toHaveBeenCalled();
+          await cd.handleDocketDisplayPage();
+          expect(cd.recap.uploadDocket).toHaveBeenCalled();
+          expect(cd.notifier.showUpload).not.toHaveBeenCalled();
+          expect(history.replaceState).not.toHaveBeenCalled();
+        });
       });
     });
   });
@@ -766,43 +812,44 @@ describe('The ContentDelegate class', function() {
     });
   });
 
-  describe('onDownloadAllSubmit', function() {
-    const pre = ('<head><title>test</title><style>body { margin: 0; } iframe { border: none; }' +
-      '</style></head><body>');
-    const iframe = '<iframe src="data:pdf"';
-    const post = ' width="100%" height="100%"></iframe></body>';
-    const html = pre + iframe + post;
-    const cd = zipFileContentDelegate;
-    const eventUrl = "";
+  // describe('onDownloadAllSubmit', function() {
 
-    beforeEach(function() {
-      window.chrome = {
-        storage: {
-          local: {
-            get : jasmine.createSpy().and.callFake(function(
-              _, cb) { cb({options : {recap_enabled: true}}); }),
-            set : jasmine.createSpy('set').and.callFake(function() {})
-          }
-        }
-      }
-      cd.onDownloadAllSubmit(eventUrl)
-    });
+  //   const pre = ('<head><title>test</title><style>body { margin: 0; } iframe { border: none; }' +
+  //     '</style></head><body>');
+  //   const iframe = '<iframe src="data:pdf"';
+  //   const post = ' width="100%" height="100%"></iframe></body>';
+  //   const html = pre + iframe + post;
+  //   const cd = zipFileContentDelegate;
+  //   const eventUrl = "";
 
-    it('fetches the page html and extracts the zipFile url', function() {});
+  //   beforeEach(function() {
+  //     window.chrome = {
+  //       storage: {
+  //         local: {
+  //           get : jasmine.createSpy().and.callFake(function(
+  //             _, cb) { cb({options : {recap_enabled: true}}); }),
+  //           set : jasmine.createSpy('set').and.callFake(function() {})
+  //         }
+  //       }
+  //     }
+  //     cd.onDownloadAllSubmit(eventUrl)
+  //   });
 
-    it('downloads the zipFile and stores it in chrome storage', function() {});
+  //   it('fetches the page html and extracts the zipFile url', function() {});
 
-    it('checks options to see if recap is enabled', function() {});
+  //   it('downloads the zipFile and stores it in chrome storage', function() {});
 
-    it('uploads the Zip file to RECAP', function() {});
+  //   it('checks options to see if recap is enabled', function() {});
 
-    it('redirects the user to the download page and forwards the zip file', function() {})
+  //   it('uploads the Zip file to RECAP', function() {});
 
-    it('calls the notifier once the upload finishes', function() {
-      expect(cd.notifier.showUpload).toHaveBeenCalled();
-    });
+  //   it('redirects the user to the download page and forwards the zip file', function() {})
 
-  });
+  //   it('calls the notifier once the upload finishes', function() {
+  //     expect(cd.notifier.showUpload).toHaveBeenCalled();
+  //   });
+
+  // });
 
   describe('showPdfPage', function() {
     let documentElement;
@@ -847,7 +894,7 @@ describe('The ContentDelegate class', function() {
         const fakeGet = function (_, callback) {
           callback(casenum);
         };
-        const fakeUpload = function (pc, pci, pdi, dn, an, b, callback) {
+        const fakeUpload = function (pc, pci, pdi, dn, an, callback) {
           callback(true);
         };
 
@@ -923,12 +970,13 @@ describe('The ContentDelegate class', function() {
   }
 
   describe('findAndStorePacerDocIds', function() {
+
     it('should handle no cookie', function () {
       spyOn(PACER, 'hasPacerCookie').and.returnValue(false);
       expect(nonsenseUrlContentDelegate.findAndStorePacerDocIds()).toBe(undefined);
     });
     it('should handle pages without case ids', function() {
-      const cd = noPacerDocIdContentDelegate;
+      const cd = noPacerCaseIdContentDelegate;
       spyOn(PACER, 'hasPacerCookie').and.returnValue(true);
       spyOn(cd.recap, 'getPacerCaseIdFromPacerDocId');
       chrome.storage.local.set = function (docs, cb) {
@@ -937,7 +985,7 @@ describe('The ContentDelegate class', function() {
       cd.findAndStorePacerDocIds();
       expect(cd.recap.getPacerCaseIdFromPacerDocId).toHaveBeenCalled();
     });
-    it('should iterate links for DLS', function() {
+    it('should iterate links for DLS', async function() {
       const link_2 = document.createElement('a');
       link_2.href = 'https://ecf.canb.uscourts.gov/notacase/034031424909';
       const link_3 = document.createElement('a');
@@ -946,11 +994,12 @@ describe('The ContentDelegate class', function() {
       link_4.href = 'https://ecf.canb.uscourts.gov/doc1/034031424911';
       const test_links = [link_2, link_3, link_4];
       const docketQueryWithLinksContentDelegate = new ContentDelegate(
+        tabId, // tabId
         docketQueryUrl, // url
         docketQueryPath, // path
         'canb', // court
-        null, // pacer_case_id
-        null, // pacer_doc_id
+        undefined, // pacer_case_id
+        '127015406472', // pacer_doc_id
         test_links // links
       );
 
@@ -958,14 +1007,15 @@ describe('The ContentDelegate class', function() {
       spyOn(PACER, 'hasPacerCookie').and.returnValue(true);
       spyOn(PACER, 'parseGoDLSFunction').and.returnValue({'de_caseid': '1234'});
       const cd = docketQueryWithLinksContentDelegate;
-      chrome.storage.local.set = function (docs, cb) {
+      chrome.storage.local.set = function (storagePayload, cb) {
+        const docs = storagePayload[tabId].docsToCases;
         documents = docs;
         cb();
       };
-      cd.findAndStorePacerDocIds();
+      await cd.findAndStorePacerDocIds();
       expect(documents).toEqual({"034031424910": "1234", "034031424911": "1234"});
     });
-    it('should iterate links for PACER case id', function() {
+    it('should iterate links for PACER case id', async function() {
       const link_2 = document.createElement('a');
       link_2.href = 'https://ecf.canb.uscourts.gov/notacase/034031424909';
       const link_3 = document.createElement('a');
@@ -974,6 +1024,7 @@ describe('The ContentDelegate class', function() {
       link_4.href = 'https://ecf.canb.uscourts.gov/doc1/034031424911';
       const test_links = [link_2, link_3, link_4];
       const docketQueryWithLinksContentDelegate = new ContentDelegate(
+        tabId,
         docketQueryUrl, // url
         docketQueryPath, // path
         'canb', // court
@@ -984,11 +1035,12 @@ describe('The ContentDelegate class', function() {
       let documents = {};
       spyOn(PACER, 'hasPacerCookie').and.returnValue(true);
       const cd = docketQueryWithLinksContentDelegate;
-      chrome.storage.local.set = function (docs, cb) {
+      chrome.storage.local.set = function (storagePayload, cb) {
+        const docs = storagePayload[tabId].docsToCases;
         documents = docs;
         cb();
       };
-      cd.findAndStorePacerDocIds();
+      await cd.findAndStorePacerDocIds();
       expect(documents).toEqual({
         "redfox": "123456",
         "034031424910": "123456",
@@ -1075,7 +1127,7 @@ describe('The ContentDelegate class', function() {
       let cd;
       beforeEach(function() {
         links = linksFromUrls(fake_urls);
-        cd = new ContentDelegate(expected_url, null, null, null, null, links);
+        cd = new ContentDelegate(tabId, expected_url, null, null, null, null, links);
         cd.attachRecapLinkToEligibleDocs();
       });
 
@@ -1090,7 +1142,7 @@ describe('The ContentDelegate class', function() {
       beforeEach(function() {
         links = linksFromUrls(urls);
         $('body').append(links);
-        cd = new ContentDelegate(expected_url, null, null, null, null, links);
+        cd = new ContentDelegate(tabId, expected_url, null, null, null, null, links);
         cd.pacer_doc_ids = [ 1234 ];
       });
 
