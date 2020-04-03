@@ -175,8 +175,9 @@ let PACER = {
   isClaimsRegisterPage: function (url, document) {
     let headlines = [...document.getElementsByTagName('h2')]
     let pageCheck =
-      !!url.match(/\/SearchClaims\.pl\?/) &&
-      headlines[0].innerText.match(/Claims Register/)
+      !!url.match(/\/SearchClaims\.pl\?/) 
+      && headlines.length > 0 
+      && headlines[0].innerText.match(/Claims Register/)
     return pageCheck
   },
 
