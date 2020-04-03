@@ -66,6 +66,14 @@ let PACER = {
     return false;
   },
 
+  getCaseIdFromClaimsPage: function (document) {
+    const links = [...document.querySelectorAll('a')];
+    const docketLink = links.find(link => link.href.match(/DktRpt\.pl/));
+    if (docketLink) {
+      const match = docketLink.href.match(/\?\d+/)
+      return match[0].slice(1);
+    }
+  },
   // Returns true if the URL is for docket query page.
   isDocketQueryUrl: function (url) {
     // The part after the "?" is all digits.
@@ -158,6 +166,19 @@ let PACER = {
       inputs.length &&
       inputs[inputs.length - 1].value === 'Download All';
     return !!pageCheck;
+  },
+
+  // Claims Register Page includes an h2 tag with the court and words "Claims Register"
+  // exampleUrl: https://ecf.nyeb.uscourts.gov/cgi-bin/SearchClaims.pl?610550152546515-L_1_0-1
+  // exampleHeader: <h2>Eastern District of New York<br>Claims Register </h2>
+
+  isClaimsRegisterPage: function (url, document) {
+    let headlines = [...document.getElementsByTagName('h2')]
+    let pageCheck =
+      !!url.match(/\/SearchClaims\.pl\?/) 
+      && headlines.length > 0 
+      && headlines[0].innerText.match(/Claims Register/)
+    return pageCheck
   },
 
   // Returns true if this is a page for downloading a single document.
