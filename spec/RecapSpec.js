@@ -17,6 +17,7 @@ describe('The Recap export module', function() {
   const filename = 'DktRpt.html';
   const type = 'text/html';
   const html = '<html lang="en"></html>';
+  const blob = new Blob([new ArrayBuffer(1000)], {type: 'application/pdf'});
 
   // in utils, the callback is assigned the caller tab info
   // we use that to send the tabId to background worker so
@@ -52,14 +53,30 @@ describe('The Recap export module', function() {
     jasmine.Ajax.uninstall();
   });
 
-  function setupChromeSpy() {
+  async function setupChromeSpy() {
+    const dataUrl = await blobToDataURL(blob);
     window.chrome = {
       storage: {
         local: {
-          get: jasmine.createSpy()
+          get : jasmine.createSpy('get').and.callFake((_, cb) => { 
+            cb({
+              options : {
+                recap_enabled: true, 
+                ['ia_style_filenames']: true, 
+                ['lawyer_style_filenames']: false, 
+                ['external_pdf']: true 
+              },
+              ['1234']: { 
+                ['pdf_blob']: dataUrl,
+                docsToCases: { ['034031424909']: '531591' } 
+              }
+            });
+          }),
+          remove: jasmine.createSpy('remove').and.callFake(()=> {}),
+          set : jasmine.createSpy('set').and.callFake(function() {})
         }
       }
-    }
+    };
   }
 
   function removeChromeSpy() {
@@ -208,36 +225,39 @@ describe('The Recap export module', function() {
 
   describe('uploadDocument', function() {
     let existingFormData;
-    const blob = new Blob([new ArrayBuffer(10000)], {type: 'application/pdf'});
-    
+    let nativeFetch;
+
     beforeEach(function() {
-      window.chrome = {
-        storage: {
-          local: {
-            get: jasmine.createSpy('get').and.callFake((_, cb) => cb( { ['1234']: { ['pdf_blob']: blob } })),
-            set: jasmine.createSpy('set')
-          }
-        }
-      };
+      nativeFetch = window.fetch;
+      spyOn(window, 'fetch').and.callFake((url,options) => {
+        const res = {};
+        res.status = jasmine.createSpy().and.callFake(( ) => Promise.resolve('200'));
+        res.json = jasmine.createSpy().and.callFake(() => Promise.resolve({ result: true }));
+        res.blob = jasmine.createSpy().and.callFake(() => Promise.resolve(blob));
+        return Promise.resolve(res);
+      });
       existingFormData = window.FormData;
       window.FormData = FormDataFake;
+      spyOn(recap, 'uploadDocument').and.callFake((...args) => console.log(args));
+      setupChromeSpy(); 
     });
 
     afterEach(function() {
+      removeChromeSpy();
       window.FormData = existingFormData;
-      delete window.chrome;
+      window.fetch = nativeFetch;
     });
 
     it('requests the correct URL', function() {
       recap.uploadDocument(
         court, pacer_case_id, pacer_doc_id, docnum, attachnum,
         callback);
-      expect(jasmine.Ajax.requests.mostRecent().url).toBe(
-        'https://www.courtlistener.com/api/rest/v3/recap/');
+      expect(window.fetch).toHaveBeenCalledWith('http://www.courtlistener.com/api/rest/v3/recap');
     });
 
     it('sends the correct FormData', function() {
       const expected = new FormDataFake();
+      const blob = new Blob([new ArrayBuffer(10000)], {type: 'application/pdf'});
       expected.append('court', court);
       expected.append('pacer_case_id', pacer_case_id);
       expected.append('pacer_doc_id', pacer_doc_id);
@@ -249,14 +269,54 @@ describe('The Recap export module', function() {
       // the setting and retrieval of items in chrome storage
       expected.append('filepath_local', blob);
 
-      // pacer_court, pacer_case_id, pacer_doc_id,
-      // document_number, attachment_number, nonce, cb
+      recap.uploadDocument(
+        court, pacer_case_id, pacer_doc_id, docnum, attachnum,
+        cb);
+      expect(window.fetch).toHaveBeenCalledTimes(2);
+    });
+  });
+  describe('uploadZipFile', function() {
+    let existingFormData;
+
+    beforeEach(function() {
+      nativeFetch = window.fetch;
+      spyOn(window, 'fetch').and.callFake((url,options) => {
+        const res = {};
+        res.status = jasmine.createSpy().and.callFake(( ) => Promise.resolve('200'));
+        res.json = jasmine.createSpy().and.callFake(() => Promise.resolve({ result: true }));
+        res.blob = jasmine.createSpy().and.callFake(() => Promise.resolve(blob));
+        return Promise.resolve(res);
+      });
+      existingFormData = window.FormData;
+      window.FormData = FormDataFake;
+      setupChromeSpy(); 
+    });
+
+    afterEach(function() {
+      removeChromeSpy();
+      window.FormData = existingFormData;
+    });
+
+    it('requests the correct URL', function() {
+      recap.uploadDocument(
+        court, pacer_case_id, pacer_doc_id, docnum, attachnum,
+        callback);
+      expect(window.fetch).toHaveBeenCalledWith('http://www.courtlistener.com/api/rest/v3/recap');
+    });
+
+    it('sends the correct FormData', function() {
+      const expected = new FormDataFake();
+      const blob = new Blob([new ArrayBuffer(10000)], {type: 'application/pdf'});
+      expected.append('court', court);
+      expected.append('pacer_case_id', pacer_case_id);
+      expected.append('pacer_doc_id', pacer_doc_id);
+      expected.append('upload_type', 10);
+      expected.append('filepath_local', blob);
 
       recap.uploadDocument(
         court, pacer_case_id, pacer_doc_id, docnum, attachnum,
         callback);
-      const actualData = jasmine.Ajax.requests.mostRecent().data();
-      expect(actualData).toEqual(jasmine.objectContaining(expected));
+      expect(window.fetch).toHaveBeenCalledTimes(2);
     });
   });
 });

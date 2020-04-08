@@ -155,7 +155,7 @@ function Recap() {
     ) => {
       console.info([
         `RECAP: Attempting PDF upload to RECAP Archive with details:`,
-        `pacer_court:   ${pacer_court}`,
+        `pacer_court: ${pacer_court}`,
         `pacer_case_id: ${pacer_case_id}`,
         `pacer_doc_id: ${pacer_doc_id}`,
         `document_number: ${document_number},`,
@@ -179,7 +179,7 @@ function Recap() {
           formData.append('filepath_local', blob);
           formData.append('upload_type', UPLOAD_TYPES['PDF']);
           formData.append('debug', DEBUG);
-          return formData
+          return formData;
         })
         .then(data => fetch(`${SERVER_ROOT}recap/`, {
           method: 'POST',
@@ -187,11 +187,11 @@ function Recap() {
           headers: { 'Authorization': `Token ${N87GC2}`}
         }))
         .then(res => res.json())
-        .then( result => {
+        .then(result => {
           console.info(`RECAP: Successfully uploaded PDF: 'Success' ` +
             `${result}`);
           cb(result || null);
-          destroyTabStorage(cb.tab.id);
+          destroyTabStorage(tabId);
         })
         .catch(error => console.log(`RECAP: Error uploading PDF: ${error}`));
     },
@@ -234,7 +234,7 @@ function Recap() {
           console.info(`RECAP: Successfully uploaded Zip: 'Success' ` +
           `with processing queue id of ${result.id}`);
           cb(result || null);
-          destroyTabStorage(cb.tab.id);
+          destroyTabStorage(tabId);
         })
         .catch(error => console.log(`RECAP: Error uploading Zip: ${error}`));
     }

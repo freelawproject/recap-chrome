@@ -73,11 +73,11 @@ module.exports = function(config) {
 
     // set these options to view logs in development
     // see https://github.com/karma-runner/karma/issues/2582#issuecomment-413660796 
-    browserConsoleLogOptions: {
-      level: 'log',
-      format: '%b %T: %m',
-      terminal: true,
-    },
+    // browserConsoleLogOptions: {
+    //   level: 'log',
+    //   format: '%b %T: %m',
+    //   terminal: true,
+    // },
     // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
     logLevel: config.LOG_DEBUG,
 

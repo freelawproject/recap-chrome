@@ -17,11 +17,6 @@ describe('The ContentDelegate class', function() {
   const historyDocketDisplayUrl = districtCourtURI.concat(historyDocketPath); 
   const nonsenseUrl = 'http://something.uscourts.gov/foobar/baz';
 
-  console.log(docketDisplayUrl);
-  
-  const zipDocUrl = ""
-  const zipDocPath = ""
-
   const appellateURL = ''; // Todo get good example value
   const appellatePath = ''; // Todo get good example value
 
@@ -44,19 +39,16 @@ describe('The ContentDelegate class', function() {
   );
   
     const docketQueryContentDelegate = new ContentDelegate(tabId, 
-    docketQueryUrl, docketQueryPath, 'canb', '531591', []);
+    docketQueryUrl, docketQueryPath, 'canb', '531591', undefined, []);
   const docketDisplayContentDelegate = new ContentDelegate(tabId, 
-    docketDisplayUrl, docketDisplayPath, 'canb', '531591', []);
+    docketDisplayUrl, docketDisplayPath, 'canb', '531591', undefined, []);
   const historyDocketDisplayContentDelegate = new ContentDelegate(tabId,
-    historyDocketDisplayUrl, docketDisplayPath, 'canb', '531591', []);
+    historyDocketDisplayUrl, docketDisplayPath, 'canb', '531591', undefined, []);
   const appellateContentDelegate = new ContentDelegate(
-    tabId, appellateURL, appellatePath, 'ca9', '1919', []);
+    tabId, appellateURL, appellatePath, 'ca9', '1919', undefined, []);
   const singleDocContentDelegate =
-    new ContentDelegate(tabId, singleDocUrl, singleDocPath, 'canb', '531591', []);
+    new ContentDelegate(tabId, singleDocUrl, singleDocPath, 'canb', '531591', undefined, []);
     //TODO
-  const zipFileContentDelegate =
-    new ContentDelegate(tabId, zipDocUrl, zipDocPath);
-
   function setupChromeSpy() {
     window.chrome = {
       extension : {getURL : jasmine.createSpy()},
@@ -64,7 +56,8 @@ describe('The ContentDelegate class', function() {
         local : {
           get : jasmine.createSpy().and.callFake(function(
               _, cb) { cb({options : {}}); }),
-          set : jasmine.createSpy('set').and.callFake(function() {})
+          set : jasmine.createSpy('set').and.callFake(function() {}),
+          remove: jasmine.createSpy('remove').and.callFake(() => {})
         }
       }
     }
@@ -73,7 +66,13 @@ describe('The ContentDelegate class', function() {
     delete window.chrome;
   }
 
+  let nativeFetch;
   beforeEach(function() {
+    nativeFetch = window.fetch;
+    window.fetch = () => Promise.resolve(new window.Response(
+      new Blob([pdf_data], { type: 'application/pdf' }),
+      { status: 200, }
+    ));
     jasmine.Ajax.install();
     setupChromeSpy();
   });
@@ -81,6 +80,7 @@ describe('The ContentDelegate class', function() {
   afterEach(function() {
     jasmine.Ajax.uninstall();
     removeChromeSpy();
+    window.fetch = nativeFetch;
   });
 
   describe('ContentDelegate constructor', function() {
@@ -247,8 +247,12 @@ describe('The ContentDelegate class', function() {
         window.chrome = {
           storage : {
             local : {
-              get : jasmine.createSpy().and.callFake(function(
-                _, cb) { cb({options : {recap_enabled: false}}); }),
+              get : jasmine.createSpy().and.callFake((_, cb) => { 
+                cb({
+                  ['1234']: { caseId: '531591' },
+                  options : {recap_enabled: false}
+                }); 
+              }),
               set : jasmine.createSpy('set').and.callFake(function() {})
             }
           }
@@ -272,8 +276,12 @@ describe('The ContentDelegate class', function() {
         window.chrome = {
           storage : {
             local : {
-              get : jasmine.createSpy().and.callFake(function(
-                _, cb) { cb({options : {recap_enabled: true}}); }),
+              get : jasmine.createSpy().and.callFake((_, cb) => { 
+                cb({
+                  [1234]: { caseId: '531591'},
+                  options : {recap_enabled: true}
+                });
+              }),
               set : jasmine.createSpy('set').and.callFake(function() {})
             }
           }
@@ -292,7 +300,7 @@ describe('The ContentDelegate class', function() {
       });
 
       it('has no effect when there is no casenum', function() {
-        const cd = new ContentDelegate(tabId, docketDisplayUrl);
+        const cd = new ContentDelegate(tabId, docketDisplayUrl, undefined, 'canb', undefined, undefined, []);
         spyOn(cd.recap, 'uploadDocket');
         cd.handleDocketDisplayPage();
         expect(cd.recap.uploadDocket).not.toHaveBeenCalled();
@@ -344,8 +352,10 @@ describe('The ContentDelegate class', function() {
         it('calls uploadDocket and responds to a positive result', async function() {
           const cd = docketDisplayContentDelegate;
           spyOn(cd.notifier, 'showUpload');
-          spyOn(cd.recap, 'uploadDocket')
-              .and.callFake(function(pc, pci, h, ut, cb) { cb(true); });
+          spyOn(cd.recap, 'uploadDocket').and.callFake((pc, pci, h, ut, cb) => { 
+            cb.tab = {id: 1234}
+            cb(true);
+          });
           spyOn(history, 'replaceState');
 
           await cd.handleDocketDisplayPage();
@@ -357,8 +367,10 @@ describe('The ContentDelegate class', function() {
         it('calls uploadDocket and responds to a positive historical result', async function() {
           const cd = historyDocketDisplayContentDelegate;
           spyOn(cd.notifier, 'showUpload');
-          spyOn(cd.recap, 'uploadDocket')
-            .and.callFake(function(pc, pci, h, ut, cb) { cb(true); });
+          spyOn(cd.recap, 'uploadDocket').and.callFake((pc, pci, h, ut, cb) => { 
+            cb.tab = {id: 1234}
+            cb(true);
+          });
           spyOn(history, 'replaceState');
 
           await cd.handleDocketDisplayPage();
@@ -370,8 +382,10 @@ describe('The ContentDelegate class', function() {
         it('calls uploadDocket and responds to a negative result', async function() {
           const cd = docketDisplayContentDelegate;
           spyOn(cd.notifier, 'showUpload');
-          spyOn(cd.recap, 'uploadDocket')
-              .and.callFake(function(pc, pci, h, ut, cb) { cb(false); });
+          spyOn(cd.recap, 'uploadDocket').and.callFake((pc, pci, h, ut, cb) => { 
+            cb.tab = { id: 1234 }
+            cb(false);
+          });
           spyOn(history, 'replaceState');
 
           await cd.handleDocketDisplayPage();
@@ -812,45 +826,6 @@ describe('The ContentDelegate class', function() {
     });
   });
 
-  // describe('onDownloadAllSubmit', function() {
-
-  //   const pre = ('<head><title>test</title><style>body { margin: 0; } iframe { border: none; }' +
-  //     '</style></head><body>');
-  //   const iframe = '<iframe src="data:pdf"';
-  //   const post = ' width="100%" height="100%"></iframe></body>';
-  //   const html = pre + iframe + post;
-  //   const cd = zipFileContentDelegate;
-  //   const eventUrl = "";
-
-  //   beforeEach(function() {
-  //     window.chrome = {
-  //       storage: {
-  //         local: {
-  //           get : jasmine.createSpy().and.callFake(function(
-  //             _, cb) { cb({options : {recap_enabled: true}}); }),
-  //           set : jasmine.createSpy('set').and.callFake(function() {})
-  //         }
-  //       }
-  //     }
-  //     cd.onDownloadAllSubmit(eventUrl)
-  //   });
-
-  //   it('fetches the page html and extracts the zipFile url', function() {});
-
-  //   it('downloads the zipFile and stores it in chrome storage', function() {});
-
-  //   it('checks options to see if recap is enabled', function() {});
-
-  //   it('uploads the Zip file to RECAP', function() {});
-
-  //   it('redirects the user to the download page and forwards the zip file', function() {})
-
-  //   it('calls the notifier once the upload finishes', function() {
-  //     expect(cd.notifier.showUpload).toHaveBeenCalled();
-  //   });
-
-  // });
-
   describe('showPdfPage', function() {
     let documentElement;
     const pre = ('<head><title>test</title><style>body { margin: 0; } iframe { border: none; }' +
@@ -859,19 +834,38 @@ describe('The ContentDelegate class', function() {
     const post = ' width="100%" height="100%"></iframe></body>';
     const html = pre + iframe + post;
     const cd = singleDocContentDelegate;
-
-    beforeEach(function() {
+    const blob = new Blob([new ArrayBuffer(1000)], { type: 'application/pdf' });
+    
+    beforeEach(async function() {
+      const dataUrl = await blobToDataURL(blob);
       documentElement = jasmine.createSpy();
       window.chrome = {
         storage : {
           local : {
-            get : jasmine.createSpy().and.callFake(function(
-              _, cb) { cb({options : {recap_enabled: true}}); }),
+            get : jasmine.createSpy().and.callFake((_, cb) => { 
+              cb({
+                options : { 
+                  recap_enabled: true, 
+                  ['ia_style_filenames']: true, 
+                  ['lawyer_style_filenames']: false, 
+                  ['external_pdf']: true 
+                },
+                [tabId]: { 
+                  ['pdf_blob']: dataUrl,
+                  docsToCases: { ['034031424909']: '531591' }
+                }
+              }); 
+            }),
+            remove: jasmine.createSpy('remove').and.callFake(function(){}),
             set : jasmine.createSpy('set').and.callFake(function() {})
           }
         }
       };
       cd.showPdfPage(documentElement, html, '');
+    });
+
+    afterEach(() => {
+      delete window.chrome;
     });
 
     it('handles no iframe', function() {
@@ -889,26 +883,27 @@ describe('The ContentDelegate class', function() {
 
     describe('when it downloads the PDF in the iframe', function() {
       const casenum = '437098';
+      const cd = singleDocContentDelegate;
 
       beforeEach(function() {
-        const fakeGet = function (_, callback) {
-          callback(casenum);
-        };
-        const fakeUpload = function (pc, pci, pdi, dn, an, callback) {
-          callback(true);
-        };
-
-        spyOn(cd.recap, 'getPacerCaseIdFromPacerDocId').and.callFake(fakeGet);
-        spyOn(cd.recap, 'uploadDocument').and.callFake(fakeUpload);
-        spyOn(cd.notifier, 'showUpload');
+        spyOn(cd.recap, 'getPacerCaseIdFromPacerDocId').and.callFake(
+          (pdi, callback) => {
+            callback.tab = { id: 1234 };
+            callback(casenum);
+          }
+        );
+        spyOn(cd.notifier, 'showUpload').and.callFake((message, cb) => cb(true) );
         spyOn(URL, 'createObjectURL').and.returnValue('data:blob');
-        spyOn(history, 'pushState');
-        spyOn(window, 'saveAs');
-        jasmine.Ajax.requests.mostRecent().respondWith({
-          'status' : 200,
-          'contentType' : 'application/pdf',
-          'responseText' : pdf_data
+        spyOn(history, 'pushState').and.callFake(() => {});
+        spyOn(cd.recap, 'uploadDocument').and.callFake((...params) => {
+          params.callback(true);
         });
+        window.saveAs = jasmine.createSpy('saveAs').and.callFake(()=> Promise.resolve(true));
+        // jasmine.Ajax.requests.mostRecent().respondWith({
+        //   'status' : 200,
+        //   'contentType' : 'application/pdf',
+        //   'responseText' : pdf_data
+        // });
       });
 
       it('makes the back button redisplay the previous page', function() {
@@ -918,30 +913,30 @@ describe('The ContentDelegate class', function() {
       });
 
       it('displays the page with the downloaded file in an iframe', function() {
-        if ((navigator.userAgent.indexOf('Chrome') >= 0) &&
-            !navigator.plugins.namedItem('Chrome PDF Viewer')) {
+        if ((navigator.userAgent.indexOf('Chrome') < 0) &&
+            navigator.plugins.namedItem('Chrome PDF Viewer')) {
           // isExternalPdf, file is saved with saveAs
           // Test fails on Chrome 78.0.3904 because carriage returns
           // are present in the grabbed html. A quick fix is to use
           // a set of non-null characters [^\0] instead of the dot
           // operator -- see https://www.regular-expressions.info/dot.html
           expect(documentElement.innerHTML)
-            .toMatch(/<iframe[^\0]*?src="about:blank"[^\0]*?><\/iframe>/);
-          expect(window.saveAs).toHaveBeenCalled();
+            .toMatch(/<iframe[^\0]*?src="data:blob"[^\0]*?><\/iframe>/);
         } else {
           expect(documentElement.innerHTML)
-            .toMatch(/<iframe[^\0]*?src="data:blob"[^\0]*?><\/iframe>/);
+            .toMatch(/<iframe[^\0]*?src="about:blank"[^\0]*?><\/iframe>/);
+          expect(window.saveAs).toHaveBeenCalled();
         }
       });
 
       it('puts the generated HTML in the page history', function() {
-        if ((navigator.userAgent.indexOf('Chrome') >= 0) &&
-            !navigator.plugins.namedItem('Chrome PDF Viewer')) {
+        if ((navigator.userAgent.indexOf('Chrome') < 0) &&
+            navigator.plugins.namedItem('Chrome PDF Viewer')) {
           // isExternalPdf, file is saved with saveAs
+          expect(history.pushState).toHaveBeenCalled();
+        } else {
           expect(history.pushState).not.toHaveBeenCalled();
           expect(window.saveAs).toHaveBeenCalled();
-        } else {
-          expect(history.pushState).toHaveBeenCalled();
         }
       });
 
@@ -978,7 +973,11 @@ describe('The ContentDelegate class', function() {
     it('should handle pages without case ids', function() {
       const cd = noPacerCaseIdContentDelegate;
       spyOn(PACER, 'hasPacerCookie').and.returnValue(true);
-      spyOn(cd.recap, 'getPacerCaseIdFromPacerDocId');
+      spyOn(cd.recap, 'getPacerCaseIdFromPacerDocId').and.callFake(
+        (_, callback) => {
+          callback.tab = { id: 1234 };
+          callback('531931');
+        });
       chrome.storage.local.set = function (docs, cb) {
         cb();
       };
@@ -1012,6 +1011,12 @@ describe('The ContentDelegate class', function() {
         documents = docs;
         cb();
       };
+      spyOn(cd.recap, 'getPacerCaseIdFromPacerDocId').and.callFake(
+        (_, callback) => {
+          callback.tab = { id: 1234 };
+          return Promise.resolve(callback('531931'));
+        }
+      );
       await cd.findAndStorePacerDocIds();
       expect(documents).toEqual({"034031424910": "1234", "034031424911": "1234"});
     });

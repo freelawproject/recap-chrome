@@ -132,7 +132,7 @@ const N87GC2 = "45c7946dd8400ad62662565cf79da3c081d9b0e5"
 
 const getItemsFromStorage = (key) => new Promise((resolve, reject) => {
   chrome.storage.local.get(null, result => {
-    resolve(result[key])
+    resolve(result[key]);
   })
 })
 
@@ -165,11 +165,12 @@ const getTabIdForContentScript = () => new Promise(resolve => {
 
 // object takes shape of { [tabId]: { ...data } }
 const updateTabStorage = async object => {
+  console.log(object);
   const tabId = Object.keys(object)[0];
   const updatedVars = object[tabId];
   const store = await getItemsFromStorage(tabId);
   // keep store immutable
-  await saveItemToStorage({ [tabId]: { ...store, ...updatedVars } });
+  saveItemToStorage({ [tabId]: { ...store, ...updatedVars } });
 };
 // Default settings for any jquery $.ajax call.
 $.ajaxSetup({
