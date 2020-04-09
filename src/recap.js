@@ -10,6 +10,7 @@ function Recap() {
       'DOCKET_HISTORY_REPORT': 4,
       'APPELLATE_DOCKET': 5,
       'APPELLATE_ATTACHMENT_PAGE': 6,
+      'CLAIMS_REGISTER_PAGE': 9,
       'ZIP': 10,
     };
   return {
@@ -237,6 +238,30 @@ function Recap() {
           destroyTabStorage(tabId);
         })
         .catch(error => console.log(`RECAP: Error uploading Zip: ${error}`));
+    },
+    
+    uploadClaimsRegister: async function(pacerCourt, pacerCaseId, claimsPageHtml, cb) {
+      const html = new Blob([claimsPageHtml], { type: 'text/html'} );
+      const formData = new FormData();
+      formData.append('pacer_case_id', pacerCaseId);
+      formData.append('court', PACER.convertToCourtListenerCourt(pacerCourt));
+      formData.append('upload_type', UPLOAD_TYPES['CLAIMS_REGISTER_PAGE'] );
+      formData.append('filepath_local', html);
+      const fetchOptions = {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Authorization': `Token ${N87GC2}`
+        }
+      };
+
+      fetch(`${SERVER_ROOT}recap/`, fetchOptions)
+        .then(res => res.json())
+        .then(result => {
+          console.log("RECAP: Claims Page uploaded successfully");
+          cb(result || null)
+        })
+        .catch(error => console.log(`RECAP: The following error occurred: ${error}`));
     }
   };
 }

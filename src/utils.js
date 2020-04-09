@@ -172,6 +172,7 @@ const updateTabStorage = async object => {
   // keep store immutable
   saveItemToStorage({ [tabId]: { ...store, ...updatedVars } });
 };
+
 // Default settings for any jquery $.ajax call.
 $.ajaxSetup({
   // The dataType parameter is a security measure requested by Opera code

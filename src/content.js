@@ -46,6 +46,9 @@ getTabIdForContentScript().then(msg => {
     // creates a <form> element and calls submit() on it, so we hook into submit().
     content_delegate.handleSingleDocumentPageView();
 
+    // If this is a Clams Register, we upload it to RECAP
+    content_delegate.handleClaimsPageView();
+
     // Check every link in the document to see if there is a free RECAP document
     // available. If there is, put a link with a RECAP icon.
     content_delegate.attachRecapLinkToEligibleDocs();
