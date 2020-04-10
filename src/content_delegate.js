@@ -719,7 +719,7 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
   const zipUrl = extractUrl(htmlPage);
   //download zip file and save it to chrome storage
   const blob = await fetch(zipUrl).then(res => res.blob());
-  const dataUrl = await blobToDataURL(blob)
+  const dataUrl = await blobToDataURL(blob);
   console.info('RECAP: Downloaded zip file');
   // save blob in storage under tabId
   // we store it as an array to chunk the message
@@ -784,32 +784,12 @@ ContentDelegate.prototype.handleZipFilePageView = function () {
     .replace(/p.*\//, "") // remove parent.location='/cgi-bin/
     .replace(/\'(?=$)/, ""); // remove endquote
 
-  // now we replace the onclick method of the "Download Documents" buttons
-  // with the postMessage function and zero out the form action buttons
-  // WARNING: generally we don't inject raw html into the page as that introduces
-  // full-access arbitrary code execution.
-  const dangerouslySetInnerHTML = [
-    'let forms = document.forms;',
-    'for (i = 0; i < forms.length; i++) {',
-    'let form = forms[i];',
-    'form.removeAttribute("action")',
-    '}',
-    'let items = document.getElementsByTagName("input");',
-    'for (i = 0; i < items.length; i++) {',
-    'input = items[i];',
-    'if (input.type === "button" && input.value === "Download Documents") {',
-    'input.removeAttribute("onclick");',
-    'input.addEventListener(',
-    `"click", () => window.postMessage({ id: ${JSON.stringify(url)}})`,
-    ')',
-    '};',
-    '}'
-  ].join('');
+  // imperatively manipulate hte dom elements without injecting a script
+  const forms = [...document.querySelectorAll('form')];
+  forms.map(form => form.removeAttribute('action'));
 
-  const script = document.createElement("script");
-  script.id = 'recap';
-  script.innerText = dangerouslySetInnerHTML;
-  document.body.appendChild(script);
+  targetInput.removeAttribute('onclick');
+  targetInput.addEventListener('click', () => window.postMessage({ id: url }));
 
   // When we receive the message from the above submit method, submit the form
   // via fetch so we can get the document before the browser does.

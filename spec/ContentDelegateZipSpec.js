@@ -122,15 +122,14 @@ describe('The ContentDelegate class', () => {
           expect(onclick).toEqual(expectedOnclick);
         });
 
-        it('should append a script to the document', async () => {
-          await cd.handleZipFilePageView();
-          const scripts = [...document.body.querySelectorAll('script')];
-          const script = scripts.find(script => script.id === 'recap');
-          expect(script).not.toBeNull();
+        it('should remove the onclick attribute from the form and input', () => {
+          cd.handleZipFilePageView();
+          const input = document.querySelector('input[value="Download Documents"]')
+          expect(input.onclick).not.toBeTruthy();
         });
 
-        it('should add an eventListener to the page', async () => {
-          await cd.handleZipFilePageView();
+        it('should add an eventListener to the page', () => {
+          cd.handleZipFilePageView();
           expect(window.addEventListener).toHaveBeenCalled();
         });
       });

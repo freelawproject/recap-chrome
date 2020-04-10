@@ -190,7 +190,7 @@ function Recap() {
         .then(res => res.json())
         .then(result => {
           console.info(`RECAP: Successfully uploaded PDF: 'Success' ` +
-            `${result}`);
+            `with processing queue id of ${result.id}`);
           cb(result || null);
           destroyTabStorage(cb.tab.id);
         })
@@ -214,7 +214,6 @@ function Recap() {
       getItemsFromStorage(cb.tab.id)
         .then(async (tabStorage) => {
           const docId = tabStorage['docId'] === 'undefined' ? null : tabStorage['docId'];
-          console.log(tabStorage);
           const blob = await fetch(tabStorage['zip_blob']).then(res => res.blob());
           // create the formData
           const formData = new FormData();
@@ -234,7 +233,7 @@ function Recap() {
         .then(res => res.json())
         .then(result => {
           console.info(`RECAP: Successfully uploaded Zip: 'Success' ` +
-            `with processing queue id of ${result}`);
+            `with processing queue id of ${result.id}`);
           cb(result || null);
           destroyTabStorage(cb.tab.id);
         })
@@ -260,7 +259,7 @@ function Recap() {
         .then(res => res.json())
         .then(result => {
           console.log("RECAP: Claims Page uploaded successfully");
-          cb(result || null)
+          cb(result || null);
         })
         .catch(error => console.log(`RECAP: The following error occurred: ${error}`));
     }
