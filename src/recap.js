@@ -213,8 +213,9 @@ function Recap() {
       // wait for chrome.storage.local to load the tabStorage
       getItemsFromStorage(cb.tab.id)
         .then(async (tabStorage) => {
-          const docId = tabStorage['docId']
-          const blob = await fetch(tabStorage['zip_blob']).then(res => res.blob())
+          const docId = tabStorage['docId'] === 'undefined' ? null : tabStorage['docId'];
+          console.log(tabStorage);
+          const blob = await fetch(tabStorage['zip_blob']).then(res => res.blob());
           // create the formData
           const formData = new FormData();
           formData.append('court', PACER.convertToCourtListenerCourt(pacer_court));
