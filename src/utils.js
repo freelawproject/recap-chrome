@@ -66,20 +66,20 @@ function importInstance(constructor) {
     (function (verb) {
       sender[verb] = function () {
         var args = Array.prototype.slice.call(arguments, 0, -1);
-        var cb = arguments[arguments.length - 1] || function () {};
+        var cb = arguments[arguments.length - 1] || function () { };
         if (typeof cb !== 'function') {
           throw 'Service invocation error: last argument is not a callback';
         }
         var unpack = function (results) { cb.apply(null, results); };
         chrome.runtime.sendMessage(
-          {name: name, verb: verb, args: args}, unpack);
+          { name: name, verb: verb, args: args }, unpack);
       };
     })(verb);
   }
   return sender;
 }
 
-function getHostname(url){
+function getHostname(url) {
   // Extract the hostname from a URL.
   return $('<a>').prop('href', url).prop('hostname');
 }
@@ -131,8 +131,9 @@ const N87GC2 = "45c7946dd8400ad62662565cf79da3c081d9b0e5"
 // helper functions for chrome local storage
 
 const getItemsFromStorage = (key) => new Promise((resolve, reject) => {
-  chrome.storage.local.get(null, result => {
-    resolve(result[key]);
+  const stringKey = typeof key === 'number' ? key.toString() : key;
+  chrome.storage.local.get(stringKey, result => {
+    resolve(result[stringKey]);
   })
 })
 
@@ -165,7 +166,6 @@ const getTabIdForContentScript = () => new Promise(resolve => {
 
 // object takes shape of { [tabId]: { ...data } }
 const updateTabStorage = async object => {
-  console.log(object);
   const tabId = Object.keys(object)[0];
   const updatedVars = object[tabId];
   const store = await getItemsFromStorage(tabId);
@@ -213,7 +213,7 @@ var DEBUGLEVEL = 1;
 function debug(level, varargs) {
   if (DEBUGLEVEL >= level) {
     var args = Array.prototype.slice.call(arguments, 1);
-    args[0] = `RECAP debug [${level}]: `+args[0];
+    args[0] = `RECAP debug [${level}]: ` + args[0];
     return console.log.apply(this, args);
   }
 }

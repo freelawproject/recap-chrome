@@ -133,9 +133,9 @@ ContentDelegate.prototype.findAndStorePacerDocIds = function () {
 
   // Not all pages have a case ID, and there are corner-cases in merged dockets
   // where there are links to documents on another case.
-  let page_pacer_case_id = this.pacer_case_id 
-    ? this.pacer_case_id 
-    : this.recap.getPacerCaseIdFromPacerDocId(this.pacer_doc_id, function () {});
+  let page_pacer_case_id = this.pacer_case_id
+    ? this.pacer_case_id
+    : this.recap.getPacerCaseIdFromPacerDocId(this.pacer_doc_id, function () { });
 
   let docsToCases = {};
 
@@ -208,7 +208,7 @@ ContentDelegate.prototype.handleDocketQueryUrl = function () {
           target: '_blank',
           href: `https://www.courtlistener.com${first_result.absolute_url}`
         }).append(
-          $('<img/>', {src: chrome.extension.getURL('assets/images/icon-16.png')})
+          $('<img/>', { src: chrome.extension.getURL('assets/images/icon-16.png') })
         ).append(
           ' View and search this docket as of '
         ).append(
@@ -262,15 +262,15 @@ ContentDelegate.prototype.handleDocketDisplayPage = async function () {
     return;
   }
 
-  const options = await getItemsFromStorage('options'); 
+  const options = await getItemsFromStorage('options');
 
   if (options['recap_enabled']) {
     let callback = $.proxy(function (ok) {
       if (ok) {
-        history.replaceState({uploaded: true}, '');
+        history.replaceState({ uploaded: true }, '');
         this.notifier.showUpload(
           'Docket uploaded to the public RECAP Archive.',
-          function () {}
+          function () { }
         );
       }
     }, this);
@@ -305,7 +305,7 @@ ContentDelegate.prototype.handleAttachmentMenuPage = function () {
     if (items['options']['recap_enabled']) {
       let callback = $.proxy(function (ok) {
         if (ok) {
-          history.replaceState({uploaded: true}, '');
+          history.replaceState({ uploaded: true }, '');
           this.notifier.showUpload(
             'Menu page uploaded to the public RECAP Archive.',
             function () {
@@ -345,7 +345,7 @@ ContentDelegate.prototype.handleSingleDocumentPageCheck = function () {
         title: 'Document is available for free in the RECAP Archive.',
         href: href
       }).append(
-        $('<img/>', {src: chrome.extension.getURL('assets/images/icon-16.png')})
+        $('<img/>', { src: chrome.extension.getURL('assets/images/icon-16.png') })
       ).append(
         ' Get this document for free from the RECAP Archive.'
       )
@@ -394,7 +394,7 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
   let data = new FormData(form);
   httpRequest(form.action, data, function (type, ab, xhr) {
     console.info(`RECAP: Successfully submitted RECAP "View" button form: ${xhr.statusText}`);
-    const blob = new Blob([new Uint8Array(ab)], {type: type});
+    const blob = new Blob([new Uint8Array(ab)], { type: type });
     // If we got a PDF, we wrap it in a simple HTML page.  This lets us treat
     // both cases uniformly: either way we have an HTML page with an <iframe>
     // in it, which is handled by showPdfPage.
@@ -439,35 +439,35 @@ ContentDelegate.prototype.showPdfPage = async function (
   // Find the <iframe> URL in the HTML string.
   let match = html.match(/([^]*?)<iframe[^>]*src="(.*?)"([^]*)/);
   if (!match) {
-    documentElement.innerHTML = html;
+    document.documentElement.innerHTML = html;
     return;
   }
-  
-  const options = await getItemsFromStorage('options')
+
+  const options = await getItemsFromStorage('options');
 
   // Show the page with a blank <iframe> while waiting for the download.
-  documentElement.innerHTML = `${match[1]}<p>Waiting for download...<p><iframe src="about:blank"${match[3]}`;
+  document.documentElement.innerHTML = `${match[1]}<p id="recap-waiting">Waiting for download...</p><iframe src="about:blank"${match[3]}`;
 
   // Make the Back button redisplay the previous page.
   window.onpopstate = function (event) {
     if (event.state.content) {
-      documentElement.innerHTML = event.state.content;
+      document.documentElement.innerHTML = event.state.content;
     }
   };
-  history.replaceState({content: previousPageHtml}, '');
+  history.replaceState({ content: previousPageHtml }, '');
 
   // Download the file from the <iframe> URL.
   const browserSpecificFetch = (navigator.userAgent.indexOf('Chrome') < 0) ? content.fetch : window.fetch;
   const blob = await browserSpecificFetch(match[2]).then(res => res.blob());
   let blobUrl = URL.createObjectURL(blob);
   const dataUrl = await blobToDataURL(blob);
-  await updateTabStorage({ [this.tabId]: { ['pdf_blob']: dataUrl }});
+  await updateTabStorage({ [this.tabId]: { ['pdf_blob']: dataUrl } });
   console.info("RECAP: Successfully got PDF as arraybuffer via ajax request.");
   // Get the PACER case ID and, on completion, define displayPDF()
   // to either display the PDF in the provided <iframe>, or, if
   // external_pdf is set, save it using FileSaver.js's saveAs().
 
-  const pacer_case_id = this.pacer_case_id ? this.pacer_case_id : await getPacerCaseIdFromPacerDocId(this.pacer_doc_id, () => {});
+  const pacer_case_id = this.pacer_case_id ? this.pacer_case_id : await getPacerCaseIdFromPacerDocId(this.pacer_doc_id, () => { });
 
   const generateFileName = (pacer_case_id) => {
     let filename, pieces;
@@ -509,12 +509,14 @@ ContentDelegate.prototype.showPdfPage = async function (
       html = `${match[1]}${downloadLink}<iframe onload="setTimeout(function() {
                 document.getElementById('recap-download').className = '';
               }, 7500)" src="${blobUrl}"${match[3]}`;
-      documentElement.innerHTML = html;
-      history.pushState({content: html}, '');
+      document.documentElement.innerHTML = html;
+      history.pushState({ content: html }, '');
     } else {
       // Saving to an external PDF.
-      const newHtml = `${match[1]}<p><iframe src="about:blank"${match[3]}`; // Clear "Waiting..." message
-      documentElement.innerHTML = newHtml;
+      const waitingGraph = document.getElementById('recap-waiting');
+      if (waitingGraph) {
+        waitingGraph.remove();
+      }
       window.saveAs(blob, filename);
     }
   };
@@ -536,7 +538,7 @@ ContentDelegate.prototype.showPdfPage = async function (
         if (ok) {
           this.notifier.showUpload(
             'PDF uploaded to the public RECAP Archive.',
-            () => {}
+            () => { }
           );
         }
       }
@@ -701,7 +703,7 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
       document.documentElement.innerHTML = event.state.content;
     }
   };
-  history.replaceState({content: document.documentElement.innerHTML}, '');
+  history.replaceState({ content: document.documentElement.innerHTML }, '');
   // tell the user to wait
   $("body").css("cursor", "wait");
 
@@ -747,9 +749,9 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
           frame.src = "";
           frame.onload = () => document.getElementById('recap-download').click();
           document.body = htmlBody;
-          history.pushState({content: document.body.innerHTML}, '');
+          history.pushState({ content: document.body.innerHTML }, '');
           // show notifier
-          this.notifier.showUpload('Zip uploaded to the public RECAP Archive', () => {});
+          this.notifier.showUpload('Zip uploaded to the public RECAP Archive', () => { });
         }
       }
     );
@@ -816,25 +818,25 @@ ContentDelegate.prototype.handleZipFilePageView = function () {
   );
 };
 
-ContentDelegate.prototype.handleClaimsPageView = function(){
+ContentDelegate.prototype.handleClaimsPageView = function () {
   // return if not a claims register page
   if (!PACER.isClaimsRegisterPage(this.url, document)) {
     return;
   }
 
-  const pacerCaseId = this.pacer_case_id 
-    ? this.pacer_case_id 
+  const pacerCaseId = this.pacer_case_id
+    ? this.pacer_case_id
     : PACER.getCaseIdFromClaimsPage(document);
 
   // render the page as a string and upload it to recap
   const claimsPageHtml = document.documentElement.outerHTML;
   this.recap.uploadClaimsRegister(
-    this.court, 
-    pacerCaseId, 
-    claimsPageHtml, 
+    this.court,
+    pacerCaseId,
+    claimsPageHtml,
     (ok) => { // callback - dispatch the notifier if upload is ok
       if (ok) {
-        this.notifier.showUpload('Claims page uploaded to the public RECAP Archive', () => {});
+        this.notifier.showUpload('Claims page uploaded to the public RECAP Archive', () => { });
       } else {
         console.error("Page not uploaded to the public RECAP archive.");
       }

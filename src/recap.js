@@ -27,7 +27,7 @@ function Recap() {
           'for pacer_doc_id:', pacer_doc_id].join(' ')
         );
         return cb(pacerCaseId);
-      } catch(err) {
+      } catch (err) {
         console.log('No stored pacer_case_id found in chrome storage');
         return cb(null);
       };
@@ -94,7 +94,7 @@ function Recap() {
       formData.append('court', PACER.convertToCourtListenerCourt(pacer_court));
       pacer_case_id && formData.append('pacer_case_id', pacer_case_id);
       formData.append('upload_type', UPLOAD_TYPES[upload_type]);
-      formData.append('filepath_local', new Blob([html], {type: 'text/plain'}));
+      formData.append('filepath_local', new Blob([html], { type: 'text/plain' }));
       formData.append('debug', DEBUG);
       $.ajax({
         url: `${SERVER_ROOT}recap/`,
@@ -124,7 +124,7 @@ function Recap() {
       // have it.
       pacer_case_id && formData.append('pacer_case_id', pacer_case_id);
       formData.append('upload_type', UPLOAD_TYPES['ATTACHMENT_PAGE']);
-      formData.append('filepath_local', new Blob([html], {type: 'text/html'}));
+      formData.append('filepath_local', new Blob([html], { type: 'text/html' }));
       formData.append('debug', DEBUG);
       $.ajax({
         url: `${SERVER_ROOT}recap/`,
@@ -185,14 +185,14 @@ function Recap() {
         .then(data => fetch(`${SERVER_ROOT}recap/`, {
           method: 'POST',
           body: data,
-          headers: { 'Authorization': `Token ${N87GC2}`}
+          headers: { 'Authorization': `Token ${N87GC2}` }
         }))
         .then(res => res.json())
         .then(result => {
           console.info(`RECAP: Successfully uploaded PDF: 'Success' ` +
             `${result}`);
           cb(result || null);
-          destroyTabStorage(tabId);
+          destroyTabStorage(cb.tab.id);
         })
         .catch(error => console.log(`RECAP: Error uploading PDF: ${error}`));
     },
@@ -228,24 +228,24 @@ function Recap() {
         .then(data => fetch(`${SERVER_ROOT}recap/`, {
           method: 'POST',
           body: data,
-          headers: {'Authorization': `Token ${N87GC2}`}
+          headers: { 'Authorization': `Token ${N87GC2}` }
         }))
         .then(res => res.json())
         .then(result => {
           console.info(`RECAP: Successfully uploaded Zip: 'Success' ` +
-          `with processing queue id of ${result.id}`);
+            `with processing queue id of ${result}`);
           cb(result || null);
-          destroyTabStorage(tabId);
+          destroyTabStorage(cb.tab.id);
         })
         .catch(error => console.log(`RECAP: Error uploading Zip: ${error}`));
     },
-    
-    uploadClaimsRegister: async function(pacerCourt, pacerCaseId, claimsPageHtml, cb) {
-      const html = new Blob([claimsPageHtml], { type: 'text/html'} );
+
+    uploadClaimsRegister: async function (pacerCourt, pacerCaseId, claimsPageHtml, cb) {
+      const html = new Blob([claimsPageHtml], { type: 'text/html' });
       const formData = new FormData();
       formData.append('pacer_case_id', pacerCaseId);
       formData.append('court', PACER.convertToCourtListenerCourt(pacerCourt));
-      formData.append('upload_type', UPLOAD_TYPES['CLAIMS_REGISTER_PAGE'] );
+      formData.append('upload_type', UPLOAD_TYPES['CLAIMS_REGISTER_PAGE']);
       formData.append('filepath_local', html);
       const fetchOptions = {
         method: 'POST',
