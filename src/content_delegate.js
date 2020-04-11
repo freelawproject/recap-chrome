@@ -742,6 +742,8 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
       pacerCaseId, // string
       (ok) => { // callback
         if (ok) {
+          // show notifier
+          this.notifier.showUpload('Zip uploaded to the public RECAP Archive', () => { });
           // convert htmlPage to document
           const link =
             `<a id="recap-download" href=${blobUrl} download=${filename} width="0" height="0"/>`;
@@ -752,8 +754,6 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
           frame.onload = () => document.getElementById('recap-download').click();
           document.body = htmlBody;
           history.pushState({ content: document.body.innerHTML }, '');
-          // show notifier
-          this.notifier.showUpload('Zip uploaded to the public RECAP Archive', () => { });
         }
       }
     );
@@ -776,10 +776,10 @@ ContentDelegate.prototype.handleZipFilePageView = function () {
   // extract the url from the onclick attribute from one of the two
   // "Download Documents" buttons
   const inputs = [...document.getElementsByTagName("input")];
-  const targetInput = inputs.find(
+  const targetInputs = inputs.filter(
     input => input.type === "button" && input.value === "Download Documents"
   );
-  const url = targetInput
+  const url = targetInputs[0]
     .getAttribute("onclick")
     .replace(/p.*\//, "") // remove parent.location='/cgi-bin/
     .replace(/\'(?=$)/, ""); // remove endquote
@@ -787,10 +787,10 @@ ContentDelegate.prototype.handleZipFilePageView = function () {
   // imperatively manipulate hte dom elements without injecting a script
   const forms = [...document.querySelectorAll('form')];
   forms.map(form => form.removeAttribute('action'));
-
-  targetInput.removeAttribute('onclick');
-  targetInput.addEventListener('click', () => window.postMessage({ id: url }));
-
+  targetInputs.map(targetInput => {
+    targetInput.removeAttribute('onclick');
+    targetInput.addEventListener('click', () => window.postMessage({ id: url }));
+  });
   // When we receive the message from the above submit method, submit the form
   // via fetch so we can get the document before the browser does.
   window.addEventListener(
