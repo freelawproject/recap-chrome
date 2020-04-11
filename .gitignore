@@ -5,3 +5,4 @@ coverage
 /src/recap.zip
 /recap-chrome.iml
 /.idea/
+.vscode/

@@ -101,15 +101,15 @@ describe('The PACER module', function() {
     });
 
     it('returns false for a docket query URL', function() {
-      expect(PACER.isDocketDisplayUrl(docketQueryUrl)).toBeUndefined();
+      expect(PACER.isDocketDisplayUrl(docketQueryUrl)).toBe(false);
     });
 
     it('returns false for a document URL', function() {
-      expect(PACER.isDocketDisplayUrl(singleDocUrl)).toBeUndefined();
+      expect(PACER.isDocketDisplayUrl(singleDocUrl)).toBe(false);
     });
 
     it('returns false for patent nonsense', function() {
-      expect(PACER.isDocketDisplayUrl(nonsenseUrl)).toBeUndefined();
+      expect(PACER.isDocketDisplayUrl(nonsenseUrl)).toBe(false);
     });
 
     const caseDefault = 'https://ecf.ca1.uscourts.gov/n/beam/servlet/TransportRoom?' +

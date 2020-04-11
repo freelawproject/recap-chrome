@@ -12,6 +12,9 @@
 //        |                         |
 //        `--> History query form --|
 //                                  |
+//                                  |--> Possible interstitial large docket page
+//                                  |
+//                                  |
 //                                  '--> Docket, i.e. list of documents or
 //                                       History Report (*)
 //                                        |
@@ -20,8 +23,12 @@
 //                                        |    page.
 //                                        |     |
 //                                        `-----'--> Single document page
-//                                                    |
-//                                                    '--> PDF view page (*)
+//                                              |     |
+//                                              |      '--> PDF view page (*)
+//                                              |
+//                                              |--> All documents zip page
+//                                                   |
+//                                                   '--> Zip file download page (*)
 //
 // Pages marked (*) cost money.  The "Single document page" is a page that
 // tells you how much a document will cost before you get to view the PDF.
@@ -150,6 +157,8 @@ let PACER = {
         case 'ChangeClient.jsp':
           return false;
       }
+    } else {
+      return false;
     }
   },
 
@@ -166,6 +175,17 @@ let PACER = {
       inputs.length &&
       inputs[inputs.length - 1].value === 'Download All';
     return !!pageCheck;
+  },
+
+  // Returns true if this is a "Download Documents" page (confirmation of
+  // pricing for all documents to receive a zip file with all of them)
+  isDownloadAllDocumentsPage: function(url, document) {
+    let inputs = document.getElementsByTagName("input");
+    let pageCheck =
+      !!url.match(/\/show_multidocs\.pl\?/) &&
+      inputs.length &&
+      inputs[inputs.length-1].value === "Download Documents"
+    return !!pageCheck
   },
 
   // Claims Register Page includes an h2 tag with the court and words "Claims Register"

@@ -66,20 +66,20 @@ function importInstance(constructor) {
     (function (verb) {
       sender[verb] = function () {
         var args = Array.prototype.slice.call(arguments, 0, -1);
-        var cb = arguments[arguments.length - 1] || function () {};
+        var cb = arguments[arguments.length - 1] || function () { };
         if (typeof cb !== 'function') {
           throw 'Service invocation error: last argument is not a callback';
         }
         var unpack = function (results) { cb.apply(null, results); };
         chrome.runtime.sendMessage(
-          {name: name, verb: verb, args: args}, unpack);
+          { name: name, verb: verb, args: args }, unpack);
       };
     })(verb);
   }
   return sender;
 }
 
-function getHostname(url){
+function getHostname(url) {
   // Extract the hostname from a URL.
   return $('<a>').prop('href', url).prop('hostname');
 }
@@ -90,21 +90,21 @@ function getHostname(url){
 // POST otherwise.  postData can be any type accepted by XMLHttpRequest.send().
 function httpRequest(url, postData, callback) {
   let type = null,
-      result = null,
-      xhr;
+    result = null,
+    xhr;
 
-    // Firefox requires a special call to get an XMLHttpRequest() that
-    // sends Referer headers, which is CMECF needs because of their
-    // choice in how to fix the 2017 cross-site/same-origin security
-    // vulnerability.
-    try {
-        // Firefox. See: https://discourse.mozilla.org/t/webextension-xmlhttprequest-issues-no-cookies-or-referrer-solved/11224/18
-        xhr = XPCNativeWrapper(new window.wrappedJSObject.XMLHttpRequest());
-    }
-    catch (evt) {
-        // Chrome.
-        xhr = new XMLHttpRequest();
-    }
+  // Firefox requires a special call to get an XMLHttpRequest() that
+  // sends Referer headers, which is CMECF needs because of their
+  // choice in how to fix the 2017 cross-site/same-origin security
+  // vulnerability.
+  try {
+    // Firefox. See: https://discourse.mozilla.org/t/webextension-xmlhttprequest-issues-no-cookies-or-referrer-solved/11224/18
+    xhr = XPCNativeWrapper(new window.wrappedJSObject.XMLHttpRequest());
+  }
+  catch (evt) {
+    // Chrome.
+    xhr = new XMLHttpRequest();
+  }
 
   xhr.responseType = 'arraybuffer';
   xhr.onreadystatechange = function () {
@@ -126,7 +126,52 @@ function httpRequest(url, postData, callback) {
 }
 
 // make token available to helper functions
-const N87GC2  = "45c7946dd8400ad62662565cf79da3c081d9b0e5"
+const N87GC2 = "45c7946dd8400ad62662565cf79da3c081d9b0e5"
+
+// helper functions for chrome local storage
+
+const getItemsFromStorage = (key) => new Promise((resolve, reject) => {
+  const stringKey = typeof key === 'number' ? key.toString() : key;
+  chrome.storage.local.get(stringKey, result => {
+    resolve(result[stringKey]);
+  })
+})
+
+const saveItemToStorage = (dataObj) => new Promise((resolve, reject) =>
+  chrome.storage.local.set(
+    dataObj,
+    () => resolve(
+      console.log(`RECAP: Item saved in storage at tabId: ${Object.keys(dataObj)[0]}`)
+    )
+  )
+);
+
+const destroyTabStorage = key => {
+  chrome.storage.local.get(null, store => {
+    if (store[key]) {
+      chrome.storage.local.remove(
+        key.toString(),
+        () => console.log(`Removed item from storage with key ${key}`)
+      )
+    }
+  })
+}
+// initialize the store with an empty object
+const getTabIdForContentScript = () => new Promise(resolve => {
+  chrome.runtime.sendMessage(
+    { message: 'requestTabId' },
+    (msg) => resolve(msg)
+  );
+});
+
+// object takes shape of { [tabId]: { ...data } }
+const updateTabStorage = async object => {
+  const tabId = Object.keys(object)[0];
+  const updatedVars = object[tabId];
+  const store = await getItemsFromStorage(tabId);
+  // keep store immutable
+  saveItemToStorage({ [tabId]: { ...store, ...updatedVars } });
+};
 
 // Default settings for any jquery $.ajax call.
 $.ajaxSetup({
@@ -139,26 +184,23 @@ $.ajaxSetup({
   beforeSend: function (xhr, settings) {
     let hostname = getHostname(settings.url);
     if (hostname === "www.courtlistener.com") {
-        // If you are reading this code, we ask that you please refrain from
-        // using this token. Unfortunately, there is no way to distribute
-        // extensions that use hardcoded tokens except through begging and using
-        // funny variable names. Do not abuse the RECAP service.
-        xhr.setRequestHeader("Authorization", `Token ${N87GC2}`);
+      // If you are reading this code, we ask that you please refrain from
+      // using this token. Unfortunately, there is no way to distribute
+      // extensions that use hardcoded tokens except through begging and using
+      // funny variable names. Do not abuse the RECAP service.
+      xhr.setRequestHeader("Authorization", `Token ${N87GC2}`);
     }
   }
 });
 
-// Converts an ArrayBuffer to a regular array of unsigned bytes.  Array.apply()
-// causes a "maximum call stack size exceeded" error for buffers of only 300k,
-// so we need this ridiculous circumlocution of breaking the data into chunks.
-function arrayBufferToArray(ab) {
-  let chunks = [];
-  for (let i = 0; i < ab.byteLength; i += 100000) {
-    let slice = new Uint8Array(ab, i, Math.min(100000, ab.byteLength - i));
-    chunks.push(Array.apply(null, slice));  // convert each chunk separately
-  }
-  return [].concat.apply([], chunks);  // concatenate all the chunks together
-}
+const blobToDataURL = (blob) => {
+  return new Promise((resolve, reject) => {
+    let reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = (e) => resolve(reader.result);
+    reader.readAsDataURL(blob);
+  });
+};
 
 // Debug logging function. First argument is a debug level, remainder are variable args
 // for console.log(). If the global debug level matches the first arg, calls console.log().
@@ -171,7 +213,7 @@ var DEBUGLEVEL = 1;
 function debug(level, varargs) {
   if (DEBUGLEVEL >= level) {
     var args = Array.prototype.slice.call(arguments, 1);
-    args[0] = `RECAP debug [${level}]: `+args[0];
+    args[0] = `RECAP debug [${level}]: ` + args[0];
     return console.log.apply(this, args);
   }
 }

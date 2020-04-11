@@ -1,16 +1,31 @@
-// Abstraction of content scripts to make them modular and testable.
+//  Abstraction of content scripts to make them modular and testable.
+//  Functions:
+//  checkRestrictions
+//  findAndStorePacerIds
+//  handleDocketQueryUrl
+//  handleDocketDisplayPage
+//  handleAttachmentPageMenu
+//  handleSingleDocumentPageCheck
+//  handleOnDocumentViewSubmit
+//  showPdfPage
+//  handleSingleDocumentPageView
+//  handleRecapLinkClick
+//  attachRecapLinkToEligibleDocs
+//  onDownloadAllSubmit
+//  handleZipFilePageView
 
-let ContentDelegate = function(url, path, court, pacer_case_id, pacer_doc_id,
-                               links) {
+let ContentDelegate = function (tabId, url, path, court, pacer_case_id, pacer_doc_id,
+  links) {
+  this.tabId = tabId;
   this.url = url;
   this.path = path;
   this.court = court;
   this.pacer_case_id = pacer_case_id;
-  if (pacer_doc_id){
+  if (pacer_doc_id) {
     this.pacer_doc_id = pacer_doc_id;
     this.pacer_doc_ids = [pacer_doc_id];
   } else {
-    this.pacer_doc_ids = []
+    this.pacer_doc_ids = [];
   }
   this.links = links || [];
 
@@ -23,7 +38,7 @@ let ContentDelegate = function(url, path, court, pacer_case_id, pacer_doc_id,
 };
 
 // Check for document restrictions
-ContentDelegate.prototype.checkRestrictions = function() {
+ContentDelegate.prototype.checkRestrictions = function () {
   // Some documents are restricted to case participants. Typically
   // this is offered with either an interstitial page (in the case
   // of free looks) or an extra box on the receipt page. In both cases
@@ -57,7 +72,7 @@ ContentDelegate.prototype.checkRestrictions = function() {
   let restrictedDoc = false;
 
   for (let td of
-       document.querySelectorAll("table td:first-child")) {
+    document.querySelectorAll("table td:first-child")) {
     if (td.textContent.match(/Warning!/)) {
       restrictedDoc = true;
       break;
@@ -68,7 +83,7 @@ ContentDelegate.prototype.checkRestrictions = function() {
     if (td.textContent.match(
       /document is restricted|SEALED|do not allow it to be seen/i
     )) {
-        restrictedDoc = true;
+      restrictedDoc = true;
       break;
     }
   }
@@ -111,20 +126,21 @@ ContentDelegate.prototype.checkRestrictions = function() {
 
 // Use a variety of approaches to get and store pacer_doc_id to pacer_case_id
 // mappings in local storage.
-ContentDelegate.prototype.findAndStorePacerDocIds = function() {
+ContentDelegate.prototype.findAndStorePacerDocIds = function () {
   if (!PACER.hasPacerCookie(document.cookie)) {
     return;
   }
 
   // Not all pages have a case ID, and there are corner-cases in merged dockets
   // where there are links to documents on another case.
-  let page_pacer_case_id = this.pacer_case_id ||
-    this.recap.getPacerCaseIdFromPacerDocId(this.pacer_doc_id, function(){});
+  let page_pacer_case_id = this.pacer_case_id
+    ? this.pacer_case_id
+    : this.recap.getPacerCaseIdFromPacerDocId(this.pacer_doc_id, function () { });
 
   let docsToCases = {};
 
   // Try getting a mapping from a pacer_doc_id in the URL to a
-  if (this.pacer_doc_id && page_pacer_case_id) {
+  if (this.pacer_doc_id && page_pacer_case_id && typeof page_pacer_case_id === 'string') {
     debug(3, `Z doc ${this.pacer_doc_id} to ${page_pacer_case_id}`);
     docsToCases[this.pacer_doc_id] = page_pacer_case_id;
   }
@@ -144,111 +160,141 @@ ContentDelegate.prototype.findAndStorePacerDocIds = function() {
         debug(3, `Y doc ${pacer_doc_id} to ${goDLS.de_caseid}`);
       } else if (page_pacer_case_id) {
         docsToCases[pacer_doc_id] = page_pacer_case_id;
-        debug(3,`X doc ${pacer_doc_id} to ${page_pacer_case_id}`);
+        debug(3, `X doc ${pacer_doc_id} to ${page_pacer_case_id}`);
       }
     }
   }
-  chrome.storage.local.set(docsToCases, function(){
-    console.info(`RECAP: Saved the pacer_doc_id to pacer_case_id mappings to local ` +
-                 `storage: ${Object.keys(docsToCases).length}`);
+  // save JSON object in chrome storage under the tabId
+  // append caseId if a docketQueryUrl
+  const payload = {
+    docsToCases: docsToCases,
+  };
+  if (!!this.pacer_doc_id) {
+    payload['docId'] = this.pacer_doc_id;
+  }
+  if (PACER.isDocketQueryUrl(this.url) && page_pacer_case_id) {
+    payload['caseId'] = page_pacer_case_id;
+  }
+  updateTabStorage({
+    [this.tabId]: payload
   });
 };
 
 // If this is a docket query page, ask RECAP whether it has the docket page.
-ContentDelegate.prototype.handleDocketQueryUrl = function() {
+ContentDelegate.prototype.handleDocketQueryUrl = function () {
   if (!PACER.isDocketQueryUrl(this.url)) {
     return;
   }
-  if (!PACER.hasPacerCookie(document.cookie)){
+  if (!PACER.hasPacerCookie(document.cookie)) {
     // Logged out users that load a docket page, see a login page, so they
     // shouldn't check for docket availability.
     return;
   }
 
   this.recap.getAvailabilityForDocket(this.court, this.pacer_case_id,
-                                      function (result) {
-    if (result.count === 0){
-      console.warn(`RECAP: Zero results found for docket lookup.`);
-      return;
-    } else if (!(result.count === 1)){
-      console.error(`RECAP: More than one result found for docket lookup. Found ` +
-                    `${result.count}`);
-      return;
-    }
-    let first_result = result.results[0];
+    function (result) {
+      if (result.count === 0) {
+        console.warn(`RECAP: Zero results found for docket lookup.`);
+        return;
+      } else if (!(result.count === 1)) {
+        console.error(`RECAP: More than one result found for docket lookup. Found ` +
+          `${result.count}`);
+        return;
+      }
+      let first_result = result.results[0];
 
-    // Insert a RECAP download link at the bottom of the form.
-    $('<div class="recap-banner"/>').append(
-      $('<a/>', {
-        title: 'Docket is available for free in the RECAP Archive.',
-        target: '_blank',
-        href: `https://www.courtlistener.com${first_result.absolute_url}`
-      }).append(
-        $('<img/>', {src: chrome.extension.getURL('assets/images/icon-16.png')})
+      // Insert a RECAP download link at the bottom of the form.
+      $('<div class="recap-banner"/>').append(
+        $('<a/>', {
+          title: 'Docket is available for free in the RECAP Archive.',
+          target: '_blank',
+          href: `https://www.courtlistener.com${first_result.absolute_url}`
+        }).append(
+          $('<img/>', { src: chrome.extension.getURL('assets/images/icon-16.png') })
+        ).append(
+          ' View and search this docket as of '
+        ).append(
+          $('<time/>', {
+            "data-livestamp": first_result.date_modified,
+            "title": first_result.date_modified,
+          }).append(first_result.date_modified)
+        ).append(
+          ' for free from RECAP'
+        )
       ).append(
-        ' View and search this docket as of '
-      ).append(
-        $('<time/>', {
-          "data-livestamp": first_result.date_modified,
-          "title": first_result.date_modified,
-        }).append(first_result.date_modified)
-      ).append(
-        ' for free from RECAP'
-      )
-    ).append(
-      $('<br><small>Note that archived dockets may be out of date.</small>')
-    ).appendTo($('form'));
-  });
+        $('<br><small>Note that archived dockets may be out of date.</small>')
+      ).appendTo($('form'));
+    });
 };
 
 // If this is a docket page, upload it to RECAP.
-ContentDelegate.prototype.handleDocketDisplayPage = function() {
-  if (history.state && history.state.uploaded) {
-    return;
-  }
+ContentDelegate.prototype.handleDocketDisplayPage = async function () {
+
+  // If it's not a docket display URL or a docket history URL, punt.
   let isDocketDisplayUrl = PACER.isDocketDisplayUrl(this.url);
   let isDocketHistoryDisplayUrl = PACER.isDocketHistoryDisplayUrl(this.url);
   if (!(isDocketHistoryDisplayUrl || isDocketDisplayUrl)) {
-    // If it's not a docket display URL or a docket history URL, punt.
-    return;
-  }
-  let isAppellate = PACER.isAppellateCourt(this.court);
-  if (!this.pacer_case_id) {
-    // If we don't have the pacer_case_id, punt.
     return;
   }
 
-  chrome.storage.local.get('options', function (items) {
-    if (items['options']['recap_enabled']) {
-      let callback = $.proxy(function (ok) {
-        if (ok) {
-          history.replaceState({uploaded: true}, '');
-          this.notifier.showUpload(
-            'Docket uploaded to the public RECAP Archive.',
-            function(){}
-          );
-        }
-      }, this);
-      if (isDocketDisplayUrl){
-        this.recap.uploadDocket(this.court, this.pacer_case_id,
-          document.documentElement.innerHTML,
-          (isAppellate?'APPELLATE_DOCKET':'DOCKET'),
-          callback);
-      } else if (isDocketHistoryDisplayUrl) {
-        this.recap.uploadDocket(this.court, this.pacer_case_id,
-          document.documentElement.innerHTML,
-          'DOCKET_HISTORY_REPORT',
-          callback);
+  // check for more than one radioDateInput and return if true
+  // (you are on an interstitial page so no docket to display)
+  const radioDateInputs = [...document.getElementsByTagName('input')].filter(
+    input => input.name === 'date_from' && input.type === 'radio'
+  );
+  if (radioDateInputs.length > 1) {
+    return;
+  };
+
+  // if you've already uploaded the page, return
+  if (history.state && history.state.uploaded) {
+    return;
+  }
+
+  // check if appellate
+  let isAppellate = PACER.isAppellateCourt(this.court);
+
+  // if the content_delegate didn't pull the case Id on initialization,
+  // check the page for a lead case dktrpt url.
+  const tabStorage = await getItemsFromStorage(this.tabId)
+  const pacerCaseId = this.pacer_case_id ? this.pacer_case_id : tabStorage.caseId;
+
+  if (!pacerCaseId) {
+    // If we don't have any pacerCaseId punt.
+    return;
+  }
+
+  const options = await getItemsFromStorage('options');
+
+  if (options['recap_enabled']) {
+    let callback = $.proxy(function (ok) {
+      if (ok) {
+        history.replaceState({ uploaded: true }, '');
+        this.notifier.showUpload(
+          'Docket uploaded to the public RECAP Archive.',
+          function () { }
+        );
       }
-    } else {
-      console.info(`RECAP: Not uploading docket. RECAP is disabled.`);
+    }, this);
+    if (isDocketDisplayUrl) {
+      this.recap.uploadDocket(this.court, pacerCaseId,
+        document.documentElement.innerHTML,
+        (isAppellate ? 'APPELLATE_DOCKET' : 'DOCKET'),
+        callback);
+    } else if (isDocketHistoryDisplayUrl) {
+      this.recap.uploadDocket(this.court, pacerCaseId,
+        document.documentElement.innerHTML,
+        'DOCKET_HISTORY_REPORT',
+        callback);
     }
-  }.bind(this));
+  } else {
+    console.info(`RECAP: Not uploading docket. RECAP is disabled.`);
+  }
 };
 
 // If this is a document's menu of attachments (subdocuments), upload it to
 // RECAP.
-ContentDelegate.prototype.handleAttachmentMenuPage = function() {
+ContentDelegate.prototype.handleAttachmentMenuPage = function () {
   if (history.state && history.state.uploaded) {
     return;
   }
@@ -261,7 +307,7 @@ ContentDelegate.prototype.handleAttachmentMenuPage = function() {
     if (items['options']['recap_enabled']) {
       let callback = $.proxy(function (ok) {
         if (ok) {
-          history.replaceState({uploaded: true}, '');
+          history.replaceState({ uploaded: true }, '');
           this.notifier.showUpload(
             'Menu page uploaded to the public RECAP Archive.',
             function () {
@@ -279,15 +325,15 @@ ContentDelegate.prototype.handleAttachmentMenuPage = function() {
 };
 
 // If this page offers a single document, ask RECAP whether it has the document.
-ContentDelegate.prototype.handleSingleDocumentPageCheck = function() {
+ContentDelegate.prototype.handleSingleDocumentPageCheck = function () {
   if (!PACER.isSingleDocumentPage(this.url, document)) {
     return;
   }
 
   let callback = $.proxy(function (api_results) {
     console.info(`RECAP: Got results from API. Running callback on API results to ` +
-                 `insert link`);
-    let result = api_results.results.filter(function(obj){
+      `insert link`);
+    let result = api_results.results.filter(function (obj) {
       return obj.pacer_doc_id === pacer_doc_id;
     })[0];
     if (!result) {
@@ -301,7 +347,7 @@ ContentDelegate.prototype.handleSingleDocumentPageCheck = function() {
         title: 'Document is available for free in the RECAP Archive.',
         href: href
       }).append(
-        $('<img/>', {src: chrome.extension.getURL('assets/images/icon-16.png')})
+        $('<img/>', { src: chrome.extension.getURL('assets/images/icon-16.png') })
       ).append(
         ' Get this document for free from the RECAP Archive.'
       )
@@ -331,7 +377,7 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
     let image_string = $('td:contains(Image)').text();
     let regex = /(\d+)-(\d+)/;
     let matches = regex.exec(image_string);
-    if (!matches){
+    if (!matches) {
       form.submit();
       return;
     }
@@ -339,7 +385,7 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
     attachment_number = matches[2];
     docket_number = $.trim($('tr:contains(Case Number) td:nth(1)').text());
   } else { // Appellate
-    debug(4,"Appellate parsing not yet implemented");
+    debug(4, "Appellate parsing not yet implemented");
   }
 
   // Now do the form request to get to the view page.  Some PACER sites will
@@ -350,7 +396,7 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
   let data = new FormData(form);
   httpRequest(form.action, data, function (type, ab, xhr) {
     console.info(`RECAP: Successfully submitted RECAP "View" button form: ${xhr.statusText}`);
-    const blob = new Blob([new Uint8Array(ab)], {type: type});
+    const blob = new Blob([new Uint8Array(ab)], { type: type });
     // If we got a PDF, we wrap it in a simple HTML page.  This lets us treat
     // both cases uniformly: either way we have an HTML page with an <iframe>
     // in it, which is handled by showPdfPage.
@@ -363,20 +409,20 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
     } else {
       // dcd (and presumably others) trigger this code path.
       const reader = new FileReader();
-      reader.onload = function() {
-          let html=reader.result;
-          // check if we have an HTML page which redirects the user to the PDF
-          // this was first display by the Northern District of Georgia
-          // https://github.com/freelawproject/recap/issues/277
-          const redirectResult = Array.from(html.matchAll(/window\.location\s*=\s*["']([^"']+)["'];?/g));
-          if (redirectResult.length > 0) {
-            const url = redirectResult[0][1];
-            html = `<style>body { margin: 0; } iframe { border: none; }</style>
+      reader.onload = function () {
+        let html = reader.result;
+        // check if we have an HTML page which redirects the user to the PDF
+        // this was first display by the Northern District of Georgia
+        // https://github.com/freelawproject/recap/issues/277
+        const redirectResult = Array.from(html.matchAll(/window\.location\s*=\s*["']([^"']+)["'];?/g));
+        if (redirectResult.length > 0) {
+          const url = redirectResult[0][1];
+          html = `<style>body { margin: 0; } iframe { border: none; }</style>
                     <iframe src="${url}" width="100%" height="100%"></iframe>`;
-          }
-          this.showPdfPage(
-            document.documentElement, html, previousPageHtml,
-            document_number, attachment_number, docket_number);
+        }
+        this.showPdfPage(
+          document.documentElement, html, previousPageHtml,
+          document_number, attachment_number, docket_number);
       }.bind(this);
       reader.readAsText(blob);  // convert blob to HTML text
     }
@@ -389,134 +435,131 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
 //
 // The documentElement is provided via dependency injection so that it
 // can be properly mocked in tests.
-ContentDelegate.prototype.showPdfPage = function(
+ContentDelegate.prototype.showPdfPage = async function (
   documentElement, html, previousPageHtml, document_number, attachment_number,
   docket_number) {
   // Find the <iframe> URL in the HTML string.
   let match = html.match(/([^]*?)<iframe[^>]*src="(.*?)"([^]*)/);
   if (!match) {
-    documentElement.innerHTML = html;
+    document.documentElement.innerHTML = html;
     return;
   }
 
+  const options = await getItemsFromStorage('options');
+
   // Show the page with a blank <iframe> while waiting for the download.
-  documentElement.innerHTML = `${match[1]}<p>Waiting for download...<p><iframe src="about:blank"${match[3]}`;
+  document.documentElement.innerHTML = `${match[1]}<p id="recap-waiting">Waiting for download...</p><iframe src="about:blank"${match[3]}`;
+
+  // Make the Back button redisplay the previous page.
+  window.onpopstate = function (event) {
+    if (event.state.content) {
+      document.documentElement.innerHTML = event.state.content;
+    }
+  };
+  history.replaceState({ content: previousPageHtml }, '');
 
   // Download the file from the <iframe> URL.
-  httpRequest(match[2], null, function (type, ab, xhr) {
-    console.info("RECAP: Successfully got PDF as arraybuffer via ajax request.");
+  const browserSpecificFetch = (navigator.userAgent.indexOf('Chrome') < 0) ? content.fetch : window.fetch;
+  const blob = await browserSpecificFetch(match[2]).then(res => res.blob());
+  let blobUrl = URL.createObjectURL(blob);
+  const dataUrl = await blobToDataURL(blob);
+  await updateTabStorage({ [this.tabId]: { ['pdf_blob']: dataUrl } });
+  console.info("RECAP: Successfully got PDF as arraybuffer via ajax request.");
+  // Get the PACER case ID and, on completion, define displayPDF()
+  // to either display the PDF in the provided <iframe>, or, if
+  // external_pdf is set, save it using FileSaver.js's saveAs().
 
-    // Make the Back button redisplay the previous page.
-    window.onpopstate = function(event) {
-      if (event.state.content) {
-        documentElement.innerHTML = event.state.content;
+  const pacer_case_id = this.pacer_case_id ? this.pacer_case_id : await getPacerCaseIdFromPacerDocId(this.pacer_doc_id, () => { });
+
+  const generateFileName = (pacer_case_id) => {
+    let filename, pieces;
+    if (options.ia_style_filenames) {
+      pieces = [
+        'gov',
+        'uscourts',
+        this.court,
+        (pacer_case_id || 'unknown-case-id'),
+        (document_number || '0'),
+        (attachment_number || '0')
+      ];
+      filename = `${pieces.join('.')}.pdf`;
+    } else if (options.lawyer_style_filenames) {
+      pieces = [
+        PACER.COURT_ABBREVS[this.court],
+        (docket_number || '0'),
+        (document_number || '0'),
+        (attachment_number || '0')
+      ];
+      filename = `${pieces.join('_')}.pdf`;
+    }
+    return filename;
+  };
+
+  const setInnerHtml = (pacer_case_id) => {
+    const filename = generateFileName(pacer_case_id);
+    let external_pdf = options.external_pdf;
+    if ((navigator.userAgent.indexOf('Chrome') >= 0) &&
+      !navigator.plugins.namedItem('Chrome PDF Viewer')) {
+      // We are in Google Chrome, and the built-in PDF Viewer has been disabled.
+      // So we autodetect and force external_pdf true for proper filenames.
+      external_pdf = true;
+    }
+    if (!external_pdf) {
+      let downloadLink = `<div id="recap-download" class="initial">
+                            <a href="${blobUrl}" download="${filename}">Save as ${filename}</a>
+                          </div>`;
+      html = `${match[1]}${downloadLink}<iframe onload="setTimeout(function() {
+                document.getElementById('recap-download').className = '';
+              }, 7500)" src="${blobUrl}"${match[3]}`;
+      document.documentElement.innerHTML = html;
+      history.pushState({ content: html }, '');
+    } else {
+      // Saving to an external PDF.
+      const waitingGraph = document.getElementById('recap-waiting');
+      if (waitingGraph) {
+        waitingGraph.remove();
       }
-    };
-    history.replaceState({content: previousPageHtml}, '');
+      window.saveAs(blob, filename);
+    }
+  };
 
-    // store the result in chrome local storage
+  setInnerHtml(pacer_case_id);
 
-    const nonce = "blob_upload_storage"
-    const data = { [nonce]: ab }
-
-    chrome.storage.local.set(data, function() {
-      console.log(`Blob saved: ${data.nonce.length}`)
-    })
-
-    // Get the PACER case ID and, on completion, define displayPDF()
-    // to either display the PDF in the provided <iframe>, or, if
-    // external_pdf is set, save it using FileSaver.js's saveAs().
-    let blob = new Blob([new Uint8Array(ab)], {type: type});
-
-    this.recap.getPacerCaseIdFromPacerDocId(
-      this.pacer_doc_id, function(pacer_case_id){
-        console.info(`RECAP: Stored pacer_case_id is ${pacer_case_id}`);
-        let displayPDF = function (items) {
-          let filename, pieces;
-          if (items.options.ia_style_filenames) {
-            pieces = [
-              'gov',
-              'uscourts',
-              this.court,
-              (pacer_case_id || 'unknown-case-id'),
-              document_number,
-              (attachment_number || '0')
-            ];
-            filename = `${pieces.join('.')}.pdf`;
-          } else if (items.options.lawyer_style_filenames) {
-            pieces = [
-              PACER.COURT_ABBREVS[this.court],
-              docket_number,
-              document_number,
-              (attachment_number || '0')
-            ];
-            filename = `${pieces.join('_')}.pdf`;
-          }
-
-          let external_pdf = items.options.external_pdf;
-          if ((navigator.userAgent.indexOf('Chrome') >= 0) &&
-              !navigator.plugins.namedItem('Chrome PDF Viewer')) {
-            // We are in Google Chrome, and the built-in PDF Viewer has been disabled.
-            // So we autodetect and force external_pdf true for proper filenames.
-            external_pdf = true;
-          }
-          if (!external_pdf) {
-            let blobUrl = URL.createObjectURL(blob);
-            let downloadLink = `<div id="recap-download" class="initial">
-                                  <a href="${blobUrl}" download="${filename}">Save as ${filename}</a>
-                                </div>`;
-            html = `${match[1]}${downloadLink}<iframe onload="setTimeout(function() {
-                      document.getElementById('recap-download').className = '';
-                    }, 7500)" src="${blobUrl}"${match[3]}`;
-            documentElement.innerHTML = html;
-            history.pushState({content: html}, '');
-          } else {
-            // Saving to an external PDF.
-            saveAs(blob, filename);
-	          documentElement.innerHTML = `${match[1]}<p><iframe src="about:blank"${match[3]}`; // Clear "Waiting..." message
-          }
-        }.bind(this);
-
-        chrome.storage.local.get('options', displayPDF);
-        let uploadDocument = function(items){
-          // store the blob in chrome storage for background worker
-          if (items['options']['recap_enabled'] && !this.restricted) {
-            // If we have the pacer_case_id, upload the file to RECAP.
-            // We can't pass an ArrayBuffer directly to the background
-            // page, so we have to convert to a regular array.
-            let onUploadOk = function (ok) {
-              if (ok) {
-                this.notifier.showUpload(
-                  'PDF uploaded to the public RECAP Archive.', function () {
-                  }.bind(this));
-              }
-            }.bind(this);
-
-
-            this.recap.uploadDocument(
-              this.court, pacer_case_id, this.pacer_doc_id, document_number,
-              attachment_number, nonce, onUploadOk
-            );
-          } else {
-            console.info("RECAP: Not uploading PDF. RECAP is disabled.");
-          }
-        }.bind(this);
-        chrome.storage.local.get('options', uploadDocument);
-
-      }.bind(this));
-  }.bind(this));
+  // store the blob in chrome storage for background worker
+  if (options['recap_enabled'] && !this.restricted) {
+    // If we have the pacer_case_id, upload the file to RECAP.
+    // We can't pass an ArrayBuffer directly to the background
+    // page, so we have to convert to a regular array.
+    this.recap.uploadDocument(
+      this.court,
+      pacer_case_id,
+      this.pacer_doc_id,
+      document_number,
+      attachment_number,
+      (ok) => {  // callback
+        if (ok) {
+          this.notifier.showUpload(
+            'PDF uploaded to the public RECAP Archive.',
+            () => { }
+          );
+        }
+      }
+    );
+  } else {
+    console.info("RECAP: Not uploading PDF. RECAP is disabled.");
+  }
 };
 
 // If this page offers a single document, intercept navigation to the document
 // view page.  The "View Document" button calls the goDLS() function, which
 // creates a <form> element and calls submit() on it, so we hook into submit().
-ContentDelegate.prototype.handleSingleDocumentPageView = function() {
+ContentDelegate.prototype.handleSingleDocumentPageView = function () {
   if (!PACER.isSingleDocumentPage(this.url, document)) {
     return;
   }
 
   if (PACER.isAppellateCourt(this.court)) {
-    debug(4,"No interposition for appellate downloads yet");
+    debug(4, "No interposition for appellate downloads yet");
     return;
   }
 
@@ -525,10 +568,10 @@ ContentDelegate.prototype.handleSingleDocumentPageView = function() {
   // in the page context instead of this script's, we inject a <script> element.
   let script = document.createElement('script');
   script.innerText =
-      'document.createElement("form").__proto__.submit = function () {' +
-      '  this.id = "form" + new Date().getTime();' +
-      '  window.postMessage({id: this.id}, "*");' +
-      '};';
+    'document.createElement("form").__proto__.submit = function () {' +
+    '  this.id = "form" + new Date().getTime();' +
+    '  window.postMessage({id: this.id}, "*");' +
+    '};';
   document.body.appendChild(script);
 
   // When we receive the message from the above submit method, submit the form
@@ -539,7 +582,7 @@ ContentDelegate.prototype.handleSingleDocumentPageView = function() {
 
 // Pop up a dialog offering the link to the free cached copy of the document,
 // or just go directly to the free document if popups are turned off.
-ContentDelegate.prototype.handleRecapLinkClick = function(window_obj, url) {
+ContentDelegate.prototype.handleRecapLinkClick = function (window_obj, url) {
   chrome.storage.local.get('options', function (items) {
     if (!items.options.recap_link_popups) {
       window_obj.location = url;
@@ -576,7 +619,7 @@ ContentDelegate.prototype.handleRecapLinkClick = function(window_obj, url) {
 
 // Check every link in the document to see if there is a free RECAP document
 // available. If there is, put a link with a RECAP icon.
-ContentDelegate.prototype.attachRecapLinkToEligibleDocs = function() {
+ContentDelegate.prototype.attachRecapLinkToEligibleDocs = function () {
   let linkCount = this.pacer_doc_ids.length;
   console.info(`RECAP: Attaching links to all eligible documents (${linkCount} found)`);
   if (linkCount === 0) {
@@ -585,54 +628,197 @@ ContentDelegate.prototype.attachRecapLinkToEligibleDocs = function() {
 
   // Ask the server whether any of these documents are available from RECAP.
   this.recap.getAvailabilityForDocuments(this.pacer_doc_ids, this.court,
-                                         $.proxy(function (api_results) {
-    console.info(`RECAP: Got results from API. Running callback on API results to ` +
-                 `attach links and icons where appropriate.`);
-    for (let i = 0; i < this.links.length; i++) {
-      let pacer_doc_id = $(this.links[i]).data('pacer_doc_id');
-      if (!pacer_doc_id) {
-        continue;
+    $.proxy(function (api_results) {
+      console.info(`RECAP: Got results from API. Running callback on API results to ` +
+        `attach links and icons where appropriate.`);
+      for (let i = 0; i < this.links.length; i++) {
+        let pacer_doc_id = $(this.links[i]).data('pacer_doc_id');
+        if (!pacer_doc_id) {
+          continue;
+        }
+        let result = api_results.results.filter(function (obj) {
+          return obj.pacer_doc_id === pacer_doc_id;
+        })[0];
+        if (!result) {
+          continue;
+        }
+        let href = `https://www.courtlistener.com/${result.filepath_local}`;
+        let recap_link = $('<a/>', {
+          'class': 'recap-inline',
+          'title': 'Available for free from the RECAP Archive.',
+          'href': href
+        });
+        recap_link.click($.proxy(this.handleRecapLinkClick, this, window, href));
+        recap_link.append($('<img/>').attr({
+          src: chrome.extension.getURL('assets/images/icon-16.png')
+        }));
+        recap_link.insertAfter(this.links[i]);
       }
-      let result = api_results.results.filter(function (obj) {
-        return obj.pacer_doc_id === pacer_doc_id;
-      })[0];
-      if (!result){
-        continue;
-      }
-      let href = `https://www.courtlistener.com/${result.filepath_local}`;
-      let recap_link = $('<a/>', {
-        'class': 'recap-inline',
-        'title': 'Available for free from the RECAP Archive.',
-        'href': href
-      });
-      recap_link.click($.proxy(this.handleRecapLinkClick, this, window, href));
-      recap_link.append($('<img/>').attr({
-        src: chrome.extension.getURL('assets/images/icon-16.png')
-      }));
-      recap_link.insertAfter(this.links[i]);
-    }
-  }, this));
+    }, this));
 };
 
-ContentDelegate.prototype.handleClaimsPageView = function(){
+// TODO: Confirm that zip downloading is consistent across jurisdictions
+ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
+  // helper function - extract the zip by creating html and querying the frame
+  const extractUrl = (html) => {
+    const page = document.createElement("html");
+    page.innerHTML = html;
+    const frames = page.querySelectorAll("iframe");
+    return frames[0].src;
+  };
+
+  // helper function - convert string to html document
+  const stringToDocBody = (str) => {
+    const parser = new DOMParser();
+    const newDoc = parser.parseFromString(str, 'text/html');
+    return newDoc.body;
+  };
+
+  // helper function - returns filename based on user preferences
+  const generateFileName = (options, pacerCaseId) => {
+    if (options.ia_style_filenames) {
+      return [
+        'gov',
+        'uscourts',
+        this.court,
+        (pacerCaseId || 'unknown-case-id')
+      ].join('.').concat('.zip');
+    } else if (options.lawyer_style_filenames) {
+      const firstTable = document.getElementsByTagName('table')[0];
+      const firstTableRows = firstTable.querySelectorAll('tr');
+      // 4th from bottom
+      const matchedRow = firstTableRows[firstTableRows.length - 4];
+      const cells = matchedRow.querySelectorAll('td');
+      const document_number = cells[0].innerText.match(/\d+(?=\-)/)[0];
+      const docket_number = cells[1].innerText;
+      return [
+        PACER.COURT_ABBREVS[this.court],
+        docket_number,
+        document_number,
+      ].join('_').concat('.zip');
+    }
+  };
+
+  // Make the Back button redisplay the previous page.
+  window.onpopstate = function (event) {
+    if (event.state.content) {
+      document.documentElement.innerHTML = event.state.content;
+    }
+  };
+  history.replaceState({ content: document.documentElement.innerHTML }, '');
+  // tell the user to wait
+  $("body").css("cursor", "wait");
+
+  // in Firefox, use content.fetch for content-specific fetch requests
+  // https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#XHR_and_Fetch
+  const browserSpecificFetch = (navigator.userAgent.indexOf('Chrome') < 0) ? content.fetch : window.fetch;
+
+  // fetch the html page which contains the <iframe> link to the zip document.
+  const htmlPage = await browserSpecificFetch(event.data.id).then(res => res.text());
+  console.log("RECAP: Successfully submitted zip file request");
+  const zipUrl = extractUrl(htmlPage);
+  //download zip file and save it to chrome storage
+  const blob = await fetch(zipUrl).then(res => res.blob());
+  const dataUrl = await blobToDataURL(blob);
+  console.info('RECAP: Downloaded zip file');
+  // save blob in storage under tabId
+  // we store it as an array to chunk the message
+  await updateTabStorage({
+    [this.tabId]: { ['zip_blob']: dataUrl }
+  });
+
+  // create the blob and inject it into the page
+  const blobUrl = URL.createObjectURL(blob);
+  const pacerCaseId = (event.data.id).match(/caseid\=\d*/)[0].replace(/caseid\=/, "");
+
+  // load options
+  const options = await getItemsFromStorage('options')
+  // generate the filename
+  const filename = generateFileName(options, pacerCaseId);
+
+  if (options['recap_enabled'] && !this.restricted) {
+    this.recap.uploadZipFile(
+      this.court, // string
+      pacerCaseId, // string
+      (ok) => { // callback
+        if (ok) {
+          // show notifier
+          this.notifier.showUpload('Zip uploaded to the public RECAP Archive', () => { });
+          // convert htmlPage to document
+          const link =
+            `<a id="recap-download" href=${blobUrl} download=${filename} width="0" height="0"/>`;
+          const htmlBody = stringToDocBody(htmlPage);
+          const frame = htmlBody.querySelector('iframe');
+          frame.insertAdjacentHTML('beforebegin', link);
+          frame.src = "";
+          frame.onload = () => document.getElementById('recap-download').click();
+          document.body = htmlBody;
+          history.pushState({ content: document.body.innerHTML }, '');
+        }
+      }
+    );
+  }
+};
+
+// Same as handleSingleDocumentPageView, but for zip files
+ContentDelegate.prototype.handleZipFilePageView = function () {
+  // return if not the download all page
+  if (!PACER.isDownloadAllDocumentsPage(this.url, document)) {
+    return;
+  }
+
+  // return if on the appellate courts
+  if (PACER.isAppellateCourt(this.court)) {
+    debug(4, "No interposition for appellate downloads yet");
+    return;
+  }
+
+  // extract the url from the onclick attribute from one of the two
+  // "Download Documents" buttons
+  const inputs = [...document.getElementsByTagName("input")];
+  const targetInputs = inputs.filter(
+    input => input.type === "button" && input.value === "Download Documents"
+  );
+  const url = targetInputs[0]
+    .getAttribute("onclick")
+    .replace(/p.*\//, "") // remove parent.location='/cgi-bin/
+    .replace(/\'(?=$)/, ""); // remove endquote
+
+  // imperatively manipulate hte dom elements without injecting a script
+  const forms = [...document.querySelectorAll('form')];
+  forms.map(form => form.removeAttribute('action'));
+  targetInputs.map(targetInput => {
+    targetInput.removeAttribute('onclick');
+    targetInput.addEventListener('click', () => window.postMessage({ id: url }));
+  });
+  // When we receive the message from the above submit method, submit the form
+  // via fetch so we can get the document before the browser does.
+  window.addEventListener(
+    "message",
+    this.onDownloadAllSubmit.bind(this),
+    false
+  );
+};
+
+ContentDelegate.prototype.handleClaimsPageView = function () {
   // return if not a claims register page
   if (!PACER.isClaimsRegisterPage(this.url, document)) {
     return;
   }
 
-  const pacerCaseId = this.pacer_case_id 
-    ? this.pacer_case_id 
+  const pacerCaseId = this.pacer_case_id
+    ? this.pacer_case_id
     : PACER.getCaseIdFromClaimsPage(document);
 
   // render the page as a string and upload it to recap
   const claimsPageHtml = document.documentElement.outerHTML;
   this.recap.uploadClaimsRegister(
-    this.court, 
-    pacerCaseId, 
-    claimsPageHtml, 
+    this.court,
+    pacerCaseId,
+    claimsPageHtml,
     (ok) => { // callback - dispatch the notifier if upload is ok
       if (ok) {
-        this.notifier.showUpload('Claims page uploaded to the public RECAP Archive', () => {});
+        this.notifier.showUpload('Claims page uploaded to the public RECAP Archive', () => { });
       } else {
         console.error("Page not uploaded to the public RECAP archive.");
       }
