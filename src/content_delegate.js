@@ -191,7 +191,6 @@ ContentDelegate.prototype.handleDocketQueryUrl = async function () {
     this.court,
     this.pacer_case_id,
     (result) => {
-      console.log(result);
       if (result.count === 0) {
         console.warn('RECAP: Zero results found for docket lookup.');
       } else if (result.count > 1) {
@@ -228,7 +227,6 @@ ContentDelegate.prototype.handleDocketDisplayPage = async function () {
     this.court,
     this.pacer_case_id,
     (result) => {
-      console.log(result);
       if (result.count === 0) {
         console.warn('RECAP: Zero results found for docket lookup.');
       } else if (result.count > 1) {
