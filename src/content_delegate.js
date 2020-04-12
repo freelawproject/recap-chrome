@@ -181,50 +181,30 @@ ContentDelegate.prototype.findAndStorePacerDocIds = function () {
 };
 
 // If this is a docket query page, ask RECAP whether it has the docket page.
-ContentDelegate.prototype.handleDocketQueryUrl = function () {
-  if (!PACER.isDocketQueryUrl(this.url)) {
-    return;
-  }
-  if (!PACER.hasPacerCookie(document.cookie)) {
-    // Logged out users that load a docket page, see a login page, so they
-    // shouldn't check for docket availability.
-    return;
-  }
+ContentDelegate.prototype.handleDocketQueryUrl = async function () {
+  if (!PACER.isDocketQueryUrl(this.url)) { return; };
+  // Logged out users that load a docket page, see a login page, so they
+  // shouldn't check for docket availability.
+  if (!PACER.hasPacerCookie(document.cookie)) { return; };
 
-  this.recap.getAvailabilityForDocket(this.court, this.pacer_case_id,
-    function (result) {
+  this.recap.getAvailabilityForDocket(
+    this.court,
+    this.pacer_case_id,
+    (result) => {
+      console.log(result);
       if (result.count === 0) {
-        console.warn(`RECAP: Zero results found for docket lookup.`);
-        return;
-      } else if (!(result.count === 1)) {
-        console.error(`RECAP: More than one result found for docket lookup. Found ` +
-          `${result.count}`);
-        return;
+        console.warn('RECAP: Zero results found for docket lookup.');
+      } else if (result.count > 1) {
+        console.error(
+          `RECAP: More than one result found for docket lookup. Found ${result.count}`
+        );
+      } else {
+        const first_result = result.results[0];
+        const form = document.querySelector('form');
+        form.appendChild(recapBanner(first_result));
       }
-      let first_result = result.results[0];
-
-      // Insert a RECAP download link at the bottom of the form.
-      $('<div class="recap-banner"/>').append(
-        $('<a/>', {
-          title: 'Docket is available for free in the RECAP Archive.',
-          target: '_blank',
-          href: `https://www.courtlistener.com${first_result.absolute_url}`
-        }).append(
-          $('<img/>', { src: chrome.extension.getURL('assets/images/icon-16.png') })
-        ).append(
-          ' View and search this docket as of '
-        ).append(
-          $('<time/>', {
-            "data-livestamp": first_result.date_modified,
-            "title": first_result.date_modified,
-          }).append(first_result.date_modified)
-        ).append(
-          ' for free from RECAP'
-        )
-      ).append(
-        $('<br><small>Note that archived dockets may be out of date.</small>')
-      ).appendTo($('form'));
-    });
+    }
+  );
 };
 
 // If this is a docket page, upload it to RECAP.
@@ -242,50 +222,68 @@ ContentDelegate.prototype.handleDocketDisplayPage = async function () {
   const radioDateInputs = [...document.getElementsByTagName('input')].filter(
     input => input.name === 'date_from' && input.type === 'radio'
   );
-  if (radioDateInputs.length > 1) {
-    return;
-  };
+  if (radioDateInputs.length > 1) { return; };
+
+  this.recap.getAvailabilityForDocket(
+    this.court,
+    this.pacer_case_id,
+    (result) => {
+      console.log(result);
+      if (result.count === 0) {
+        console.warn('RECAP: Zero results found for docket lookup.');
+      } else if (result.count > 1) {
+        console.error(
+          `RECAP: More than one result found for docket lookup. Found ${result.count}`
+        );
+      } else {
+        const first_result = result.results[0];
+        const mainDiv = document.querySelector('div#cmecfMainContent');
+        mainDiv.insertBefore(recapButton(this.court, this.pacer_case_id), mainDiv.childNodes[0]);
+      }
+    }
+  );
 
   // if you've already uploaded the page, return
-  if (history.state && history.state.uploaded) {
-    return;
-  }
+  if (history.state && history.state.uploaded) { return; }
 
   // check if appellate
-  let isAppellate = PACER.isAppellateCourt(this.court);
+  // let isAppellate = PACER.isAppellateCourt(this.court);
 
   // if the content_delegate didn't pull the case Id on initialization,
   // check the page for a lead case dktrpt url.
   const tabStorage = await getItemsFromStorage(this.tabId)
   const pacerCaseId = this.pacer_case_id ? this.pacer_case_id : tabStorage.caseId;
 
-  if (!pacerCaseId) {
-    // If we don't have any pacerCaseId punt.
-    return;
-  }
+  // If we don't have any pacerCaseId at this point, punt.
+  if (!pacerCaseId) { return; }
 
   const options = await getItemsFromStorage('options');
 
   if (options['recap_enabled']) {
-    let callback = $.proxy(function (ok) {
+    let callback = (ok) => {
       if (ok) {
+        const banner = document.querySelector('.recap-alert-banner');
+        if (!banner) {
+          const mainDiv = document.querySelector('div#cmecfMainContent');
+          mainDiv.insertBefore(recapButton(this.court, this.pacer_case_id), mainDiv.childNodes[0]);
+        };
         history.replaceState({ uploaded: true }, '');
         this.notifier.showUpload(
           'Docket uploaded to the public RECAP Archive.',
           function () { }
         );
       }
-    }, this);
+    };
     if (isDocketDisplayUrl) {
       this.recap.uploadDocket(this.court, pacerCaseId,
         document.documentElement.innerHTML,
-        (isAppellate ? 'APPELLATE_DOCKET' : 'DOCKET'),
-        callback);
+        'DOCKET',
+        (ok) => callback(ok));
     } else if (isDocketHistoryDisplayUrl) {
       this.recap.uploadDocket(this.court, pacerCaseId,
         document.documentElement.innerHTML,
         'DOCKET_HISTORY_REPORT',
-        callback);
+        (ok) => callback(ok));
     }
   } else {
     console.info(`RECAP: Not uploading docket. RECAP is disabled.`);
