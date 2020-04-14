@@ -220,22 +220,23 @@ function debug(level, varargs) {
 
 // inject a "follow this case on RECAP" button
 const recapButton = (court, pacerCaseId) => {
-  const div = document.createElement('div');
-  div.setAttribute('class', 'recap-alert-banner');
 
   const anchor = document.createElement('a');
-  anchor.className += 'recap-create-alert';
+  anchor.setAttribute('id', 'recap-alert-button')
+  anchor.setAttribute('role', 'button');
+  anchor.setAttribute('aria-disabled', 'true');
+  anchor.className += 'recap-alert-button disabled';
+
 
   const url = new URL('https://www.courtlistener.com/alerts/create');
   url.searchParams.append('pacer_case_id', pacerCaseId);
   url.searchParams.append('court', court);
   anchor.href = url.toString();
   const img = document.createElement('img');
-  img.src = chrome.extension.getURL('assets/images/icon-16.png');
-  anchor.innerHTML = `${img.outerHTML} Create an alert for this case on RECAP`;
-  div.appendChild(anchor);
-
-  return div;
+  img.src = chrome.extension.getURL('assets/images/grey-16.png');
+  anchor.innerHTML = 
+    `${img.outerHTML} Alerts Not Yet Supported For This Docket`;
+  return anchor;
 };
 
 const recapBanner = (result) => {

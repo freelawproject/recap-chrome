@@ -209,6 +209,24 @@ ContentDelegate.prototype.handleDocketQueryUrl = async function () {
 // If this is a docket page, upload it to RECAP.
 ContentDelegate.prototype.handleDocketDisplayPage = async function () {
 
+  // helper functions
+  const createAlertButtonTd = () => {
+    const td = document.createElement('td');
+    td.setAttribute('align', 'left');
+    td.appendChild(recapButton(this.court, this.pacer_case_id));
+    return td;
+  }; 
+
+  const changeAlertButtonStateToActive = () => {
+    const anchor = document.getElementById('recap-alert-button');
+    anchor.setAttribute('aria-disabled', 'false');
+    anchor.classList.remove('disabled');
+    const img = document.createElement('img');
+    img.src = chrome.extension.getURL('assets/images/icon-16.png');
+    anchor.innerText = 'Create an Alert for This Case on RECAP';
+    anchor.insertBefore(img, anchor.childNodes[0]);
+  };
+
   // If it's not a docket display URL or a docket history URL, punt.
   let isDocketDisplayUrl = PACER.isDocketDisplayUrl(this.url);
   let isDocketHistoryDisplayUrl = PACER.isDocketHistoryDisplayUrl(this.url);
@@ -223,6 +241,11 @@ ContentDelegate.prototype.handleDocketDisplayPage = async function () {
   );
   if (radioDateInputs.length > 1) { return; };
 
+  // insert the button in a disabled state
+  const firstTr = document.querySelector('tr');
+  const td = createAlertButtonTd();
+  firstTr.insertBefore(td, firstTr.childNodes[0]);
+
   this.recap.getAvailabilityForDocket(
     this.court,
     this.pacer_case_id,
@@ -234,9 +257,7 @@ ContentDelegate.prototype.handleDocketDisplayPage = async function () {
           `RECAP: More than one result found for docket lookup. Found ${result.count}`
         );
       } else {
-        const first_result = result.results[0];
-        const mainDiv = document.querySelector('div#cmecfMainContent');
-        mainDiv.insertBefore(recapButton(this.court, this.pacer_case_id), mainDiv.childNodes[0]);
+        changeAlertButtonStateToActive();
       }
     }
   );
@@ -260,11 +281,7 @@ ContentDelegate.prototype.handleDocketDisplayPage = async function () {
   if (options['recap_enabled']) {
     let callback = (ok) => {
       if (ok) {
-        const banner = document.querySelector('.recap-alert-banner');
-        if (!banner) {
-          const mainDiv = document.querySelector('div#cmecfMainContent');
-          mainDiv.insertBefore(recapButton(this.court, this.pacer_case_id), mainDiv.childNodes[0]);
-        };
+        changeAlertButtonStateToActive();
         history.replaceState({ uploaded: true }, '');
         this.notifier.showUpload(
           'Docket uploaded to the public RECAP Archive.',
