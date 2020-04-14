@@ -273,7 +273,14 @@ describe('The ContentDelegate class', function () {
 
     describe('option enabled', function () {
       beforeEach(function () {
+        const table = document.createElement('table');
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        tr.appendChild(td);
+        table.appendChild(tr);
+        document.querySelector('body').appendChild(table);
         window.chrome = {
+          extension: { getURL: jasmine.createSpy('gerURL'), },
           storage: {
             local: {
               get: jasmine.createSpy().and.callFake((_, cb) => {
@@ -289,6 +296,7 @@ describe('The ContentDelegate class', function () {
       });
 
       afterEach(function () {
+        document.querySelector('table').remove();
         delete window.chrome;
       });
 
@@ -349,6 +357,13 @@ describe('The ContentDelegate class', function () {
       });
       describe('when the docket page is not an interstitial page', function () {
 
+        it ('inserts a button linking the user to a create alert page on CL', async () => {
+          const cd = docketDisplayContentDelegate;
+          await cd.handleDocketDisplayPage();
+          const button = document.getElementById('recap-alert-button');
+          expect(button).not.toBeNull();
+        });
+
         it('calls uploadDocket and responds to a positive result', async function () {
           const cd = docketDisplayContentDelegate;
           spyOn(cd.notifier, 'showUpload');
@@ -362,6 +377,9 @@ describe('The ContentDelegate class', function () {
           expect(cd.recap.uploadDocket).toHaveBeenCalled();
           expect(cd.notifier.showUpload).toHaveBeenCalled();
           expect(history.replaceState).toHaveBeenCalledWith({ uploaded: true }, '');
+          const button = document.getElementById('recap-alert-button');
+          expect(button.className.includes('disabled')).not.toBeTrue();          
+          expect(button.getAttribute('aria-disabled')).toBe('false');
         });
 
         it('calls uploadDocket and responds to a positive historical result', async function () {
@@ -377,6 +395,9 @@ describe('The ContentDelegate class', function () {
           expect(cd.recap.uploadDocket).toHaveBeenCalled();
           expect(cd.notifier.showUpload).toHaveBeenCalled();
           expect(history.replaceState).toHaveBeenCalledWith({ uploaded: true }, '');
+          const button = document.getElementById('recap-alert-button');
+          expect(button.className.includes('disabled')).not.toBeTrue();          
+          expect(button.getAttribute('aria-disabled')).toBe('false');
         });
 
         it('calls uploadDocket and responds to a negative result', async function () {

@@ -181,7 +181,7 @@ ContentDelegate.prototype.findAndStorePacerDocIds = function () {
 };
 
 // If this is a docket query page, ask RECAP whether it has the docket page.
-ContentDelegate.prototype.handleDocketQueryUrl = async function () {
+ContentDelegate.prototype.handleDocketQueryUrl = function () {
   if (!PACER.isDocketQueryUrl(this.url)) { return; };
   // Logged out users that load a docket page, see a login page, so they
   // shouldn't check for docket availability.
@@ -198,9 +198,14 @@ ContentDelegate.prototype.handleDocketQueryUrl = async function () {
           `RECAP: More than one result found for docket lookup. Found ${result.count}`
         );
       } else {
-        const first_result = result.results[0];
-        const form = document.querySelector('form');
-        form.appendChild(recapBanner(first_result));
+        if (result.results) {
+          const form = document.querySelector('form');
+          const div = document.createElement('div');
+          div.classList.add('recap-banner');
+          div.appendChild(recapButton(this.court, this.pacer_case_id, true));
+          form.appendChild(recapBanner(result.results[0]));
+          form.appendChild(div);
+        }
       }
     }
   );
@@ -213,18 +218,20 @@ ContentDelegate.prototype.handleDocketDisplayPage = async function () {
   const createAlertButtonTd = () => {
     const td = document.createElement('td');
     td.setAttribute('align', 'left');
-    td.appendChild(recapButton(this.court, this.pacer_case_id));
+    td.appendChild(recapButton(this.court, this.pacer_case_id, false));
     return td;
   }; 
 
-  const changeAlertButtonStateToActive = () => {
-    const anchor = document.getElementById('recap-alert-button');
-    anchor.setAttribute('aria-disabled', 'false');
-    anchor.classList.remove('disabled');
-    const img = document.createElement('img');
-    img.src = chrome.extension.getURL('assets/images/icon-16.png');
-    anchor.innerText = 'Create an Alert for This Case on RECAP';
-    anchor.insertBefore(img, anchor.childNodes[0]);
+  const changeAlertButtonStateToActive = async () => {
+    const anchor = await document.getElementById('recap-alert-button');
+    if (anchor) {
+      anchor.setAttribute('aria-disabled', 'false');
+      anchor.classList.remove('disabled');
+      const img = document.createElement('img');
+      img.src = chrome.extension.getURL('assets/images/icon-16.png');
+      anchor.innerText = 'Create an Alert for This Case on RECAP';
+      anchor.insertBefore(img, anchor.childNodes[0]);
+    }
   };
 
   // If it's not a docket display URL or a docket history URL, punt.
