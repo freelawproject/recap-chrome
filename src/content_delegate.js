@@ -469,7 +469,9 @@ ContentDelegate.prototype.showPdfPage = async function (
   // to either display the PDF in the provided <iframe>, or, if
   // external_pdf is set, save it using FileSaver.js's saveAs().
 
-  const pacer_case_id = this.pacer_case_id ? this.pacer_case_id : await getPacerCaseIdFromPacerDocId(this.pacer_doc_id, () => { });
+  const pacer_case_id = this.pacer_case_id
+    ? this.pacer_case_id
+    : await this.recap.getPacerCaseIdFromPacerDocId(this.pacer_doc_id, () => { });
 
   const generateFileName = (pacer_case_id) => {
     let filename, pieces;
