@@ -195,8 +195,8 @@ let PACER = {
   isClaimsRegisterPage: function (url, document) {
     let headlines = [...document.getElementsByTagName('h2')]
     let pageCheck =
-      !!url.match(/\/SearchClaims\.pl\?/) 
-      && headlines.length > 0 
+      !!url.match(/\/SearchClaims\.pl\?/)
+      && headlines.length > 0
       && headlines[0].innerText.match(/Claims Register/)
     return pageCheck
   },
@@ -336,13 +336,31 @@ let PACER = {
     // as:
     //   function goDLS(hyperlink, de_caseid, de_seqno, got_receipt,
     //                  pdf_header, pdf_toggle_possible, magic_num, hdr)
-    let goDLS = /^goDLS\('([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)'\)/.exec(goDLS_string);
-    if (!goDLS) {
+    //
+    // Bankruptcy courts provide ten parameters, instead of eight. These can
+    // be found in unminified js:
+    //   https://ecf.paeb.uscourts.gov/lib/dls_url.js
+    // as:
+    //   function goDLS(hyperlink, de_caseid, de_seqno, got_receipt,
+    //                  pdf_header, pdf_toggle_possible, magic_num,
+    //                  claim_id, claim_num, claim_doc_seq)
+    // Δ:
+    // - hdr
+    // + claim_id, claim_num, claim_doc_seq
+    let goDlsDistrict = /^goDLS\('([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)'\)/.exec(goDLS_string);
+    let goDlsBankr= /^goDLS\('([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)'\)/.exec(goDLS_string);
+    if (!goDlsDistrict && !goDlsBankr) {
       return null;
     }
     let r = {};
-    [, r.hyperlink, r.de_caseid, r.de_seqno, r.got_receipt, r.pdf_header,
-      r.pdf_toggle_possible, r.magic_num, r.hdr] = goDLS;
+    if (goDlsDistrict){
+      [, r.hyperlink, r.de_caseid, r.de_seqno, r.got_receipt, r.pdf_header,
+        r.pdf_toggle_possible, r.magic_num, r.hdr] = goDlsDistrict;
+    } else {
+      [, r.hyperlink, r.de_caseid, r.de_seqno, r.got_receipt, r.pdf_header,
+        r.pdf_toggle_possible, r.magic_num, r.claim_id, r.claim_num,
+        r.claim_doc_seq] = goDlsBankr;
+    }
     return r;
   },
 

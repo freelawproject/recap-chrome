@@ -337,10 +337,9 @@ describe('The PACER module', function() {
   });
 
   describe('parseGoDLSFunction', function(){
-    const goDLSSampleString = "goDLS('/doc1/09518360046','153992','264','','','1','',''); " +
-      "return(false);";
-
     it("gets the right values for an example DLS string", function() {
+      let goDLSSampleString = "goDLS('/doc1/09518360046','153992','264','','','1','',''); " +
+        "return(false);";
       expect(PACER.parseGoDLSFunction(goDLSSampleString)).toEqual({
         hyperlink: '/doc1/09518360046',
         de_caseid: '153992',
@@ -351,6 +350,24 @@ describe('The PACER module', function() {
         magic_num: '',
         hdr: ''
       });
+    });
+
+
+    it("gets the right values for a DLS string with 10 parameters", function(){
+      let goDLSSampleString = "goDLS('/doc1/152129714885','496493','','1','','','','','',''); " +
+        "return(false)";
+      expect(PACER.parseGoDLSFunction(goDLSSampleString)).toEqual({
+        hyperlink: '/doc1/152129714885',
+        de_caseid: '496493',
+        de_seqno: '',
+        got_receipt: '1',
+        pdf_header: '',
+        pdf_toggle_possible: '',
+        magic_num: '',
+        claim_id: '',
+        claim_num: '',
+        claim_doc_seq: '',
+      })
     });
 
     it("returns false for an invalid DLS string", function() {
