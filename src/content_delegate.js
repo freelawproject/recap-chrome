@@ -219,7 +219,7 @@ ContentDelegate.prototype.handleDocketDisplayPage = async function () {
     const tr = document.createElement('tr');
     tr.appendChild(recapAlertButton(this.court, this.pacer_case_id, false));
     return tr;
-  }; 
+  };
 
   const changeAlertButtonStateToActive = async () => {
     const anchor = await document.getElementById('recap-alert-button');
