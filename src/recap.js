@@ -36,6 +36,10 @@ function Recap() {
     // Asks RECAP whether it has a docket page for the specified case.  If it
     // is available, the callback will be called with a
     getAvailabilityForDocket: function (pacer_court, pacer_case_id, cb) {
+      if (!pacer_case_id){
+        console.error("RECAP: Cannot get availability of docket without pacer_case_id.");
+        return;
+      }
       console.info(`RECAP: Getting availability of docket ${pacer_case_id} at ` +
         `${pacer_court}`);
       $.ajax({
