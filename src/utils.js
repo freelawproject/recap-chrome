@@ -232,7 +232,7 @@ const recapButton = (court, pacerCaseId, isActive) => {
     ? 'Create An Alert For This Case On RECAP'
     : 'Alerts Not Yet Supported For This Docket';
   
-  const url = new URL('https://www.courtlistener.com/alerts/create');
+  const url = new URL('https://www.courtlistener.com/alert/docket/new/');
   url.searchParams.append('pacer_case_id', pacerCaseId);
   url.searchParams.append('court_id', court);
   anchor.href = url.toString();
