@@ -219,7 +219,7 @@ function debug(level, varargs) {
 }
 
 // inject a "follow this case on RECAP" button
-const recapButton = (court, pacerCaseId, isActive) => {
+const recapAlertButton = (court, pacerCaseId, isActive) => {
 
   const anchor = document.createElement('a');
   anchor.setAttribute('id', 'recap-alert-button');

@@ -202,7 +202,7 @@ ContentDelegate.prototype.handleDocketQueryUrl = function () {
           const form = document.querySelector('form');
           const div = document.createElement('div');
           div.classList.add('recap-banner');
-          div.appendChild(recapButton(this.court, this.pacer_case_id, true));
+          div.appendChild(recapAlertButton(this.court, this.pacer_case_id, true));
           form.appendChild(recapBanner(result.results[0]));
           form.appendChild(div);
         }
@@ -217,7 +217,7 @@ ContentDelegate.prototype.handleDocketDisplayPage = async function () {
   // helper functions
   const createAlertButtonTr = () => {
     const tr = document.createElement('tr');
-    tr.appendChild(recapButton(this.court, this.pacer_case_id, false));
+    tr.appendChild(recapAlertButton(this.court, this.pacer_case_id, false));
     return tr;
   }; 
 
