@@ -228,10 +228,10 @@ const recapAlertButton = (court, pacerCaseId, isActive) => {
   if (!isActive) { anchor.classList.add('disabled'); };
 
   const icon = isActive ? 'icon' : 'grey';
-  const text = isActive 
-    ? 'Create An Alert For This Case On RECAP'
-    : 'Alerts Not Yet Supported For This Docket';
-  
+  const text = isActive
+    ? 'Create an Alert for this Case on RECAP'
+    : 'Alerts not yet Supported for this Docket';
+
   const url = new URL('https://www.courtlistener.com/alert/docket/new/');
   url.searchParams.append('pacer_case_id', pacerCaseId);
   url.searchParams.append('court_id', court);
