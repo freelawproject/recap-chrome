@@ -92,12 +92,6 @@ describe('The Recap export module', function () {
   }
 
   describe('getAvailabilityForDocket', function () {
-    it('requests the correct URL', function () {
-      recap.getAvailabilityForDocket();
-      expect(jasmine.Ajax.requests.mostRecent().url).toBe(
-        'https://www.courtlistener.com/api/rest/v3/dockets/?source__in=1%2C3%2C5%2C7%2C9%2C11%2C13%2C15&fields=absolute_url%2Cdate_modified');
-    });
-
     it('encodes the court and caseId in the GET params', function () {
       const expectedCourt = 'canb';
       const expectedCaseId = '531316';
