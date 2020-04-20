@@ -234,7 +234,7 @@ const recapButton = (court, pacerCaseId, isActive) => {
   
   const url = new URL('https://www.courtlistener.com/alerts/create');
   url.searchParams.append('pacer_case_id', pacerCaseId);
-  url.searchParams.append('court', court);
+  url.searchParams.append('court_id', court);
   anchor.href = url.toString();
   const img = document.createElement('img');
   img.src = chrome.extension.getURL(`assets/images/${icon}-16.png`);

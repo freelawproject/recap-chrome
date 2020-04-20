@@ -141,9 +141,11 @@ footer #version {
 
 #recap-alert-button {
   padding: 0.25rem;
+  min-width: max-content;
   display: inline-flex;
   flex-direction: row;
   align-items: bottom;
+  align-content: center;
 }
 
 #recap-alert-button img {

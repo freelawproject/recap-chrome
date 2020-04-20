@@ -215,11 +215,10 @@ ContentDelegate.prototype.handleDocketQueryUrl = function () {
 ContentDelegate.prototype.handleDocketDisplayPage = async function () {
 
   // helper functions
-  const createAlertButtonTd = () => {
-    const td = document.createElement('td');
-    td.setAttribute('align', 'left');
-    td.appendChild(recapButton(this.court, this.pacer_case_id, false));
-    return td;
+  const createAlertButtonTr = () => {
+    const tr = document.createElement('tr');
+    tr.appendChild(recapButton(this.court, this.pacer_case_id, false));
+    return tr;
   }; 
 
   const changeAlertButtonStateToActive = async () => {
@@ -249,9 +248,9 @@ ContentDelegate.prototype.handleDocketDisplayPage = async function () {
   if (radioDateInputs.length > 1) { return; };
 
   // insert the button in a disabled state
-  const firstTr = document.querySelector('tr');
-  const td = createAlertButtonTd();
-  firstTr.insertBefore(td, firstTr.childNodes[0]);
+  const tableBody = document.querySelector('tbody');
+  const tr = createAlertButtonTr();
+  tableBody.insertBefore(tr, tableBody.childNodes[0]);
 
   this.recap.getAvailabilityForDocket(
     this.court,
