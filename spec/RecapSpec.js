@@ -91,31 +91,7 @@ describe('The Recap export module', function () {
     delete window.chrome;
   }
 
-  function setupMetadataResponse(msg) {
-    const caseObj = {};
-    const docObj = {};
-    caseObj[pacer_doc_id] = { 'pacer_doc_id': pacer_doc_id, 'officialcasenum': offCaseNum };
-    docObj[docid] = {
-      'pacer_doc_id': pacer_doc_id, 'officialcasenum': offCaseNum,
-      'docnum': docnum, 'subdocnum': subdocnum
-    };
-    return { 'documents': docObj, 'cases': caseObj, 'message': msg };
-  }
-
-  function expectMetadata(actCasenum, actOff, actDocnum, actSubdocnum) {
-    expect(actCasenum).toBe(pacer_doc_id);
-    expect(actOff).toBe(offCaseNum);
-    expect(actDocnum).toBe(docnum);
-    expect(actSubdocnum).toBe(subdocnum);
-  }
-
   describe('getAvailabilityForDocket', function () {
-    it('requests the correct URL', function () {
-      recap.getAvailabilityForDocket();
-      expect(jasmine.Ajax.requests.mostRecent().url).toBe(
-        'https://www.courtlistener.com/api/rest/v3/dockets/?source__in=1%2C3%2C5%2C7%2C9%2C11%2C13%2C15&fields=absolute_url%2Cdate_modified');
-    });
-
     it('encodes the court and caseId in the GET params', function () {
       const expectedCourt = 'canb';
       const expectedCaseId = '531316';

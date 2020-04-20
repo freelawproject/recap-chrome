@@ -29,10 +29,10 @@ describe('The ContentDelegate class', function () {
   const nonsenseUrlContentDelegate = new ContentDelegate(tabId, nonsenseUrl, []);
 
   const noPacerCaseIdContentDelegate = new ContentDelegate(
-    tabId, // tabId 
-    docketQueryUrl, // url 
+    tabId, // tabId
+    docketQueryUrl, // url
     docketQueryPath, // path
-    'canb', // court 
+    'canb', // court
     undefined, // pacer_case_id
     undefined, // pacer_doc_id
     [] // links
@@ -273,7 +273,14 @@ describe('The ContentDelegate class', function () {
 
     describe('option enabled', function () {
       beforeEach(function () {
+        const table = document.createElement('table');
+        const tbody = document.createElement('tbody');
+        const tr = document.createElement('tr');
+        tbody.appendChild(tr);
+        table.appendChild(tbody)
+        document.querySelector('body').appendChild(table);
         window.chrome = {
+          extension: { getURL: jasmine.createSpy('gerURL'), },
           storage: {
             local: {
               get: jasmine.createSpy().and.callFake((_, cb) => {
@@ -289,6 +296,7 @@ describe('The ContentDelegate class', function () {
       });
 
       afterEach(function () {
+        document.querySelector('table').remove();
         delete window.chrome;
       });
 
@@ -349,6 +357,13 @@ describe('The ContentDelegate class', function () {
       });
       describe('when the docket page is not an interstitial page', function () {
 
+        it ('inserts a button linking the user to a create alert page on CL', async () => {
+          const cd = docketDisplayContentDelegate;
+          await cd.handleDocketDisplayPage();
+          const button = document.getElementById('recap-alert-button');
+          expect(button).not.toBeNull();
+        });
+
         it('calls uploadDocket and responds to a positive result', async function () {
           const cd = docketDisplayContentDelegate;
           spyOn(cd.notifier, 'showUpload');
@@ -362,6 +377,9 @@ describe('The ContentDelegate class', function () {
           expect(cd.recap.uploadDocket).toHaveBeenCalled();
           expect(cd.notifier.showUpload).toHaveBeenCalled();
           expect(history.replaceState).toHaveBeenCalledWith({ uploaded: true }, '');
+          const button = document.getElementById('recap-alert-button');
+          expect(button.className.includes('disabled')).not.toBe(true);
+          expect(button.getAttribute('aria-disabled')).toBe('false');
         });
 
         it('calls uploadDocket and responds to a positive historical result', async function () {
@@ -377,6 +395,9 @@ describe('The ContentDelegate class', function () {
           expect(cd.recap.uploadDocket).toHaveBeenCalled();
           expect(cd.notifier.showUpload).toHaveBeenCalled();
           expect(history.replaceState).toHaveBeenCalledWith({ uploaded: true }, '');
+          const button = document.getElementById('recap-alert-button');
+          expect(button.className.includes('disabled')).not.toBe(true);
+          expect(button.getAttribute('aria-disabled')).toBe('false');
         });
 
         it('calls uploadDocket and responds to a negative result', async function () {
@@ -882,7 +903,7 @@ describe('The ContentDelegate class', function () {
 
     it('correctly extracts the data before and after the iframe', async function () {
       await cd.showPdfPage(documentElement, html);
-      // removed waiting check because the content_delegate 
+      // removed waiting check because the content_delegate
       // removes the paragraph if successful which seems to occur prior
       // to the test running - checking for the new Iframe should be sufficient
       const expected_iframe = '<iframe src="about:blank"' + iFrameEnd;
