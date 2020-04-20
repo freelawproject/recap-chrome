@@ -247,6 +247,20 @@ ContentDelegate.prototype.handleDocketDisplayPage = async function () {
   );
   if (radioDateInputs.length > 1) { return; };
 
+  // if you've already uploaded the page, return
+  if (history.state && history.state.uploaded) { return; }
+
+  // check if appellate
+  // let isAppellate = PACER.isAppellateCourt(this.court);
+
+  // if the content_delegate didn't pull the case Id on initialization,
+  // check the page for a lead case dktrpt url.
+  const tabStorage = await getItemsFromStorage(this.tabId)
+  this.pacer_case_id = this.pacer_case_id ? this.pacer_case_id : tabStorage.caseId;
+
+  // If we don't have this.pacer_case_id at this point, punt.
+  if (!this.pacer_case_id) { return; }
+
   // insert the button in a disabled state
   const tableBody = document.querySelector('tbody');
   const tr = createAlertButtonTr();
@@ -268,20 +282,6 @@ ContentDelegate.prototype.handleDocketDisplayPage = async function () {
     }
   );
 
-  // if you've already uploaded the page, return
-  if (history.state && history.state.uploaded) { return; }
-
-  // check if appellate
-  // let isAppellate = PACER.isAppellateCourt(this.court);
-
-  // if the content_delegate didn't pull the case Id on initialization,
-  // check the page for a lead case dktrpt url.
-  const tabStorage = await getItemsFromStorage(this.tabId)
-  const pacerCaseId = this.pacer_case_id ? this.pacer_case_id : tabStorage.caseId;
-
-  // If we don't have any pacerCaseId at this point, punt.
-  if (!pacerCaseId) { return; }
-
   const options = await getItemsFromStorage('options');
 
   if (options['recap_enabled']) {
@@ -296,12 +296,12 @@ ContentDelegate.prototype.handleDocketDisplayPage = async function () {
       }
     };
     if (isDocketDisplayUrl) {
-      this.recap.uploadDocket(this.court, pacerCaseId,
+      this.recap.uploadDocket(this.court, this.pacer_case_id,
         document.documentElement.innerHTML,
         'DOCKET',
         (ok) => callback(ok));
     } else if (isDocketHistoryDisplayUrl) {
-      this.recap.uploadDocket(this.court, pacerCaseId,
+      this.recap.uploadDocket(this.court, this.pacer_case_id,
         document.documentElement.innerHTML,
         'DOCKET_HISTORY_REPORT',
         (ok) => callback(ok));
