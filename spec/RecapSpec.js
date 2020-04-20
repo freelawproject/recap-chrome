@@ -91,24 +91,6 @@ describe('The Recap export module', function () {
     delete window.chrome;
   }
 
-  function setupMetadataResponse(msg) {
-    const caseObj = {};
-    const docObj = {};
-    caseObj[pacer_doc_id] = { 'pacer_doc_id': pacer_doc_id, 'officialcasenum': offCaseNum };
-    docObj[docid] = {
-      'pacer_doc_id': pacer_doc_id, 'officialcasenum': offCaseNum,
-      'docnum': docnum, 'subdocnum': subdocnum
-    };
-    return { 'documents': docObj, 'cases': caseObj, 'message': msg };
-  }
-
-  function expectMetadata(actCasenum, actOff, actDocnum, actSubdocnum) {
-    expect(actCasenum).toBe(pacer_doc_id);
-    expect(actOff).toBe(offCaseNum);
-    expect(actDocnum).toBe(docnum);
-    expect(actSubdocnum).toBe(subdocnum);
-  }
-
   describe('getAvailabilityForDocket', function () {
     it('requests the correct URL', function () {
       recap.getAvailabilityForDocket();
