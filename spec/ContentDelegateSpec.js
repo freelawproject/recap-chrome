@@ -29,10 +29,10 @@ describe('The ContentDelegate class', function () {
   const nonsenseUrlContentDelegate = new ContentDelegate(tabId, nonsenseUrl, []);
 
   const noPacerCaseIdContentDelegate = new ContentDelegate(
-    tabId, // tabId 
-    docketQueryUrl, // url 
+    tabId, // tabId
+    docketQueryUrl, // url
     docketQueryPath, // path
-    'canb', // court 
+    'canb', // court
     undefined, // pacer_case_id
     undefined, // pacer_doc_id
     [] // links
@@ -378,7 +378,7 @@ describe('The ContentDelegate class', function () {
           expect(cd.notifier.showUpload).toHaveBeenCalled();
           expect(history.replaceState).toHaveBeenCalledWith({ uploaded: true }, '');
           const button = document.getElementById('recap-alert-button');
-          expect(button.className.includes('disabled')).not.toBeTrue();          
+          expect(button.className.includes('disabled')).not.toBe(true);
           expect(button.getAttribute('aria-disabled')).toBe('false');
         });
 
@@ -396,7 +396,7 @@ describe('The ContentDelegate class', function () {
           expect(cd.notifier.showUpload).toHaveBeenCalled();
           expect(history.replaceState).toHaveBeenCalledWith({ uploaded: true }, '');
           const button = document.getElementById('recap-alert-button');
-          expect(button.className.includes('disabled')).not.toBeTrue();          
+          expect(button.className.includes('disabled')).not.toBe(true);
           expect(button.getAttribute('aria-disabled')).toBe('false');
         });
 
@@ -903,7 +903,7 @@ describe('The ContentDelegate class', function () {
 
     it('correctly extracts the data before and after the iframe', async function () {
       await cd.showPdfPage(documentElement, html);
-      // removed waiting check because the content_delegate 
+      // removed waiting check because the content_delegate
       // removes the paragraph if successful which seems to occur prior
       // to the test running - checking for the new Iframe should be sufficient
       const expected_iframe = '<iframe src="about:blank"' + iFrameEnd;
