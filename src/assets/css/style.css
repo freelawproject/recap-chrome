@@ -144,8 +144,7 @@ footer #version {
   min-width: max-content;
   display: inline-flex;
   flex-direction: row;
-  align-items: bottom;
-  align-content: center;
+  align-items: start;
 }
 
 #recap-alert-button img {
