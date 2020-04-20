@@ -274,10 +274,10 @@ describe('The ContentDelegate class', function () {
     describe('option enabled', function () {
       beforeEach(function () {
         const table = document.createElement('table');
+        const tbody = document.createElement('tbody');
         const tr = document.createElement('tr');
-        const td = document.createElement('td');
-        tr.appendChild(td);
-        table.appendChild(tr);
+        tbody.appendChild(tr);
+        table.appendChild(tbody)
         document.querySelector('body').appendChild(table);
         window.chrome = {
           extension: { getURL: jasmine.createSpy('gerURL'), },
