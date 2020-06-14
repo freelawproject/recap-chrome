@@ -433,7 +433,9 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
         // check if we have an HTML page which redirects the user to the PDF
         // this was first display by the Northern District of Georgia
         // https://github.com/freelawproject/recap/issues/277
+        console.log(html);
         const redirectResult = Array.from(html.matchAll(/window\.location\s*=\s*["']([^"']+)["'];?/g));
+        console.log(redirectResult);
         if (redirectResult.length > 0) {
           const url = redirectResult[0][1];
           html = `<style>body { margin: 0; } iframe { border: none; }</style>
