@@ -25,6 +25,15 @@ describe('The ContentDelegate class', function () {
   const pdf_data = ('%PDF-1.\ntrailer<</Root<</Pages<</Kids' +
     '[<</MediaBox[0 0 3 3]>>]>>>>>>\n');
 
+  const html_data = `
+    <html>
+      <body>
+        <script type="text/javascript">
+          window.location = '/cgi-bin/blobbity.pdf'
+        </script>
+      </body>
+    </html>
+  `;
   // 'instances'
   const nonsenseUrlContentDelegate = new ContentDelegate(tabId, nonsenseUrl, []);
 
@@ -812,38 +821,37 @@ describe('The ContentDelegate class', function () {
         .toHaveBeenCalledWith('onsubmit', expected_on_submit);
     });
 
-    it('calls showPdfPage when the response is a PDF', function () {
-      const cd = singleDocContentDelegate;
-      spyOn(cd, 'showPdfPage');
-      cd.onDocumentViewSubmit(event);
-
-      jasmine.Ajax.requests.mostRecent().respondWith({
-        'status': 200,
-        'contentType': 'application/pdf',
-        'responseText': pdf_data
+    describe('when the resposne is a PDF', () => {
+      beforeEach(() => {
+        window.fetch = () => Promise.resolve(new window.Response(
+          new Blob([pdf_data], { type: 'application/pdf' }),
+          { status: 200, }
+        ));
       });
-      expect(cd.showPdfPage).toHaveBeenCalled();
-    });
+      it('calls showPdfPage', async function () {
+      
+        const cd = singleDocContentDelegate;
+        spyOn(cd, 'showPdfPage').and.callFake(() => {});
+        await cd.onDocumentViewSubmit(event);
 
-    it('calls showPdfPage when the response is HTML', function () {
-      const cd = singleDocContentDelegate;
-      const fakeFileReader = {
-        readAsText: function () {
-          this.result = '<html lang="en"></html>';
-          this.onload();
-        }
-      };
-      spyOn(window, 'FileReader')
-        .and.callFake(function () { return fakeFileReader; });
-      spyOn(cd, 'showPdfPage');
-      cd.onDocumentViewSubmit(event);
-
-      jasmine.Ajax.requests.mostRecent().respondWith({
-        'status': 200,
-        'contentType': 'text/html',
-        'responseText': '<html lang="en"></html>'
+        expect(cd.showPdfPage).toHaveBeenCalled();
       });
-      expect(cd.showPdfPage).toHaveBeenCalled();
+    });    
+    describe('when the response is HTML', () => {
+
+      beforeEach(() => {
+        window.fetch = () => Promise.resolve(new window.Response(
+          new Blob([html_data], { type: 'text/html' }),
+          { status: 200, }
+        ));
+      });
+      it('calls showPdfPage', async () => {
+        const cd = singleDocContentDelegate;
+        spyOn(cd, 'showPdfPage').and.callFake(() => {});
+        await cd.onDocumentViewSubmit(event);
+
+        expect(cd.showPdfPage).toHaveBeenCalled();
+      });
     });
   });
 

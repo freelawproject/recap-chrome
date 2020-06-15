@@ -377,7 +377,14 @@ ContentDelegate.prototype.handleSingleDocumentPageCheck = function () {
   this.recap.getAvailabilityForDocuments([this.pacer_doc_id], cl_court, callback);
 };
 
-ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
+ContentDelegate.prototype.onDocumentViewSubmit = async function (event) {
+  // helper function - convert string to html document
+  const stringToDocBody = (str) => {
+    const parser = new DOMParser();
+    const newDoc = parser.parseFromString(str, 'text/html');
+    return newDoc.body;
+  };
+
   // Save a copy of the page source, altered so that the "View Document"
   // button goes forward in the history instead of resubmitting the form.
   let originalForm = document.forms[0];
@@ -407,47 +414,63 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
     debug(4, "Appellate parsing not yet implemented");
   }
 
+  // tell user to wait
+  const body = document.querySelector('body');
+  body.classList += 'cursor wait';
+  
   // Now do the form request to get to the view page.  Some PACER sites will
   // return an HTML page containing an <iframe> that loads the PDF document;
   // others just return the PDF document.  As we don't know whether we'll get
-  // HTML (text) or PDF (binary), we ask for an ArrayBuffer and convert later.
-  $('body').css('cursor', 'wait');
+  // HTML (text) or PDF (binary), we ask for a blob and convert later.
   let data = new FormData(form);
-  httpRequest(form.action, data, function (type, ab, xhr) {
-    console.info(`RECAP: Successfully submitted RECAP "View" button form: ${xhr.statusText}`);
-    const blob = new Blob([new Uint8Array(ab)], { type: type });
+  const browserSpecificFetch = (navigator.userAgent.indexOf('Chrome') < 0) 
+    ? content.fetch 
+    : window.fetch;
+
+  const blob = await browserSpecificFetch(
+    form.action, 
+    { method: 'POST', body: data }
+  ).then(res => res.blob());
+
+  const newHtml = document.createElement('html');
+  const style = document.createElement('style');
+  style.type = 'text/css';
+  style.appendChild(
+    document.createTextNode('body { margin: 0; } iframe { border: none }')
+  );
+  newHtml.append(style);
+  const iframe = document.createElement('iframe');
+  if (blob.type === 'text/html') {
+    const text = await blob.text();
+    const innerHtml = stringToDocBody(text);
+    const script = innerHtml.querySelector(
+      'script[type="text/javascript"]'
+    );
+    const url = script.innerHTML.match(/\/cgi\-bin.*pdf/)[0];
+    // set the iframe src and then append it to the HTML
+    iframe.src = url;
+  } else {
     // If we got a PDF, we wrap it in a simple HTML page.  This lets us treat
     // both cases uniformly: either way we have an HTML page with an <iframe>
     // in it, which is handled by showPdfPage.
-    if (type === 'application/pdf') {
-      // canb and ca9 return PDFs and trigger this code path.
-      const html = `<style>body { margin: 0; } iframe { border: none; }</style>
-                  <iframe src="${URL.createObjectURL(blob)}" width="100%" height="100%"></iframe>`;
-      this.showPdfPage(document.documentElement, html, previousPageHtml,
-        document_number, attachment_number, docket_number);
-    } else {
-      // dcd (and presumably others) trigger this code path.
-      const reader = new FileReader();
-      reader.onload = function () {
-        let html = reader.result;
-        // check if we have an HTML page which redirects the user to the PDF
-        // this was first display by the Northern District of Georgia
-        // https://github.com/freelawproject/recap/issues/277
-        console.log(html);
-        const redirectResult = Array.from(html.matchAll(/window\.location\s*=\s*["']([^"']+)["'];?/g));
-        console.log(redirectResult);
-        if (redirectResult.length > 0) {
-          const url = redirectResult[0][1];
-          html = `<style>body { margin: 0; } iframe { border: none; }</style>
-                    <iframe src="${url}" width="100%" height="100%"></iframe>`;
-        }
-        this.showPdfPage(
-          document.documentElement, html, previousPageHtml,
-          document_number, attachment_number, docket_number);
-      }.bind(this);
-      reader.readAsText(blob);  // convert blob to HTML text
-    }
-  }.bind(this));
+    // canb and ca9 return PDFs and trigger this code path.
+    const blobUrl = URL.createObjectURL(blob);
+    iframe.src = blobUrl;
+  }
+  // because of the inane regex matching and html creation in showPDF
+  // we must take care to set the iframe height and width attributes
+  // AFTER the src (else they will be overriden)
+  iframe.width = '100%';
+  iframe.height = '100%';
+  newHtml.append(iframe);
+  this.showPdfPage(
+    document.documentElement, 
+    newHtml.outerHTML, 
+    previousPageHtml,
+    document_number, 
+    attachment_number, 
+    docket_number
+  );
 };
 
 // Given the HTML for a page with an <iframe> in it, downloads the PDF
