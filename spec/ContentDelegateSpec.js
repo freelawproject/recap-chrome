@@ -823,10 +823,8 @@ describe('The ContentDelegate class', function () {
 
     describe('when the resposne is a PDF', () => {
       beforeEach(() => {
-        window.fetch = () => Promise.resolve(new window.Response(
-          new Blob([pdf_data], { type: 'application/pdf' }),
-          { status: 200, }
-        ));
+        const blob = new Blob([pdf_data], { type: 'application/pdf' });
+        window.fetch = () => Promise.resolve(new window.Response(blob));
       });
       it('calls showPdfPage', async function () {
       
@@ -840,10 +838,9 @@ describe('The ContentDelegate class', function () {
     describe('when the response is HTML', () => {
 
       beforeEach(() => {
-        window.fetch = () => Promise.resolve(new window.Response(
-          new Blob([html_data], { type: 'text/html' }),
-          { status: 200, }
-        ));
+        const blob = new Blob([pdf_data], { type: 'application/pdf' });
+        blob.text = jasmine.createSpy('blob_call').and.returnValue(pdf_data);
+        window.fetch = () => Promise.resolve(new window.Response(blob));
       });
       it('calls showPdfPage', async () => {
         const cd = singleDocContentDelegate;
