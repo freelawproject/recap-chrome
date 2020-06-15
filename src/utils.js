@@ -202,6 +202,46 @@ const blobToDataURL = (blob) => {
   });
 };
 
+// helper function - extract the zip by creating html and querying the frame
+const extractUrl = (html) => {
+  const page = document.createElement("html");
+  page.innerHTML = html;
+  const frames = page.querySelectorAll("iframe");
+  return frames[0].src;
+};
+
+// helper function - convert string to html document
+const stringToDocBody = (str) => {
+  const parser = new DOMParser();
+  const newDoc = parser.parseFromString(str, 'text/html');
+  return newDoc.body;
+};
+
+// helper function - returns filename based on user preferences
+const generateFileName = (options, pacerCaseId) => {
+  if (options.ia_style_filenames) {
+    return [
+      'gov',
+      'uscourts',
+      this.court,
+      (pacerCaseId || 'unknown-case-id')
+    ].join('.').concat('.zip');
+  } else if (options.lawyer_style_filenames) {
+    const firstTable = document.getElementsByTagName('table')[0];
+    const firstTableRows = firstTable.querySelectorAll('tr');
+    // 4th from bottom
+    const matchedRow = firstTableRows[firstTableRows.length - 4];
+    const cells = matchedRow.querySelectorAll('td');
+    const document_number = cells[0].innerText.match(/\d+(?=\-)/)[0];
+    const docket_number = cells[1].innerText;
+    return [
+      PACER.COURT_ABBREVS[this.court],
+      docket_number,
+      document_number,
+    ].join('_').concat('.zip');
+  }
+};
+
 // Debug logging function. First argument is a debug level, remainder are variable args
 // for console.log(). If the global debug level matches the first arg, calls console.log().
 // Example usage:

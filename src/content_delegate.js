@@ -378,12 +378,6 @@ ContentDelegate.prototype.handleSingleDocumentPageCheck = function () {
 };
 
 ContentDelegate.prototype.onDocumentViewSubmit = async function (event) {
-  // helper function - convert string to html document
-  const stringToDocBody = (str) => {
-    const parser = new DOMParser();
-    const newDoc = parser.parseFromString(str, 'text/html');
-    return newDoc.body;
-  };
 
   // Save a copy of the page source, altered so that the "View Document"
   // button goes forward in the history instead of resubmitting the form.
@@ -411,12 +405,11 @@ ContentDelegate.prototype.onDocumentViewSubmit = async function (event) {
     attachment_number = matches[2];
     docket_number = $.trim($('tr:contains(Case Number) td:nth(1)').text());
   } else { // Appellate
-    debug(4, "Appellate parsing not yet implemented");
+    debug(4, 'Appellate parsing not yet implemented');
   }
 
   // tell user to wait
-  const body = document.querySelector('body');
-  body.classList += 'cursor wait';
+  document.querySelector('body').classList.add('cursor', 'wait');
   
   // Now do the form request to get to the view page.  Some PACER sites will
   // return an HTML page containing an <iframe> that loads the PDF document;
@@ -705,45 +698,6 @@ ContentDelegate.prototype.attachRecapLinkToEligibleDocs = function () {
 
 // TODO: Confirm that zip downloading is consistent across jurisdictions
 ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
-  // helper function - extract the zip by creating html and querying the frame
-  const extractUrl = (html) => {
-    const page = document.createElement("html");
-    page.innerHTML = html;
-    const frames = page.querySelectorAll("iframe");
-    return frames[0].src;
-  };
-
-  // helper function - convert string to html document
-  const stringToDocBody = (str) => {
-    const parser = new DOMParser();
-    const newDoc = parser.parseFromString(str, 'text/html');
-    return newDoc.body;
-  };
-
-  // helper function - returns filename based on user preferences
-  const generateFileName = (options, pacerCaseId) => {
-    if (options.ia_style_filenames) {
-      return [
-        'gov',
-        'uscourts',
-        this.court,
-        (pacerCaseId || 'unknown-case-id')
-      ].join('.').concat('.zip');
-    } else if (options.lawyer_style_filenames) {
-      const firstTable = document.getElementsByTagName('table')[0];
-      const firstTableRows = firstTable.querySelectorAll('tr');
-      // 4th from bottom
-      const matchedRow = firstTableRows[firstTableRows.length - 4];
-      const cells = matchedRow.querySelectorAll('td');
-      const document_number = cells[0].innerText.match(/\d+(?=\-)/)[0];
-      const docket_number = cells[1].innerText;
-      return [
-        PACER.COURT_ABBREVS[this.court],
-        docket_number,
-        document_number,
-      ].join('_').concat('.zip');
-    }
-  };
 
   // Make the Back button redisplay the previous page.
   window.onpopstate = function (event) {
@@ -753,7 +707,7 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
   };
   history.replaceState({ content: document.documentElement.innerHTML }, '');
   // tell the user to wait
-  $("body").css("cursor", "wait");
+  document.querySelector('body').classList.add('cursor', 'wait');
 
   // in Firefox, use content.fetch for content-specific fetch requests
   // https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#XHR_and_Fetch
@@ -763,7 +717,7 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
 
   // fetch the html page which contains the <iframe> link to the zip document.
   const htmlPage = await browserSpecificFetch(event.data.id).then(res => res.text());
-  console.log("RECAP: Successfully submitted zip file request");
+  console.log('RECAP: Successfully submitted zip file request');
   const zipUrl = extractUrl(htmlPage);
   //download zip file and save it to chrome storage
   const blob = await fetch(zipUrl).then(res => res.blob());
@@ -800,7 +754,7 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
           const htmlBody = stringToDocBody(htmlPage);
           const frame = htmlBody.querySelector('iframe');
           frame.insertAdjacentHTML('beforebegin', link);
-          frame.src = "";
+          frame.src = '';
           frame.onload = () => document.getElementById('recap-download').click();
           document.body = htmlBody;
           history.pushState({ content: document.body.innerHTML }, '');
