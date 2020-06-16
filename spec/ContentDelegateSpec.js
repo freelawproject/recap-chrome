@@ -25,15 +25,26 @@ describe('The ContentDelegate class', function () {
   const pdf_data = ('%PDF-1.\ntrailer<</Root<</Pages<</Kids' +
     '[<</MediaBox[0 0 3 3]>>]>>>>>>\n');
 
-  const html_data = `
-    <html>
-      <body>
-        <script type="text/javascript">
-          window.location = '/cgi-bin/blobbity.pdf'
-        </script>
-      </body>
-    </html>
-  `;
+  const html_data = [
+    '<html>',
+    '<body>',
+    '<script type="text/javascript">',
+    'window.location = \'/cgi-bin/blobbity.pdf\'',
+    '</script>',
+    '</body>',
+    '</html>'
+  ].join('');
+
+  const html_no_script_data = [
+    '<html>',
+    '<head></head>',
+    '<body>',
+    '<iframe>',
+    '<a href="/cgi-bin/blobbity.pdf>Click to download this file</a>',
+    '</iframe>',
+    '</body>',
+    '</html>'
+  ].join('');
   // 'instances'
   const nonsenseUrlContentDelegate = new ContentDelegate(tabId, nonsenseUrl, []);
 
@@ -835,20 +846,46 @@ describe('The ContentDelegate class', function () {
         expect(cd.showPdfPage).toHaveBeenCalled();
       });
     });    
-    describe('when the response is HTML', () => {
+    describe('when the response is HTML that contains a redirect script', () => {
+
+      const resultSnapshot =[
+        '<html>',
+        '<style type="text/css">body { margin: 0; } iframe { border: none }</style>',
+        '<iframe src="/cgi-bin/blobbity.pdf" width="100%" height="100%"></iframe>',
+        '</html>'
+      ].join('');
 
       beforeEach(() => {
-        const blob = new Blob([pdf_data], { type: 'application/pdf' });
-        blob.text = jasmine.createSpy('blob_call').and.returnValue(pdf_data);
+        const blob = new Blob([html_data], { type: 'text/html' });
         window.fetch = () => Promise.resolve(new window.Response(blob));
       });
-      it('calls showPdfPage', async () => {
+
+      it('calls showPdfPage with the generated html', async () => {
         const cd = singleDocContentDelegate;
-        spyOn(cd, 'showPdfPage').and.callFake(() => {});
+        spyOn(cd, 'showPdfPage');
         await cd.onDocumentViewSubmit(event);
 
         expect(cd.showPdfPage).toHaveBeenCalled();
+        expect(cd.showPdfPage.calls.mostRecent().args[1]).toEqual(resultSnapshot);
       });
+
+    });
+    describe ('when the response is HTML that does not contain a redirect script', () => {
+      
+      beforeEach(() => {
+        const blob = new Blob([html_no_script_data], { type: 'text/html' });
+        window.fetch = () => Promise.resolve(new window.Response(blob));
+      });
+
+      it('calls showPdfPage with the raw extracted html if a script is not present', async () => {
+        const cd = singleDocContentDelegate;
+        spyOn(cd, 'showPdfPage');
+        await cd.onDocumentViewSubmit(event);
+
+        expect(cd.showPdfPage).toHaveBeenCalled();
+        expect(cd.showPdfPage.calls.mostRecent().args[1]).toEqual(html_no_script_data);
+      });
+
     });
   });
 
