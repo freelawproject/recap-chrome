@@ -431,17 +431,26 @@ ContentDelegate.prototype.onDocumentViewSubmit = async function (event) {
   style.appendChild(
     document.createTextNode('body { margin: 0; } iframe { border: none }')
   );
-  newHtml.append(style);
   const iframe = document.createElement('iframe');
   if (blob.type === 'text/html') {
     const text = await blob.text();
     const innerHtml = stringToDocBody(text);
-    const script = innerHtml.querySelector(
-      'script[type="text/javascript"]'
-    );
-    const url = script.innerHTML.match(/\/cgi\-bin.*pdf/)[0];
-    // set the iframe src and then append it to the HTML
-    iframe.src = url;
+    // if the blob is html, we check for a redirect script
+    // and collect the url; if there is no redirect script
+    // we return the raw html text to showPdf
+    try {
+      const script = innerHtml.querySelector(
+        'script[type="text/javascript"]'
+      );
+      const url =  script.innerHTML.match(/\/cgi\-bin.*pdf/)[0];
+      iframe.src = url;
+      iframe.width = '100%';
+      iframe.height = '100%';
+      newHtml.append(style);
+      newHtml.append(iframe);
+    } catch (err) {
+      newHtml.innerHTML = text;
+    }
   } else {
     // If we got a PDF, we wrap it in a simple HTML page.  This lets us treat
     // both cases uniformly: either way we have an HTML page with an <iframe>
@@ -449,13 +458,12 @@ ContentDelegate.prototype.onDocumentViewSubmit = async function (event) {
     // canb and ca9 return PDFs and trigger this code path.
     const blobUrl = URL.createObjectURL(blob);
     iframe.src = blobUrl;
+    iframe.width = '100%';
+    iframe.height = '100%';
+    newHtml.append(style);
+    newHtml.append(iframe);
   }
-  // because of the inane regex matching and html creation in showPDF
-  // we must take care to set the iframe height and width attributes
-  // AFTER the src (else they will be overriden)
-  iframe.width = '100%';
-  iframe.height = '100%';
-  newHtml.append(iframe);
+  
   this.showPdfPage(
     document.documentElement, 
     newHtml.outerHTML, 
