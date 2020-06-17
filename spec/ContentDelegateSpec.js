@@ -40,7 +40,7 @@ describe('The ContentDelegate class', function () {
     '<head></head>',
     '<body>',
     '<iframe>',
-    '<a href="/cgi-bin/blobbity.pdf>Click to download this file</a>',
+    'content',
     '</iframe>',
     '</body>',
     '</html>'
@@ -832,7 +832,7 @@ describe('The ContentDelegate class', function () {
         .toHaveBeenCalledWith('onsubmit', expected_on_submit);
     });
 
-    describe('when the resposne is a PDF', () => {
+    describe('when the response is a PDF', () => {
       beforeEach(() => {
         const blob = new Blob([pdf_data], { type: 'application/pdf' });
         window.fetch = () => Promise.resolve(new window.Response(blob));
@@ -856,8 +856,17 @@ describe('The ContentDelegate class', function () {
       ].join('');
 
       beforeEach(() => {
-        const blob = new Blob([html_data], { type: 'text/html' });
+        const blob = new Blob([html_data], { type: 'text/html' })      
         window.fetch = () => Promise.resolve(new window.Response(blob));
+        const fakeFileReader = {
+          readAsText: function () {
+            this.result = html_data;
+            this.onload();
+          }
+        };
+        spyOn(window, 'FileReader')
+          .and.callFake(function () { return fakeFileReader; });
+        spyOn(cd, 'showPdfPage');;
       });
 
       it('calls showPdfPage with the generated html', async () => {
@@ -865,6 +874,7 @@ describe('The ContentDelegate class', function () {
         spyOn(cd, 'showPdfPage');
         await cd.onDocumentViewSubmit(event);
 
+        expect(window.FileReader).toHaveBeenCalled();
         expect(cd.showPdfPage).toHaveBeenCalled();
         expect(cd.showPdfPage.calls.mostRecent().args[1]).toEqual(resultSnapshot);
       });
@@ -875,6 +885,15 @@ describe('The ContentDelegate class', function () {
       beforeEach(() => {
         const blob = new Blob([html_no_script_data], { type: 'text/html' });
         window.fetch = () => Promise.resolve(new window.Response(blob));
+        const fakeFileReader = {
+          readAsText: function () {
+            this.result = html_no_script_data;
+            this.onload();
+          }
+        };
+        spyOn(window, 'FileReader')
+          .and.callFake(function () { return fakeFileReader; });
+        spyOn(cd, 'showPdfPage');;
       });
 
       it('calls showPdfPage with the raw extracted html if a script is not present', async () => {
@@ -882,6 +901,7 @@ describe('The ContentDelegate class', function () {
         spyOn(cd, 'showPdfPage');
         await cd.onDocumentViewSubmit(event);
 
+        expect(window.FileReader).toHaveBeenCalled();
         expect(cd.showPdfPage).toHaveBeenCalled();
         expect(cd.showPdfPage.calls.mostRecent().args[1]).toEqual(html_no_script_data);
       });

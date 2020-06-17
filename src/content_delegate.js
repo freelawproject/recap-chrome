@@ -433,7 +433,7 @@ ContentDelegate.prototype.onDocumentViewSubmit = async function (event) {
   );
   const iframe = document.createElement('iframe');
   if (blob.type === 'text/html') {
-    const text = await blob.text();
+    const text = await readBlobAsync(blob);
     const innerHtml = stringToDocBody(text);
     // if the blob is html, we check for a redirect script
     // and collect the url; if there is no redirect script
