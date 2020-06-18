@@ -732,7 +732,9 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
 
   // in Firefox, use content.fetch for content-specific fetch requests
   // https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#XHR_and_Fetch
-  const browserSpecificFetch = (navigator.userAgent.indexOf('Chrome') < 0) ? content.fetch : window.fetch;
+  const browserSpecificFetch = (navigator.userAgent.indexOf('Chrome') < 0) 
+    ? content.fetch 
+    : window.fetch;
 
   // fetch the html page which contains the <iframe> link to the zip document.
   const htmlPage = await browserSpecificFetch(event.data.id).then(res => res.text());
@@ -750,10 +752,12 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
 
   // create the blob and inject it into the page
   const blobUrl = URL.createObjectURL(blob);
-  const pacerCaseId = (event.data.id).match(/caseid\=\d*/)[0].replace(/caseid\=/, "");
+  const pacerCaseId = (event.data.id)
+    .match(/caseid\=\d*/)[0]
+    .replace(/caseid\=/, '');
 
   // load options
-  const options = await getItemsFromStorage('options')
+  const options = await getItemsFromStorage('options');
   // generate the filename
   const filename = generateFileName(options, pacerCaseId);
 
@@ -807,17 +811,25 @@ ContentDelegate.prototype.handleZipFilePageView = function () {
 
   // imperatively manipulate hte dom elements without injecting a script
   const forms = [...document.querySelectorAll('form')];
-  forms.map(form => form.removeAttribute('action'));
-  targetInputs.map(targetInput => {
-    targetInput.removeAttribute('onclick');
-    targetInput.addEventListener('click', () => window.postMessage({ id: url }));
+  forms.map(form => {
+    form.removeAttribute('action');
+    const input = form.querySelector('input');
+    input.removeAttribute('onclick');
+    input.disabled = true;
+    form.hidden = true;
+    const div = document.createElement('div');
+    const button = document.createElement('button');
+    button.textContent = 'Download Documents';
+    button.addEventListener('click', () => window.postMessage({ id: url }));
+    div.appendChild(button);
+    const parentNode = form.parentNode;
+    parentNode.insertBefore(div, form);
   });
   // When we receive the message from the above submit method, submit the form
   // via fetch so we can get the document before the browser does.
   window.addEventListener(
-    "message",
+    'message',
     this.onDownloadAllSubmit.bind(this),
-    false
   );
 };
 
