@@ -732,8 +732,8 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
 
   // in Firefox, use content.fetch for content-specific fetch requests
   // https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#XHR_and_Fetch
-  const browserSpecificFetch = (navigator.userAgent.indexOf('Chrome') < 0) 
-    ? content.fetch 
+  const browserSpecificFetch = (navigator.userAgent.indexOf('Chrome') < 0)
+    ? content.fetch
     : window.fetch;
 
   // fetch the html page which contains the <iframe> link to the zip document.
@@ -794,20 +794,26 @@ ContentDelegate.prototype.handleZipFilePageView = function () {
 
   // return if on the appellate courts
   if (PACER.isAppellateCourt(this.court)) {
-    debug(4, "No interposition for appellate downloads yet");
+    debug(4, 'No interposition for appellate downloads yet');
     return;
   }
 
   // extract the url from the onclick attribute from one of the two
   // "Download Documents" buttons
-  const inputs = [...document.getElementsByTagName("input")];
+  const inputs = [...document.getElementsByTagName('input')];
   const targetInputs = inputs.filter(
-    input => input.type === "button" && input.value === "Download Documents"
+    input => input.type === 'button' && input.value === 'Download Documents'
   );
   const url = targetInputs[0]
-    .getAttribute("onclick")
-    .replace(/p.*\//, "") // remove parent.location='/cgi-bin/
-    .replace(/\'(?=$)/, ""); // remove endquote
+    .getAttribute('onclick')
+    .replace(/p.*\//, '') // remove parent.location='/cgi-bin/
+    .replace(/\'(?=$)/, ''); // remove endquote
+
+  const isAppendixPage = url.match(/create\_appendix\=1/);
+  if (isAppendixPage) {
+    debug(4, 'No interposition for appendix page downloads yet');
+    return;
+  }
 
   // imperatively manipulate hte dom elements without injecting a script
   const forms = [...document.querySelectorAll('form')];
