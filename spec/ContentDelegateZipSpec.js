@@ -5,6 +5,7 @@ describe('The ContentDelegate class', () => {
   const zipPreDownloadPath = "/cgi-bin/show_multidocs.pl?caseid=178502&arr_de_seq_nums=5&magic_num=&pdf_header=&hdr=&pdf_toggle_possible=&zipit=1"
   const zipPreDownloadUrl = districtCourtURI.concat(zipPreDownloadPath);
   const expectedOnclick = "parent.location='/cgi-bin/show_multidocs.pl?caseid=178502&arr_de_seq_nums=5&magic_num=&pdf_header=&hdr=&pdf_toggle_possible=&zipit=1&caseid=178502&zipit=1&magic_num=&arr_de_seq_nums=5&got_warning=&create_roa=&create_appendix=&bates_format=&dkt=&got_receipt=1'"
+  const appendixOnClickUrl = "parent.location='/cgi-bin/show_multidocs.pl?caseid=44812&pdf_header=1&pdf_toggle_possible=1&caseid=44812&zipit=2&magic_num=&arr_de_seq_nums=13&got_warning=&create_roa=1&create_appendix=1&bates_format=_lt_pagenum_gt_&restricted_entries=on&sealed_entries=on&dkt=a3771446998&got_receipt=1'"
   const eventUrl = '/cgi-bin/show_multidocs.pl?caseid=178502&arr_de_seq_nums=5&magic_num=&pdf_header=&hdr=&pdf_toggle_possible=&zipit=1&caseid=178502&zipit=1&magic_num=&arr_de_seq_nums=5&got_warning=&create_roa=&create_appendix=&bates_format=&dkt=&got_receipt=1'
 
   const blob = new Blob([new ArrayBuffer(1000)], { type: 'application/zip' });
@@ -86,6 +87,37 @@ describe('The ContentDelegate class', () => {
         });
       });
 
+      // see https://github.com/freelawproject/recap/issues/290
+      describe('it is on an AppendixDownloadPage', () => {
+        beforeEach(() => {
+          const form = document.createElement('form');
+          form.setAttribute('action', 'jackson');
+          const input1 = document.createElement('input');
+          input1.setAttribute('value', 'Download Documents');
+          input1.setAttribute('onclick', appendixOnClickUrl);
+          input1.setAttribute('type', 'button');
+          form.appendChild(input1);
+          document.body.appendChild(form);
+        });
+        afterEach(() => {
+          const form = document.querySelector('form');
+          if (form) {
+            form.remove();
+          }
+          const scripts = [...document.getElementsByTagName('script')];
+          const script = scripts.find(script => (script.innerText.match(/^let\sforms/)));
+          if (script) {
+            script.remove();
+          }
+        });
+
+        it('should do nothing', () => {
+          cd.handleZipFilePageView();
+          expect(window.addEventListener).not.toHaveBeenCalled();
+        });
+
+      });
+
       describe('it is a downloadAllDocumentPage', () => {
 
         beforeEach(() => {
@@ -124,7 +156,7 @@ describe('The ContentDelegate class', () => {
 
         it('should remove the onclick attribute from the form and input', () => {
           cd.handleZipFilePageView();
-          const input = document.querySelector('input[value="Download Documents"]')
+          const input = document.querySelector('input[value="Download Documents"]');
           expect(input.onclick).not.toBeTruthy();
         });
 
