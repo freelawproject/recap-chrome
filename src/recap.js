@@ -70,11 +70,12 @@ function Recap() {
       console.info("RECAP: Made it info the getAvailabilityForDocuments function");
 
       let cl_court = PACER.convertToCourtListenerCourt(pacer_court);
-      if (cl_court) {
+      let pacer_doc_id_csv = pacer_doc_ids.join(",");
+      if (cl_court && pacer_doc_id_csv) {
         $.ajax({
           url: `${SERVER_ROOT}recap-query/`,
           data: {
-            pacer_doc_id__in: pacer_doc_ids.join(','),
+            pacer_doc_id__in: pacer_doc_id_csv,
             docket_entry__docket__court: cl_court
           },
           success: function (data, textStatus, xhr) {
