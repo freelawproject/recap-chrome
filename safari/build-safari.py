@@ -5,12 +5,12 @@ import plistlib
 project_location = os.getcwd()
 
 
-def update_extension_plist():
+def update_extension_plist(operating_system: str):
     """Set the correct URLs in extension PLIST
 
     :return: None
     """
-    extension_plist = f"{project_location}/macOS/recap/recap Extension/Info.plist"
+    extension_plist = f"{project_location}/{operating_system}/recap/recap Extension/Info.plist"
     with open(extension_plist, "rb") as f:
         p = plistlib.loads(f.read())
     p["NSExtension"]["SFSafariPageProperties"] = {
@@ -78,8 +78,7 @@ def convert_recap_chrome_to_safari(operating_system: str) -> None:
     )
 
     # Update plist for extension
-    if operating_system == "macOS":
-        update_extension_plist()
+    update_extension_plist(operating_system)
     update_content_delegate(operating_system)
 
     manifest["permissions"] = [
