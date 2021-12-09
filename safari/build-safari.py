@@ -2,16 +2,14 @@ import json
 import os
 import plistlib
 
-project_location = os.getcwd()
-
 
 def update_extension_plist(operating_system: str):
-    """Set the correct URLs in extension PLIST
+    """Set the correct URLs in extension plist
 
+    Apple requires plist level updates to extensions. This took a while to figure out.
     :return: None
     """
-    extension_plist = f"{project_location}/{operating_system}/recap/recap Extension/Info.plist"
-    with open(extension_plist, "rb") as f:
+    with open(f"{operating_system}/recap/recap Extension/Info.plist", "rb") as f:
         p = plistlib.loads(f.read())
     p["NSExtension"]["SFSafariPageProperties"] = {
         "Level": "Some",
@@ -22,64 +20,24 @@ def update_extension_plist(operating_system: str):
             "*.uscourts.gov",
         ],
     }
-    with open(extension_plist, "wb") as f:
+    with open(f"{operating_system}/recap/recap Extension/Info.plist", "wb") as f:
         plistlib.dump(p, fp=f)
 
 
-def update_content_delegate(operating_system: str) -> None:
-    """Add safari fix.
+def update_manifest_files(manifest, operating_system: str) -> None:
+    """Update the manifest files for iOS and macOS.
 
-    :return:
-    """
-    resources = f"{project_location}/{operating_system}/recap/recap Extension/Resources"
-
-    with open(f"{resources}/content_delegate.js", "r") as f:
-        content = f.read()
-    content = content.replace(
-        "(navigator.userAgent.indexOf('Chrome') < 0)",
-        "((navigator.userAgent.indexOf('Safari') < 0 + navigator.userAgent.indexOf('Chrome')) < 0)",
-    )
-    with open(f"{resources}/content_delegate.js", "w") as f:
-        f.write(content)
-
-
-def convert_recap_chrome_to_safari(operating_system: str) -> None:
-    """Generate XCode Project
-
+    :param manifest: The Manifest File as JSON
+    :param operating_system: The OS to update the manifest for
     :return: None
     """
-    src = os.path.join(os.getcwd(), "../src")
-    with open(f"{src}/manifest.json", "rb") as f:
-        manifest = json.load(f)
-
-    if operating_system == "macOS":
-        os_flag = "--macos-only"
-    else:
-        os_flag = "--ios-only"
 
     os.system(
-        f"xcrun safari-web-extension-converter {src} "
-        f"--project-location {project_location}/{operating_system}/ "
-        f"--app-name recap "
-        f"--bundle-identifier law.free.recap "
-        f"--no-open "
-        f"--force "
-        f"--swift "
-        f"--copy-resources "
-        f"{os_flag}"
+        f"cd {operating_system}/recap && xcrun agvtool new-version {manifest['version']}"
     )
-
-    # Set correct version number
-    app_location = f"{project_location}/{operating_system}/recap"
-
-    os.system(f"cd {app_location} && xcrun agvtool new-version {manifest['version']}")
     os.system(
-        f"cd {app_location} && xcrun agvtool new-marketing-version {manifest['version']}"
+        f"cd {operating_system}/recap && xcrun agvtool new-marketing-version {manifest['version']}"
     )
-
-    # Update plist for extension
-    update_extension_plist(operating_system)
-    update_content_delegate(operating_system)
 
     manifest["permissions"] = [
         "*://*.uscourts.gov/",
@@ -91,14 +49,68 @@ def convert_recap_chrome_to_safari(operating_system: str) -> None:
     ]
     if operating_system == "iOS":
         manifest["background"]["persistent"] = False
+
     with open(
-        f"{project_location}/{operating_system}/recap/recap Extension/Resources/manifest.json",
-        "w",
+        f"{operating_system}/recap/recap Extension/Resources/manifest.json", "w"
     ) as f:
         json.dump(manifest, f, indent=2)
 
 
-if __name__ == "__main__":
+def update_content_delegate(operating_system: str) -> None:
+    """Update the respective content delegate files for safari.
 
+    :return:None
+    """
+    content_delegate = (
+        f"{operating_system}/recap/recap Extension/Resources/content_delegate.js"
+    )
+
+    with open(content_delegate, "r") as f:
+        content = f.read()
+    content = content.replace(
+        "(navigator.userAgent.indexOf('Chrome') < 0)",
+        "((navigator.userAgent.indexOf('Safari') < 0 + navigator.userAgent.indexOf('Chrome')) < 0)",
+    )
+    with open(content_delegate, "w") as f:
+        f.write(content)
+
+
+def convert_recap_chrome_to_safari(operating_system: str) -> None:
+    """Generate an iOS and macOS version of the extension.
+
+    :return: None
+    """
+    with open(f"{os.getcwd()}/../src/manifest.json", "rb") as f:
+        manifest = json.load(f)
+
+    if operating_system == "macOS":
+        os_flag = "--macos-only"
+    else:
+        os_flag = "--ios-only"
+
+    # Convert extension to iOS, macOS using apples xcrun safari-web-extension-converter
+    os.system(
+        f"xcrun safari-web-extension-converter {os.getcwd()}/../src/ "
+        f"--project-location {operating_system}/ "
+        f"--app-name recap "
+        f"--bundle-identifier law.free.recap "
+        f"--no-open "
+        f"--force "
+        f"--swift "
+        f"--copy-resources "
+        f"{os_flag}"
+    )
+
+    # Update plist for each OS
+    update_extension_plist(operating_system)
+
+    # Update content delegate for each OS
+    update_content_delegate(operating_system)
+
+    # Update manifest files for each OS
+    update_manifest_files(manifest, operating_system)
+
+
+if __name__ == "__main__":
     for oper_sys in ["macOS", "iOS"]:
         convert_recap_chrome_to_safari(oper_sys)
