@@ -1,6 +1,7 @@
 import json
 import os
 import plistlib
+from sys import platform
 
 
 def update_extension_plist(operating_system: str):
@@ -140,5 +141,8 @@ def convert_recap_chrome_to_safari(operating_system: str) -> None:
 
 
 if __name__ == "__main__":
+    if platform != "darwin":
+        raise Exception("This script can only be run on macOS.")
+
     for oper_sys in ["macOS", "iOS"]:
         convert_recap_chrome_to_safari(oper_sys)
