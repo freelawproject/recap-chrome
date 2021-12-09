@@ -75,6 +75,31 @@ def update_content_delegate(operating_system: str) -> None:
         f.write(content)
 
 
+def update_css() -> None:
+    """Tweak the CSS to work on iOS.
+
+    :return:None
+    """
+    css_filepath = f"iOS/recap/recap Extension/Resources/assets/css/style.css"
+    with open(css_filepath, "r") as f:
+        css = f.read()
+
+    css = css.replace("width: 580px;", "width: 100%;")
+    css = css.replace(
+        """#options-body main {
+  padding: 20px;
+}
+""",
+        """#options-body main {
+  padding-top: 100px;
+}
+""",
+    )
+
+    with open(css_filepath, "w") as f:
+        f.write(css)
+
+
 def convert_recap_chrome_to_safari(operating_system: str) -> None:
     """Generate an iOS and macOS version of the extension.
 
@@ -109,6 +134,9 @@ def convert_recap_chrome_to_safari(operating_system: str) -> None:
 
     # Update manifest files for each OS
     update_manifest_files(manifest, operating_system)
+
+    if operating_system == "iOS":
+        update_css()
 
 
 if __name__ == "__main__":
