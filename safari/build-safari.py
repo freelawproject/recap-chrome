@@ -33,6 +33,7 @@ def update_manifest_files(manifest, operating_system: str) -> None:
     :return: None
     """
 
+    # This runs XC (Xcode) commandline tool to automate the build and versions numbers.
     os.system(
         f"cd {operating_system}/Recap! && xcrun agvtool new-version {manifest['version']}"
     )
@@ -48,6 +49,7 @@ def update_manifest_files(manifest, operating_system: str) -> None:
         "activeTab",
         "cookies",
     ]
+    # The main difference between iOS and macOS is the permissions.
     if operating_system == "iOS":
         manifest["background"]["persistent"] = False
 
@@ -70,7 +72,7 @@ def update_content_delegate(operating_system: str) -> None:
         content = f.read()
     content = content.replace(
         "(navigator.userAgent.indexOf('Chrome') < 0)",
-        "((navigator.userAgent.indexOf('Safari') < 0 + navigator.userAgent.indexOf('Chrome')) < 0)",
+        "(navigator.userAgent.indexOf('Safari') < 0)",
     )
     with open(content_delegate, "w") as f:
         f.write(content)
