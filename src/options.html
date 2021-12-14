@@ -131,33 +131,35 @@
 
         <div id="nav-donate" class="tab-pane fade"
           role="tabpanel" aria-labelledby="nav-settings-tab">
-          <div class="row">
-              <div class="col-xs-12">
-              <h2>Donate to Free Law Project</h2>
-              <p>Support our efforts to make high quality legal data widely available.
-                 Help us reform and enhance the legal ecosystem.</p>
+          <div class="container">
+            <div class="row">
+                <div class="col-xs-12">
+                <h2>Donate to Free Law Project</h2>
+                <p>Support our efforts to make high quality legal data widely available.
+                   Help us reform and enhance the legal ecosystem.</p>
 
-              <p><a target="_blank" rel="noopener" href="https://www.courtlistener.com">CourtListener</a> and
-                 <a target="_blank" rel="noopener" href="https://free.law/recap/">RECAP</a> are run by
-                 <a target="_blank" rel="noopener" href="https://free.law/">Free Law Project</a>, a U.S. 501(c)(3) non-profit,
-                 tax id #46-3342480.</p>
+                <p><a target="_blank" rel="noopener" href="https://www.courtlistener.com">CourtListener</a> and
+                   <a target="_blank" rel="noopener" href="https://free.law/recap/">RECAP</a> are run by
+                   <a target="_blank" rel="noopener" href="https://free.law/">Free Law Project</a>, a U.S. 501(c)(3) non-profit,
+                   tax id #46-3342480.</p>
 
-              <form method="GET" action="https://www.courtlistener.com/donate/#how-much-donate" target="_blank">
-                <input type="hidden" name="referrer" value="recap-extension" />
-                <input type="hidden" name="amount" value="other">
-                <div class="input-group mb-3">
-                  <div class="input-group-prepend">
-                    <span class="input-group-text" id="basic-addon1">$</span>
+                <form method="GET" action="https://www.courtlistener.com/donate/#how-much-donate" target="_blank">
+                  <input type="hidden" name="referrer" value="recap-extension" />
+                  <input type="hidden" name="amount" value="other">
+                  <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text" id="basic-addon1">$</span>
+                    </div>
+                    <input type="text" name="amount_other" placeholder="Amount (min $5)" class="form-control" id="id_amount_other" />
                   </div>
-                  <input type="text" name="amount_other" placeholder="Amount (min $5)" class="form-control" id="id_amount_other" />
-                </div>
 
-                <div id="donate-button-wrapper">
-                  <button type="submit" class="center btn btn-primary" id="donate-button">
-                    <i class="fa fa-heart"></i>&nbsp;Donate
-                  </button>
-                </div>
-              </form>
+                  <div id="donate-button-wrapper">
+                    <button type="submit" class="center btn btn-primary" id="donate-button">
+                      <i class="fa fa-heart"></i>&nbsp;Donate
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
         </div>
