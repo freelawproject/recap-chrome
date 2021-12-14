@@ -5,7 +5,7 @@
 
 ### Notes 
 
-Anyone knew to this should read this page.  To build the Apple extensions, you must be running
+Anyone new to this should read this page.  To build the Apple extensions, you must be running
 macOS 11.0.0 or higher.  You must also have Xcode 13.0.0 or higher.  You must also have the xcrun 
 and Xcode tools installed.
 
