@@ -10,7 +10,7 @@ def update_extension_plist(operating_system: str):
     Apple requires plist level updates to extensions. This took a while to figure out.
     :return: None
     """
-    with open(f"{operating_system}/recap/recap Extension/Info.plist", "rb") as f:
+    with open(f"{operating_system}/Recap!/Recap! Extension/Info.plist", "rb") as f:
         p = plistlib.loads(f.read())
     p["NSExtension"]["SFSafariPageProperties"] = {
         "Level": "Some",
@@ -21,7 +21,7 @@ def update_extension_plist(operating_system: str):
             "*.uscourts.gov",
         ],
     }
-    with open(f"{operating_system}/recap/recap Extension/Info.plist", "wb") as f:
+    with open(f"{operating_system}/Recap!/Recap! Extension/Info.plist", "wb") as f:
         plistlib.dump(p, fp=f)
 
 
@@ -34,10 +34,10 @@ def update_manifest_files(manifest, operating_system: str) -> None:
     """
 
     os.system(
-        f"cd {operating_system}/recap && xcrun agvtool new-version {manifest['version']}"
+        f"cd {operating_system}/Recap! && xcrun agvtool new-version {manifest['version']}"
     )
     os.system(
-        f"cd {operating_system}/recap && xcrun agvtool new-marketing-version {manifest['version']}"
+        f"cd {operating_system}/Recap! && xcrun agvtool new-marketing-version {manifest['version']}"
     )
 
     manifest["permissions"] = [
@@ -52,7 +52,7 @@ def update_manifest_files(manifest, operating_system: str) -> None:
         manifest["background"]["persistent"] = False
 
     with open(
-        f"{operating_system}/recap/recap Extension/Resources/manifest.json", "w"
+        f"{operating_system}/Recap!/Recap! Extension/Resources/manifest.json", "w"
     ) as f:
         json.dump(manifest, f, indent=2)
 
@@ -63,7 +63,7 @@ def update_content_delegate(operating_system: str) -> None:
     :return:None
     """
     content_delegate = (
-        f"{operating_system}/recap/recap Extension/Resources/content_delegate.js"
+        f"{operating_system}/Recap!/Recap! Extension/Resources/content_delegate.js"
     )
 
     with open(content_delegate, "r") as f:
@@ -81,7 +81,7 @@ def update_css() -> None:
 
     :return:None
     """
-    css_filepath = f"iOS/recap/recap Extension/Resources/assets/css/style.css"
+    css_filepath = f"iOS/Recap!/Recap! Extension/Resources/assets/css/style.css"
     with open(css_filepath, "r") as f:
         css = f.read()
 
@@ -118,8 +118,8 @@ def convert_recap_chrome_to_safari(operating_system: str) -> None:
     os.system(
         f"xcrun safari-web-extension-converter {os.getcwd()}/../src/ "
         f"--project-location {operating_system}/ "
-        f"--app-name recap "
-        f"--bundle-identifier law.free.recap "
+        f"--app-name Recap! "
+        f"--bundle-identifier free.law.recap "
         f"--no-open "
         f"--force "
         f"--swift "
