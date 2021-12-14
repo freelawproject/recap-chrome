@@ -22,4 +22,8 @@ cd into the safari directory and run the following command:
 This will create two new directories for iOS (and iPadOS) and macOS.
 Each of these directories will contain a new extension and XCode project.
 
+Once generated you can run the separate xcode projects.  You may need to tweak the bundle 
+identifier, which does not like the bang(!) in the name. 
+
+Additionally, you may need to select a developer account to install this on your own device(s).
 
