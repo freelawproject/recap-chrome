@@ -2,6 +2,7 @@ import json
 import os
 import plistlib
 import sys
+import shutil
 
 def update_extension_plist(operating_system: str):
     """Set the correct URLs in extension plist
@@ -61,8 +62,8 @@ def update_manifest_files(operating_system: str) -> None:
         json.dump(manifest, f, indent=2)
 
 
-def update_css(operating_system: str) -> None:
-    """Replace the CSS file with the one from the iOS version.
+def update_css_and_macOS_html(operating_system: str) -> None:
+    """Replace the CSS file and fix the generated HTML file.
 
     :param operating_system: the OS to update the CSS for.
     :return: None
@@ -72,6 +73,10 @@ def update_css(operating_system: str) -> None:
         dst = f"iOS/Recap!/Recap! Extension/Resources/assets/css/style.css"
         os.rename(src, dst)
 
+    if operating_system == "macOS":
+        src = f"resources/recap-macOS.html"
+        dst = f"macOS/Recap!/Recap!/Base.lproj/Main.html"
+        shutil.copyfile(src, dst)
 
 def convert_recap_chrome_to_safari(operating_system: str) -> None:
     """Generate an iOS and macOS version of the extension.
@@ -104,7 +109,7 @@ def convert_recap_chrome_to_safari(operating_system: str) -> None:
     update_manifest_files(operating_system)
 
     # Update CSS for iOS
-    update_css(operating_system)
+    update_css_and_macOS_html(operating_system)
 
 
 if __name__ == "__main__":
