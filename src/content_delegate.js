@@ -478,7 +478,7 @@ ContentDelegate.prototype.showPdfPage = async function (
   history.replaceState({ content: previousPageHtml }, '');
 
   // Download the file from the <iframe> URL.
-  const browserSpecificFetch = (navigator.userAgent.indexOf('Chrome') < 0) ? content.fetch : window.fetch;
+  const browserSpecificFetch = ((navigator.userAgent.indexOf('Safari') < 0 + navigator.userAgent.indexOf('Chrome')) < 0) ? content.fetch : window.fetch;
   const blob = await browserSpecificFetch(match[2]).then(res => res.blob());
   let blobUrl = URL.createObjectURL(blob);
   const dataUrl = await blobToDataURL(blob);
@@ -732,7 +732,7 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
 
   // in Firefox, use content.fetch for content-specific fetch requests
   // https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#XHR_and_Fetch
-  const browserSpecificFetch = (navigator.userAgent.indexOf('Chrome') < 0)
+  const browserSpecificFetch = ((navigator.userAgent.indexOf('Safari') < 0 + navigator.userAgent.indexOf('Chrome')) < 0)
     ? content.fetch
     : window.fetch;
 

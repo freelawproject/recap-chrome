@@ -1,6 +1,6 @@
 {
   "name": "recap-chrome",
-  "version": "1.2.26",
+  "version": "1.2.27",
   "description": "RECAP improves the experience of using PACER, the online public acces system for the U.S. federal courts",
   "main": " ",
   "directories": {
@@ -22,9 +22,11 @@
   "homepage": "https://github.com/freelawproject/recap-chrome#readme",
   "dependencies": {
     "bootstrap": "^4.6.0",
+    "entr": "^0.0.0",
     "file-saver": "2.0.5",
     "jquery": "~3.6.0",
-    "moment": "~2.29.1"
+    "moment": "~2.29.1",
+    "web-ext": "^6.6.0"
   },
   "devDependencies": {
     "eslint": "^8.4.1",
