@@ -41,6 +41,18 @@
   grid-template-rows: [header] 42px [main] auto [footer] 42px;
 }
 
+/* Tablet sized adjustment for safari extension*/
+@media only screen and (min-device-width: 768px){
+
+    #options-body #container {
+      padding: 20px;
+      height: 100%;
+      display: grid;
+      grid-template-rows: [header] 42px [main] auto [footer] 42px;
+      width: 500px !important;
+    }
+}
+
 #options-body button {
   background-image: none;
   box-shadow: none;
