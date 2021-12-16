@@ -1,9 +1,6 @@
-[![Build Status](https://travis-ci.org/freelawproject/recap-chrome.svg?branch=master)][12] 
-
-
 What is this?
 =============
-This is the code for the RECAP Chrome and Firefox extensions, programs that are
+This is the code for the RECAP Chrome, Firefox, and Safari extensions, programs that are
 used to liberate millions of documents from the PACER system. To install this extension
 please visit its homepage at https://free.law/recap/.
 
@@ -90,7 +87,7 @@ When a new version is needed, the release process is:
 1. Make sure you don't have any working/testing code in your tree that could get zipped up in the next step.
 1. Zip up the archive with the rather archaic:
 
-        zip -FSr recap.zip *
+        cd src && zip -FSr recap.zip *
 
 1. Upload that to the [Chrome Market][market].
 1. Upload that to addons.mozilla.org
