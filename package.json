@@ -25,7 +25,7 @@
     "entr": "^0.0.0",
     "file-saver": "2.0.5",
     "jquery": "~3.6.0",
-    "moment": "~2.29.2",
+    "moment": "~2.29.3",
     "web-ext": "^6.8.0"
   },
   "devDependencies": {
