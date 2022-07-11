@@ -26,7 +26,7 @@
     "file-saver": "2.0.5",
     "jquery": "~3.6.0",
     "moment": "~2.29.3",
-    "web-ext": "^7.1.0"
+    "web-ext": "^7.1.1"
   },
   "devDependencies": {
     "eslint": "^8.5.0",
