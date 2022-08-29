@@ -24,7 +24,7 @@
     "bootstrap": "^5.2.0",
     "entr": "^0.0.0",
     "file-saver": "2.0.5",
-    "jquery": "~3.6.0",
+    "jquery": "~3.6.1",
     "moment": "~2.29.4",
     "web-ext": "^7.1.1"
   },
