@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/freelawproject/recap-chrome#readme",
   "dependencies": {
-    "bootstrap": "^5.2.0",
+    "bootstrap": "^5.2.1",
     "entr": "^0.0.0",
     "file-saver": "2.0.5",
     "jquery": "~3.6.1",
