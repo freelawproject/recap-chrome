@@ -170,10 +170,12 @@ let PACER = {
   // Returns true if this is a "Document Selection Menu" page (a list of the
   // attachments for a particular document).
   isAttachmentMenuPage: function (url, document) {
-    let inputs = document.getElementsByTagName('input');
-    let pageCheck = PACER.isDocumentUrl(url) &&
-      inputs.length &&
-      inputs[inputs.length - 1].value === 'Download All';
+    let inputs = document.querySelectorAll("input[type=button]");
+    let bigFile = document.getElementById('file_too_big')
+    let buttonText = inputs.length ? inputs[inputs.length - 1].value.includes('Download') : false
+    let mainContent = document.getElementById("cmecfMainContent");
+    let pageCheck = PACER.isDocumentUrl(url) && ( 
+      !!buttonText || !!bigFile || mainContent.lastChild.textContent.includes('view each document individually'));
     return !!pageCheck;
   },
 
@@ -297,9 +299,9 @@ let PACER = {
 
   getCaseNumberFromInputs: function(url, document){
     if (PACER.isDocumentUrl(url)){
-      let inputs = document.getElementsByTagName('input');
+      let inputs = document.querySelectorAll("input[type=button]");
       let last_input = inputs[inputs.length -1];
-      if (inputs.length && last_input.value === "Download All") {
+      if (inputs.length && last_input.value.includes("Download")) {
         // Attachment page.
         let onclick = last_input.getAttribute("onclick");
         let match = onclick.match(/[?&]caseid=(\d+)/i);
