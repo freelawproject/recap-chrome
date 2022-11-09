@@ -69,7 +69,7 @@ module.exports = function(config) {
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['Chrome'],
+    browsers: ['ChromeHeadless'],
 
     // set these options to view logs in development
     // see https://github.com/karma-runner/karma/issues/2582#issuecomment-413660796 
@@ -86,8 +86,8 @@ module.exports = function(config) {
     },
     
     customLaunchers: {
-      Chrome_CI: {
-        base: 'Chrome',
+      CustomChromeHeadless: {
+        base: 'ChromeHeadless',
         flags: [
           '--no-sandbox',
           '--headless',
