@@ -15,6 +15,16 @@ Fixes:
 
 ## Current
 
+**1.2.31 - 2022-11-10**
+
+Fixes:
+ - Update the function `InputContainer` to make sure the body of the object called document is clear before each test begins.
+ - Add `afterEach` method to one of the test cases to avoid leaving undesired variables in the global scope.
+
+ [Issue #311][311],
+
+[311]: https://github.com/freelawproject/recap/issues/311
+
 **1.2.30 - 2022-11-09**
 
 Changes:
