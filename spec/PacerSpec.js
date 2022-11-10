@@ -5,20 +5,21 @@ describe('The PACER module', function() {
   const singleDocUrl = 'https://ecf.canb.uscourts.gov/doc1/034031424909';
   const appellateDocumentUrl = 'https://ecf.ca2.uscourts.gov/docs1/00205695758';
 
-  function addInputContainer() {
+  function InputContainer() {
     const inputContainer = document.createElement('div');
-    inputContainer.id = 'input-cont';
-    document.body.appendChild(inputContainer);
+    inputContainer.id = 'cmecfMainContent';
+    return inputContainer
   }
 
   function removeInputContainer() {
-    document.getElementById('input-cont').remove();
+    document.getElementById('cmecfMainContent').remove();
   }
 
-  function appendInputWithValue(value) {
+  function InputWithValue(value, type='button') {
     const input = document.createElement('input');
     input.value = value;
-    document.getElementById('input-cont').appendChild(input);
+    input.type = type
+    return input
   }
 
   describe('getCourtFromUrl', function() {
@@ -135,10 +136,73 @@ describe('The PACER module', function() {
   });
 
   describe('isAttachmentMenuPage', function() {
-    describe('for documents with a matching input', function() {
+
+    describe('for documents with a matching input for PACER 1.6 or older', function() {
       beforeEach(function() {
-        addInputContainer();
-        appendInputWithValue('Download All');
+        let main_div = InputContainer()
+        main_div.appendChild(InputWithValue('Download All', 'button'))
+        document.body.appendChild(main_div)
+        document.getElementById = jasmine.createSpy('getElementById').and.callFake((id)=>{
+          if (id != 'cmecfMainContent'){
+            return null 
+          }
+          return main_div
+        });
+      });
+
+      afterEach(function() {
+        removeInputContainer();
+      });
+
+      it('returns true when the URL is valid', function() {
+        expect(PACER.isAttachmentMenuPage(singleDocUrl, document)).toBe(true);
+      });
+
+      it('returns false when the URL is invalid', function() {
+        expect(
+          PACER.isAttachmentMenuPage(docketQueryUrl, document)).toBe(false);
+      });
+    });
+
+    describe('for documents with a matching input for PACER 1.7', function() {
+      beforeEach(function() {
+        let main_div = InputContainer()
+        main_div.appendChild(InputWithValue('View Selected', 'button'))
+        main_div.appendChild(InputWithValue('Download Selected', 'button'))
+        document.body.appendChild(main_div)
+        document.getElementById = jasmine.createSpy('getElementById').and.callFake((id)=>{
+          if (id != 'cmecfMainContent'){
+            return null 
+          }
+          return main_div
+        });
+      });
+
+      afterEach(function() {
+        removeInputContainer();
+      });
+
+      it('returns true when the URL is valid', function() {
+        expect(PACER.isAttachmentMenuPage(singleDocUrl, document)).toBe(true);
+      });
+
+      it('returns false when the URL is invalid', function() {
+        expect(
+          PACER.isAttachmentMenuPage(docketQueryUrl, document)).toBe(false);
+      });
+    });
+
+    describe('for documents with a combined size over size limit', function() {
+      beforeEach(function() {
+        let main_div = InputContainer()
+        main_div.innerHTML='You must view each document individually because the combined PDF would be over the 50 MB size limit.'
+        document.body.appendChild(main_div)
+        document.getElementById = jasmine.createSpy('getElementById').and.callFake((id)=>{
+          if (id != 'cmecfMainContent'){
+            return null 
+          }
+          return main_div
+        });
       });
 
       afterEach(function() {
@@ -157,9 +221,16 @@ describe('The PACER module', function() {
 
     describe('for documents which have non-matching inputs', function() {
       beforeEach(function() {
-        addInputContainer();
-        appendInputWithValue('Download One');
-        appendInputWithValue('Download Some');
+        let main_div = InputContainer()
+        main_div.appendChild(InputWithValue('View files'))
+        main_div.appendChild(InputWithValue('View all'))
+        document.body.appendChild(main_div)
+        document.getElementById = jasmine.createSpy('getElementById').and.callFake((id)=>{
+          if (id != 'cmecfMainContent'){
+            return null 
+          }
+          return main_div
+        });
       });
 
       afterEach(function() {
@@ -169,18 +240,43 @@ describe('The PACER module', function() {
       it('returns false with valid URL', function() {
         expect(PACER.isAttachmentMenuPage(singleDocUrl, document)).toBe(false);
       });
+
     });
 
-    it('returns false with a valid URL and non-matching document', function() {
-      expect(PACER.isAttachmentMenuPage(singleDocUrl, document)).toBe(false);
-    });
+    describe('for documents which have not matching format', function(){
+      beforeEach(function() {
+        let main_div = InputContainer()
+        main_div.appendChild(document.createElement('div'))
+        document.getElementById = jasmine.createSpy('getElementById').and.callFake((id)=>{
+          if (id != 'cmecfMainContent'){
+            return null 
+          }
+          return main_div
+        });
+      });
+
+      it('returns false with a valid URL', function() {
+        expect(PACER.isAttachmentMenuPage(singleDocUrl, document)).toBe(false);
+      });
+    })
+    
   });
 
   describe('isSingleDocumentPage', function() {
     describe('for documents with a matching input', function() {
       beforeEach(function() {
-        addInputContainer();
-        appendInputWithValue('View Document');
+        let main = InputContainer();
+        main.appendChild(InputWithValue('View Document'));
+        let table = document.createElement('table');
+        let tr_image = document.createElement('tr');
+        let td_image = document.createElement('td');
+        td_image.innerHTML = 'Image 1234-9876';
+        tr_image.appendChild(td_image);
+        table.appendChild(tr_image);
+        main.appendChild(table)
+        document.body.appendChild(main)
+
+        $.fn.find = jasmine.createSpy('find').and.returnValue([td_image])
       });
 
       afterEach(function() {
@@ -188,16 +284,8 @@ describe('The PACER module', function() {
       });
 
       it('returns true when the URL is valid', function() {
-        let table = document.createElement('table');
-        let tr_image = document.createElement('tr');
-        let td_image = document.createElement('td');
-        td_image.innerHTML = 'Image 1234-9876';
-        tr_image.appendChild(td_image);
-        table.appendChild(tr_image);
-        document.body.appendChild(table);
-
         expect(PACER.isSingleDocumentPage(singleDocUrl, document)).toBe(true);
-        table.remove();
+        
       });
 
       it('return false when the URL is invalid', function() {
@@ -208,9 +296,11 @@ describe('The PACER module', function() {
 
     describe('for documents which have non-matching inputs', function() {
       beforeEach(function() {
-        addInputContainer();
-        appendInputWithValue('Download One');
-        appendInputWithValue('Download Some');
+        let main = InputContainer();
+        main.appendChild(InputWithValue('Download One'))
+        main.appendChild(InputWithValue('Download Some'))
+        document.body.appendChild(main)
+        $.fn.find = jasmine.createSpy('find').and.returnValue([])
       });
 
       afterEach(function() {
@@ -222,9 +312,23 @@ describe('The PACER module', function() {
       });
     });
 
-    it('returns false with a valid URL and non-matching document', function() {
-      expect(PACER.isAttachmentMenuPage(singleDocUrl, document)).toBe(false);
-    });
+    describe('for documents which have non-matching format', function() {
+      beforeEach(function() {
+        let main = InputContainer();
+        main.appendChild(document.createElement('div'))
+        $.fn.find = jasmine.createSpy('find').and.returnValue([])
+        document.body.appendChild(main)
+      });
+
+      afterEach(function() {
+        removeInputContainer();
+      });
+      
+      it('returns false with a valid URL', function() {
+        expect(PACER.isSingleDocumentPage(singleDocUrl, document)).toBe(false);
+      });
+    })
+    
   });
 
   describe('getDocumentIdFromUrl', function() {
@@ -247,11 +351,12 @@ describe('The PACER module', function() {
 
     beforeEach(function() {
       const form = document.createElement('form');
-      document.body.appendChild(form);
       const input = document.createElement('input');
-      form.append(input);
-      form.setAttribute('onSubmit', goDLS);
       input.value = 'View Document';
+      form.appendChild(input);
+      form.setAttribute('onSubmit', goDLS);
+      document.body.appendChild(form);
+      document.getElementsByTagName = jasmine.createSpy('getElementsByTagName').and.returnValue([input])
     });
 
     afterEach(function() {
@@ -306,6 +411,7 @@ describe('The PACER module', function() {
     beforeEach(function() {
       const form = document.createElement('form');
       document.body.appendChild(form);
+      input.type = 'button'
       form.append(input);
       form.setAttribute('onSubmit', goDLS);
     });
