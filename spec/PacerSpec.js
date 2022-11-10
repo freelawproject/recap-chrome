@@ -247,9 +247,7 @@ describe('The PACER module', function() {
     describe('for documents which have not matching format', function(){
       beforeEach(function() {
         let main_div = InputContainer()
-        let inside_div = document.createElement('div')
-        inside_div.id = 'inside-div'
-        main_div.appendChild(inside_div)
+        main_div.appendChild(document.createElement('div'))
         document.getElementById = jasmine.createSpy('getElementById').and.callFake((id)=>{
           if (id != 'cmecfMainContent'){
             return null 
