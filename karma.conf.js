@@ -39,6 +39,7 @@ module.exports = function(config) {
 
     // list of files / patterns to exclude
     exclude: [
+      'spec/Content*Spec.js'
     ],
 
 
