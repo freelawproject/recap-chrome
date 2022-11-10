@@ -6,6 +6,7 @@ describe('The PACER module', function() {
   const appellateDocumentUrl = 'https://ecf.ca2.uscourts.gov/docs1/00205695758';
 
   function InputContainer() {
+    document.body.innerHTML=''
     const inputContainer = document.createElement('div');
     inputContainer.id = 'cmecfMainContent';
     return inputContainer
@@ -246,13 +247,19 @@ describe('The PACER module', function() {
     describe('for documents which have not matching format', function(){
       beforeEach(function() {
         let main_div = InputContainer()
-        main_div.appendChild(document.createElement('div'))
+        let inside_div = document.createElement('div')
+        inside_div.id = 'inside-div'
+        main_div.appendChild(inside_div)
         document.getElementById = jasmine.createSpy('getElementById').and.callFake((id)=>{
           if (id != 'cmecfMainContent'){
             return null 
           }
           return main_div
         });
+      });
+
+      afterEach(function() {
+        removeInputContainer();
       });
 
       it('returns false with a valid URL', function() {
