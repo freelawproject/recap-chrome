@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "./node_modules/.bin/karma start --single-run --browsers Chrome_CI",
+    "test": "./node_modules/.bin/karma start --single-run --browsers ChromeHeadless",
     "postinstall": "vendor-copy"
   },
   "repository": {
@@ -31,13 +31,14 @@
   "devDependencies": {
     "eslint": "^8.5.0",
     "jasmine": "^4.5.0",
-    "karma": "^6.3.2",
+    "karma": "^6.4.1",
     "karma-chrome-launcher": "^3.1.1",
     "karma-coverage": "^2.2.0",
     "karma-firefox-launcher": "^2.1.0",
     "karma-jasmine": "^5.1.0",
     "karma-jasmine-ajax": "^0.1.13",
     "karma-jquery": "^0.2.4",
+    "puppeteer": "^19.2.2",
     "vendor-copy": "^3.0.1",
     "whatwg-fetch": "^3.6.2"
   },
