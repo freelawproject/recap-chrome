@@ -62,14 +62,13 @@ You will need Chrome installed. Then run:
 If the tests pass, give a push to your repo and send us a pull request.
 
 When we pull your code using Github, these tests will be automatically run by
-the [Travis-CI][tci] continuous integration system. You can make sure that your
-pull request is good to go by waiting for the automated tests to complete.
+[GitHub Actions][gact]. You can make sure that your pull request is good to go by waiting for the automated tests to complete.
 
 For more information on testing see [TESTING.md][testingmd].
 
-The current status of Travis CI on our master branch is:
+The current status of our master branch is:
 
-[![Build Status](https://travis-ci.org/freelawproject/recap-chrome.svg?branch=master)][12]
+![Build Status](https://github.com/freelawproject/recap-chrome/workflows/test.yml/badge.svg)]
 
 
 Releasing a New Version
@@ -114,8 +113,7 @@ RECAP for Chrome.  If not, see: http://www.gnu.org/licenses/
 
 [1]: https://chrome.google.com/webstore/detail/recap/oiillickanjlaeghobeeknbddaonmjnc
 [contact]: http://free.law/contact/
-[12]: https://travis-ci.org/freelawproject/recap-chrome
-[tci]: https://travis-ci.org/
+[gact]: https://github.com/features/actions
 [trainwreck]: https://dcecf.psc.uscourts.gov/cgi-bin/login.pl
 [testingmd]: https://github.com/freelawproject/recap-chrome/blob/master/TESTING.md
 [market]: https://chrome.google.com/webstore/developer/edit/oiillickanjlaeghobeeknbddaonmjnc?authuser=3#
