@@ -174,8 +174,9 @@ let PACER = {
     let bigFile = document.getElementById('file_too_big')
     let buttonText = inputs.length ? inputs[inputs.length - 1].value.includes('Download') : false
     let mainContent = document.getElementById("cmecfMainContent");
+    let bottomNote = mainContent.lastChild.textContent.includes('view each document individually')
     let pageCheck = PACER.isDocumentUrl(url) && ( 
-      !!buttonText || !!bigFile || mainContent.lastChild.textContent.includes('view each document individually'));
+      !!buttonText || !!bigFile || !!bottomNote);
     return !!pageCheck;
   },
 
