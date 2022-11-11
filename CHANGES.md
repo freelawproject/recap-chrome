@@ -12,7 +12,7 @@ Changes:
 
 Fixes:
  - More robust uploading of attachment pages ([#304](https://github.com/freelawproject/recap/issues/304), [#238](https://github.com/freelawproject/recap/issues/238), [#291](https://github.com/freelawproject/recap/issues/291))
- - Update the function `InputContainer` to make sure the body of the object called document is clear before each test begins and add `afterEach` method to one of the test cases to avoid leaving undesired variables in the global scope ([#311](https://github.com/freelawproject/recap/issues/311)).
+ - Failing tests are fixed ([#311](https://github.com/freelawproject/recap/issues/311)).
 
 For Developers:
  - Migrates from Travis CI to Github Actions
