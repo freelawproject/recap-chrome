@@ -68,7 +68,7 @@ For more information on testing see [TESTING.md][testingmd].
 
 The current status of our master branch is:
 
-![Build Status](https://github.com/freelawproject/recap-chrome/workflows/test.yml/badge.svg)]
+![Build Status](https://github.com/freelawproject/recap-chrome/actions/workflows/test.yml/badge.svg)
 
 
 Releasing a New Version

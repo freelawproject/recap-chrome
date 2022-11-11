@@ -6,6 +6,7 @@ describe('The PACER module', function() {
   const appellateDocumentUrl = 'https://ecf.ca2.uscourts.gov/docs1/00205695758';
 
   function InputContainer() {
+    document.body.innerHTML=''
     const inputContainer = document.createElement('div');
     inputContainer.id = 'cmecfMainContent';
     return inputContainer
@@ -253,6 +254,10 @@ describe('The PACER module', function() {
           }
           return main_div
         });
+      });
+
+      afterEach(function() {
+        removeInputContainer();
       });
 
       it('returns false with a valid URL', function() {

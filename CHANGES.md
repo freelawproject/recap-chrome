@@ -6,12 +6,13 @@ The following changes are not yet released, but are code complete:
 
 Features:
  - None
- 
+
 Changes:
-- None
+ - None
 
 Fixes:
-- More robust uploading of attachment pages ([#304](https://github.com/freelawproject/recap/issues/304), [#238](https://github.com/freelawproject/recap/issues/238), [#291](https://github.com/freelawproject/recap/issues/291))
+ - More robust uploading of attachment pages ([#304](https://github.com/freelawproject/recap/issues/304), [#238](https://github.com/freelawproject/recap/issues/238), [#291](https://github.com/freelawproject/recap/issues/291))
+ - Failing tests are fixed ([#311](https://github.com/freelawproject/recap/issues/311)).
 
 For Developers:
  - Migrates from Travis CI to Github Actions
