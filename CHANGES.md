@@ -12,7 +12,7 @@ Changes:
 
 Fixes:
  - More robust uploading of attachment pages ([#304](https://github.com/freelawproject/recap/issues/304), [#238](https://github.com/freelawproject/recap/issues/238), [#291](https://github.com/freelawproject/recap/issues/291))
- - Optimized the docket report page accesed trought the reports menu ([#249](https://github.com/freelawproject/recap/issues/249))
+ - Docket reports accessed through the reports menu are now properly uploaded ([#249](https://github.com/freelawproject/recap/issues/249))
  - Failing tests are fixed ([#311](https://github.com/freelawproject/recap/issues/311)).
 
 For Developers:
