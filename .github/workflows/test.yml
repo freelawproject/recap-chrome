@@ -21,4 +21,9 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - run: npm install
+        env:
+          PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: "true"
       - run: npm test
+        uses: mujo-code/puppeteer-headful@16.6.0
+        env:
+          CI: "true"
