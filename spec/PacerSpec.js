@@ -1,5 +1,6 @@
 describe('The PACER module', function() {
   const nonsenseUrl = 'http://something.uscourts.gov/foobar/baz';
+  const docketReportURL = 'https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl'
   const docketQueryUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/' +
     'HistDocQry.pl?531316');
   const singleDocUrl = 'https://ecf.canb.uscourts.gov/doc1/034031424909';
@@ -135,6 +136,16 @@ describe('The PACER module', function() {
       expect(PACER.isDocketHistoryDisplayUrl(historyUrl)).toBe(true);
     });
   });
+
+  describe('formatDocketQueryUrl', function(){
+    it('should return a properly formatted URL', function () {
+      expect(PACER.formatDocketQueryUrl(docketReportURL, 365816)).toBe(docketReportURL+'?365816');
+    });
+    
+    it('should not change if not needed', function () {
+      expect(PACER.formatDocketQueryUrl(docketReportURL+'?365816', 365816)).toBe(docketReportURL+'?365816');
+    });
+  })
 
   describe('isAttachmentMenuPage', function() {
 
@@ -280,8 +291,6 @@ describe('The PACER module', function() {
         table.appendChild(tr_image);
         main.appendChild(table)
         document.body.appendChild(main)
-
-        $.fn.find = jasmine.createSpy('find').and.returnValue([td_image])
       });
 
       afterEach(function() {
@@ -305,7 +314,6 @@ describe('The PACER module', function() {
         main.appendChild(InputWithValue('Download One'))
         main.appendChild(InputWithValue('Download Some'))
         document.body.appendChild(main)
-        $.fn.find = jasmine.createSpy('find').and.returnValue([])
       });
 
       afterEach(function() {
@@ -321,7 +329,6 @@ describe('The PACER module', function() {
       beforeEach(function() {
         let main = InputContainer();
         main.appendChild(document.createElement('div'))
-        $.fn.find = jasmine.createSpy('find').and.returnValue([])
         document.body.appendChild(main)
       });
 
@@ -334,7 +341,7 @@ describe('The PACER module', function() {
       });
     })
     
-  });
+  }); 
 
   describe('getDocumentIdFromUrl', function() {
     it('returns the correct document id for a valid URL', function() {
@@ -353,19 +360,18 @@ describe('The PACER module', function() {
 
   describe('getDocumentIdFronForm', function () {
     const goDLS = "goDLS('/doc1/09518360046','153992','264','','','1','','');";
-
+    let form;
     beforeEach(function() {
-      const form = document.createElement('form');
+      form = document.createElement('form');
       const input = document.createElement('input');
       input.value = 'View Document';
       form.appendChild(input);
       form.setAttribute('onSubmit', goDLS);
       document.body.appendChild(form);
-      document.getElementsByTagName = jasmine.createSpy('getElementsByTagName').and.returnValue([input])
     });
 
     afterEach(function() {
-      document.getElementsByTagName('form')[0].remove();
+      form.remove();
     });
 
     it('should return document id', function () {
