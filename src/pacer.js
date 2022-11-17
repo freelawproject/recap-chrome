@@ -87,6 +87,13 @@ let PACER = {
     return !!url.match(/\/(DktRpt|HistDocQry)\.pl\?\d+$/);
   },
 
+  // Returns the URL with the case id as a query parameter. This function makes
+  // sure every URL related to the Docket report has the same format
+  formatDocketQueryUrl: function(url, case_id){
+    return /[?&]/.test(url)  && /DktRpt.pl/.test(url)? url : `${url}?${case_id}`
+  },
+
+
   // Returns true if the given URL is for a docket display page (i.e. the page
   // after submitting the "Docket Sheet" query page).
   isDocketDisplayUrl: function (url) {
