@@ -39,7 +39,7 @@ module.exports = function(config) {
 
     // list of files / patterns to exclude
     exclude: [
-      'spec/Content*Spec.js'
+      'spec/*ZipSpec.js',
     ],
 
 
@@ -72,7 +72,7 @@ module.exports = function(config) {
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['ChromeHeadless'],
+    browsers: ['Chrome'],
 
     // set these options to view logs in development
     // see https://github.com/karma-runner/karma/issues/2582#issuecomment-413660796 
