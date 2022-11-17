@@ -2,7 +2,7 @@
 describe('The ContentDelegate class', function () {
   // 'tabId' values
   const tabId = 1234;
-  
+
   // 'path' values
   const districtCourtURI = 'https://ecf.canb.uscourts.gov';
   const singleDocPath = '/doc1/034031424909';
@@ -709,7 +709,7 @@ describe('The ContentDelegate class', function () {
           spyOn(cd.recap, 'getAvailabilityForDocuments').and.callFake(fake);
 
           cd.handleSingleDocumentPageCheck();
-          
+
           expect(cd.recap.getAvailabilityForDocuments).toHaveBeenCalled();
           const banner = document.querySelectorAll('.recap-banner')[0];
           expect(banner).not.toBeNull();
@@ -1306,5 +1306,5 @@ describe('The ContentDelegate class', function () {
         document.querySelectorAll('.recap-inline')[0].remove();
       });
     });
-  }); 
+  });
 });

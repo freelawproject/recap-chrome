@@ -341,7 +341,7 @@ describe('The PACER module', function() {
       });
     })
     
-  }); 
+  });
 
   describe('getDocumentIdFromUrl', function() {
     it('returns the correct document id for a valid URL', function() {
