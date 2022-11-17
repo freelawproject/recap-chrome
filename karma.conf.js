@@ -1,7 +1,7 @@
 // Karma configuration
 // Generated on Wed Jan 03 2018 21:51:16 GMT-0800 (PST)
 
-process.env.CHROME_BIN = process.env.PUPPETEER_EXEC_PATH;
+process.env.CHROME_BIN = require("puppeteer").executablePath();
 
 module.exports = function(config) {
   config.set({
@@ -72,7 +72,7 @@ module.exports = function(config) {
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['Chrome'],
+    browsers: ['ChromeHeadless'],
 
     // set these options to view logs in development
     // see https://github.com/karma-runner/karma/issues/2582#issuecomment-413660796 
