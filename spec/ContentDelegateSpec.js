@@ -62,9 +62,6 @@ describe('The ContentDelegate class', function () {
       }
     }
   }
-  function removeChromeSpy() {
-    delete window.chrome;
-  }
 
   function clearDocumentBody() {
     document.body.innerHTML=''
@@ -83,7 +80,6 @@ describe('The ContentDelegate class', function () {
 
   afterEach(function () {
     jasmine.Ajax.uninstall();
-    removeChromeSpy();
     window.fetch = nativeFetch;
   });
 
@@ -280,7 +276,6 @@ describe('The ContentDelegate class', function () {
 
       afterEach(function () {
         table.remove();
-        delete window.chrome;
       });
 
       it('has no effect when recap_enabled option is false', function () {
@@ -321,7 +316,6 @@ describe('The ContentDelegate class', function () {
 
       afterEach(function () {
         table.remove();
-        delete window.chrome;
       });
 
       it('has no effect when not on a docket display url', function () {
@@ -1312,5 +1306,5 @@ describe('The ContentDelegate class', function () {
         document.querySelectorAll('.recap-inline')[0].remove();
       });
     });
-  });
+  }); 
 });
