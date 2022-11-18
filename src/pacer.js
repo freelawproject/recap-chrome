@@ -87,6 +87,14 @@ let PACER = {
     return !!url.match(/\/(DktRpt|HistDocQry)\.pl\?\d+$/);
   },
 
+  isManageAccountPage: function(url){
+    return /pacer./.test(url) && /manage/.test(url)
+  },
+
+  isIQueryReportUrl: function(url){
+    return /iquery.pl/.test(url) && !/[?&]/.test(url)
+  },
+
   // Returns the URL with the case id as a query parameter. This function makes
   // sure every URL related to the Docket report has the same format
   formatDocketQueryUrl: function(url, case_id){
@@ -105,8 +113,9 @@ let PACER = {
     // the same URL but, for those URL like the last example, it will append the query string 
     // separator and the case id to make sure every URL has the format expected by the  
     // ContentDelegate class
+    if (!/DktRpt.pl/.test(url)){ return url }
 
-    return /[?&]/.test(url)  && /DktRpt.pl/.test(url)? url : `${url}?${case_id}`
+    return /[?&]/.test(url) ? url : `${url}?${case_id}`
   },
 
 
@@ -197,6 +206,7 @@ let PACER = {
     let bigFile = document.getElementById('file_too_big')
     let buttonText = inputs.length ? inputs[inputs.length - 1].value.includes('Download') : false
     let mainContent = document.getElementById("cmecfMainContent");
+    if (!mainContent){ return false }
     let bottomNote = mainContent.lastChild.textContent.includes('view each document individually')
     let pageCheck = PACER.isDocumentUrl(url) && ( 
       !!buttonText || !!bigFile || !!bottomNote);
@@ -398,6 +408,16 @@ let PACER = {
     });
     let pacerCookie = cookies['PacerUser'] || cookies['PacerSession'];
     return !!(pacerCookie && !pacerCookie.match(/unvalidated/));
+  },
+
+  hasFilingCooking: function (cookieString){
+    let cookies = {};
+    cookieString.replace(/\s*([^=;]+)=([^;]*)/g, function (match, name, value) {
+      cookies[name.trim()] = value.trim();
+    });
+    let filingCookie = cookies['filing']
+    console.log(filingCookie)
+    return !!(filingCookie && filingCookie.match(/true/));
   },
 
   // Returns true if the given court identifier is for an appellate court.
