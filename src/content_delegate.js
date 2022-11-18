@@ -189,7 +189,7 @@ ContentDelegate.prototype.addRecapEmailAdvertisement = async function () {
    
   if (PACER.isIQueryReportUrl(this.url)){
     form = document.querySelector('form');
-    if (!document.querySelector('recap-email-banner')){
+    if (!document.querySelector('.recap-email-banner')){
       form.appendChild(recapEmailBanner());
     }
   }else{
