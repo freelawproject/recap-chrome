@@ -623,6 +623,7 @@ describe('The ContentDelegate class', function () {
   describe('handleSingleDocumentPageCheck', function () {
     let form;
     beforeEach(function () {
+      clearDocumentBody()
       form = document.createElement('form');
       document.body.appendChild(form);
     });
