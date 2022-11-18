@@ -184,6 +184,14 @@ const saveCaseIdinTabStorage = async (object, case_id) => {
   })
 }
 
+const setFilingState = () => {
+  document.cookie = "filing=true;path=/;domain=.uscourts.gov";
+}
+
+const removeFilingState = () => {
+  document.cookie = "filing=false;path=/;domain=.uscourts.gov";
+}
+
 // Default settings for any jquery $.ajax call.
 $.ajaxSetup({
   // The dataType parameter is a security measure requested by Opera code
@@ -278,3 +286,20 @@ const recapBanner = (result) => {
   div.appendChild(small);
   return div;
 };
+
+const recapEmailBanner = (css_class = 'recap-email-banner') => {
+  const div = document.createElement('div');
+  div.setAttribute('class', css_class);
+
+  const anchor = document.createElement('a');
+  anchor.title = 'Learn More'
+  anchor.target = '_blank';
+  anchor.href = `https://www.courtlistener.com/help/recap/email/`
+
+  const img = document.createElement('img');
+  img.src = chrome.extension.getURL('assets/images/icon-16.png');
+
+  anchor.innerHTML = `${img.outerHTML} Use @recap.email to automatically contribute all your cases to RECAP. Learn more`;
+  div.appendChild(anchor);
+  return div
+}
