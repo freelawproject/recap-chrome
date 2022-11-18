@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "./node_modules/.bin/karma start --single-run --browsers ChromeHeadless",
+    "test": "./node_modules/.bin/karma start --single-run",
     "postinstall": "vendor-copy"
   },
   "repository": {

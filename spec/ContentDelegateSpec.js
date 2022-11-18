@@ -62,8 +62,9 @@ describe('The ContentDelegate class', function () {
       }
     }
   }
-  function removeChromeSpy() {
-    delete window.chrome;
+
+  function clearDocumentBody() {
+    document.body.innerHTML=''
   }
 
   let nativeFetch;
@@ -79,7 +80,6 @@ describe('The ContentDelegate class', function () {
 
   afterEach(function () {
     jasmine.Ajax.uninstall();
-    removeChromeSpy();
     window.fetch = nativeFetch;
   });
 
@@ -165,8 +165,10 @@ describe('The ContentDelegate class', function () {
   describe('handleDocketQueryUrl', function () {
     let form;
     beforeEach(function () {
+      clearDocumentBody()
       form = document.createElement('form');
       document.body.appendChild(form);
+      document.querySelector = jasmine.createSpy('querySelector').and.callFake( id => id != 'form' ? null : form);
     });
 
     afterEach(function () {
@@ -217,7 +219,7 @@ describe('The ContentDelegate class', function () {
             '"/download\/gov.uscourts.' +
             'canb.531591\/gov.uscourts.canb.531591.docket.html"}]}')
       });
-      const banner = document.querySelector('.recap-banner');
+      const banner = document.querySelectorAll('.recap-banner')[0];
       expect(banner).not.toBeNull();
       expect(banner.innerHTML).toContain('04/16/15');
       const link = banner.querySelector('a');
@@ -243,8 +245,20 @@ describe('The ContentDelegate class', function () {
 
   describe('handleDocketDisplayPage', function () {
     describe('option disabled', function () {
+      let table;
+
       beforeEach(function () {
+        clearDocumentBody()
+        table = document.createElement('table');
+        const tbody = document.createElement('tbody');
+        const tr = document.createElement('tr');
+        tbody.appendChild(tr);
+        table.appendChild(tbody)
+        document.body.appendChild(table);
         window.chrome = {
+          extension:{
+            getURL: jasmine.createSpy(),
+          },
           storage: {
             local: {
               get: jasmine.createSpy().and.callFake((_, cb) => {
@@ -257,10 +271,11 @@ describe('The ContentDelegate class', function () {
             }
           }
         };
+        document.querySelector = jasmine.createSpy('querySelector').and.callFake( id=> id != 'tbody'? null: tbody);
       });
 
       afterEach(function () {
-        delete window.chrome;
+        table.remove();
       });
 
       it('has no effect when recap_enabled option is false', function () {
@@ -272,13 +287,16 @@ describe('The ContentDelegate class', function () {
     });
 
     describe('option enabled', function () {
+      let table;
+      
       beforeEach(function () {
-        const table = document.createElement('table');
+        clearDocumentBody()
+        table = document.createElement('table');
         const tbody = document.createElement('tbody');
         const tr = document.createElement('tr');
         tbody.appendChild(tr);
         table.appendChild(tbody)
-        document.querySelector('body').appendChild(table);
+        document.body.appendChild(table);
         window.chrome = {
           extension: { getURL: jasmine.createSpy('gerURL'), },
           storage: {
@@ -293,11 +311,11 @@ describe('The ContentDelegate class', function () {
             }
           }
         };
+        document.querySelector = jasmine.createSpy('querySelector').and.callFake( id => id != 'tbody'? null : tbody);
       });
 
       afterEach(function () {
-        document.querySelector('table').remove();
-        delete window.chrome;
+        table.remove();
       });
 
       it('has no effect when not on a docket display url', function () {
@@ -329,23 +347,26 @@ describe('The ContentDelegate class', function () {
           cd.handleDocketDisplayPage();
           expect(cd.recap.uploadDocket).not.toHaveBeenCalled();
         });
-      });
+      }); 
+
       // interstitial check is multiple inputs with name 'date_from' and type 'radio'
       describe('when the docket page is an interstitial page', function () {
+        let input, input2; 
+
         beforeEach(function () {
-          const input = document.createElement('input');
+          input = document.createElement('input');
           input.id = "input1"
           input.name = 'date_from';
           input.type = 'radio';
-          const input2 = input.cloneNode();
+          input2 = input.cloneNode();
           input2.id = "input2";
           document.body.appendChild(input);
           document.body.appendChild(input2);
         });
 
         afterEach(function () {
-          document.getElementById('input1').remove();
-          document.getElementById('input2').remove();
+          input.remove();
+          input2.remove();
         });
 
         it('does not call uploadDocket', async function () {
@@ -354,13 +375,17 @@ describe('The ContentDelegate class', function () {
           await cd.handleDocketDisplayPage();
           expect(cd.recap.uploadDocket).not.toHaveBeenCalled();
         });
-      });
+      }); 
+
       describe('when the docket page is not an interstitial page', function () {
+        beforeEach(function () {
+          document.getElementById = jasmine.createSpy('getElementById').and.callFake( id => document.querySelectorAll(`#${id}`)[0])
+        })
 
         it ('inserts a button linking the user to a create alert page on CL', async () => {
           const cd = docketDisplayContentDelegate;
           await cd.handleDocketDisplayPage();
-          const button = document.getElementById('recap-alert-button');
+          const button = document.querySelectorAll('#recap-alert-button')[0];
           expect(button).not.toBeNull();
         });
 
@@ -372,12 +397,16 @@ describe('The ContentDelegate class', function () {
             cb(true);
           });
           spyOn(history, 'replaceState');
-
+          jasmine.Ajax.stubRequest('https://www.courtlistener.com/api/rest/v3/dockets/?pacer_case_id=531591&source__in=1%2C3%2C5%2C7%2C9%2C11%2C13%2C15&court=canb&fields=absolute_url%2Cdate_modified').andReturn({
+            contentType: 'application/json',
+            responseText: JSON.stringify({count:1}),
+            status: 200
+          });
           await cd.handleDocketDisplayPage();
           expect(cd.recap.uploadDocket).toHaveBeenCalled();
           expect(cd.notifier.showUpload).toHaveBeenCalled();
           expect(history.replaceState).toHaveBeenCalledWith({ uploaded: true }, '');
-          const button = document.getElementById('recap-alert-button');
+          const button = document.querySelectorAll('#recap-alert-button')[0];
           expect(button.className.includes('disabled')).not.toBe(true);
           expect(button.getAttribute('aria-disabled')).toBe('false');
         });
@@ -390,12 +419,16 @@ describe('The ContentDelegate class', function () {
             cb(true);
           });
           spyOn(history, 'replaceState');
-
+          jasmine.Ajax.stubRequest('https://www.courtlistener.com/api/rest/v3/dockets/?pacer_case_id=531591&source__in=1%2C3%2C5%2C7%2C9%2C11%2C13%2C15&court=canb&fields=absolute_url%2Cdate_modified').andReturn({
+            contentType: 'application/json',
+            responseText: JSON.stringify({count:1}),
+            status: 200
+          });
           await cd.handleDocketDisplayPage();
           expect(cd.recap.uploadDocket).toHaveBeenCalled();
           expect(cd.notifier.showUpload).toHaveBeenCalled();
           expect(history.replaceState).toHaveBeenCalledWith({ uploaded: true }, '');
-          const button = document.getElementById('recap-alert-button');
+          const button = document.querySelectorAll('#recap-alert-button')[0];
           expect(button.className.includes('disabled')).not.toBe(true);
           expect(button.getAttribute('aria-disabled')).toBe('false');
         });
@@ -408,7 +441,6 @@ describe('The ContentDelegate class', function () {
             cb(false);
           });
           spyOn(history, 'replaceState');
-
           await cd.handleDocketDisplayPage();
           expect(cd.recap.uploadDocket).toHaveBeenCalled();
           expect(cd.notifier.showUpload).not.toHaveBeenCalled();
@@ -419,13 +451,17 @@ describe('The ContentDelegate class', function () {
   });
 
   describe('handleAttachmentMenuPage', function () {
+    
     describe('option disabled', function () {
       let form;
       let input;
+      let mainContainer;
 
       beforeEach(function () {
+        clearDocumentBody()
+        mainContainer = document.createElement('div');
+        mainContainer.id = 'cmecfMainContent'
         form = document.createElement('form');
-        document.body.appendChild(form);
         window.chrome = {
           storage: {
             local: {
@@ -438,10 +474,13 @@ describe('The ContentDelegate class', function () {
         input = document.createElement('input');
         input.value = 'Download All';
         form.appendChild(input);
+        mainContainer.appendChild(form)
+        document.getElementById = jasmine.createSpy('getElementById').and.callFake(id=> id != 'cmecfMainContent'? null: mainContainer);
       });
 
       afterEach(function () {
         form.remove();
+        mainContainer.remove();
         delete window.chrome;
       });
 
@@ -454,10 +493,16 @@ describe('The ContentDelegate class', function () {
     });
 
     describe('option enabled', function () {
+      let mainContainer;
       let form;
+
       beforeEach(function () {
+        clearDocumentBody()
+        mainContainer = document.createElement('div');
+        mainContainer.id = 'cmecfMainContent'
         form = document.createElement('form');
-        document.body.appendChild(form);
+        mainContainer.appendChild(form)
+        document.body.appendChild(mainContainer)
         window.chrome = {
           storage: {
             local: {
@@ -467,10 +512,14 @@ describe('The ContentDelegate class', function () {
             }
           }
         };
+        document.getElementById = jasmine.createSpy('getElementById').and.callFake( id =>{
+          return document.querySelectorAll(`#${id}`)[0]
+        })
       });
 
       afterEach(function () {
         form.remove();
+        mainContainer.remove();
         delete window.chrome;
       });
 
@@ -508,11 +557,23 @@ describe('The ContentDelegate class', function () {
       });
 
       describe('when there IS an appropriate form', function () {
-        let input;
+        let download_input;
+        let view_input;
+
         beforeEach(function () {
-          input = document.createElement('input');
-          input.value = 'Download All';
-          form.appendChild(input);
+          download_input = document.createElement('input');
+          download_input.value = 'Download All';
+          download_input.type = 'button';
+          view_input = document.createElement('input');
+          view_input.value = 'View All';
+          view_input.type = 'button';
+          form.appendChild(view_input);
+          form.appendChild(download_input)
+        });
+
+        afterEach(function () {
+          download_input.remove();
+          view_input.remove();
         });
 
         it('has no effect when the URL is wrong', function () {
@@ -562,6 +623,7 @@ describe('The ContentDelegate class', function () {
   describe('handleSingleDocumentPageCheck', function () {
     let form;
     beforeEach(function () {
+      clearDocumentBody()
       form = document.createElement('form');
       document.body.appendChild(form);
     });
@@ -650,7 +712,7 @@ describe('The ContentDelegate class', function () {
           cd.handleSingleDocumentPageCheck();
 
           expect(cd.recap.getAvailabilityForDocuments).toHaveBeenCalled();
-          const banner = document.querySelector('.recap-banner');
+          const banner = document.querySelectorAll('.recap-banner')[0];
           expect(banner).not.toBeNull();
           const link = banner.querySelector('a');
           expect(link).not.toBeNull();
@@ -758,7 +820,7 @@ describe('The ContentDelegate class', function () {
       it('adds an event listener for the message in the script', function () {
         const cd = singleDocContentDelegate;
         cd.handleSingleDocumentPageView();
-
+        expect(window.addEventListener).toHaveBeenCalled()
         expect(window.addEventListener)
           .toHaveBeenCalledWith('message', jasmine.any(Function), false);
       });
@@ -768,10 +830,11 @@ describe('The ContentDelegate class', function () {
   describe('onDocumentViewSubmit', function () {
     let form;
     let table;
-    const form_id = '1234';
+    const form_id = 'submit_form';
     const event = { data: { id: form_id } };
 
     beforeEach(function () {
+      clearDocumentBody()
       form = document.createElement('form');
       form.id = form_id;
       document.body.appendChild(form);
@@ -783,6 +846,9 @@ describe('The ContentDelegate class', function () {
       tr_image.appendChild(td_image);
       table.appendChild(tr_image);
       document.body.appendChild(table);
+      document.getElementById = jasmine.createSpy('getElementById').and.callFake( id =>{
+        return document.querySelectorAll(`#${id}`)[0]
+      })
     });
 
     afterEach(function () {
@@ -859,6 +925,7 @@ describe('The ContentDelegate class', function () {
     const blob = new Blob([new ArrayBuffer(1000)], { type: 'application/pdf' });
 
     beforeEach(async function () {
+      clearDocumentBody()
       const dataUrl = await blobToDataURL(blob);
       documentElement = document.createElement('html');
       window.chrome = {
@@ -889,6 +956,9 @@ describe('The ContentDelegate class', function () {
           callback(true);
         }
       );
+      document.getElementById = jasmine.createSpy('getElementById').and.callFake( id =>{
+        return document.querySelectorAll(`#${id}`)[0]
+      })
     });
 
     afterEach(() => {
@@ -950,10 +1020,10 @@ describe('The ContentDelegate class', function () {
           // are present in the grabbed html. A quick fix is to use
           // a set of non-null characters [^\0] instead of the dot
           // operator -- see https://www.regular-expressions.info/dot.html
-          const iframe = document.querySelector('iframe[src="data:blob"]');
+          const iframe = document.querySelectorAll('iframe[src="data:blob"]')[0];
           expect(iframe).not.toBeNull();
         } else {
-          const iframe = document.querySelector('iframe[src="about:blank"]');
+          const iframe = document.querySelectorAll('iframe[src="about:blank"]')[0];
           expect(iframe).not.toBeNull();
           expect(window.saveAs).toHaveBeenCalled();
         }
@@ -1132,8 +1202,10 @@ describe('The ContentDelegate class', function () {
 
       it('attaches the RECAP popup', function () {
         cd.handleRecapLinkClick({}, linkUrl);
-        expect($('#recap-shade').length).not.toBe(0);
-        expect($('.recap-popup').length).not.toBe(0);
+        recap_shade = document.querySelectorAll('#recap-shade')
+        recap_popup = document.querySelectorAll('.recap-popup')
+        expect(recap_shade.length).not.toBe(0);
+        expect(recap_popup.length).not.toBe(0);
 
         let foundLink = false;
         $('.recap-popup a').each(function (i, link) {
@@ -1142,8 +1214,8 @@ describe('The ContentDelegate class', function () {
           }
         });
         expect(foundLink).toBe(true);
-        document.getElementById('recap-shade').remove();
-        document.getElementsByClassName('recap-popup')[0].remove();
+        recap_shade[0].remove();
+        recap_popup[0].remove();
       });
     });
   });
@@ -1164,6 +1236,7 @@ describe('The ContentDelegate class', function () {
       let links;
       let cd;
       beforeEach(function () {
+        clearDocumentBody()
         links = linksFromUrls(fake_urls);
         cd = new ContentDelegate(tabId, expected_url, null, null, null, null, links);
         cd.attachRecapLinkToEligibleDocs();
@@ -1178,8 +1251,11 @@ describe('The ContentDelegate class', function () {
       let links;
       let cd;
       beforeEach(function () {
+        clearDocumentBody()
         links = linksFromUrls(urls);
-        $('body').append(links);
+        for (let link of links) {
+          document.body.append(link)
+        }
         cd = new ContentDelegate(tabId, expected_url, null, null, null, null, links);
         cd.pacer_doc_ids = [1234];
       });
@@ -1198,7 +1274,8 @@ describe('The ContentDelegate class', function () {
             });
           });
         cd.attachRecapLinkToEligibleDocs();
-        expect($('.recap-inline').length).toBe(0);
+        recap_inline = document.querySelectorAll('.recap-inline')
+        expect(recap_inline.length).toBe(0);
       });
 
       it('attaches a single link to the one url with recap', function () {
@@ -1210,8 +1287,9 @@ describe('The ContentDelegate class', function () {
             });
           });
         cd.attachRecapLinkToEligibleDocs();
-        expect($('.recap-inline').length).toBe(1);
-        document.getElementsByClassName('recap-inline')[0].remove();
+        let recap_inline = document.querySelectorAll('.recap-inline')
+        expect(recap_inline.length).toBe(1);
+        recap_inline[0].remove();
       });
 
       it('attaches a working click handler', function () {
@@ -1226,7 +1304,7 @@ describe('The ContentDelegate class', function () {
         cd.attachRecapLinkToEligibleDocs();
         $(links[0]).next().click();
         expect(cd.handleRecapLinkClick).toHaveBeenCalled();
-        document.getElementsByClassName('recap-inline')[0].remove();
+        document.querySelectorAll('.recap-inline')[0].remove();
       });
     });
   });

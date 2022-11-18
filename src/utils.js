@@ -173,6 +173,17 @@ const updateTabStorage = async object => {
   saveItemToStorage({ [tabId]: { ...store, ...updatedVars } });
 };
 
+// Save case_id in the chrome local storage
+const saveCaseIdinTabStorage = async (object, case_id) => {
+  const { tabId } = object;
+  const payload = {
+    caseId: case_id,
+  };
+  await updateTabStorage({
+    [tabId]: payload
+  })
+}
+
 // Default settings for any jquery $.ajax call.
 $.ajaxSetup({
   // The dataType parameter is a security measure requested by Opera code
@@ -220,7 +231,6 @@ function debug(level, varargs) {
 
 // inject a "follow this case on RECAP" button
 const recapAlertButton = (court, pacerCaseId, isActive) => {
-
   const anchor = document.createElement('a');
   anchor.setAttribute('id', 'recap-alert-button');
   anchor.setAttribute('role', 'button');

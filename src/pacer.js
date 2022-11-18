@@ -87,6 +87,29 @@ let PACER = {
     return !!url.match(/\/(DktRpt|HistDocQry)\.pl\?\d+$/);
   },
 
+  // Returns the URL with the case id as a query parameter. This function makes
+  // sure every URL related to the Docket report has the same format
+  formatDocketQueryUrl: function(url, case_id){
+    // The ContentDelegate class expects a URL like the following:
+    //
+    //    https://ecf.dcd.uscourts.gov/cgi-bin/DktRpt.pl?178502
+    //
+    // The case id is found after the start of the query string (after the '?') in 
+    // the previous URL, but the URL for the docket report accessed through the reports
+    // menu doesn’t have a query string so one example of that URL is:
+    //
+    //   https://ecf.dcd.uscourts.gov/cgi-bin/DktRpt.pl
+    // 
+    // This function checks if the URL has a query string and is related to the docket 
+    // report. if the URL has the same format as the first example, the function will return
+    // the same URL but, for those URL like the last example, it will append the query string 
+    // separator and the case id to make sure every URL has the format expected by the  
+    // ContentDelegate class
+
+    return /[?&]/.test(url)  && /DktRpt.pl/.test(url)? url : `${url}?${case_id}`
+  },
+
+
   // Returns true if the given URL is for a docket display page (i.e. the page
   // after submitting the "Docket Sheet" query page).
   isDocketDisplayUrl: function (url) {
