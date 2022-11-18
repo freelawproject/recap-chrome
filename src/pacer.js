@@ -87,10 +87,12 @@ let PACER = {
     return !!url.match(/\/(DktRpt|HistDocQry)\.pl\?\d+$/);
   },
 
+  // Returns true if the URL is for the manage account page.
   isManageAccountPage: function(url){
     return /pacer./.test(url) && /manage/.test(url)
   },
 
+  // Returns true if the URL is for the iQuery page.
   isIQueryReportUrl: function(url){
     return /iquery.pl/.test(url) && !/[?&]/.test(url)
   },
@@ -410,6 +412,7 @@ let PACER = {
     return !!(pacerCookie && !pacerCookie.match(/unvalidated/));
   },
 
+  // Given document.cookie, returns true if the user has filing rights.
   hasFilingCooking: function (cookieString){
     let cookies = {};
     cookieString.replace(/\s*([^=;]+)=([^;]*)/g, function (match, name, value) {
