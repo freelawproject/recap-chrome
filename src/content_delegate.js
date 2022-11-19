@@ -182,12 +182,12 @@ ContentDelegate.prototype.findAndStorePacerDocIds = function () {
 
 // If this is a docket query page, add RECAP email advertisement.
 ContentDelegate.prototype.addRecapEmailAdvertisement = async function () {
-  if (!(PACER.isIQueryReportUrl(this.url) || PACER.isManageAccountPage(this.url))) { return; };
+  if (!(PACER.isBlankQueryReportUrl(this.url) || PACER.isManageAccountPage(this.url))) { return; };
   let form; 
 
   if (!PACER.hasFilingCookie(document.cookie)){ return; };
    
-  if (PACER.isIQueryReportUrl(this.url)){
+  if (PACER.isBlankQueryReportUrl(this.url)){
     form = document.querySelector('form');
     if (!document.querySelector('.recap-email-banner')){
       form.appendChild(recapEmailBanner());
