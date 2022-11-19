@@ -294,7 +294,6 @@ const recapEmailBanner = (css_class = 'recap-email-banner') => {
   div.setAttribute('class', css_class);
 
   const anchor = document.createElement('a');
-  anchor.title = 'Learn More'
   anchor.target = '_blank';
   anchor.href = `https://www.courtlistener.com/help/recap/email/`
 
