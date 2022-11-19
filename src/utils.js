@@ -186,12 +186,12 @@ const saveCaseIdinTabStorage = async (object, case_id) => {
 
 // Save a cookie in document.cookie to let the extension know that the user has filing rights
 const setFilingState = () => {
-  document.cookie = "filing=true;path=/;domain=.uscourts.gov";
+  document.cookie = "isFilingAccount=true;path=/;domain=.uscourts.gov";
 }
 
 // Reset the value of the cookie related to the filing rights of a user
 const removeFilingState = () => {
-  document.cookie = "filing=false;path=/;domain=.uscourts.gov";
+  document.cookie = "isFilingAccount=false;path=/;domain=.uscourts.gov";
 }
 
 // Default settings for any jquery $.ajax call.
