@@ -223,6 +223,7 @@ let PACER = {
     let bigFile = document.getElementById('file_too_big')
     let buttonText = inputs.length ? inputs[inputs.length - 1].value.includes('Download') : false
     let mainContent = document.getElementById("cmecfMainContent");
+    // End this function early if we're on a management PACER page
     if (!mainContent){ return false }
     let bottomNote = mainContent.lastChild.textContent.includes('view each document individually')
     let pageCheck = PACER.isDocumentUrl(url) && ( 
