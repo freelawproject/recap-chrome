@@ -13,6 +13,12 @@ let pacer_doc_id = PACER.getDocumentIdFromForm(url, document) ||
   PACER.getDocumentIdFromUrl(url);
 let links = document.body.getElementsByTagName('a');
 
+function handleRedactionConfirmation(mutationRecords, msg){
+  getTabIdForContentScript().then(msg => {
+    setFilingState(msg)
+  });
+}
+
 // seed the content_delegate with the tabId by using the message 
 // returned from the background worker
 function addRecapInformation(msg){
@@ -21,8 +27,11 @@ function addRecapInformation(msg){
     
     let content_delegate = new ContentDelegate(tabId,
       url, path, court, pacer_case_id, pacer_doc_id, links);
-  
+ 
     if (PACER.hasPacerCookie(document.cookie)) {
+      // If this is a docket query page, add RECAP Email advertisement banner.
+      content_delegate.addRecapEmailAdvertisement();
+
       // If this is a docket query page, ask RECAP whether it has the docket page.
       content_delegate.handleDocketQueryUrl();
   
@@ -53,6 +62,22 @@ function addRecapInformation(msg){
       content_delegate.attachRecapLinkToEligibleDocs();
     } else {
       console.info(`RECAP: Taking no actions because not logged in: ${url}`);
+      let redactionConfirmation = document.getElementById('redactionConfirmation');
+      
+      let emailInput = document.getElementById('loginForm:loginName')
+      let passwordInput = document.getElementById('loginForm:password')
+
+      if (emailInput && passwordInput && redactionConfirmation){
+        removeFilingState(msg)
+      }
+
+      if (redactionConfirmation){
+        let redactionObserver = new MutationObserver(mutationRecords => handleRedactionConfirmation(mutationRecords));
+        redactionObserver.observe(redactionConfirmation, {
+          attributes: true,
+          attributeOldValue: true,
+        });
+      }
     }
 }
 

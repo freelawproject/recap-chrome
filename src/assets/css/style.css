@@ -155,8 +155,23 @@ footer #version {
   color: #aaa;
 }
 
+.recap-email-banner-full{
+  font-family: helvetica, arial, serif;
+  font-size: 13px;
+  background: #fff;
+  padding: 6px;
+  margin: 1em 0em;
+  border: 1px solid #aaa;
+}
+
+.recap-email-banner-full a{
+  font-family: helvetica, arial, serif;
+  font-size: 13px;
+}
+
 .recap-banner,
-.recap-popup {
+.recap-popup,
+.recap-email-banner {
   font-family: helvetica, arial, serif;
   font-size: 13px;
   background: #fff;
@@ -167,11 +182,16 @@ footer #version {
 .recap-banner {
   max-width: 450px;
 }
+.recap-email-banner{
+  max-width: 525px;
+}
 .recap-inline {
   padding: 0 0 0 4px;
 }
 .recap-banner img,
-.recap-inline img {
+.recap-inline img,
+.recap-email-banner img,
+.recap-email-banner-full img{
   margin: 0 0 -2px 0;
   width: 16px;
   height: 16px;

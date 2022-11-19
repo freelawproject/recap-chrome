@@ -87,6 +87,31 @@ let PACER = {
     return !!url.match(/\/(DktRpt|HistDocQry)\.pl\?\d+$/);
   },
 
+  // Returns true if the URL is for the manage account page.
+  isManageAccountPage: function(url){
+    // matches URLs related to the manage Manage My Account page in PACER. The url is:
+    //  https://pacer.psc.uscourts.gov/pscof/manage/maint.jsf
+    return /pacer./.test(url) && /manage/.test(url)
+  },
+
+  // Returns true if the URL is for the iQuery page.
+  isBlankQueryReportUrl: function(url){
+    // The URL for the query form used in CM/ECF to seach cases is:
+    //
+    //    https://ecf.mied.uscourts.gov/cgi-bin/iquery.pl
+    //
+    // and the URL for list of posibles reports related to a case that is found with   
+    // the query form is:
+    //
+    //   https://ecf.mied.uscourts.gov/cgi-bin/iquery.pl?900473201618068-L_1_0-1
+    // 
+    // This function checks if the URL has a query string and is related to the iQuery form. 
+    // It will return true only when the url match the format of the first example and it will
+    // exclude pages that include the iquery word but has a query string like the last example.
+  
+    return /iquery.pl/.test(url) && !/[?&]/.test(url)
+  },
+
   // Returns the URL with the case id as a query parameter. This function makes
   // sure every URL related to the Docket report has the same format
   formatDocketQueryUrl: function(url, case_id){
@@ -105,8 +130,9 @@ let PACER = {
     // the same URL but, for those URL like the last example, it will append the query string 
     // separator and the case id to make sure every URL has the format expected by the  
     // ContentDelegate class
+    if (!/DktRpt.pl/.test(url)){ return url }
 
-    return /[?&]/.test(url)  && /DktRpt.pl/.test(url)? url : `${url}?${case_id}`
+    return /[?&]/.test(url) ? url : `${url}?${case_id}`
   },
 
 
@@ -197,6 +223,8 @@ let PACER = {
     let bigFile = document.getElementById('file_too_big')
     let buttonText = inputs.length ? inputs[inputs.length - 1].value.includes('Download') : false
     let mainContent = document.getElementById("cmecfMainContent");
+    // End this function early if we're on a management PACER page
+    if (!mainContent){ return false }
     let bottomNote = mainContent.lastChild.textContent.includes('view each document individually')
     let pageCheck = PACER.isDocumentUrl(url) && ( 
       !!buttonText || !!bigFile || !!bottomNote);
@@ -398,6 +426,14 @@ let PACER = {
     });
     let pacerCookie = cookies['PacerUser'] || cookies['PacerSession'];
     return !!(pacerCookie && !pacerCookie.match(/unvalidated/));
+  },
+
+  // Given document.cookie, returns true if the user has filing rights.
+  hasFilingCookie: function (cookieString){
+    let filingCookie = cookieString.split('; ')
+        .find((row) => row.startsWith('isFilingAccount'))
+        ?.split('=')[1];
+    return !!filingCookie.match(/true/);
   },
 
   // Returns true if the given court identifier is for an appellate court.

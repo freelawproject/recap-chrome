@@ -5,7 +5,7 @@
 The following changes are not yet released, but are code complete:
 
 Features:
- - None
+ - Add banners to advertise RECAP Email ([#309](https://github.com/freelawproject/recap/issues/309))
 
 Changes:
  - None
