@@ -89,6 +89,8 @@ let PACER = {
 
   // Returns true if the URL is for the manage account page.
   isManageAccountPage: function(url){
+    // matches URLs related to the manage Manage My Account page in PACER. The url is:
+    //  https://pacer.psc.uscourts.gov/pscof/manage/maint.jsf
     return /pacer./.test(url) && /manage/.test(url)
   },
 
