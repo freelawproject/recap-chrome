@@ -185,7 +185,7 @@ ContentDelegate.prototype.addRecapEmailAdvertisement = async function () {
   if (!(PACER.isIQueryReportUrl(this.url) || PACER.isManageAccountPage(this.url))) { return; };
   let form; 
 
-  if (!PACER.hasFilingCooking(document.cookie)){ return; };
+  if (!PACER.hasFilingCookie(document.cookie)){ return; };
    
   if (PACER.isIQueryReportUrl(this.url)){
     form = document.querySelector('form');
