@@ -301,7 +301,7 @@ const recapEmailBanner = (css_class = 'recap-email-banner') => {
   const img = document.createElement('img');
   img.src = chrome.extension.getURL('assets/images/icon-16.png');
 
-  anchor.innerHTML = `${img.outerHTML} Use @recap.email to automatically contribute all your cases to RECAP. Learn more`;
+  anchor.innerHTML = `${img.outerHTML} Use @recap.email to automatically contribute all your cases to RECAP.`;
   div.appendChild(anchor);
   return div
 }
