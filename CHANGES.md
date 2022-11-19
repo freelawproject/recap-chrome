@@ -5,6 +5,21 @@
 The following changes are not yet released, but are code complete:
 
 Features:
+ - None yet
+
+Changes:
+ - None yet
+
+Fixes: 
+ - None yet
+
+For developers:
+ - Nothing yet
+
+
+## 1.2.30 (2022-11-18)
+
+Features:
  - Add banners to advertise RECAP Email ([#309](https://github.com/freelawproject/recap/issues/309))
 
 Changes:
@@ -19,6 +34,7 @@ For Developers:
  - Migrates from Travis CI to Github Actions
  - Adds [Puppeteer](https://pptr.dev/) as a dev dependency to use its Chromium binary to run the tests in [headless](https://developers.google.com/web/updates/2017/04/headless-chrome) mode.
  - Updates the configuration file used by Karma to change the default browser used to run the tests.
+
 
 ## Current & Previous
 

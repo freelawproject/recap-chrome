@@ -75,6 +75,7 @@ Releasing a New Version
 =======================
 When a new version is needed, the release process is:
 
+1. Do the [manual QA tests][qa]
 1. Update `package.json` and `manifest.json` with a new release version.
 1. Run `web-ext lint` to ensure no regressions.
 1. Commit the code.
@@ -128,3 +129,4 @@ RECAP for Chrome.  If not, see: http://www.gnu.org/licenses/
 [cl]: https://github.com/freelawproject/courtlistener/issues/new
 [recap-issues]: https://github.com/freelawproject/recap/issues
 [commits]: https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines
+[qa]: https://github.com/freelawproject/recap/wiki/QA-Testing
