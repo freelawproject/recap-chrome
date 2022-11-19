@@ -194,7 +194,7 @@ ContentDelegate.prototype.addRecapEmailAdvertisement = async function () {
     }
   }else{
     form = document.querySelector('#popupForm');
-    if(!document.querySelector('recap-email-banner-full')){
+    if(!document.querySelector('.recap-email-banner-full')){
       form.after(recapEmailBanner('recap-email-banner-full'));
     }
   }
