@@ -413,14 +413,11 @@ let PACER = {
   },
 
   // Given document.cookie, returns true if the user has filing rights.
-  hasFilingCooking: function (cookieString){
-    let cookies = {};
-    cookieString.replace(/\s*([^=;]+)=([^;]*)/g, function (match, name, value) {
-      cookies[name.trim()] = value.trim();
-    });
-    let filingCookie = cookies['filing']
-    console.log(filingCookie)
-    return !!(filingCookie && filingCookie.match(/true/));
+  hasFilingCookie: function (cookieString){
+    let filingCookie = cookieString.split('; ')
+        .find((row) => row.startsWith('isFilingAccount'))
+        ?.split('=')[1];
+    return !!filingCookie.match(/true/);
   },
 
   // Returns true if the given court identifier is for an appellate court.
