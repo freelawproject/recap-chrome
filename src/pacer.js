@@ -93,7 +93,20 @@ let PACER = {
   },
 
   // Returns true if the URL is for the iQuery page.
-  isIQueryReportUrl: function(url){
+  isBlankQueryReportUrl: function(url){
+    // The URL for the query form used in CM/ECF to seach cases is:
+    //
+    //    https://ecf.mied.uscourts.gov/cgi-bin/iquery.pl
+    //
+    // and the URL for list of posibles reports related to a case that is found with   
+    // the query form is:
+    //
+    //   https://ecf.mied.uscourts.gov/cgi-bin/iquery.pl?900473201618068-L_1_0-1
+    // 
+    // This function checks if the URL has a query string and is related to the iQuery form. 
+    // It will return true only when the url match the format of the first example and it will
+    // exclude pages that include the iquery word but has a query string like the last example.
+  
     return /iquery.pl/.test(url) && !/[?&]/.test(url)
   },
 
