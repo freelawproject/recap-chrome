@@ -1291,21 +1291,6 @@ describe('The ContentDelegate class', function () {
         expect(recap_inline.length).toBe(1);
         recap_inline[0].remove();
       });
-
-      it('attaches a working click handler', function () {
-        spyOn(cd, 'handleRecapLinkClick');
-        spyOn(cd.recap, 'getAvailabilityForDocuments')
-          .and.callFake(function (pc, pci, callback) {
-            callback({
-              results:
-                [{ pacer_doc_id: 1234, filepath_local: 'download/1234' }],
-            });
-          });
-        cd.attachRecapLinkToEligibleDocs();
-        $(links[0]).next().click();
-        expect(cd.handleRecapLinkClick).toHaveBeenCalled();
-        document.querySelectorAll('.recap-inline')[0].remove();
-      });
     });
   });
 });
