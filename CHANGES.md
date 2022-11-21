@@ -8,7 +8,7 @@ Features:
  - None yet
 
 Changes:
- - None yet
+ - Remove option to "Confirm before opening RECAP documents" ([#216](https://github.com/freelawproject/recap/issues/216))
 
 Fixes: 
  - None yet

@@ -1159,67 +1159,6 @@ describe('The ContentDelegate class', function () {
 
   // TODO: Figure out where the functionality of
   //  'addMouseoverToConvertibleLinks' went, and add tests for that.
-
-  describe('handleRecapLinkClick', function () {
-    const cd = docketDisplayContentDelegate;
-    const linkUrl = singleDocUrl;
-
-    afterEach(function () {
-      delete window.chrome;
-    });
-
-    describe('when the popup option is not set', function () {
-      beforeEach(function () {
-        window.chrome = {
-          storage: {
-            local: {
-              get: jasmine.createSpy().and.callFake(function (
-                _, cb) { cb({ options: {} }); })
-            }
-          }
-        };
-      });
-
-      it('redirects to the link url immediately', function () {
-        const window_obj = {};
-        cd.handleRecapLinkClick(window_obj, linkUrl);
-        expect(window_obj.location).toBe(linkUrl);
-      });
-    });
-
-    describe('when the popup option is set', function () {
-      beforeEach(function () {
-        window.chrome = {
-          storage: {
-            local: {
-              get: jasmine.createSpy().and.callFake(function (
-                _, cb) { cb({ options: { recap_link_popups: true } }); }),
-              set: jasmine.createSpy('set').and.callFake(function () { })
-            }
-          }
-        };
-      });
-
-      it('attaches the RECAP popup', function () {
-        cd.handleRecapLinkClick({}, linkUrl);
-        recap_shade = document.querySelectorAll('#recap-shade')
-        recap_popup = document.querySelectorAll('.recap-popup')
-        expect(recap_shade.length).not.toBe(0);
-        expect(recap_popup.length).not.toBe(0);
-
-        let foundLink = false;
-        $('.recap-popup a').each(function (i, link) {
-          if (link.href === linkUrl) {
-            foundLink = true;
-          }
-        });
-        expect(foundLink).toBe(true);
-        recap_shade[0].remove();
-        recap_popup[0].remove();
-      });
-    });
-  });
-
   describe('attachRecapLinkToEligibleDocs', function () {
     const fake_urls = [
       'http://foo.fake/bar/0',
@@ -1290,21 +1229,6 @@ describe('The ContentDelegate class', function () {
         let recap_inline = document.querySelectorAll('.recap-inline')
         expect(recap_inline.length).toBe(1);
         recap_inline[0].remove();
-      });
-
-      it('attaches a working click handler', function () {
-        spyOn(cd, 'handleRecapLinkClick');
-        spyOn(cd.recap, 'getAvailabilityForDocuments')
-          .and.callFake(function (pc, pci, callback) {
-            callback({
-              results:
-                [{ pacer_doc_id: 1234, filepath_local: 'download/1234' }],
-            });
-          });
-        cd.attachRecapLinkToEligibleDocs();
-        $(links[0]).next().click();
-        expect(cd.handleRecapLinkClick).toHaveBeenCalled();
-        document.querySelectorAll('.recap-inline')[0].remove();
       });
     });
   });
