@@ -83,15 +83,6 @@
                     Notify me when RECAP uploads a file to the Archive
               </div>
             </label>
-            <label for="recap_link_popups"
-                title="Pop up a dialog whenever you click a RECAP link to a free document">
-              <div class="item">
-                    <span class="icon">
-                      <input id="recap_link_popups" type="checkbox">
-                    </span>
-                    Confirm before opening free documents
-              </div>
-            </label>
           </fieldset>
 
           <fieldset><legend>PDF Files</legend>
@@ -112,6 +103,18 @@
                 <input class="form-check-input position-relative" type="radio" id="lawyer_style_filenames" name="filename_style" value="lawyer_style_filenames">
                 <label class="form-check-label" for="lawyer_style_filenames">Lawyer style</label>
               </div>
+            </div>
+          </fieldset>
+          
+          <fieldset id="recap_email" class="hidden">
+            <legend>@recap.email</legend>
+            <div>
+              <p>As a filing user, you can add a special email address to your account that will automatically add all of your cases to the RECAP Archive.</p>
+              <a href="https://www.courtlistener.com/help/recap/email/"
+                target="_blank"
+                rel="noopener">
+                Learn More
+              </a>
             </div>
           </fieldset>
 
