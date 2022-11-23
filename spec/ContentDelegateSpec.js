@@ -689,6 +689,10 @@ describe('The ContentDelegate class', function () {
       describe('for pacer doc id 531591', function () {
         beforeEach(function () {
           window.pacer_doc_id = 531591;
+          let banner = document.querySelectorAll('.recap-banner')[0];
+          if (banner){
+            banner.remove()
+          }
         });
 
         afterEach(function () {
@@ -728,11 +732,12 @@ describe('The ContentDelegate class', function () {
             callback(response);
           };
           spyOn(cd.recap, 'getAvailabilityForDocuments').and.callFake(fake);
-
+        
           cd.handleSingleDocumentPageCheck();
 
           expect(cd.recap.getAvailabilityForDocuments).toHaveBeenCalled();
-          const banner = document.querySelector('.recap-banner');
+          let bannerHTMLElement = document.querySelectorAll('.recap-banner');
+          let banner = !!bannerHTMLElement.length ? bannerHTMLElement[0] : null;
           expect(banner).toBeNull();
         });
       });
