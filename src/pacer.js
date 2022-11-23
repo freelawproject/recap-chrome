@@ -94,6 +94,18 @@ let PACER = {
     return /pacer./.test(url) && /manage/.test(url)
   },
 
+  // Returns true if the URL is for the iquery summary page.
+  isIQuerySummaryURL: function(url){
+    // The URL for the iquery summary page shows a list of posibles reports related 
+    // to a case in CM/ECF and has the word "iquery.pl" in it, also has a query string 
+    // with numbers, a letter and hyphens, so this method will return true when the url 
+    // is similar to the following one:
+    //
+    //    https://ecf.mied.uscourts.gov/cgi-bin/iquery.pl?135881001931855-L_1_0-1
+
+    return /iquery.pl/.test(url) && /[\d_-]+[A-Z]+[\d_-]+/.test(url)
+  },
+
   // Returns true if the URL is for the iQuery page.
   isBlankQueryReportUrl: function(url){
     // The URL for the query form used in CM/ECF to seach cases is:
@@ -286,6 +298,24 @@ let PACER = {
       // we always set the fourth digit to 0 when getting a doc ID.
       return `${match[1].slice(0, 3)}0${match[1].slice(4)}`;
     }
+  },
+
+  // Returns the case ID for a queries list page.
+  getCaseIdFromIQuerySummary: function(){
+    let tableContainer = document.querySelector("#cmecfMainContent table");
+    let anchors = tableContainer.getElementsByTagName("a");
+    // End this function early if there are no anchor tags
+    if (!anchors.length){ return null; }
+    let lastAnchor = anchors[anchors.length-1]
+    // the next secuence of instruccions will match the digits at the end of the href. 
+    // The href attribute of the anchor tags in the table has the following format:
+    //
+    //    https://ecf.mied.uscourts.gov/cgi-bin/qryDocument.pl?360406
+    //
+    // We can grab the pacer case ID from this url if we get all the digits after the ?.
+    
+    let queryString = lastAnchor.href.match(/[\d]+/g);
+    return queryString[queryString.length-1]
   },
 
   // Get the document ID for a document view page using the "View Document"
