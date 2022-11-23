@@ -364,6 +364,37 @@ ContentDelegate.prototype.handleAttachmentMenuPage = function () {
   }.bind(this));
 };
 
+
+//if this a iquery page with case information, upload it to RECAP
+ContentDelegate.prototype.handleiQuerySummaryPage = async function () {
+  if (!PACER.isIQuerySummaryURL(this.url)) { return; };
+
+  if (!this.pacer_case_id){
+    let caseId = PACER.getCaseIdFromIQuerySummary()
+    // End this function early if we're not able to find a case id
+    if (!caseId){ return; }
+    this.pacer_case_id = caseId
+  }
+
+  const options = await getItemsFromStorage('options');
+
+  if (options['recap_enabled']) {
+
+    let callback = $.proxy(function (ok) {
+      if (ok) {
+        this.notifier.showUpload(
+          'iQuery page uploaded to the public RECAP Archive.',
+          function () {
+          }
+        );
+      }
+    }, this);
+
+    this.recap.uploadIQueryPage(this.court, this.pacer_case_id,
+      document.documentElement.innerHTML, callback)
+  }
+}
+
 // If this page offers a single document, ask RECAP whether it has the document.
 ContentDelegate.prototype.handleSingleDocumentPageCheck = function () {
   if (!PACER.isSingleDocumentPage(this.url, document)) {
