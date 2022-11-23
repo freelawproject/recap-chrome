@@ -367,6 +367,11 @@ ContentDelegate.prototype.handleAttachmentMenuPage = function () {
 
 //if this a iquery page with case information, upload it to RECAP
 ContentDelegate.prototype.handleiQuerySummaryPage = async function () {
+  // avoid uploading the same page multiple times
+  if (history.state && history.state.uploaded) {
+    return;
+  }
+
   if (!PACER.isIQuerySummaryURL(this.url)) { return; };
 
   if (!this.pacer_case_id){
@@ -382,6 +387,7 @@ ContentDelegate.prototype.handleiQuerySummaryPage = async function () {
 
     let callback = $.proxy(function (ok) {
       if (ok) {
+        history.replaceState({ uploaded: true }, '');
         this.notifier.showUpload(
           'iQuery page uploaded to the public RECAP Archive.',
           function () {
