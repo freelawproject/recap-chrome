@@ -732,7 +732,7 @@ describe('The ContentDelegate class', function () {
             callback(response);
           };
           spyOn(cd.recap, 'getAvailabilityForDocuments').and.callFake(fake);
-        
+
           cd.handleSingleDocumentPageCheck();
 
           expect(cd.recap.getAvailabilityForDocuments).toHaveBeenCalled();
