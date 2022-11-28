@@ -96,7 +96,7 @@ let PACER = {
 
   // Returns true if the URL is for the iquery summary page.
   isIQuerySummaryURL: function(url){
-    // The URL for the iquery summary page shows a list of posibles reports related 
+    // The URL for the iquery summary page shows a list of possibles reports related 
     // to a case in CM/ECF and has the word "iquery.pl" in it, also has a query string 
     // with numbers, a letter and hyphens, so this method will return true when the url 
     // is similar to the following one:
@@ -108,11 +108,11 @@ let PACER = {
 
   // Returns true if the URL is for the iQuery page.
   isBlankQueryReportUrl: function(url){
-    // The URL for the query form used in CM/ECF to seach cases is:
+    // The URL for the query form used in CM/ECF to search cases is:
     //
     //    https://ecf.mied.uscourts.gov/cgi-bin/iquery.pl
     //
-    // and the URL for list of posibles reports related to a case that is found with   
+    // and the URL for list of possibles reports related to a case that is found with   
     // the query form is:
     //
     //   https://ecf.mied.uscourts.gov/cgi-bin/iquery.pl?900473201618068-L_1_0-1
@@ -307,7 +307,7 @@ let PACER = {
     // End this function early if there are no anchor tags
     if (!anchors.length){ return null; }
     let lastAnchor = anchors[anchors.length-1]
-    // the next secuence of instruccions will match the digits at the end of the href. 
+    // the next sequence of statements will match the digits at the end of the href. 
     // The href attribute of the anchor tags in the table has the following format:
     //
     //    https://ecf.mied.uscourts.gov/cgi-bin/qryDocument.pl?360406
