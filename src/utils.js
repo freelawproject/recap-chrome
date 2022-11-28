@@ -262,6 +262,68 @@ const recapAlertButton = (court, pacerCaseId, isActive) => {
   return anchor;
 };
 
+const recapDropdownMenu = (court, pacerCaseId) =>{
+  let dropdownWrapper = document.createElement('ul')
+  dropdownWrapper.classList.add('recap-dropdown-menu')
+
+  let alertLi = document.createElement("li");
+  let createAlert = document.createElement('a')
+  
+  const url = new URL('https://www.courtlistener.com/alert/docket/new/');
+  url.searchParams.append('pacer_case_id', pacerCaseId);
+  url.searchParams.append('court_id', court);
+  
+  createAlert.href = url.toString();
+  createAlert.innerHTML = 'Create an Alert on RECAP'
+  alertLi.appendChild(createAlert)
+  
+  dropdownWrapper.appendChild(alertLi);
+
+  let viewOnClLi = document.createElement('li')
+  let viewOnCl = document.createElement('a')
+  viewOnCl.innerHTML = 'View on CourtListener'
+
+  viewOnClLi.appendChild(viewOnCl)
+
+  dropdownWrapper.appendChild(viewOnClLi)
+
+  let docketLi = document.createElement('li')
+  let searchDocket = document.createElement('a')
+  searchDocket.innerHTML = 'Search this Docket'
+
+  docketLi.appendChild(searchDocket)
+  dropdownWrapper.appendChild(docketLi)
+
+  return dropdownWrapper
+}
+
+const recapActionsButton = (court, pacerCaseId, isActive) => {
+  const mainDiv = document.createElement("div");
+  mainDiv.classList.add("recap-btn-group")
+
+  const mainTitle = document.createElement('a');
+  mainTitle.classList.add('recap-btn','recap-btn-primary', 'btn-disabled');
+  mainTitle.innerHTML='RECAP Actions'
+
+  const toggleButton = document.createElement('a');
+  toggleButton.classList.add('recap-btn','recap-btn-primary','recap-dropdown-toggle');
+  toggleButton.setAttribute('data-toggle', 'dropdown')
+  toggleButton.setAttribute('aria-haspopup', true)
+  toggleButton.setAttribute('aria-expanded', false)
+
+  const caret = document.createElement('span');
+  caret.classList.add('caret')
+
+  hiddenOptions = recapDropdownMenu(court, pacerCaseId)
+
+  toggleButton.appendChild(caret)
+  mainDiv.appendChild(mainTitle)
+  mainDiv.appendChild(toggleButton)
+  mainDiv.appendChild(hiddenOptions)
+
+  return mainDiv
+};
+
 const recapBanner = (result) => {
   const div = document.createElement('div');
   div.setAttribute('class', 'recap-banner');
