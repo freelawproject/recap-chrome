@@ -12,6 +12,7 @@ function Recap() {
       'APPELLATE_ATTACHMENT_PAGE': 6,
       'CLAIMS_REGISTER_PAGE': 9,
       'ZIP': 10,
+      'IQUERY_PAGE': 12
     };
   return {
 
@@ -36,7 +37,7 @@ function Recap() {
     // Asks RECAP whether it has a docket page for the specified case.  If it
     // is available, the callback will be called with a
     getAvailabilityForDocket: function (pacer_court, pacer_case_id, cb) {
-      if (!pacer_case_id){
+      if (!pacer_case_id) {
         console.error("RECAP: Cannot get availability of docket without pacer_case_id.");
         return;
       }
@@ -125,8 +126,6 @@ function Recap() {
     uploadAttachmentMenu: function (pacer_court, pacer_case_id, html, cb) {
       let formData = new FormData();
       formData.append('court', PACER.convertToCourtListenerCourt(pacer_court));
-      // pacer_case_id is not currently used by backend, but send anyway if we
-      // have it.
       pacer_case_id && formData.append('pacer_case_id', pacer_case_id);
       formData.append('upload_type', UPLOAD_TYPES['ATTACHMENT_PAGE']);
       formData.append('filepath_local', new Blob([html], { type: 'text/html' }));
@@ -144,6 +143,31 @@ function Recap() {
         },
         error: function (xhr, textStatus, errorThrown) {
           console.error(`RECAP: Ajax error uploading docket. Status: ${textStatus}.` +
+            `Error: ${errorThrown}`);
+        }
+      });
+    },
+
+    uploadIQueryPage: function(pacer_court, pacer_case_id, html, cb){
+      let formData = new FormData();
+      formData.append('court', PACER.convertToCourtListenerCourt(pacer_court));
+      pacer_case_id && formData.append('pacer_case_id', pacer_case_id);
+      formData.append('upload_type', UPLOAD_TYPES['IQUERY_PAGE']);
+      formData.append('filepath_local', new Blob([html], { type: 'text/html' }));
+      formData.append('debug', DEBUG);
+      $.ajax({
+        url: `${SERVER_ROOT}recap/`,
+        method: 'POST',
+        processData: false,
+        contentType: false,
+        data: formData,
+        success: function (data, textStatus, xhr) {
+          console.info(`RECAP: Successfully uploaded iquery page: '${textStatus}' ` +
+            `with processing queue id of ${data['id']}`);
+          cb(data || null);
+        },
+        error: function (xhr, textStatus, errorThrown) {
+          console.error(`RECAP: Ajax error uploading iquery page. Status: ${textStatus}.` +
             `Error: ${errorThrown}`);
         }
       });
