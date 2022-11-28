@@ -538,4 +538,74 @@ describe('The PACER module', function() {
       expect(PACER.isAppellateCourt('pingpong')).toBe(false);
     });
   });
+
+  describe('isIQuerySummaryURL', function(){
+    it('returns true for an iquery url with query string', function() {
+      expect(PACER.isIQuerySummaryURL('https://ecf.mied.uscourts.gov/cgi-bin/iquery.pl?184987019171527-L_1_0-1')).toBe(true);
+    });
+
+    it('returns false for an iquery url without query string', function() {
+      expect(PACER.isIQuerySummaryURL('https://ecf.mied.uscourts.gov/cgi-bin/iquery.pl')).toBe(false);
+    });
+
+    it('returns false for an url not related to the iquery pages', function() {
+      expect(PACER.isIQuerySummaryURL(docketReportURL)).toBe(false);
+    });
+  })
+  
+  
+  describe('getCaseIdFromIQuerySummary', function(){    
+    
+    describe('for documents with matching format', function() {
+
+      beforeEach(function() {
+        let main_div = InputContainer()
+        let table = document.createElement('table')
+        let tbody = document.createElement('tbody');
+        let tr = document.createElement('tr');
+        let td = document.createElement('td');
+        let anchor = document.createElement('a')
+        anchor.href="cgi-bin/qryDocument.pl?360406"
+        td.appendChild(anchor)
+        tr.appendChild(td)
+        tbody.appendChild(tr)
+        table.appendChild(tbody)
+        main_div.appendChild(table)
+        document.body.appendChild(main_div)
+        document.querySelector = jasmine.createSpy('querySelector').and.callFake(()=>{
+          return table
+        });
+      });
+
+      afterEach(function(){
+        document.querySelector = jasmine.createSpy('querySelector').and.callThrough();
+      })
+    
+      it('returns the case id', function() {
+        expect(PACER.getCaseIdFromIQuerySummary()).toBe('360406');
+      })
+
+    });
+    
+    describe('for documents which have not matching format', function(){
+
+      beforeEach(function() {
+        let main_div = InputContainer()
+        let table = document.createElement('table')
+        main_div.appendChild(table)
+        document.body.appendChild(main_div)
+        document.querySelector = jasmine.createSpy('querySelector').and.callFake(()=>{
+          return table
+        });
+      });
+
+      afterEach(function(){
+        document.querySelector = jasmine.createSpy('querySelector').and.callThrough();
+      })
+
+      it('returns null', function() {
+        expect(PACER.getCaseIdFromIQuerySummary()).toBe(null);
+      });
+    })
+  })
 });
