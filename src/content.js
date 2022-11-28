@@ -29,8 +29,11 @@ function addRecapInformation(msg){
       url, path, court, pacer_case_id, pacer_doc_id, links);
  
     if (PACER.hasPacerCookie(document.cookie)) {
-      // If this is a docket query page, add RECAP Email advertisement banner.
+      // If this is a blank iquery or manage my account page, add RECAP Email advertisement banner.
       content_delegate.addRecapEmailAdvertisement();
+
+      // If this is an iquery summary page, upload it to RECAP.
+      content_delegate.handleiQuerySummaryPage();
 
       // If this is a docket query page, ask RECAP whether it has the docket page.
       content_delegate.handleDocketQueryUrl();
