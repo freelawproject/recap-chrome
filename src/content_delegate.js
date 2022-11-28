@@ -398,6 +398,8 @@ ContentDelegate.prototype.handleiQuerySummaryPage = async function () {
 
     this.recap.uploadIQueryPage(this.court, this.pacer_case_id,
       document.documentElement.innerHTML, callback)
+  }else{
+    console.info("RECAP: Not uploading iquery page. RECAP is disabled.");
   }
 }
 
