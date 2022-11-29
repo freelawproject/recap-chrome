@@ -406,9 +406,8 @@ describe('The ContentDelegate class', function () {
           expect(cd.recap.uploadDocket).toHaveBeenCalled();
           expect(cd.notifier.showUpload).toHaveBeenCalled();
           expect(history.replaceState).toHaveBeenCalledWith({ uploaded: true }, '');
-          const button = document.querySelectorAll('#recap-alert-button')[0];
-          expect(button.className.includes('disabled')).not.toBe(true);
-          expect(button.getAttribute('aria-disabled')).toBe('false');
+          const button = document.querySelectorAll('#create-alert-button');
+          expect(button.length).toBe(1);
         });
 
         it('calls uploadDocket and responds to a positive historical result', async function () {
@@ -428,9 +427,8 @@ describe('The ContentDelegate class', function () {
           expect(cd.recap.uploadDocket).toHaveBeenCalled();
           expect(cd.notifier.showUpload).toHaveBeenCalled();
           expect(history.replaceState).toHaveBeenCalledWith({ uploaded: true }, '');
-          const button = document.querySelectorAll('#recap-alert-button')[0];
-          expect(button.className.includes('disabled')).not.toBe(true);
-          expect(button.getAttribute('aria-disabled')).toBe('false');
+          const button = document.querySelectorAll('#create-alert-button');
+          expect(button.length).toBe(1);
         });
 
         it('calls uploadDocket and responds to a negative result', async function () {
