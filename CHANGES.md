@@ -5,11 +5,12 @@
 The following changes are not yet released, but are code complete:
 
 Features:
- - None yet
+ - Add an actions button to PACER ([#308](https://github.com/freelawproject/recap/issues/308))
 
 Changes:
  - Remove option to "Confirm before opening RECAP documents" ([#216](https://github.com/freelawproject/recap/issues/216))
  - Upload iquery.pl docket summary page ([#251](https://github.com/freelawproject/recap/issues/251))
+ 
 
 Fixes: 
  - None yet
