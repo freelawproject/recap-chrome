@@ -13,11 +13,12 @@ let pacer_doc_id = PACER.getDocumentIdFromForm(url, document) ||
   PACER.getDocumentIdFromUrl(url);
 let links = document.body.getElementsByTagName('a');
 
-function handleRedactionConfirmation(mutationRecords, msg){
-  getTabIdForContentScript().then(msg => {
-    setFilingState(msg)
-  });
-}
+// Query relevant inputs in the page.
+let caseNumberInput = document.getElementById('case_number_text_area_0')
+let allCaseInput = document.getElementById('all_case_ids')
+
+// Query the body content of the first table on the page.
+let tableBody = document.querySelector('tbody');
 
 // seed the content_delegate with the tabId by using the message 
 // returned from the background worker
@@ -81,7 +82,8 @@ function addRecapInformation(msg){
     }
 }
 
-// Callback function to execute when mutations in the input are observed
+// Callback function to execute when mutations in the input with 
+// the id "all_case_id" are observed
 function handleCaseIdChange(mutationRecords){
   let target = mutationRecords[0].target
   if (target.value != 0){
@@ -94,9 +96,33 @@ function handleCaseIdChange(mutationRecords){
   }
 }
 
-// Query relevant inputs in the page 
-let caseNumberInput = document.getElementById('case_number_text_area_0')
-let allCaseInput = document.getElementById('all_case_ids')
+// Callback function to execute when the redaction confirmation 
+// message appears in the login page
+function handleRedactionConfirmation(mutationRecords){
+  getTabIdForContentScript().then(msg => {
+      setFilingState(msg)
+  });
+}
+
+// Callback function to execute when the RECAP actions button 
+// is inserted in the docket display page
+function handleRecapActionButtonInsertion(mutationRecords){
+  let recapRefreshButton = document.getElementById('refresh-recap-links')
+  if (recapRefreshButton){
+      recapRefreshButton.addEventListener('click', ()=>{
+          let links = document.querySelectorAll('.recap-inline')
+          links.forEach(link => { link.remove(); })
+          let spinner = document.getElementById("recap-button-spinner")
+          if (spinner){
+              spinner.classList.remove('recap-btn-spinner-hidden')
+          }
+          getTabIdForContentScript().then(msg => {
+              addRecapInformation(msg)
+          });
+      });
+      
+  }
+}
 
 if (allCaseInput){
   // create a mutation observer to watch for changes being made to 
@@ -117,6 +143,16 @@ if (caseNumberInput){
       banner.remove();
     });
   })
+}
+
+if (tableBody){
+  // create a mutation observer to watch for changes being made to 
+  // the childlist of the table element
+  const observer = new MutationObserver(mutationRecords => handleRecapActionButtonInsertion(mutationRecords));
+  observer.observe(tableBody, {
+    subtree: false, 
+    childList: true,
+  });
 }
 
 // if the content script didn't find the case Id,
