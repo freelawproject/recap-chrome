@@ -21,12 +21,12 @@
   },
   "homepage": "https://github.com/freelawproject/recap-chrome#readme",
   "dependencies": {
-    "bootstrap": "^5.2.2",
+    "bootstrap": "^5.2.3",
     "entr": "^0.0.0",
     "file-saver": "2.0.5",
     "jquery": "~3.6.1",
     "moment": "~2.29.4",
-    "web-ext": "^7.3.1"
+    "web-ext": "^7.4.0"
   },
   "devDependencies": {
     "eslint": "^8.5.0",
@@ -38,7 +38,7 @@
     "karma-jasmine": "^5.1.0",
     "karma-jasmine-ajax": "^0.1.13",
     "karma-jquery": "^0.2.4",
-    "puppeteer": "^19.2.2",
+    "puppeteer": "^19.3.0",
     "vendor-copy": "^3.0.1",
     "whatwg-fetch": "^3.6.2"
   },

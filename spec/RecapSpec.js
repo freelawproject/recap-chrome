@@ -250,6 +250,7 @@ describe('The Recap export module', function () {
       expect(callback).toHaveBeenCalledWith(true);
     });
   });
+
   describe('uploadZipFile', function () {
     let existingFormData;
 
@@ -284,4 +285,38 @@ describe('The Recap export module', function () {
       expect(callback).toHaveBeenCalledWith(true);
     });
   });
+
+  describe('uploadIQueryPage', function (){
+    let existingFormData;
+    
+    beforeEach(async () => {
+      existingFormData = window.FormData;
+      window.FormData = FormDataFake;
+      await setupChromeSpy();
+    });
+
+    afterEach(function () {
+      removeChromeSpy();
+      window.FormData = existingFormData;
+    });
+
+    it('requests the correct URL', function () {
+      recap.uploadIQueryPage(court, pacer_case_id, html, function () { });
+      expect(jasmine.Ajax.requests.mostRecent().url).toBe(
+        'https://www.courtlistener.com/api/rest/v3/recap/');
+    });
+
+    it('sends the correct FormData', function () {
+      const expected = new FormDataFake();
+      expected.append('court', court);
+      expected.append('pacer_case_id', pacer_case_id);
+      expected.append('upload_type', 12);
+      expected.append('filepath_local', new Blob(
+        [html], { type: type }), filename);
+
+      recap.uploadIQueryPage(court, pacer_case_id, html, function () { });
+      const actualData = jasmine.Ajax.requests.mostRecent().data();
+      expect(actualData).toEqual(jasmine.objectContaining(expected));
+    });
+  })
 });
