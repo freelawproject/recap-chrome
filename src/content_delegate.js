@@ -236,23 +236,11 @@ ContentDelegate.prototype.handleDocketQueryUrl = function () {
 ContentDelegate.prototype.handleDocketDisplayPage = async function () {
 
   // helper functions
-  const createAlertButtonTr = () => {
+  const createActionButtonTr = () =>{
     const tr = document.createElement('tr');
-    tr.appendChild(recapAlertButton(this.court, this.pacer_case_id, false));
+    tr.appendChild(recapActionsButton(this.court, this.pacer_case_id, false));
     return tr;
-  };
-
-  const changeAlertButtonStateToActive = async () => {
-    const anchor = await document.getElementById('recap-alert-button');
-    if (anchor) {
-      anchor.setAttribute('aria-disabled', 'false');
-      anchor.classList.remove('disabled');
-      const img = document.createElement('img');
-      img.src = chrome.extension.getURL('assets/images/icon-16.png');
-      anchor.innerText = 'Create an Alert for This Case on RECAP';
-      anchor.insertBefore(img, anchor.childNodes[0]);
-    }
-  };
+  }
 
   // If it's not a docket display URL or a docket history URL, punt.
   let isDocketDisplayUrl = PACER.isDocketDisplayUrl(this.url);
@@ -268,9 +256,6 @@ ContentDelegate.prototype.handleDocketDisplayPage = async function () {
   );
   if (radioDateInputs.length > 1) { return; };
 
-  // if you've already uploaded the page, return
-  if (history.state && history.state.uploaded) { return; }
-
   // check if appellate
   // let isAppellate = PACER.isAppellateCourt(this.court);
 
@@ -282,11 +267,13 @@ ContentDelegate.prototype.handleDocketDisplayPage = async function () {
   // If we don't have this.pacer_case_id at this point, punt.
   if (!this.pacer_case_id) { return; }
 
-  // insert the button in a disabled state
   const tableBody = document.querySelector('tbody');
-  const tr = createAlertButtonTr();
-  tableBody.insertBefore(tr, tableBody.childNodes[0]);
-
+  const existingActionButton = document.getElementById('recap-action-button')
+  if (!existingActionButton){
+    const tr = createActionButtonTr();
+    tableBody.insertBefore(tr, tableBody.childNodes[0]);
+  }
+  
   this.recap.getAvailabilityForDocket(
     this.court,
     this.pacer_case_id,
@@ -298,17 +285,22 @@ ContentDelegate.prototype.handleDocketDisplayPage = async function () {
           `RECAP: More than one result found for docket lookup. Found ${result.count}`
         );
       } else {
-        changeAlertButtonStateToActive();
+        addAlertButtonInRecapAction(this.court, this.pacer_case_id)
+        let docketNum = getDocketNumberFromAbsoluteURL(result.results[0].absolute_url)
+        addSearchDocketInRecapAction(docketNum)
       }
     }
   );
+  
+  // if you've already uploaded the page, return
+  if (history.state && history.state.uploaded) { return; }
 
   const options = await getItemsFromStorage('options');
 
   if (options['recap_enabled']) {
     let callback = (ok) => {
       if (ok) {
-        changeAlertButtonStateToActive();
+        addAlertButtonInRecapAction(this.court, this.pacer_case_id)
         history.replaceState({ uploaded: true }, '');
         this.notifier.showUpload(
           'Docket uploaded to the public RECAP Archive.',
@@ -658,6 +650,10 @@ ContentDelegate.prototype.attachRecapLinkToEligibleDocs = function () {
           src: chrome.extension.getURL('assets/images/icon-16.png')
         }));
         recap_link.insertAfter(this.links[i]);
+      }
+      let spinner = document.getElementById("recap-button-spinner")
+      if (spinner){
+          spinner.classList.add('recap-btn-spinner-hidden');
       }
     }, this));
 };
