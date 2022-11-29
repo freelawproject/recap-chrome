@@ -84,6 +84,17 @@ function getHostname(url) {
   return $('<a>').prop('href', url).prop('hostname');
 }
 
+
+// Gets the docket number from the absolute URL attribute found in the 
+// response of the getAvailabilityForDocket request. An example of this 
+// URL is:
+//    /docket/65757697/mohammad/
+// this function will return: 
+//   65757697
+function getDocketNumberFromAbsoluteURL(absoluteURL){
+  return absoluteURL.split('/')[2]
+}
+
 // Makes an XHR to the given URL, calling a callback with the returned content
 // type and response (interpreted according to responseType).  See XHR2 spec
 // for details on responseType and response.  Uses GET if postData is null or
@@ -262,68 +273,111 @@ const recapAlertButton = (court, pacerCaseId, isActive) => {
   return anchor;
 };
 
+// Handles the insertion of the "Create alert" option in the dropdown menu
+const addAlertButtonInRecapAction = (court, pacerCaseId) => {
+  let dropdownHeader = document.getElementById('action-button-dropdown-header')
+  let existingAlertButton = document.getElementById('create-alert-button')
+  if (!existingAlertButton){
+    let alertLi = document.createElement("li");
+    alertLi.setAttribute('id', 'create-alert-button')
+    let createAlert = document.createElement('a')
+    
+    const url = new URL('https://www.courtlistener.com/alert/docket/new/');
+    url.searchParams.append('pacer_case_id', pacerCaseId);
+    url.searchParams.append('court_id', court);
+    
+    createAlert.href = url.toString();
+    createAlert.innerHTML = 'Create alert'
+    createAlert.setAttribute('target', '_blank');
+    alertLi.appendChild(createAlert)
+    dropdownHeader.after(alertLi);
+  }
+};
+
+// Handles the insertion of the "Search this docket" option in the dropdown menu
+const addSearchDocketInRecapAction = (docketNumber)=>{
+  let viewDocketButton = document.getElementById('view-docket-button')
+  let existingSearchButton = document.getElementById('search-docket-button')
+  if (!existingSearchButton){
+    let docketLi = document.createElement('li')
+    docketLi.setAttribute('id', 'search-docket-button')
+    let searchDocket = document.createElement('a')
+    searchDocket.innerHTML = 'Search this Docket'
+    searchDocket.href = `https://www.courtlistener.com/?type=r&q=docket_id%3A${docketNumber}`
+    searchDocket.setAttribute('target', '_blank');
+    docketLi.appendChild(searchDocket)
+    viewDocketButton.before(docketLi)
+  }
+}
+
+// creates the dropdown menu content
 const recapDropdownMenu = (court, pacerCaseId) =>{
   let dropdownWrapper = document.createElement('ul')
-  dropdownWrapper.classList.add('recap-dropdown-menu')
-
-  let alertLi = document.createElement("li");
-  let createAlert = document.createElement('a')
-  
-  const url = new URL('https://www.courtlistener.com/alert/docket/new/');
-  url.searchParams.append('pacer_case_id', pacerCaseId);
-  url.searchParams.append('court_id', court);
-  
-  createAlert.href = url.toString();
-  createAlert.innerHTML = 'Create an Alert on RECAP'
-  alertLi.appendChild(createAlert)
-  
-  dropdownWrapper.appendChild(alertLi);
+  dropdownWrapper.classList.add('dropdown-menu')
+ 
+  let groupHeader = document.createElement('h2')
+  groupHeader.classList.add('dropdown-header')
+  groupHeader.setAttribute('id', 'action-button-dropdown-header');
+  groupHeader.innerHTML ='CourtListener'
+  dropdownWrapper.appendChild(groupHeader)
 
   let viewOnClLi = document.createElement('li')
+  viewOnClLi.setAttribute('id', 'view-docket-button')
   let viewOnCl = document.createElement('a')
-  viewOnCl.innerHTML = 'View on CourtListener'
-
+  viewOnCl.innerHTML = 'View this docket'
+  viewOnCl.href = `https://www.courtlistener.com/recap/gov.uscourts.${court}.${pacerCaseId}/`
+  viewOnCl.setAttribute('target', '_blank');
   viewOnClLi.appendChild(viewOnCl)
-
   dropdownWrapper.appendChild(viewOnClLi)
 
-  let docketLi = document.createElement('li')
-  let searchDocket = document.createElement('a')
-  searchDocket.innerHTML = 'Search this Docket'
+  let divider2 = document.createElement('div')
+  divider2.classList.add("recap-dropdown-divider")
+  dropdownWrapper.appendChild(divider2)
 
-  docketLi.appendChild(searchDocket)
-  dropdownWrapper.appendChild(docketLi)
+  let checkLi = document.createElement('li')
+  let checkDoc = document.createElement('a')
+  checkDoc.innerHTML = 'Refresh RECAP Links'
+  checkDoc.setAttribute('href','javascript:void(0);')
+  checkDoc.setAttribute('id', 'refresh-recap-links')
+  checkDoc.setAttribute('role', 'button')
+  
+  checkLi.appendChild(checkDoc)
+  dropdownWrapper.appendChild(checkLi)
 
   return dropdownWrapper
 }
 
-const recapActionsButton = (court, pacerCaseId, isActive) => {
-  const mainDiv = document.createElement("div");
-  mainDiv.classList.add("recap-btn-group")
+// creates a single button with a dropdown toggle menu
+const recapActionsButton = (court, pacerCaseId) => {
+  const mainDiv = document.createElement('div');
+  mainDiv.classList.add('btn-group')
+  mainDiv.setAttribute('id', 'recap-action-button')
 
-  const mainTitle = document.createElement('a');
-  mainTitle.classList.add('recap-btn','recap-btn-primary', 'btn-disabled');
-  mainTitle.innerHTML='RECAP Actions'
+  const spinner = document.createElement('i')
+  spinner.classList.add("fa", "fa-spinner","fa-spin")
+  spinner.setAttribute('id', 'recap-button-spinner')
+  spinner.classList.add('recap-btn-spinner-hidden')
 
-  const toggleButton = document.createElement('a');
-  toggleButton.classList.add('recap-btn','recap-btn-primary','recap-dropdown-toggle');
-  toggleButton.setAttribute('data-toggle', 'dropdown')
-  toggleButton.setAttribute('aria-haspopup', true)
-  toggleButton.setAttribute('aria-expanded', false)
+  const mainButton = document.createElement('a');
+  mainButton.classList.add('btn','btn-primary', 'dropdown-toggle');
+  mainButton.innerHTML=`${spinner.outerHTML} RECAP Actions`
+  mainButton.setAttribute('data-toggle', 'dropdown')
+  mainButton.setAttribute('aria-haspopup', true)
+  mainButton.setAttribute('aria-expanded', false)
 
   const caret = document.createElement('span');
   caret.classList.add('caret')
 
-  hiddenOptions = recapDropdownMenu(court, pacerCaseId)
+  hiddenDropdown = recapDropdownMenu(court, pacerCaseId)
 
-  toggleButton.appendChild(caret)
-  mainDiv.appendChild(mainTitle)
-  mainDiv.appendChild(toggleButton)
-  mainDiv.appendChild(hiddenOptions)
+  mainButton.appendChild(caret)
+  mainDiv.appendChild(mainButton)
+  mainDiv.appendChild(hiddenDropdown)
 
   return mainDiv
 };
 
+// Creates a div element to show a docket is available for free  
 const recapBanner = (result) => {
   const div = document.createElement('div');
   div.setAttribute('class', 'recap-banner');
@@ -351,6 +405,7 @@ const recapBanner = (result) => {
   return div;
 };
 
+// Creates a div element to advertise RECAP email
 const recapEmailBanner = (css_class = 'recap-email-banner') => {
   const div = document.createElement('div');
   div.setAttribute('class', css_class);
