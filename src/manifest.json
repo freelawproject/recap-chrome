@@ -86,6 +86,8 @@
     }
   },
   "web_accessible_resources": [
-    "assets/images/*.png"
+    "assets/images/*.png",
+    "assets/fonts/fontawesome-webfont.woff",
+    "assets/fonts/fontawesome-webfont.woff2"
   ]
 }
