@@ -285,6 +285,7 @@ footer #version {
   padding: 6px 12px;
   font-size: 12px;
   line-height: 1.42857143;
+  font-family: Sans-Serif;
   border-radius: 4px;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -403,7 +404,7 @@ footer #version {
   color: #333333;
   white-space: nowrap;
   text-decoration: none;
-  font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-family: Sans-Serif;
 }
 .dropdown-menu > li > a:hover,
 .dropdown-menu > li > a:focus {
