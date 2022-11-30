@@ -109,21 +109,20 @@ function handleRedactionConfirmation(mutationRecords){
 
 // Callback function to execute when the RECAP actions button 
 // is inserted in the docket display page
-function handleRecapActionButtonInsertion(mutationRecords){
+function handleRecapActionButtonInsertion(mutationRecords) {
   let recapRefreshButton = document.getElementById('refresh-recap-links')
-  if (recapRefreshButton){
-      recapRefreshButton.addEventListener('click', ()=>{
-          let links = document.querySelectorAll('.recap-inline')
-          links.forEach(link => { link.remove(); })
-          let spinner = document.getElementById("recap-button-spinner")
-          if (spinner){
-              spinner.classList.remove('recap-btn-spinner-hidden')
-          }
-          getTabIdForContentScript().then(msg => {
-              addRecapInformation(msg)
-          });
+  if (recapRefreshButton) {
+    recapRefreshButton.addEventListener('click', () => {
+      let links = document.querySelectorAll('.recap-inline')
+      links.forEach(link => { link.remove(); })
+      let spinner = document.getElementById("recap-button-spinner")
+      if (spinner) {
+        spinner.classList.remove('recap-btn-spinner-hidden')
+      }
+      getTabIdForContentScript().then(msg => {
+        addRecapInformation(msg)
       });
-      
+    });
   }
 }
 
