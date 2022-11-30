@@ -515,12 +515,12 @@ describe('The PACER module', function() {
   });
 
   describe('hasPacerCookie', function() {
-    var loggedInCookie = ('PacerSession=B7yuvmcj2F...9p5nDzEXsHE; ' +
-                          'PacerPref=receipt=Y');
-    var altLoggedInCookie = ('PacerUser=B7yuvmcj2F...9p5nDzEXsHE; ' +
-                             'PacerPref=receipt=Y');
-    var nonLoggedInCookie = ('PacerSession=unvalidated; PacerPref=receipt=Y');
-    var nonsenseCookie = ('Foo=barbaz; Baz=bazbar; Foobar=Foobar');
+    const loggedInCookie = ('PacerSession=B7yuvmcj2F...9p5nDzEXsHE; ' +
+      'PacerPref=receipt=Y');
+    const altLoggedInCookie = ('PacerUser=B7yuvmcj2F...9p5nDzEXsHE; ' +
+      'PacerPref=receipt=Y');
+    const nonLoggedInCookie = ('PacerSession=unvalidated; PacerPref=receipt=Y');
+    const nonsenseCookie = ('Foo=barbaz; Baz=bazbar; Foobar=Foobar');
 
     it('returns true for a valid logged in cookie', function() {
       expect(PACER.hasPacerCookie(loggedInCookie)).toBe(true);

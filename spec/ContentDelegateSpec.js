@@ -837,7 +837,7 @@ describe('The ContentDelegate class', function () {
     let table;
     const form_id = 'submit_form';
     const event = {data: {id: form_id}, origin: 'https://ecf.pamd.uscourts.gov'};
-  
+
     beforeEach(function () {
       clearDocumentBody()
       form = document.createElement('form');
