@@ -1,4 +1,8 @@
 .DS_Store
 .grunt
 node_modules
-/recap.zip
+coverage
+/src/recap.zip
+/recap-chrome.iml
+/.idea/
+.vscode/

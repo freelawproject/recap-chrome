@@ -1,13 +1,14 @@
 {
   "name": "recap-chrome",
-  "version": "1.0.0",
+  "version": "1.2.30",
   "description": "RECAP improves the experience of using PACER, the online public acces system for the U.S. federal courts",
   "main": " ",
   "directories": {
     "test": "test"
   },
   "scripts": {
-    "test": "./node_modules/.bin/karma start --single-run --browsers Chrome_CI"
+    "test": "./node_modules/.bin/karma start --single-run",
+    "postinstall": "vendor-copy"
   },
   "repository": {
     "type": "git",
@@ -19,12 +20,40 @@
     "url": "https://github.com/freelawproject/recap-chrome/issues"
   },
   "homepage": "https://github.com/freelawproject/recap-chrome#readme",
+  "dependencies": {
+    "bootstrap": "^5.2.3",
+    "entr": "^0.0.0",
+    "file-saver": "2.0.5",
+    "jquery": "~3.6.1",
+    "moment": "~2.29.4",
+    "web-ext": "^7.4.0"
+  },
   "devDependencies": {
-    "jasmine": "^2.8.0",
-    "karma": "^2.0.0",
-    "karma-chrome-launcher": "^2.2.0",
-    "karma-jasmine": "^1.1.1",
+    "eslint": "^8.5.0",
+    "jasmine": "^4.5.0",
+    "karma": "^6.4.1",
+    "karma-chrome-launcher": "^3.1.1",
+    "karma-coverage": "^2.2.0",
+    "karma-firefox-launcher": "^2.1.0",
+    "karma-jasmine": "^5.1.0",
     "karma-jasmine-ajax": "^0.1.13",
-    "karma-jquery": "^0.2.2"
-  }
+    "karma-jquery": "^0.2.4",
+    "puppeteer": "^19.3.0",
+    "vendor-copy": "^3.0.1",
+    "whatwg-fetch": "^3.6.2"
+  },
+  "vendorCopy": [
+    {
+      "from": "node_modules/jquery/dist/jquery.js",
+      "to": "src/assets/js/jquery.js"
+    },
+    {
+      "from": "node_modules/file-saver/src/FileSaver.js",
+      "to": "src/assets/js/FileSaver.js"
+    },
+    {
+      "from": "node_modules/moment/moment.js",
+      "to": "src/assets/js/moment.js"
+    }
+  ]
 }

@@ -12,7 +12,7 @@ them.
 ## Running the tests
 
 The tests are designed to be run with Chrome, either headless (as they run on
-Travis CI) or otherwise. They are launched using the
+GitHub actions) or otherwise. They are launched using the
 [Karma test runner](https://karma-runner.github.io/2.0/index.html), which can
 be installed using npm.
 

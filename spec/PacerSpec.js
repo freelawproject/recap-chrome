@@ -1,11 +1,31 @@
 describe('The PACER module', function() {
-  var nonsenseUrl = 'http://something.uscourts.gov/foobar/baz';
-  var maliciousUrl = 'https://ecf.canb.uscourts.gov.evilsite.com/';
-  var noTrailingSlashUrl = 'https://ecf.canb.uscourts.gov';
-  var docketQueryUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/' +
-                           'HistDocQry.pl?531316');
-  var singleDocUrl = 'https://ecf.canb.uscourts.gov/doc1/034031424909';
-  var appellateDocumentUrl = 'https://ecf.ca2.uscourts.gov/docs1/00205695758';
+  
+  const nonsenseUrl = 'http://something.uscourts.gov/foobar/baz';
+  const maliciousUrl = 'https://ecf.canb.uscourts.gov.evilsite.com/';
+  const noTrailingSlashUrl = 'https://ecf.canb.uscourts.gov';
+  const docketReportURL = 'https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl'
+  const singleDocUrl = 'https://ecf.canb.uscourts.gov/doc1/034031424909';
+  const docketQueryUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/' +
+    'HistDocQry.pl?531316');
+  const appellateDocumentUrl = 'https://ecf.ca2.uscourts.gov/docs1/00205695758';
+
+  function InputContainer() {
+    document.body.innerHTML=''
+    const inputContainer = document.createElement('div');
+    inputContainer.id = 'cmecfMainContent';
+    return inputContainer
+  }
+
+  function removeInputContainer() {
+    document.getElementById('cmecfMainContent').remove();
+  }
+
+  function InputWithValue(value, type='button') {
+    const input = document.createElement('input');
+    input.value = value;
+    input.type = type
+    return input
+  }
 
   describe('getCourtFromUrl', function() {
     it('matches a valid docket query URL', function() {
@@ -29,6 +49,15 @@ describe('The PACER module', function() {
     });
   });
 
+  describe('convertToCourtListenerCourt', function () {
+    it('should convert properly', function () {
+      expect(PACER.convertToCourtListenerCourt('azb')).toBe('arb');
+    });
+    it('should not change if not needed', function () {
+      expect(PACER.convertToCourtListenerCourt('akb')).toBe('akb');
+    });
+  });
+
   describe('isDocumentUrl', function() {
     it('matches a valid document URL', function() {
       expect(PACER.isDocumentUrl(singleDocUrl)).toBe(true);
@@ -38,8 +67,8 @@ describe('The PACER module', function() {
       expect(PACER.isDocumentUrl(appellateDocumentUrl)).toBe(true);
     });
 
-    var showDocUrl = ('https://ecf.cacd.uscourts.gov/cgi-bin/show_doc.pl?' +
-                      'caseid=560453&de_seq_num=24&dm_id=15521444&doc_num=7');
+    const showDocUrl = ('https://ecf.cacd.uscourts.gov/cgi-bin/show_doc.pl?' +
+      'caseid=560453&de_seq_num=24&dm_id=15521444&doc_num=7');
 
     it('matches a valid show_doc document URL', function() {
       expect(PACER.isDocumentUrl(showDocUrl)).toBe(true);
@@ -68,31 +97,17 @@ describe('The PACER module', function() {
     });
   });
 
-  describe('getCaseNumberFromUrl', function() {
-    it('returns the right case number for a docket query URL', function() {
-      expect(PACER.getCaseNumberFromUrls([docketQueryUrl])).toBe('531316');
-    });
-
-    it('returns null for a document URL', function() {
-      expect(PACER.getCaseNumberFromUrls([singleDocUrl])).toBeUndefined();
-    });
-
-    it('returns null for patent nonsense', function() {
-      expect(PACER.getCaseNumberFromUrls([nonsenseUrl])).toBeUndefined();
-    });
-  });
-
   describe('isDocketDisplayUrl', function() {
-    var docketDisplayUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?' +
-                            '101092135737069-L_1_0-1');
+    const docketDisplayUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl?' +
+      '101092135737069-L_1_0-1');
 
     it('matches a docket display URL', function() {
       expect(PACER.isDocketDisplayUrl(docketDisplayUrl)).toBe(true);
     });
 
-    var appellateDocketDisplayUrl = (
+    const appellateDocketDisplayUrl = (
       'https://ecf.ca1.uscourts.gov/n/beam/servlet/TransportRoom?' +
-	'servlet=CaseSummary.jsp&caseNum=16-1567&incOrigDkt=Y&incDktEntries=Y'
+      'servlet=CaseSummary.jsp&caseNum=16-1567&incOrigDkt=Y&incDktEntries=Y'
     );
 
     it('returns true for a valid appellate docket URL', function() {
@@ -100,35 +115,121 @@ describe('The PACER module', function() {
     });
 
     it('returns false for a docket query URL', function() {
-      expect(PACER.isDocketDisplayUrl(docketQueryUrl)).toBeUndefined();
+      expect(PACER.isDocketDisplayUrl(docketQueryUrl)).toBe(false);
     });
 
     it('returns false for a document URL', function() {
-      expect(PACER.isDocketDisplayUrl(singleDocUrl)).toBeUndefined();
+      expect(PACER.isDocketDisplayUrl(singleDocUrl)).toBe(false);
     });
 
     it('returns false for patent nonsense', function() {
-      expect(PACER.isDocketDisplayUrl(nonsenseUrl)).toBeUndefined();
+      expect(PACER.isDocketDisplayUrl(nonsenseUrl)).toBe(false);
+    });
+
+    const caseDefault = 'https://ecf.ca1.uscourts.gov/n/beam/servlet/TransportRoom?' +
+      'servlet=Nonsense.jsp';
+
+    it('returns false for other jsp pages', function() {
+      expect(PACER.isDocketDisplayUrl(caseDefault)).toBe(false);
+    });
+
+    const caseSearch = 'https://ecf.ca1.uscourts.gov/n/beam/servlet/TransportRoom?' +
+      'servlet=CaseSearch.jsp';
+
+    it('returns false for other jsp pages', function() {
+      expect(PACER.isDocketDisplayUrl(caseSearch)).toBe(false);
     });
   });
 
-  var inputContainer = document.createElement('div');
-  inputContainer.id = 'input-cont';
-  document.body.appendChild(inputContainer);
-  function appendInputWithValue(value) {
-    var input = document.createElement('input');
-    input.value = value;
-    document.getElementById('input-cont').appendChild(input);
-  }
+  describe('isDocketHistoryDisplayUrl', function() {
+    const historyUrl = 'https://ecf.ca1.uscourts.gov/HistDocQry.pl?fred-fred';
+    it('should recognize a history url', function () {
+      expect(PACER.isDocketHistoryDisplayUrl(historyUrl)).toBe(true);
+    });
+  });
+
+  describe('formatDocketQueryUrl', function(){
+    it('should return a properly formatted URL', function () {
+      expect(PACER.formatDocketQueryUrl(docketReportURL, 365816)).toBe(docketReportURL+'?365816');
+    });
+    
+    it('should not change if not needed', function () {
+      expect(PACER.formatDocketQueryUrl(docketReportURL+'?365816', 365816)).toBe(docketReportURL+'?365816');
+    });
+  })
 
   describe('isAttachmentMenuPage', function() {
-    describe('for documents with a matching input', function() {
+
+    describe('for documents with a matching input for PACER 1.6 or older', function() {
       beforeEach(function() {
-        appendInputWithValue('Download All');
+        let main_div = InputContainer()
+        main_div.appendChild(InputWithValue('Download All', 'button'))
+        document.body.appendChild(main_div)
+        document.getElementById = jasmine.createSpy('getElementById').and.callFake((id)=>{
+          if (id != 'cmecfMainContent'){
+            return null 
+          }
+          return main_div
+        });
       });
 
       afterEach(function() {
-        document.getElementById('input-cont').innerHTML = '';
+        removeInputContainer();
+      });
+
+      it('returns true when the URL is valid', function() {
+        expect(PACER.isAttachmentMenuPage(singleDocUrl, document)).toBe(true);
+      });
+
+      it('returns false when the URL is invalid', function() {
+        expect(
+          PACER.isAttachmentMenuPage(docketQueryUrl, document)).toBe(false);
+      });
+    });
+
+    describe('for documents with a matching input for PACER 1.7', function() {
+      beforeEach(function() {
+        let main_div = InputContainer()
+        main_div.appendChild(InputWithValue('View Selected', 'button'))
+        main_div.appendChild(InputWithValue('Download Selected', 'button'))
+        document.body.appendChild(main_div)
+        document.getElementById = jasmine.createSpy('getElementById').and.callFake((id)=>{
+          if (id != 'cmecfMainContent'){
+            return null 
+          }
+          return main_div
+        });
+      });
+
+      afterEach(function() {
+        removeInputContainer();
+      });
+
+      it('returns true when the URL is valid', function() {
+        expect(PACER.isAttachmentMenuPage(singleDocUrl, document)).toBe(true);
+      });
+
+      it('returns false when the URL is invalid', function() {
+        expect(
+          PACER.isAttachmentMenuPage(docketQueryUrl, document)).toBe(false);
+      });
+    });
+
+    describe('for documents with a combined size over size limit', function() {
+      beforeEach(function() {
+        let main_div = InputContainer()
+        main_div.innerHTML='You must view each document individually because the combined PDF would be over the 50 MB size limit.'
+        document.body.appendChild(main_div)
+        document.getElementById = jasmine.createSpy('getElementById').and.callFake((id)=>{
+          if (id != 'cmecfMainContent'){
+            return null 
+          }
+          return main_div
+        });
+      });
+
+      afterEach(function() {
+        removeInputContainer();
       });
 
       it('returns true when the URL is valid', function() {
@@ -143,36 +244,73 @@ describe('The PACER module', function() {
 
     describe('for documents which have non-matching inputs', function() {
       beforeEach(function() {
-        appendInputWithValue('Download One');
-        appendInputWithValue('Download Some');
+        let main_div = InputContainer()
+        main_div.appendChild(InputWithValue('View files'))
+        main_div.appendChild(InputWithValue('View all'))
+        document.body.appendChild(main_div)
+        document.getElementById = jasmine.createSpy('getElementById').and.callFake((id)=>{
+          if (id != 'cmecfMainContent'){
+            return null 
+          }
+          return main_div
+        });
       });
 
       afterEach(function() {
-        document.getElementById('input-cont').innerHTML = '';
+        removeInputContainer();
       });
 
       it('returns false with valid URL', function() {
         expect(PACER.isAttachmentMenuPage(singleDocUrl, document)).toBe(false);
       });
+
     });
 
-    it('returns false with a valid URL and non-matching document', function() {
-      expect(PACER.isAttachmentMenuPage(singleDocUrl, document)).toBe(false);
-    });
+    describe('for documents which have not matching format', function(){
+      beforeEach(function() {
+        let main_div = InputContainer()
+        main_div.appendChild(document.createElement('div'))
+        document.getElementById = jasmine.createSpy('getElementById').and.callFake((id)=>{
+          if (id != 'cmecfMainContent'){
+            return null 
+          }
+          return main_div
+        });
+      });
+
+      afterEach(function() {
+        removeInputContainer();
+      });
+
+      it('returns false with a valid URL', function() {
+        expect(PACER.isAttachmentMenuPage(singleDocUrl, document)).toBe(false);
+      });
+    })
+    
   });
 
   describe('isSingleDocumentPage', function() {
     describe('for documents with a matching input', function() {
       beforeEach(function() {
-        appendInputWithValue('View Document');
+        let main = InputContainer();
+        main.appendChild(InputWithValue('View Document'));
+        let table = document.createElement('table');
+        let tr_image = document.createElement('tr');
+        let td_image = document.createElement('td');
+        td_image.innerHTML = 'Image 1234-9876';
+        tr_image.appendChild(td_image);
+        table.appendChild(tr_image);
+        main.appendChild(table)
+        document.body.appendChild(main)
       });
 
       afterEach(function() {
-        document.getElementById('input-cont').innerHTML = '';
+        removeInputContainer();
       });
 
       it('returns true when the URL is valid', function() {
         expect(PACER.isSingleDocumentPage(singleDocUrl, document)).toBe(true);
+        
       });
 
       it('return false when the URL is invalid', function() {
@@ -183,12 +321,14 @@ describe('The PACER module', function() {
 
     describe('for documents which have non-matching inputs', function() {
       beforeEach(function() {
-        appendInputWithValue('Download One');
-        appendInputWithValue('Download Some');
+        let main = InputContainer();
+        main.appendChild(InputWithValue('Download One'))
+        main.appendChild(InputWithValue('Download Some'))
+        document.body.appendChild(main)
       });
 
       afterEach(function() {
-        document.getElementById('input-cont').innerHTML = '';
+        removeInputContainer();
       });
 
       it('returns false with valid URL', function() {
@@ -196,9 +336,22 @@ describe('The PACER module', function() {
       });
     });
 
-    it('returns false with a valid URL and non-matching document', function() {
-      expect(PACER.isAttachmentMenuPage(singleDocUrl, document)).toBe(false);
-    });
+    describe('for documents which have non-matching format', function() {
+      beforeEach(function() {
+        let main = InputContainer();
+        main.appendChild(document.createElement('div'))
+        document.body.appendChild(main)
+      });
+
+      afterEach(function() {
+        removeInputContainer();
+      });
+      
+      it('returns false with a valid URL', function() {
+        expect(PACER.isSingleDocumentPage(singleDocUrl, document)).toBe(false);
+      });
+    })
+    
   });
 
   describe('getDocumentIdFromUrl', function() {
@@ -213,6 +366,91 @@ describe('The PACER module', function() {
     it('coerces the fourth digit to zero', function() {
       let fourthSetUrl = singleDocUrl.replace('034031424909', '034131424909');
       expect(PACER.getDocumentIdFromUrl(fourthSetUrl)).toBe('034031424909');
+    });
+  });
+
+  describe('getDocumentIdFronForm', function () {
+    const goDLS = "goDLS('/doc1/09518360046','153992','264','','','1','','');";
+    let form;
+    beforeEach(function() {
+      form = document.createElement('form');
+      const input = document.createElement('input');
+      input.value = 'View Document';
+      form.appendChild(input);
+      form.setAttribute('onSubmit', goDLS);
+      document.body.appendChild(form);
+    });
+
+    afterEach(function() {
+      form.remove();
+    });
+
+    it('should return document id', function () {
+      expect(PACER.getDocumentIdFromForm(appellateDocumentUrl, document)).toBe('09508360046');
+    });
+  });
+
+  describe('getCaseNumberFromUrl', function() {
+    it('returns the right case number for a docket query URL', function() {
+      expect(PACER.getCaseNumberFromUrls([docketQueryUrl])).toBe('531316');
+    });
+
+    it('returns null for a document URL', function() {
+      expect(PACER.getCaseNumberFromUrls([singleDocUrl])).toBeUndefined();
+    });
+
+    it('returns null for patent nonsense', function() {
+      expect(PACER.getCaseNumberFromUrls([nonsenseUrl])).toBeUndefined();
+    });
+
+    const cmecfUrl = ('https://ecf.cmecf.uscourts.gov/cgi-bin/' +
+      'HistDocQry.pl?0');
+
+    it('returns caseNum', function() {
+      expect(PACER.getCaseNumberFromUrls([cmecfUrl])).toBeUndefined();
+    });
+
+    const caseNumUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/' +
+      'HistDocQry.pl?caseNum=44-29');
+
+    it('returns caseNum', function() {
+      expect(PACER.getCaseNumberFromUrls([caseNumUrl])).toBe('44-29');
+    });
+    // relies on the leading dash to test against /[?&]caseId=([-\d]+)/
+    // instead of /[?&]caseid=(\d+)/i
+    const caseIdUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/' +
+      'HistDocQry.pl?caseId=-6721');
+
+    it('returns caseNum', function() {
+      expect(PACER.getCaseNumberFromUrls([caseIdUrl])).toBe('-6721');
+    });
+  });
+
+  describe('getCaseNumberFromInputs', function() {
+    const goDLS = "goDLS('/doc1/09518360046','153992','264','','','1','','');";
+    const input = document.createElement('input');
+
+    beforeEach(function() {
+      const form = document.createElement('form');
+      document.body.appendChild(form);
+      input.type = 'button'
+      form.append(input);
+      form.setAttribute('onSubmit', goDLS);
+    });
+
+    afterEach(function() {
+      document.getElementsByTagName('form')[0].remove();
+    });
+
+    it('should return a case number for Download All', function () {
+      input.value = 'Download All';
+      input.setAttribute('onClick', '&caseid=44127');
+      expect(PACER.getCaseNumberFromInputs(appellateDocumentUrl, document)).toBe('44127');
+    });
+
+    it('should return a case number for View Document', function () {
+      input.value = 'View Document';
+      expect(PACER.getCaseNumberFromInputs(appellateDocumentUrl, document)).toBe('153992');
     });
   });
 
@@ -231,6 +469,8 @@ describe('The PACER module', function() {
 	"return(false);"
 
     it("gets the right values for an example DLS string", function() {
+      let goDLSSampleString = "goDLS('/doc1/09518360046','153992','264','','','1','',''); " +
+        "return(false);";
       expect(PACER.parseGoDLSFunction(goDLSSampleString)).toEqual({
         hyperlink: '/doc1/09518360046',
         de_caseid: '153992',
@@ -241,6 +481,24 @@ describe('The PACER module', function() {
         magic_num: '',
         hdr: ''
       });
+    });
+
+
+    it("gets the right values for a DLS string with 10 parameters", function(){
+      let goDLSSampleString = "goDLS('/doc1/152129714885','496493','','1','','','','','',''); " +
+        "return(false)";
+      expect(PACER.parseGoDLSFunction(goDLSSampleString)).toEqual({
+        hyperlink: '/doc1/152129714885',
+        de_caseid: '496493',
+        de_seqno: '',
+        got_receipt: '1',
+        pdf_header: '',
+        pdf_toggle_possible: '',
+        magic_num: '',
+        claim_id: '',
+        claim_num: '',
+        claim_doc_seq: '',
+      })
     });
 
     it("returns false for an invalid DLS string", function() {
@@ -254,7 +512,6 @@ describe('The PACER module', function() {
     it("returns false for an undefined DLS input", function() {
       expect(PACER.parseGoDLSFunction(undefined)).toBe(null);
     });
-
   });
 
   describe('hasPacerCookie', function() {
@@ -276,6 +533,10 @@ describe('The PACER module', function() {
     it('returns false for a non-logged in cookie', function() {
       expect(PACER.hasPacerCookie(nonLoggedInCookie)).toBe(false);
     });
+
+    it('returns false for nonsense cookie', function() {
+      expect(PACER.hasPacerCookie(nonsenseCookie)).toBe(false);
+    });
   });
 
   describe('isAppellateCourt', function() {
@@ -291,4 +552,74 @@ describe('The PACER module', function() {
       expect(PACER.isAppellateCourt('pingpong')).toBe(false);
     });
   });
+
+  describe('isIQuerySummaryURL', function(){
+    it('returns true for an iquery url with query string', function() {
+      expect(PACER.isIQuerySummaryURL('https://ecf.mied.uscourts.gov/cgi-bin/iquery.pl?184987019171527-L_1_0-1')).toBe(true);
+    });
+
+    it('returns false for an iquery url without query string', function() {
+      expect(PACER.isIQuerySummaryURL('https://ecf.mied.uscourts.gov/cgi-bin/iquery.pl')).toBe(false);
+    });
+
+    it('returns false for an url not related to the iquery pages', function() {
+      expect(PACER.isIQuerySummaryURL(docketReportURL)).toBe(false);
+    });
+  })
+  
+  
+  describe('getCaseIdFromIQuerySummary', function(){    
+    
+    describe('for documents with matching format', function() {
+
+      beforeEach(function() {
+        let main_div = InputContainer()
+        let table = document.createElement('table')
+        let tbody = document.createElement('tbody');
+        let tr = document.createElement('tr');
+        let td = document.createElement('td');
+        let anchor = document.createElement('a')
+        anchor.href="cgi-bin/qryDocument.pl?360406"
+        td.appendChild(anchor)
+        tr.appendChild(td)
+        tbody.appendChild(tr)
+        table.appendChild(tbody)
+        main_div.appendChild(table)
+        document.body.appendChild(main_div)
+        document.querySelector = jasmine.createSpy('querySelector').and.callFake(()=>{
+          return table
+        });
+      });
+
+      afterEach(function(){
+        document.querySelector = jasmine.createSpy('querySelector').and.callThrough();
+      })
+    
+      it('returns the case id', function() {
+        expect(PACER.getCaseIdFromIQuerySummary()).toBe('360406');
+      })
+
+    });
+    
+    describe('for documents which have not matching format', function(){
+
+      beforeEach(function() {
+        let main_div = InputContainer()
+        let table = document.createElement('table')
+        main_div.appendChild(table)
+        document.body.appendChild(main_div)
+        document.querySelector = jasmine.createSpy('querySelector').and.callFake(()=>{
+          return table
+        });
+      });
+
+      afterEach(function(){
+        document.querySelector = jasmine.createSpy('querySelector').and.callThrough();
+      })
+
+      it('returns null', function() {
+        expect(PACER.getCaseIdFromIQuerySummary()).toBe(null);
+      });
+    })
+  })
 });

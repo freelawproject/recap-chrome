@@ -1,6 +1,8 @@
 // Karma configuration
 // Generated on Wed Jan 03 2018 21:51:16 GMT-0800 (PST)
 
+process.env.CHROME_BIN = require("puppeteer").executablePath();
+
 module.exports = function(config) {
   config.set({
 
@@ -12,7 +14,8 @@ module.exports = function(config) {
       'karma-jasmine',
       'karma-jasmine-ajax',
       'karma-chrome-launcher',
-      'karma-jquery'
+      'karma-jquery',
+      'karma-coverage'
     ],
 
     // frameworks to use
@@ -21,33 +24,36 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'assets/js/FileSaver.js',
-      'notifier.js',
-      'pacer.js',
-      'recap.js',
-      'toolbar_button.js',
-      'utils.js',
+      { pattern: 'node_modules/whatwg-fetch/fetch.js', type: 'module' },
+      'src/assets/js/FileSaver.js',
+      'src/notifier.js',
+      'src/pacer.js',
+      'src/recap.js',
+      'src/toolbar_button.js',
+      'src/utils.js',
       'test/mock-utils.js',
-      'content_delegate.js',
+      'src/content_delegate.js',
       'spec/*Spec.js',
     ],
 
 
     // list of files / patterns to exclude
     exclude: [
+      'spec/*ZipSpec.js',
     ],
 
 
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
+      'src/**/*.js': 'coverage'
     },
 
 
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-    reporters: ['progress'],
+    reporters: ['progress', 'coverage'],
 
 
     // web server port
@@ -58,13 +64,6 @@ module.exports = function(config) {
     colors: true,
 
 
-    // level of logging
-    // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
-    logLevel: config.LOG_INFO,
-
-    client: {
-      captureConsole: false
-    },
 
 
     // enable / disable watching file and executing tests whenever any file changes
@@ -73,11 +72,25 @@ module.exports = function(config) {
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['Chrome'],
+    browsers: ['ChromeHeadless'],
 
+    // set these options to view logs in development
+    // see https://github.com/karma-runner/karma/issues/2582#issuecomment-413660796 
+    // browserConsoleLogOptions: {
+    //   level: 'log',
+    //   format: '%b %T: %m',
+    //   terminal: true,
+    // },
+    // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
+    logLevel: config.LOG_DEBUG,
+
+    client: {
+      captureConsole: true,
+    },
+    
     customLaunchers: {
-      Chrome_CI: {
-        base: 'Chrome',
+      CustomChromeHeadless: {
+        base: 'ChromeHeadless',
         flags: [
           '--no-sandbox',
           '--headless',
@@ -95,4 +108,4 @@ module.exports = function(config) {
     // how many browser should be started simultaneous
     concurrency: Infinity
   })
-}
+};

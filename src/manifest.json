@@ -1,0 +1,91 @@
+{
+  "manifest_version": 2,
+  "name": "RECAP",
+  "author": "Free Law Project and the Center for Information Technology and Policy at Princeton",
+  "description": "RECAP improves the experience of using PACER, the online public access system for the U.S. federal courts.",
+  "homepage_url": "https://free.law/recap/",
+  "version": "1.2.30",
+  "icons": {
+    "16": "assets/images/icon-16.png",
+    "19": "assets/images/icon-19.png",
+    "32": "assets/images/icon-32.png",
+    "38": "assets/images/icon-38.png",
+    "48": "assets/images/icon-48.png",
+    "128": "assets/images/icon-128.png"
+  },
+  "applications": {
+    "gecko": {
+      "id": "info@recapthelaw.org",
+      "strict_min_version": "57.0"
+    }
+  },
+  "permissions": [
+    "*://*.uscourts.gov/",
+    "notifications",
+    "storage",
+    "unlimitedStorage",
+    "tabs",
+    "cookies"
+  ],
+  "background": {
+    "scripts": [
+      "assets/js/jquery.js",
+      "utils.js",
+      "notifier.js",
+      "toolbar_button.js",
+      "pacer.js",
+      "recap.js",
+      "background.js"
+    ]
+  },
+  "content_scripts": [{
+    "matches": ["*://*.uscourts.gov/*"],
+    "include_globs": ["*://ecf.*", "*://ecf-train.*", "*://pacer.*"],
+    "css": [
+      "assets/css/style.css",
+      "assets/css/font-awesome.css"
+    ],
+    "js": [
+      "assets/js/jquery.js",
+      "assets/js/FileSaver.js",
+      "assets/js/moment.js",
+      "assets/js/livestamp.js",
+      "assets/js/bootstrap.bundle.js",
+      "utils.js",
+      "notifier.js",
+      "toolbar_button.js",
+      "pacer.js",
+      "recap.js",
+      "content_delegate.js",
+      "content.js"
+    ],
+    "run_at": "document_end"
+  }, {
+    "matches": ["https://www.courtlistener.com/*"],
+    "js": [
+      "install_notifier.js"
+    ],
+    "run_at": "document_idle"
+  }],
+  "browser_action": {
+    "default_icon": {
+      "19": "assets/images/grey-19.png",
+      "38": "assets/images/grey-38.png"
+    },
+    "default_title": "RECAP: Not at a PACER site",
+    "default_popup": "options.html"
+  },
+  "chrome_settings_overrides": {
+    "search_provider": {
+      "name": "RECAP Archive",
+      "search_url": "https://www.courtlistener.com/?type=r&q={searchTerms}&order_by=score+desc",
+      "keyword": "recap",
+      "favicon_url": "https://www.courtlistener.com/static/ico/favicon.ico",
+      "encoding": "UTF-8",
+      "is_default": false
+    }
+  },
+  "web_accessible_resources": [
+    "assets/images/*.png"
+  ]
+}
