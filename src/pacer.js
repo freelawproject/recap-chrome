@@ -50,7 +50,7 @@ let PACER = {
     // RECAP are being used outside of PACER. Be sure tests pass appropriately
     // before tweaking this regex.
     let match = (url || '').toLowerCase().match(
-        /^\w+:\/\/(ecf|ecf-train|pacer)\.(\w+)\.uscourts\.gov(?:\/.*)?$/);
+        /^\w+:\/\/(ecf|pacer)\.(\w+)\.uscourts\.gov(?:\/.*)?$/);
     return match ? match[2] : null;
   },
 
