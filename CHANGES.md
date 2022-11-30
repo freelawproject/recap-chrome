@@ -5,7 +5,7 @@
 The following changes are not yet released, but are code complete:
 
 Features:
- - Add an actions button to PACER ([#308](https://github.com/freelawproject/recap/issues/308))
+ - Add an actions button to PACER docket pages ([#308](https://github.com/freelawproject/recap/issues/308), [#282](https://github.com/freelawproject/recap-chrome/pull/282))
 
 Changes:
  - Remove option to "Confirm before opening RECAP documents" ([#216](https://github.com/freelawproject/recap/issues/216))
