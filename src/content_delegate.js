@@ -438,9 +438,6 @@ ContentDelegate.prototype.handleSingleDocumentPageCheck = function () {
 };
 
 ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
-  // Save a copy of the page source, altered so that the "View Document"
-  // button goes forward in the history instead of resubmitting the form.
-
   // Security check to ensure message is from a PACER website.
   if (!PACER.getCourtFromUrl(event.origin)) {
     console.warn("Received message from non PACER origin. This should only " +
@@ -448,6 +445,8 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
     return;
   }
 
+  // Save a copy of the page source, altered so that the "View Document"
+  // button goes forward in the history instead of resubmitting the form.
   let originalForm = document.forms[0];
   let originalSubmit = originalForm.getAttribute('onsubmit');
   originalForm.setAttribute('onsubmit', 'history.forward(); return false;');
