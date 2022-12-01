@@ -15,6 +15,20 @@
 */
 
 /*
+  CSS to use font files from the assets folder
+*/
+.fa {
+  font-family: 'RecapFontAwesome' !important;
+}
+
+@font-face {
+  font-family: 'RecapFontAwesome';
+  src: url("chrome-extension://__MSG_@@extension_id__/assets/fonts/fontawesome-webfont.woff2");
+  font-weight: normal;
+  font-style: normal;
+}
+
+/*
    CSS For the options page
 */
 #options-body {
