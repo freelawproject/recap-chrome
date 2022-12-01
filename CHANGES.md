@@ -13,7 +13,7 @@ Changes:
  
 
 Fixes: 
- - None yet
+ - Verify the sender's identity in communication between Window objects ([#236](https://github.com/freelawproject/recap/issues/236))
 
 For developers:
  - Nothing yet
