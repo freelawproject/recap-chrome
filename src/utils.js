@@ -85,14 +85,18 @@ function getHostname(url) {
 }
 
 
-// Gets the docket number from the absolute URL attribute found in the 
-// response of the getAvailabilityForDocket request. An example of this 
-// URL is:
+// Gets the CL Id from the absolute URL attribute found in the response
+// of the getAvailabilityForDocket request. An example of this URL is:
+//
 //    /docket/65757697/mohammad/
+//
 // this function will return: 
+//
 //   65757697
-function getDocketNumberFromAbsoluteURL(absoluteURL){
-  return absoluteURL.split('/')[2]
+//
+function getClIdFromAbsoluteURL(absoluteURL){
+  // this will match the sequence of digits in the absolute URL
+  return absoluteURL.match(/\d+/)[0]
 }
 
 // Makes an XHR to the given URL, calling a callback with the returned content
