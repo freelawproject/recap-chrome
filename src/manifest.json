@@ -52,6 +52,7 @@
       "assets/js/livestamp.js",
       "assets/js/bootstrap.bundle.js",
       "utils.js",
+      "action_button.js",
       "notifier.js",
       "toolbar_button.js",
       "pacer.js",
@@ -86,6 +87,8 @@
     }
   },
   "web_accessible_resources": [
-    "assets/images/*.png"
+    "assets/images/*.png",
+    "assets/fonts/fontawesome-webfont.woff",
+    "assets/fonts/fontawesome-webfont.woff2"
   ]
 }

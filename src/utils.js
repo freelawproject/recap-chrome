@@ -84,6 +84,21 @@ function getHostname(url) {
   return $('<a>').prop('href', url).prop('hostname');
 }
 
+
+// Gets the CL Id from the absolute URL attribute found in the response
+// of the getAvailabilityForDocket request. An example of this URL is:
+//
+//    /docket/65757697/mohammad/
+//
+// this function will return: 
+//
+//   65757697
+//
+function getClIdFromAbsoluteURL(absoluteURL){
+  // this will match the sequence of digits in the absolute URL
+  return absoluteURL.match(/\d+/)[0]
+}
+
 // Makes an XHR to the given URL, calling a callback with the returned content
 // type and response (interpreted according to responseType).  See XHR2 spec
 // for details on responseType and response.  Uses GET if postData is null or
@@ -262,6 +277,9 @@ const recapAlertButton = (court, pacerCaseId, isActive) => {
   return anchor;
 };
 
+
+
+// Creates a div element to show a docket is available for free  
 const recapBanner = (result) => {
   const div = document.createElement('div');
   div.setAttribute('class', 'recap-banner');
@@ -289,6 +307,7 @@ const recapBanner = (result) => {
   return div;
 };
 
+// Creates a div element to advertise RECAP email
 const recapEmailBanner = (css_class = 'recap-email-banner') => {
   const div = document.createElement('div');
   div.setAttribute('class', css_class);

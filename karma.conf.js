@@ -31,6 +31,7 @@ module.exports = function(config) {
       'src/recap.js',
       'src/toolbar_button.js',
       'src/utils.js',
+      'src/action_button.js',
       'test/mock-utils.js',
       'src/content_delegate.js',
       'spec/*Spec.js',
