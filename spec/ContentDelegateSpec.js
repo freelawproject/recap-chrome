@@ -830,11 +830,11 @@ describe('The ContentDelegate class', function () {
     });
   });
 
-  describe('onDocumentViewSubmit', function () {
+  describe('onDocumentViewSubmit', function() {
     let form;
     let table;
     const form_id = 'submit_form';
-    const event = { data: { id: form_id } };
+    const event = {data: {id: form_id}, origin: 'https://ecf.pamd.uscourts.gov'};
 
     beforeEach(function () {
       clearDocumentBody()

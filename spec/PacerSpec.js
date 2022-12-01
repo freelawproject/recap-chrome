@@ -1,9 +1,12 @@
 describe('The PACER module', function() {
+  
   const nonsenseUrl = 'http://something.uscourts.gov/foobar/baz';
+  const maliciousUrl = 'https://ecf.canb.uscourts.gov.evilsite.com/';
+  const noTrailingSlashUrl = 'https://ecf.canb.uscourts.gov';
   const docketReportURL = 'https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl'
+  const singleDocUrl = 'https://ecf.canb.uscourts.gov/doc1/034031424909';
   const docketQueryUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/' +
     'HistDocQry.pl?531316');
-  const singleDocUrl = 'https://ecf.canb.uscourts.gov/doc1/034031424909';
   const appellateDocumentUrl = 'https://ecf.ca2.uscourts.gov/docs1/00205695758';
 
   function InputContainer() {
@@ -35,6 +38,14 @@ describe('The PACER module', function() {
 
     it('ignores patent nonsense', function() {
       expect(PACER.getCourtFromUrl(nonsenseUrl)).toBe(null);
+    });
+
+    it('cannot be fooled by extra subdomains', function() {
+      expect(PACER.getCourtFromUrl(maliciousUrl)).toBe(null);
+    });
+
+    it('matches even if trailing slash is absent', function() {
+      expect(PACER.getCourtFromUrl(noTrailingSlashUrl)).toBe('canb');
     });
   });
 
@@ -454,6 +465,7 @@ describe('The PACER module', function() {
   });
 
   describe('parseGoDLSFunction', function(){
+    
     it("gets the right values for an example DLS string", function() {
       let goDLSSampleString = "goDLS('/doc1/09518360046','153992','264','','','1','',''); " +
         "return(false);";
