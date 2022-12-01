@@ -13,13 +13,6 @@ let pacer_doc_id = PACER.getDocumentIdFromForm(url, document) ||
   PACER.getDocumentIdFromUrl(url);
 let links = document.body.getElementsByTagName('a');
 
-// Query relevant inputs in the page.
-let caseNumberInput = document.getElementById('case_number_text_area_0')
-let allCaseInput = document.getElementById('all_case_ids')
-
-// Query the body content of the first table on the page.
-let tableBody = document.querySelector('tbody');
-
 // seed the content_delegate with the tabId by using the message 
 // returned from the background worker
 function addRecapInformation(msg){
@@ -125,6 +118,13 @@ function handleRecapActionButtonInsertion(mutationRecords) {
     });
   }
 }
+
+// Query relevant inputs in the page.
+let caseNumberInput = document.getElementById('case_number_text_area_0')
+let allCaseInput = document.getElementById('all_case_ids')
+
+// Query the body content of the first table on the page.
+let tableBody = document.querySelector('tbody');
 
 if (allCaseInput){
   // create a mutation observer to watch for changes being made to 
