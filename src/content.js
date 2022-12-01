@@ -147,6 +147,17 @@ if (caseNumberInput){
   })
 }
 
+// if the content script found a tbody element on the page, It would create an
+// observer to watch for insertions/removal of a child inside that HTML tag.
+//
+// This operation(insertion/removal) is relevant because the "RECAP actions" button 
+// is inserted inside a tbody tag some time after the js files from the extension 
+// are loaded, so it's not possible to query or add a listener to this button right
+// from the start.
+//
+// this mutation will help the extension know when a new element is inserted in the 
+// tbody tag and the callback function will check if this new element is the "RECAP
+// actions" button.
 if (tableBody){
   // create a mutation observer to watch for changes being made to 
   // the childlist of the table element
