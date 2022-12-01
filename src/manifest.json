@@ -52,6 +52,7 @@
       "assets/js/livestamp.js",
       "assets/js/bootstrap.bundle.js",
       "utils.js",
+      "action_button.js",
       "notifier.js",
       "toolbar_button.js",
       "pacer.js",
