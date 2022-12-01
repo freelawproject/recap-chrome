@@ -286,8 +286,8 @@ ContentDelegate.prototype.handleDocketDisplayPage = async function () {
         );
       } else {
         addAlertButtonInRecapAction(this.court, this.pacer_case_id)
-        let docketNum = getDocketNumberFromAbsoluteURL(result.results[0].absolute_url)
-        addSearchDocketInRecapAction(docketNum)
+        let cl_id = getClIdFromAbsoluteURL(result.results[0].absolute_url)
+        addSearchDocketInRecapAction(cl_id)
       }
     }
   );
