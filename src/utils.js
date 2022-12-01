@@ -299,7 +299,7 @@ const addAlertButtonInRecapAction = (court, pacerCaseId) => {
 };
 
 // Handles the insertion of the "Search this docket" option in the dropdown menu
-const addSearchDocketInRecapAction = (docketNumber)=>{
+const addSearchDocketInRecapAction = (cl_id)=>{
   let viewDocketButton = document.getElementById('view-docket-button')
   let existingSearchButton = document.getElementById('search-docket-button')
   if (!existingSearchButton){
@@ -307,7 +307,7 @@ const addSearchDocketInRecapAction = (docketNumber)=>{
     docketLi.setAttribute('id', 'search-docket-button')
     let searchDocket = document.createElement('a')
     searchDocket.innerHTML = 'Search this Docket'
-    searchDocket.href = `https://www.courtlistener.com/?type=r&q=docket_id%3A${docketNumber}`
+    searchDocket.href = `https://www.courtlistener.com/?type=r&q=docket_id%3A${cl_id}`
     searchDocket.setAttribute('target', '_blank');
     docketLi.appendChild(searchDocket)
     viewDocketButton.before(docketLi)
