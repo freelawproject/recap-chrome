@@ -84,10 +84,28 @@ let PACER = {
       return match[0].slice(1);
     }
   },
+  
   // Returns true if the URL is for docket query page.
   isDocketQueryUrl: function (url) {
-    // The part after the "?" is all digits.
-    return !!url.match(/\/(DktRpt|HistDocQry)\.pl\?\d+$/);
+    // There are two pages that use the DktRpt.pl url that we want to match:
+    //  - The docket query page: /DktRpt.pl?115206
+    //  - The docket report page: /DktRpt.pl?caseNumber=1:17-cv-10577&caseId=0
+    // 
+    // And one page that uses DktRpt.pl that we don't want to match:
+    //  - The docket page itself: /DktRpt.pl?591030040473392-L_1_0-1
+    // 
+    // Thus, this regex matches URLs that have a query string with only digits
+    // or that has one or multiple parameters separated by the ampersand ("&").
+    //
+    // This function will return true for the following URLs:
+    //  - DktRpt.pl?365816
+    //  - DktRpt.pl?caseNumber=4:19-cr-00820-SRC-1
+    //  - DktRpt.pl?caseNumber=1:17-cv-10577&caseId=0
+    //
+    // But false for:
+    //  - /DktRpt.pl?591030040473392-L_1_0-1
+    //
+    return !!url.match(/\/(DktRpt|HistDocQry)\.pl\?(\d+|(&?[\w]+=[^&=\n]+)+)$/);
   },
 
   // Returns true if the URL is for the manage account page.
