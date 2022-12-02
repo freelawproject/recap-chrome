@@ -7,6 +7,10 @@ describe('The PACER module', function() {
   const singleDocUrl = 'https://ecf.canb.uscourts.gov/doc1/034031424909';
   const docketQueryUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/' +
     'HistDocQry.pl?531316');
+  const docketQueryUrlFromAppellate = ('https://ecf.canb.uscourts.gov/cgi-bin/' +
+    'DktRpt.pl?caseNumber=2:16-cv-01129-RFB-DJA');
+  const docketQueryUrlWithMultiParameter = ('https://ecf.canb.uscourts.gov/cgi-bin/' +
+    'DktRpt.pl?caseNumber=1:17-cv-10577&caseId=0'); 
   const appellateDocumentUrl = 'https://ecf.ca2.uscourts.gov/docs1/00205695758';
 
   function InputContainer() {
@@ -84,8 +88,20 @@ describe('The PACER module', function() {
   });
 
   describe('isDocketQueryUrl', function() {
-    it('matches a valid docket query URL', function() {
+    it('matches a docket query URL with digits in the query string', function() {
       expect(PACER.isDocketQueryUrl(docketQueryUrl)).toBe(true);
+    });
+
+    it('matches a docket query URL with one parameter in the query string', function(){
+      expect(PACER.isDocketQueryUrl(docketQueryUrlFromAppellate)).toBe(true);
+    });
+
+    it ('matches a docket query URL with multiple parameters in the query string', function(){
+      expect(PACER.isDocketQueryUrl(docketQueryUrlWithMultiParameter)).toBe(true);
+    });
+
+    it ('returns false for a docket query URL that does not have querystring', function(){
+      expect(PACER.isDocketQueryUrl(docketReportURL)).toBe(false);
     });
 
     it('returns false for a document URL', function() {
