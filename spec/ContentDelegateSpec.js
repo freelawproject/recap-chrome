@@ -334,6 +334,7 @@ describe('The ContentDelegate class', function () {
 
       describe('when the history state is already set', function () {
         beforeEach(function () {
+          document.getElementById = jasmine.createSpy('getElementById').and.callFake( id => document.querySelectorAll(`#${id}`)[0])
           history.replaceState({ uploaded: true }, '');
         });
 
@@ -362,6 +363,7 @@ describe('The ContentDelegate class', function () {
           input2.id = "input2";
           document.body.appendChild(input);
           document.body.appendChild(input2);
+          document.getElementById = jasmine.createSpy('getElementById').and.callFake( id => document.querySelectorAll(`#${id}`)[0])
         });
 
         afterEach(function () {
