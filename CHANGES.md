@@ -14,6 +14,7 @@ Changes:
 
 Fixes: 
  - Tighten security by verifying the sender's identity in communication between Window objects. This prevents a theoretical attack vector that might, with a lot of care and effort, have been able to send bad data to the RECAP Archive. ([#236](https://github.com/freelawproject/recap/issues/236))
+ - Fix logic to handle links from appellate PACER to district PACER ([#222](https://github.com/freelawproject/recap/issues/222))
 
 For developers:
  - Nothing yet
