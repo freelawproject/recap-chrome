@@ -84,10 +84,18 @@ let PACER = {
       return match[0].slice(1);
     }
   },
+  
   // Returns true if the URL is for docket query page.
   isDocketQueryUrl: function (url) {
-    // The part after the "?" is all digits.
-    return !!url.match(/\/(DktRpt|HistDocQry)\.pl\?\d+$/);
+    // This regex expression will match URLs that has a query string with only
+    // digits or has a parameter named caseNumber followed by word characters, 
+    // hyphens or colons. This function will return true for the following URLs:
+    // 
+    //  https://ecf.mied.uscourts.gov/cgi-bin/DktRpt.pl?365816
+    //  
+    //  https://ecf.moed.uscourts.gov/cgi-bin/DktRpt.pl?caseNumber=4:19-cr-00820-SRC-1
+    //
+    return !!url.match(/\/(DktRpt|HistDocQry)\.pl\?(\d+|caseNumber=[\w:-]+)$/);
   },
 
   // Returns true if the URL is for the manage account page.
