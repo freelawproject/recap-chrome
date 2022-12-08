@@ -139,11 +139,7 @@ if (allCaseInput){
 if (caseNumberInput){
   // Add listener to the search bar
   caseNumberInput.addEventListener('input', ()=>{
-    let banners = document.querySelectorAll('.recap-banner')
-    // Remove all HTML elements that the extension inserted 
-    banners.forEach(banner => {
-      banner.remove();
-    });
+    PACER.removeBanners()
   })
 }
 

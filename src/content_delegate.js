@@ -220,6 +220,7 @@ ContentDelegate.prototype.handleDocketQueryUrl = function () {
         );
       } else {
         if (result.results) {
+          PACER.removeBanners()
           const form = document.querySelector('form');
           const div = document.createElement('div');
           div.classList.add('recap-banner');
