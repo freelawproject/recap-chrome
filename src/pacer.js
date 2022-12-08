@@ -127,6 +127,12 @@ let PACER = {
     return /iquery.pl/.test(url) && /[\d_-]+[A-Z]+[\d_-]+/.test(url)
   },
 
+  // Remove banners inserted by the extension
+  removeBanners: ()=>{
+    let banners = document.querySelectorAll('.recap-banner')
+    banners.forEach(banner => { banner.remove(); });
+  },
+
   // Returns true if the URL is for the iQuery page.
   isBlankQueryReportUrl: function(url){
     // The URL for the query form used in CM/ECF to search cases is:
