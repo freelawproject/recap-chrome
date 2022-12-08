@@ -18,7 +18,7 @@ AppellateDelegate.prototype.dispatchPageHandler = function () {
     if (!(queryParameters instanceof URLSearchParams)) {
       return;
     }
-    
+
     this.queryParameters = APPELLATE.getQueryParameters(this.url);  
     let targetPage = queryParameters.get('servlet');
     switch (targetPage) {
@@ -92,7 +92,7 @@ AppellateDelegate.prototype.handleDocketDisplayPage = async function () {
   // if the last step didn't find the caseId in the query parameter, It will check the storage 
   if (!pacer_case_id) {
     const tabStorage = await getItemsFromStorage(this.tabId)
-    if (!!tabStorage || !!tabStorage.caseId) { return; }
+    if (!tabStorage && !tabStorage.caseId) { return; }
     pacer_case_id = tabStorage.caseId
   }
 
@@ -128,6 +128,7 @@ AppellateDelegate.prototype.handleDocketDisplayPage = async function () {
 
     let callback = (ok) => {
       if (ok) {
+        addAlertButtonInRecapAction(this.court, pacer_case_id)
         history.replaceState({ uploaded: true }, '');
         this.notifier.showUpload(
           'Docket uploaded to the public RECAP Archive.',
