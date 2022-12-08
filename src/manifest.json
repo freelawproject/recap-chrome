@@ -58,6 +58,8 @@
       "pacer.js",
       "recap.js",
       "content_delegate.js",
+      "appellate/utils.js",
+      "appellate/appellate.js",
       "content.js"
     ],
     "run_at": "document_end"
