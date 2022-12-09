@@ -147,9 +147,9 @@ if (allCaseInput) {
 
 if (caseNumberInput) {
   // Add listener to the search bar
-  caseNumberInput.addEventListener('input', ()=>{
-    PACER.removeBanners()
-  })
+  caseNumberInput.addEventListener('input', () => {
+    PACER.removeBanners();
+  });
 }
 
 // if the content script found a tbody element on the page, It would create an
