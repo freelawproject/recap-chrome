@@ -27,9 +27,13 @@ let APPELLATE = {
   },
 
   // Returns caseId from href attribute of Case Query link on the Case Selection Page.
-  getCaseIdFromCaseSelection: () =>{
-    let table = document.querySelectorAll('table')[3]
-    let anchor = table.querySelectorAll('tr > td > a')
+  getCaseIdFromCaseSelection: () => {
+    let table = document.querySelectorAll('table')
+    // End this function early if the page does not have the expected number of tables
+    if (table.length < 3) { return }
+    let anchor = table[3].querySelectorAll('tr > td > a')
+    // End this function early if the table does not have the expected number of anchors
+    if (anchor.length < 3) { return }
     let queryString = anchor[1].href.split('?')[1]
     let queryParameters = new URLSearchParams(queryString)
     let caseId = queryParameters.get('caseid') || queryParameters.get('caseId')
@@ -47,5 +51,5 @@ let APPELLATE = {
     });
     return links;
   },
-  
+
 }
