@@ -17,11 +17,9 @@ describe('The Appellate module', function () {
   }
 
   describe('getQueryParameters', function () {
-    it('returns empty object for URL that does not have query string', function () {
-      expect(APPELLATE.getQueryParameters(nonQueryStringUrl)).toEqual({});
-    });
 
-    it('returns URLSearchParams interface for URL that does have query string', function () {
+    it('returns URLSearchParams interface', function () {
+      expect(APPELLATE.getQueryParameters(nonQueryStringUrl)).toBeInstanceOf(URLSearchParams);
       expect(APPELLATE.getQueryParameters(caseSummaryPage)).toBeInstanceOf(URLSearchParams);
     });
   });
