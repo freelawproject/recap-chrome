@@ -14,13 +14,12 @@ AppellateDelegate.prototype.dispatchPageHandler = function () {
   if (APPELLATE.isCaseSelectionPage(this.url)) {
     this.handleCaseSelectionPage();
   } else {
-    let queryParameters = APPELLATE.getQueryParameters(this.url);
-    if (!(queryParameters instanceof URLSearchParams)) {
+    this.queryParameters = APPELLATE.getQueryParameters(this.url);
+    if (!(this.queryParameters instanceof URLSearchParams)) {
       return;
     }
 
-    this.queryParameters = APPELLATE.getQueryParameters(this.url);
-    let targetPage = queryParameters.get('servlet');
+    let targetPage = this.queryParameters.get('servlet');
     switch (targetPage) {
       case 'CaseSummary.jsp':
         this.handleDocketDisplayPage();
