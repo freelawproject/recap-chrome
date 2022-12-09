@@ -121,15 +121,6 @@ describe('The PACER module', function() {
       expect(PACER.isDocketDisplayUrl(docketDisplayUrl)).toBe(true);
     });
 
-    const appellateDocketDisplayUrl = (
-      'https://ecf.ca1.uscourts.gov/n/beam/servlet/TransportRoom?' +
-      'servlet=CaseSummary.jsp&caseNum=16-1567&incOrigDkt=Y&incDktEntries=Y'
-    );
-
-    it('returns true for a valid appellate docket URL', function() {
-      expect(PACER.isDocketDisplayUrl(appellateDocketDisplayUrl)).toBe(true);
-    });
-
     it('returns false for a docket query URL', function() {
       expect(PACER.isDocketDisplayUrl(docketQueryUrl)).toBe(false);
     });
@@ -424,21 +415,6 @@ describe('The PACER module', function() {
 
     it('returns caseNum', function() {
       expect(PACER.getCaseNumberFromUrls([cmecfUrl])).toBeUndefined();
-    });
-
-    const caseNumUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/' +
-      'HistDocQry.pl?caseNum=44-29');
-
-    it('returns caseNum', function() {
-      expect(PACER.getCaseNumberFromUrls([caseNumUrl])).toBe('44-29');
-    });
-    // relies on the leading dash to test against /[?&]caseId=([-\d]+)/
-    // instead of /[?&]caseid=(\d+)/i
-    const caseIdUrl = ('https://ecf.canb.uscourts.gov/cgi-bin/' +
-      'HistDocQry.pl?caseId=-6721');
-
-    it('returns caseNum', function() {
-      expect(PACER.getCaseNumberFromUrls([caseIdUrl])).toBe('-6721');
     });
   });
 

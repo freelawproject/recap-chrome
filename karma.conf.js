@@ -34,6 +34,8 @@ module.exports = function(config) {
       'src/action_button.js',
       'test/mock-utils.js',
       'src/content_delegate.js',
+      'src/appellate/utils.js',
+      'src/appellate/appellate.js',
       'spec/*Spec.js',
     ],
 

@@ -272,6 +272,7 @@ describe('The ContentDelegate class', function () {
           }
         };
         document.querySelector = jasmine.createSpy('querySelector').and.callFake( id=> id != 'tbody'? null: tbody);
+        document.getElementById = jasmine.createSpy('getElementById').and.callFake( id => document.querySelectorAll(`#${id}`)[0])
       });
 
       afterEach(function () {
@@ -312,6 +313,7 @@ describe('The ContentDelegate class', function () {
           }
         };
         document.querySelector = jasmine.createSpy('querySelector').and.callFake( id => id != 'tbody'? null : tbody);
+        document.getElementById = jasmine.createSpy('getElementById').and.callFake( id => document.querySelectorAll(`#${id}`)[0])
       });
 
       afterEach(function () {
