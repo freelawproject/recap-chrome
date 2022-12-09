@@ -180,74 +180,8 @@ let PACER = {
   isDocketDisplayUrl: function (url) {
     // The part after the "?" has hyphens in it.
     //   https://ecf.dcd.uscourts.gov/cgi-bin/DktRpt.pl?591030040473392-L_1_0-1
-    // Appellate:
-    //   https://ecf.ca1.uscourts.gov/n/beam/servlet/TransportRoom?servlet=CaseSummary.jsp&caseNum=16-1567&incOrigDkt=Y&incDktEntries=Y
     if (url.match(/\/DktRpt\.pl\?\w+-[\w-]+$/)) { return true; }
-
-    // Regular expression to match on Appellate pages, and if a
-    // servlet is specified, to return it as a captured group.
-    // If no servlet is specified, it's returned as undefined, which
-    // is properly handled in the switch block.
-    //
-    // The RE is a bit complicated, so let's break it down:
-    //
-    //   servlet\/TransportRoom # 1: The string servlet/TransportRoom
-    //   (?:\?servlet=          # 2: An OPTIONAL, TERMINAL, NON-CAPTURING
-    //                          #    group that contains ?servlet=
-    //     ([^?&]+)             # 3: A CAPTURING group of >1 non-? or &
-    //                          #    chars, as they'd delimit another
-    //                          #    url parameter.
-    //     (?:[\/&#;].*)?       # 4: An OPTIONAL, NON-CAPTURING group of a
-    //                          #    /, &, #, or ; char, followed by
-    //                          #    anything at all, which would be
-    //                          #    one or more url parameters.
-    //   )?                     # Closing of (2) and making it optional
-    //   $                      # Making (2) terminal
-    //
-    // xxx: This would match on
-    //   https://ecf.ca1.uscourts.gov/n/beam/underservlet/
-    // xxx: This presumes ?servlet= is the first parameter, would fail on
-    //   /servlet/TransportRoom?caseId=44381&servlet=DocketReportFilter.jsp
-    // xxx: This will if a terminal slash precedes the parameter section:
-    //   /servlet/TransportRoom/?...
-    let re = /servlet\/TransportRoom(?:\?servlet=([^?&]+)(?:[\/&#;].*)?)?$/;
-    let match = url.match(re);
-    if (match) {
-      let servlet = match[1];
-      debug(4, `Identified appellate servlet ${servlet} at ${url}`);
-
-      switch(servlet) {
-        case 'CaseSummary.jsp':
-        case 'ShowPage': // what is this?
-        case undefined:
-          return true;
-
-        default:
-          debug(4, `Assuming servlet ${servlet} is not a docket.`);
-          return false;
-
-        case 'CaseSearch.jsp':
-        case 'ShowDoc':
-        case 'ShowDocMulti':
-        case 'CaseSelectionTable':
-        case 'CourtInfo.jsp':
-        case 'DocketReportFilter.jsp':
-        case 'InvalidUserLogin.jsp':
-        case 'OrderJudgment.jsp':
-        case 'PACERCalendar.jsp':
-        case 'PacerHelp.jsp':
-        case 'PACEROpinion.jsp':
-        case 'Login':
-        case 'k2aframe.jsp': // attorney/java?
-        case 'k2ajnlp.jsp':
-        case 'RSSGenerator': // maybe we should upload rss?
-        case 'PaymentHistory':
-        case 'ChangeClient.jsp':
-          return false;
-      }
-    } else {
-      return false;
-    }
+    return false;
   },
 
   // Returns true if the given URL is for a docket history display page.
@@ -390,18 +324,6 @@ let PACER = {
             return match[1];
           }
         }
-        match = url.match(/[?&]caseNum=([-\d]+)/);
-        if (match) {
-          // Appellate. Actually this is a docket number. Uhoh? xxx
-          debug(3, `Found caseNum via: ${match[0]}`);
-          return match[1];
-        }
-        match = url.match(/[?&]caseId=([-\d]+)/);
-        if (match) {
-          debug(3, `Found caseId via: ${match[0]}`);
-          // Also seen in appellate. Note uppercase 'I' and hyphens. Actual caseID. xxx
-          return match[1];
-        }
       }
     }
   },
@@ -497,6 +419,12 @@ let PACER = {
   isAppellateCourt: function (court) {
     return PACER.APPELLATE_COURTS.includes(court);
   },
+
+  removeAllBanners: () =>{
+    let banners = document.querySelectorAll('.recap-banner')
+    banners.forEach(banner => { banner.remove() });
+  },
+  
 
   // These are all the supported PACER court identifiers, together with their
   // West-style court name abbreviations.
