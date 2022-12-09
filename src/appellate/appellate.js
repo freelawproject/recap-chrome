@@ -11,23 +11,19 @@ let AppellateDelegate = function (tabId, court, url, links) {
 // Identify the current page using the URL and the query string,
 // then dispatch the associated handler
 AppellateDelegate.prototype.dispatchPageHandler = function () {
-  if (APPELLATE.isCaseSelectionPage(this.url)) {
-    this.handleCaseSelectionPage();
-  } else {
-    this.queryParameters = APPELLATE.getQueryParameters(this.url);
-    if (!(this.queryParameters instanceof URLSearchParams)) {
-      return;
-    }
-
-    let targetPage = this.queryParameters.get('servlet');
-    switch (targetPage) {
-      case 'CaseSummary.jsp':
-        this.handleDocketDisplayPage();
-        break;
-      default:
+  this.queryParameters = APPELLATE.getQueryParameters(this.url);
+  let targetPage = this.queryParameters.get('servlet');
+  switch (targetPage) {
+    case 'CaseSummary.jsp':
+      this.handleDocketDisplayPage();
+      break;
+    default:
+      if (APPELLATE.isCaseSelectionPage(this.url)) {
+        this.handleCaseSelectionPage();
+      } else {
         console.info('No identified appellate page found');
-        break;
-    }
+      }
+      break;
   }
 };
 
