@@ -383,6 +383,14 @@ describe('The ContentDelegate class', function () {
 
       describe('when the docket page is not an interstitial page', function () {
         beforeEach(function () {
+          clearDocumentBody()
+          table = document.createElement('table');
+          const tbody = document.createElement('tbody');
+          const tr = document.createElement('tr');
+          tbody.appendChild(tr);
+          table.appendChild(tbody)
+          document.body.appendChild(table);
+          document.querySelector = jasmine.createSpy('querySelector').and.callFake( id => id != 'tbody'? null : tbody);
           document.getElementById = jasmine.createSpy('getElementById').and.callFake( id => document.querySelectorAll(`#${id}`)[0])
         })
 
