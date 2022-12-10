@@ -1,0 +1,12 @@
+# .git-blame-ignore-revs
+# This file lists commits that changed large sections of the code and are best
+# ignored by git blame (which tools like PyCharm use for their "annotate"
+# feature).
+#
+# To use this file, go to the root of this project, and run:
+#
+#    git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+
+# Change code styling in content_delegate.js
+d891dad8127683ab8263d61b1bee71db0d08a4ef
