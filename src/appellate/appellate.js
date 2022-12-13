@@ -12,14 +12,19 @@ let AppellateDelegate = function (tabId, court, url, links) {
 // then dispatch the associated handler
 AppellateDelegate.prototype.dispatchPageHandler = function () {
   this.queryParameters = APPELLATE.getQueryParameters(this.url);
-  let targetPage = this.queryParameters.get('servlet');
+  let targetPage = this.queryParameters.get('servlet') || APPELLATE.getServletFromInputs();
   switch (targetPage) {
     case 'CaseSummary.jsp':
       this.handleDocketDisplayPage();
+      this.attachRecapLinksToEligibleDocs();
+      break;
+    case 'CaseSelectionTable.jsp':
+      this.handleCaseSelectionPage();
       break;
     default:
-      if (APPELLATE.isCaseSelectionPage(this.url)) {
-        this.handleCaseSelectionPage();
+      if (APPELLATE.isAttachmentPage()) {
+        this.handleAttachmentPage();
+        this.attachRecapLinksToEligibleDocs();
       } else {
         console.info('No identified appellate page found');
       }
@@ -36,6 +41,13 @@ AppellateDelegate.prototype.handleCaseSelectionPage = async function () {
 // check every link in the document to see if RECAP has it
 AppellateDelegate.prototype.attachRecapLinksToEligibleDocs = async function () {
   // filter the links for the documents available on the page
+  APPELLATE.createDummyIframe('dummyframe');
+
+  let form = document.getElementsByName('doDocPostURLForm');
+  if (form.length) {
+    form[0].setAttribute('target', 'dummyframe');
+  }
+
   const links = APPELLATE.findDocLinksFromAnchors(this.links);
 
   let linkCount = links.length;
@@ -86,7 +98,7 @@ AppellateDelegate.prototype.attachRecapLinksToEligibleDocs = async function () {
 
 AppellateDelegate.prototype.handleDocketDisplayPage = async function () {
   // retrieve pacer_case_id from URL query parameters
-  let pacer_case_id = this.queryParameters.get('caseid') || this.queryParameters.get('caseId');
+  let pacer_case_id = APPELLATE.getCaseIdFromSearchQuery(this.queryParameters) || APPELLATE.getCaseIdFromInputs();
 
   // if the last step didn't find the caseId in the query parameter, It will check the storage
   if (!pacer_case_id) {
@@ -133,9 +145,49 @@ AppellateDelegate.prototype.handleDocketDisplayPage = async function () {
     this.recap.uploadDocket(this.court, pacer_case_id, document.documentElement.innerHTML, 'APPELLATE_DOCKET', (ok) =>
       callback(ok)
     );
-
-    this.attachRecapLinksToEligibleDocs();
   } else {
     console.info(`RECAP: Not uploading docket. RECAP is disabled.`);
   }
+};
+
+AppellateDelegate.prototype.handleAttachmentPage = async function () {
+  if (history.state && history.state.uploaded) {
+    return;
+  }
+
+  let pacer_case_id = APPELLATE.getCaseIdFromSearchQuery(this.queryParameters) || APPELLATE.getCaseIdFromInputs();
+
+  // if the last step didn't find the caseId in the query parameter, It will check the storage
+  if (!pacer_case_id) {
+    const tabStorage = await getItemsFromStorage(this.tabId);
+    if (!tabStorage && !tabStorage.caseId) {
+      return;
+    }
+    pacer_case_id = tabStorage.caseId;
+  }
+
+  if (!pacer_case_id) {
+    return;
+  }
+
+  const options = await getItemsFromStorage('options');
+  if (!options['recap_enabled']) {
+    console.info(`RECAP: Not uploading attachment page. RECAP is disabled.`);
+    return;
+  }
+
+  let callback = (ok) => {
+    if (ok) {
+      history.replaceState({ uploaded: true }, '');
+      this.notifier.showUpload('Attachment menu page uploaded to the public RECAP Archive.', function () {});
+    }
+  };
+
+  this.recap.uploadAttachmentMenu(
+    this.court,
+    pacer_case_id,
+    document.documentElement.innerHTML,
+    'APPELLATE_ATTACHMENT_PAGE',
+    (ok) => callback(ok)
+  );
 };
