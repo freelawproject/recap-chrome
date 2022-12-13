@@ -349,7 +349,7 @@ ContentDelegate.prototype.handleAttachmentMenuPage = function () {
       }, this);
 
       this.recap.uploadAttachmentMenu(this.court, this.pacer_case_id,
-        document.documentElement.innerHTML, callback);
+        document.documentElement.innerHTML, 'ATTACHMENT_PAGE', callback);
     } else {
       console.info("RECAP: Not uploading attachment menu. RECAP is disabled.");
     }
