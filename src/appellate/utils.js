@@ -5,6 +5,35 @@ let APPELLATE = {
     return new URLSearchParams(window.location.search);
   },
 
+  // returns the servlet parameter from the inputs on the page
+  getServletFromInputs: () => {
+    // Appellate PACER uses the servlet parameter to identify pages. This parameter 
+    // can be usually found in the URL's query string but there's also a hidden input
+    // on some pages that has the same name and value, so We can use it to identify 
+    // the page when the parameter is not present in the URL like in the Case Selection
+    // page.
+    let input = document.querySelector('input[name=servlet]');
+    if (input) return input.value;
+  },
+
+  // returns the pacer_case_id from the inputs on the page
+  getCaseIdFromInputs: () => {
+    let input = document.querySelector('input[name=caseId]');
+    if (input) return input.value;
+  },
+
+  // returns the pacer_case_id from the URL's query string if its available
+  getCaseIdFromSearchQuery: (queryParameters) =>{
+    let pacer_case_id = queryParameters.get('caseid') || queryParameters.get('caseId')
+    return pacer_case_id
+  },
+
+  // Returns true if this is a "Attachment page"
+  isAttachmentPage: () =>{
+    let form = document.getElementsByName('dktEntry')
+    return form.length !== 0
+  },
+
   // Returns true if the URL is for the case selection page.
   isCaseSelectionPage: (url) => {
     // The URL for the selection page used in Appellate PACER is:
@@ -50,10 +79,49 @@ let APPELLATE = {
   findDocLinksFromAnchors: (nodeList) => {
     const links = [];
     Array.from(nodeList).map((a) => {
-      if (a.title !== 'Open Document') return;
+      if (!PACER.isDocumentUrl(a.href)) return;
+      
+      // this regex will match the doc_id and case_id passed as an argument in the  
+      // onclick event of each anchor element related to a document
+      let doDocPost = /^return doDocPostURL\('([^']*)','([^']*)'\);/.exec(a.getAttribute('onclick'));
+      let params = {};
+      if (doDocPost) {
+        [, params.doc_id, params.case_id] = doDocPost;
+      }
+
+      a.removeAttribute('onclick');
+      a.setAttribute('target', '_self');
+
+      // clone and replace anchor elements to remove all listeners
+      let clonedNode = a.cloneNode(true);
+      a.replaceWith(clonedNode);
+
+      // add a new listener that allows the anchors to target the active tab
+      clonedNode.addEventListener('click', (event) => {
+        let form = document.getElementsByName('doDocPostURLForm')[0];
+        if (form) {
+          form.dls_id.value = params.doc_id;
+          form.caseId.value = params.case_id;
+          form.submit();
+        }
+      });
+
       let docId = PACER.getDocumentIdFromUrl(a.href);
       links.push(docId);
     });
     return links;
+  },
+
+  // Create dummy iframe to use as a target for the forms on different pages 
+  createDummyIframe: (name) => {
+    // A few pages from Appellate PACER use a hidden form that is submitted when an 
+    // anchor link is clicked. This hidden form has its target attribute set to open
+    // a new tab, so We're using this iframe to change the target of the hidden form 
+    // and avoid opening multiple tabs for the same PACER case.
+    let iframe = document.createElement('iframe');
+    iframe.setAttribute('name', name);
+    iframe.setAttribute('id', name);
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
   },
 };
