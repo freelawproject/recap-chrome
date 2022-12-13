@@ -17,10 +17,101 @@ describe('The Appellate module', function () {
   }
 
   describe('getQueryParameters', function () {
-
     it('returns URLSearchParams interface', function () {
       expect(APPELLATE.getQueryParameters(nonQueryStringUrl)).toBeInstanceOf(URLSearchParams);
       expect(APPELLATE.getQueryParameters(caseSummaryPage)).toBeInstanceOf(URLSearchParams);
+    });
+  });
+
+  describe('getServletFromInputs', function () {
+    describe('for pages with matching format', function () {
+      beforeEach(function () {
+        clearBody();
+        let input = document.createElement('input');
+        input.setAttribute('name', 'servlet');
+        input.setAttribute('value', 'CaseSelectionTable.jsp');
+        document.body.appendChild(input);
+        document.querySelector = jasmine.createSpy('querySelector').and.callFake((query) => {
+          return document.querySelectorAll(query).length ? document.querySelectorAll(query)[0] : null;
+        });
+      });
+
+      it('returns the servlet parameter', function () {
+        expect(APPELLATE.getServletFromInputs()).toBe('CaseSelectionTable.jsp');
+      });
+    });
+
+    describe('for pages with non-matching format', function () {
+      beforeEach(function () {
+        clearBody();
+      });
+
+      it('returns undefined', function () {
+        expect(APPELLATE.getServletFromInputs()).toBeUndefined();
+      });
+    });
+  });
+
+  describe('getCaseIdFromInputs', function () {
+
+    describe('for pages with matching format', function(){
+
+      beforeEach(function () {
+        clearBody();
+        let input = document.createElement('input');
+        input.setAttribute('name', 'caseId');
+        input.setAttribute('value', '318457');
+        document.body.appendChild(input);
+        document.querySelector = jasmine.createSpy('querySelector').and.callFake((query) => {
+          return document.querySelectorAll(query).length ? document.querySelectorAll(query)[0] : null;
+        });
+      });
+
+      it('returns the caseId value', function () {
+        expect(APPELLATE.getCaseIdFromInputs()).toBe('318457');
+      });
+
+    })
+
+    describe('for pages with non-matching format', function () {
+      beforeEach(function () {
+        clearBody();
+      });
+
+      it('returns undefined', function () {
+        expect(APPELLATE.getCaseIdFromInputs()).toBeUndefined();
+      });
+    });
+  });
+
+  describe('isAttachmentPage', function () {
+    describe('for pages with matching format', function () {
+      beforeEach(function () {
+        clearBody();
+        let form = document.createElement('form');
+        form.setAttribute('name', 'dktEntry');
+        document.body.appendChild(form);
+        document.querySelector = jasmine.createSpy('querySelector').and.callFake((query) => {
+          return document.querySelectorAll(query).length ? document.querySelectorAll(query)[0] : null;
+        });
+      });
+
+      it('returns true', function () {
+        expect(APPELLATE.isAttachmentPage()).toBe(true);
+      });
+    });
+
+    describe('for pages with non-matching format', function () {
+      beforeEach(function () {
+        clearBody();
+        document.querySelector = jasmine.createSpy('querySelector').and.callFake((query) => {
+          return document.querySelectorAll(query).length ? document.querySelectorAll(query)[0] : null;
+        });
+      });
+
+      it('returns false', function () {
+        expect(APPELLATE.isAttachmentPage()).toBe(false);
+      });
     });
   });
 
@@ -189,6 +280,18 @@ describe('The Appellate module', function () {
       it('returns the caseId', function () {
         expect(APPELLATE.getCaseIdFromCaseSelection()).toBe('318547');
       });
+    });
+  });
+
+  describe('createDummyIframe', function () {
+    beforeEach(function () {
+      clearBody();
+    });
+
+    it('inserts iframe in document body', function () {
+      APPELLATE.createDummyIframe('dummy_frame');
+      let iframe = document.querySelectorAll("iframe[name='dummy_frame']");
+      expect(iframe.length).toBe(1);
     });
   });
 });
