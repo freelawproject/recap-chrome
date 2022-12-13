@@ -7,9 +7,9 @@ let APPELLATE = {
 
   // returns the servlet parameter from the inputs on the page
   getServletFromInputs: () => {
-    // Appellate PACER uses the servlet parameter to identify pages. This parameter 
+    // Appellate PACER uses the servlet parameter to identify pages. This parameter
     // can be usually found in the URL's query string but there's also a hidden input
-    // on some pages that has the same name and value, so We can use it to identify 
+    // on some pages that has the same name and value, so We can use it to identify
     // the page when the parameter is not present in the URL like in the Case Selection
     // page.
     let input = document.querySelector('input[name=servlet]');
@@ -23,15 +23,15 @@ let APPELLATE = {
   },
 
   // returns the pacer_case_id from the URL's query string if its available
-  getCaseIdFromSearchQuery: (queryParameters) =>{
-    let pacer_case_id = queryParameters.get('caseid') || queryParameters.get('caseId')
-    return pacer_case_id
+  getCaseIdFromSearchQuery: (queryParameters) => {
+    let pacer_case_id = queryParameters.get('caseid') || queryParameters.get('caseId');
+    return pacer_case_id;
   },
 
   // Returns true if this is a "Attachment page"
-  isAttachmentPage: () =>{
-    let form = document.getElementsByName('dktEntry')
-    return form.length !== 0
+  isAttachmentPage: () => {
+    let form = document.querySelector("form[name='dktEntry']");
+    return form !== null;
   },
 
   // Returns true if the URL is for the case selection page.
@@ -80,8 +80,8 @@ let APPELLATE = {
     const links = [];
     Array.from(nodeList).map((a) => {
       if (!PACER.isDocumentUrl(a.href)) return;
-      
-      // this regex will match the doc_id and case_id passed as an argument in the  
+
+      // this regex will match the doc_id and case_id passed as an argument in the
       // onclick event of each anchor element related to a document
       let doDocPost = /^return doDocPostURL\('([^']*)','([^']*)'\);/.exec(a.getAttribute('onclick'));
       let params = {};
@@ -112,11 +112,11 @@ let APPELLATE = {
     return links;
   },
 
-  // Create dummy iframe to use as a target for the forms on different pages 
+  // Create dummy iframe to use as a target for the forms on different pages
   createDummyIframe: (name) => {
-    // A few pages from Appellate PACER use a hidden form that is submitted when an 
+    // A few pages from Appellate PACER use a hidden form that is submitted when an
     // anchor link is clicked. This hidden form has its target attribute set to open
-    // a new tab, so We're using this iframe to change the target of the hidden form 
+    // a new tab, so We're using this iframe to change the target of the hidden form
     // and avoid opening multiple tabs for the same PACER case.
     let iframe = document.createElement('iframe');
     iframe.setAttribute('name', name);
