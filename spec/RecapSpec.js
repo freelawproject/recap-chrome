@@ -190,7 +190,7 @@ describe('The Recap export module', function () {
     });
 
     it('requests the correct URL', function () {
-      recap.uploadAttachmentMenu(court, filename, type, html);
+      recap.uploadAttachmentMenu(court, filename, type, html, 'ATTACHMENT_PAGE');
       expect(jasmine.Ajax.requests.mostRecent().url).toBe(
         'https://www.courtlistener.com/api/rest/v3/recap/');
     });
@@ -203,7 +203,7 @@ describe('The Recap export module', function () {
       expected.append('filepath_local', new Blob(
         [html], { type: type }), filename);
 
-      recap.uploadAttachmentMenu(court, pacer_case_id, html, function () { });
+      recap.uploadAttachmentMenu(court, pacer_case_id, html, 'ATTACHMENT_PAGE', function () { });
       const actualData = jasmine.Ajax.requests.mostRecent().data();
       expect(actualData).toEqual(jasmine.objectContaining(expected));
     });
