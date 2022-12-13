@@ -594,7 +594,7 @@ describe('The ContentDelegate class', function () {
 
         it('calls the upload method and responds to positive result', function () {
           const cd = singleDocContentDelegate;
-          const uploadFake = function (pc, pci, h, callback) { callback(true); };
+          const uploadFake = function (pc, pci, h, ut, callback) { callback(true); };
           spyOn(cd.recap, 'uploadAttachmentMenu').and.callFake(uploadFake);
           spyOn(cd.notifier, 'showUpload');
           spyOn(history, 'replaceState');
@@ -608,7 +608,7 @@ describe('The ContentDelegate class', function () {
 
         it('calls the upload method and responds to negative result', function () {
           const cd = singleDocContentDelegate;
-          const uploadFake = function (pc, pci, h, callback) { callback(false); };
+          const uploadFake = function (pc, pci, h, ut, callback) { callback(false); };
           spyOn(cd.recap, 'uploadAttachmentMenu').and.callFake(uploadFake);
           spyOn(cd.notifier, 'showUpload');
           spyOn(history, 'replaceState');
