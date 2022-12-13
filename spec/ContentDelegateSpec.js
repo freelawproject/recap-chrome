@@ -297,8 +297,6 @@ describe('The ContentDelegate class', function () {
 
   describe('handleDocketDisplayPage', function () {
     describe('option disabled', function () {
-      let table;
-
       beforeEach(function () {
         clearDocumentBody();
         table = document.createElement('table');
@@ -325,14 +323,10 @@ describe('The ContentDelegate class', function () {
         };
         document.querySelector = jasmine
           .createSpy('querySelector')
-          .and.callFake((id) => (id != 'tbody' ? null : tbody));
+          .and.callFake((id) => (document.querySelectorAll(id).length ? document.querySelectorAll(id)[0] : null));
         document.getElementById = jasmine
           .createSpy('getElementById')
           .and.callFake((id) => document.querySelectorAll(`#${id}`)[0]);
-      });
-
-      afterEach(function () {
-        table.remove();
       });
 
       it('has no effect when recap_enabled option is false', function () {
@@ -344,16 +338,7 @@ describe('The ContentDelegate class', function () {
     });
 
     describe('option enabled', function () {
-      let table;
-
       beforeEach(function () {
-        clearDocumentBody();
-        table = document.createElement('table');
-        const tbody = document.createElement('tbody');
-        const tr = document.createElement('tr');
-        tbody.appendChild(tr);
-        table.appendChild(tbody);
-        document.body.appendChild(table);
         window.chrome = {
           extension: { getURL: jasmine.createSpy('gerURL') },
           storage: {
@@ -370,35 +355,47 @@ describe('The ContentDelegate class', function () {
         };
         document.querySelector = jasmine
           .createSpy('querySelector')
-          .and.callFake((id) => (id != 'tbody' ? null : tbody));
+          .and.callFake((id) => (document.querySelectorAll(id).length ? document.querySelectorAll(id)[0] : null));
         document.getElementById = jasmine
           .createSpy('getElementById')
           .and.callFake((id) => document.querySelectorAll(`#${id}`)[0]);
       });
 
-      afterEach(function () {
-        table.remove();
-      });
+      describe('has no effect', function () {
+        beforeEach(function () {
+          clearDocumentBody();
+          table = document.createElement('table');
+          const tbody = document.createElement('tbody');
+          const tr = document.createElement('tr');
+          tbody.appendChild(tr);
+          table.appendChild(tbody);
+          document.body.appendChild(table);
+        });
 
-      it('has no effect when not on a docket display url', function () {
-        const cd = nonsenseUrlContentDelegate;
-        spyOn(cd.recap, 'uploadDocket');
-        cd.handleDocketDisplayPage();
-        expect(cd.recap.uploadDocket).not.toHaveBeenCalled();
-      });
+        it('when not on a docket display url', function () {
+          const cd = nonsenseUrlContentDelegate;
+          spyOn(cd.recap, 'uploadDocket');
+          cd.handleDocketDisplayPage();
+          expect(cd.recap.uploadDocket).not.toHaveBeenCalled();
+        });
 
-      it('has no effect when there is no casenum', function () {
-        const cd = new ContentDelegate(tabId, docketDisplayUrl, undefined, 'canb', undefined, undefined, []);
-        spyOn(cd.recap, 'uploadDocket');
-        cd.handleDocketDisplayPage();
-        expect(cd.recap.uploadDocket).not.toHaveBeenCalled();
+        it('when there is no casenum', function () {
+          const cd = new ContentDelegate(tabId, docketDisplayUrl, undefined, 'canb', undefined, undefined, []);
+          spyOn(cd.recap, 'uploadDocket');
+          cd.handleDocketDisplayPage();
+          expect(cd.recap.uploadDocket).not.toHaveBeenCalled();
+        });
       });
 
       describe('when the history state is already set', function () {
         beforeEach(function () {
-          document.getElementById = jasmine
-            .createSpy('getElementById')
-            .and.callFake((id) => document.querySelectorAll(`#${id}`)[0]);
+          clearDocumentBody();
+          table = document.createElement('table');
+          const tbody = document.createElement('tbody');
+          const tr = document.createElement('tr');
+          tbody.appendChild(tr);
+          table.appendChild(tbody);
+          document.body.appendChild(table);
           history.replaceState({ uploaded: true }, '');
         });
 
@@ -414,11 +411,16 @@ describe('The ContentDelegate class', function () {
         });
       });
 
-      // interstitial check is multiple inputs with name 'date_from' and type 'radio'
       describe('when the docket page is an interstitial page', function () {
         let input, input2;
 
         beforeEach(function () {
+          clearDocumentBody();
+          table = document.createElement('table');
+          const tbody = document.createElement('tbody');
+          const tr = document.createElement('tr');
+          tbody.appendChild(tr);
+          table.appendChild(tbody);
           input = document.createElement('input');
           input.id = 'input1';
           input.name = 'date_from';
@@ -427,14 +429,7 @@ describe('The ContentDelegate class', function () {
           input2.id = 'input2';
           document.body.appendChild(input);
           document.body.appendChild(input2);
-          document.getElementById = jasmine
-            .createSpy('getElementById')
-            .and.callFake((id) => document.querySelectorAll(`#${id}`)[0]);
-        });
-
-        afterEach(function () {
-          input.remove();
-          input2.remove();
+          document.body.appendChild(table);
         });
 
         it('does not call uploadDocket', async function () {
@@ -454,12 +449,6 @@ describe('The ContentDelegate class', function () {
           tbody.appendChild(tr);
           table.appendChild(tbody);
           document.body.appendChild(table);
-          document.querySelector = jasmine
-            .createSpy('querySelector')
-            .and.callFake((id) => (id != 'tbody' ? null : tbody));
-          document.getElementById = jasmine
-            .createSpy('getElementById')
-            .and.callFake((id) => document.querySelectorAll(`#${id}`)[0]);
         });
 
         it('inserts a button linking the user to a create alert page on CL', async () => {
@@ -677,7 +666,9 @@ describe('The ContentDelegate class', function () {
 
         it('calls the upload method and responds to positive result', function () {
           const cd = singleDocContentDelegate;
-          const uploadFake = function (pc, pci, h, ut, callback) { callback(true); };
+          const uploadFake = function (pc, pci, h, ut, callback) {
+            callback(true);
+          };
           spyOn(cd.recap, 'uploadAttachmentMenu').and.callFake(uploadFake);
           spyOn(cd.notifier, 'showUpload');
           spyOn(history, 'replaceState');
@@ -690,7 +681,9 @@ describe('The ContentDelegate class', function () {
 
         it('calls the upload method and responds to negative result', function () {
           const cd = singleDocContentDelegate;
-          const uploadFake = function (pc, pci, h, ut, callback) { callback(false); };
+          const uploadFake = function (pc, pci, h, ut, callback) {
+            callback(false);
+          };
           spyOn(cd.recap, 'uploadAttachmentMenu').and.callFake(uploadFake);
           spyOn(cd.notifier, 'showUpload');
           spyOn(history, 'replaceState');
