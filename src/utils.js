@@ -325,7 +325,7 @@ const recapEmailBanner = (css_class = 'recap-email-banner') => {
 }
 
 //Given a pacer_doc_id, return the pacer_case_id that it is associated with
-const getPacerCaseIdFromPacerDocId = async function (tabId, pacer_doc_id) {
+async function getPacerCaseIdFromPacerDocId(tabId, pacer_doc_id) {
   const tabStorage = await getItemsFromStorage(tabId);
 
   const docsToCases = tabStorage && tabStorage.docsToCases;
