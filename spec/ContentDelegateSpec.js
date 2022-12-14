@@ -1153,10 +1153,9 @@ describe('The ContentDelegate class', function () {
   }
 
   describe('findAndStorePacerDocIds', function () {
-
-    afterEach(function(){
+    afterEach(function () {
       window.getPacerCaseIdFromPacerDocId = jasmine.createSpy().and.callThrough();
-    })
+    });
 
     it('should handle no cookie', async function () {
       spyOn(PACER, 'hasPacerCookie').and.returnValue(false);
@@ -1165,7 +1164,11 @@ describe('The ContentDelegate class', function () {
     it('should handle pages without case ids', async function () {
       const cd = noPacerCaseIdContentDelegate;
       spyOn(PACER, 'hasPacerCookie').and.returnValue(true);
-      window.getPacerCaseIdFromPacerDocId = jasmine.createSpy('getPacerCaseIdFromPacerDocId').and.callFake((tbId, pdid)=>{ return '531931'})
+      window.getPacerCaseIdFromPacerDocId = jasmine
+        .createSpy('getPacerCaseIdFromPacerDocId')
+        .and.callFake((tbId, pdid) => {
+          return '531931';
+        });
       chrome.storage.local.set = function (docs, cb) {
         cb();
       };
@@ -1200,7 +1203,11 @@ describe('The ContentDelegate class', function () {
         cb();
       };
       await cd.findAndStorePacerDocIds();
-      window.getPacerCaseIdFromPacerDocId= jasmine.createSpy('getPacerCaseIdFromPacerDocId').and.callFake((tbId, pdid)=>{ return null})
+      window.getPacerCaseIdFromPacerDocId = jasmine
+        .createSpy('getPacerCaseIdFromPacerDocId')
+        .and.callFake((tbId, pdid) => {
+          return null;
+        });
       expect(documents).toEqual({ '034031424910': '1234', '034031424911': '1234' });
     });
     it('should iterate links for PACER case id', async function () {
