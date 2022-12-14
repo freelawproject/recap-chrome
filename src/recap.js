@@ -16,24 +16,6 @@ function Recap() {
     };
   return {
 
-    //Given a pacer_doc_id, return the pacer_case_id that it is associated with
-    getPacerCaseIdFromPacerDocId: async function (pacer_doc_id, cb) {
-      const tabId = cb.tab.id;
-      const tabStore = await getItemsFromStorage(tabId);
-      try {
-        const docsToCases = tabStore.docsToCases;
-        const pacerCaseId = docsToCases[pacer_doc_id];
-        console.info([
-          'RECAP: Got case number', pacerCaseId,
-          'for pacer_doc_id:', pacer_doc_id].join(' ')
-        );
-        return cb(pacerCaseId);
-      } catch (err) {
-        console.log('No stored pacer_case_id found in chrome storage');
-        return cb(null);
-      };
-    },
-
     // Asks RECAP whether it has a docket page for the specified case.  If it
     // is available, the callback will be called with a
     getAvailabilityForDocket: function (pacer_court, pacer_case_id, cb) {

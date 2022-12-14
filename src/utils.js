@@ -323,3 +323,18 @@ const recapEmailBanner = (css_class = 'recap-email-banner') => {
   div.appendChild(anchor);
   return div
 }
+
+//Given a pacer_doc_id, return the pacer_case_id that it is associated with
+const getPacerCaseIdFromPacerDocId = async function (tabId, pacer_doc_id) {
+  const tabStorage = await getItemsFromStorage(tabId);
+
+  const docsToCases = tabStorage && tabStorage.docsToCases;
+  if (!docsToCases) return;
+
+  const caseId = docsToCases[pacer_doc_id];
+  if (!caseId) return console.warn('No pacer_case_id found in storage');
+
+  const success = `RECAP: Got case number ${caseId} for docId ${pacer_doc_id}`;
+  console.info(success);
+  return caseId;
+}
