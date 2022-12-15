@@ -1080,6 +1080,10 @@ describe('The ContentDelegate class', function () {
         // });
       });
 
+      afterEach(function(){
+        window.getPacerCaseIdFromPacerDocId = jasmine.createSpy().and.callThrough()
+      })
+
       it('makes the back button redisplay the previous page', async function () {
         await cd.showPdfPage(documentElement, html);
         expect(window.onpopstate).toEqual(jasmine.any(Function));
