@@ -1,6 +1,9 @@
 // Handles the insertion of the "Create alert" option in the dropdown menu
 const addAlertButtonInRecapAction = (court, pacerCaseId) => {
   let dropdownHeader = document.getElementById('action-button-dropdown-header')
+  if (!dropdownHeader){
+    return;
+  }
   let existingAlertButton = document.getElementById('create-alert-button')
   if (!existingAlertButton) {
       let alertLi = document.createElement("li");
@@ -22,6 +25,9 @@ const addAlertButtonInRecapAction = (court, pacerCaseId) => {
 // Handles the insertion of the "Search this docket" option in the dropdown menu
 const addSearchDocketInRecapAction = (cl_id) => {
   let viewDocketButton = document.getElementById('view-docket-button')
+  if (!viewDocketButton){
+    return;
+  }
   let existingSearchButton = document.getElementById('search-docket-button')
   if (!existingSearchButton) {
     let docketLi = document.createElement('li')
