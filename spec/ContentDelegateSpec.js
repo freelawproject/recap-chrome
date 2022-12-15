@@ -1065,9 +1065,8 @@ describe('The ContentDelegate class', function () {
       const cd = singleDocContentDelegate;
 
       beforeEach(function () {
-        spyOn(cd.recap, 'getPacerCaseIdFromPacerDocId').and.callFake((pdi, callback) => {
-          callback.tab = { id: 1234 };
-          callback(casenum);
+        window.getPacerCaseIdFromPacerDocId = jasmine.createSpy().and.callFake((tbid, pcId) => {
+          return casenum;
         });
         spyOn(cd.notifier, 'showUpload').and.callFake((message, cb) => cb(true));
         spyOn(URL, 'createObjectURL').and.returnValue('data:blob');
@@ -1143,22 +1142,27 @@ describe('The ContentDelegate class', function () {
   }
 
   describe('findAndStorePacerDocIds', function () {
-    it('should handle no cookie', function () {
-      spyOn(PACER, 'hasPacerCookie').and.returnValue(false);
-      expect(nonsenseUrlContentDelegate.findAndStorePacerDocIds()).toBe(undefined);
+    afterEach(function () {
+      window.getPacerCaseIdFromPacerDocId = jasmine.createSpy().and.callThrough();
     });
-    it('should handle pages without case ids', function () {
+
+    it('should handle no cookie', async function () {
+      spyOn(PACER, 'hasPacerCookie').and.returnValue(false);
+      expect(await nonsenseUrlContentDelegate.findAndStorePacerDocIds()).toBe(undefined);
+    });
+    it('should handle pages without case ids', async function () {
       const cd = noPacerCaseIdContentDelegate;
       spyOn(PACER, 'hasPacerCookie').and.returnValue(true);
-      spyOn(cd.recap, 'getPacerCaseIdFromPacerDocId').and.callFake((_, callback) => {
-        callback.tab = { id: 1234 };
-        callback('531931');
-      });
+      window.getPacerCaseIdFromPacerDocId = jasmine
+        .createSpy('getPacerCaseIdFromPacerDocId')
+        .and.callFake((tbId, pdid) => {
+          return '531931';
+        });
       chrome.storage.local.set = function (docs, cb) {
         cb();
       };
-      cd.findAndStorePacerDocIds();
-      expect(cd.recap.getPacerCaseIdFromPacerDocId).toHaveBeenCalled();
+      await cd.findAndStorePacerDocIds();
+      expect(window.getPacerCaseIdFromPacerDocId).toHaveBeenCalled();
     });
     it('should iterate links for DLS', async function () {
       const link_2 = document.createElement('a');
@@ -1187,11 +1191,12 @@ describe('The ContentDelegate class', function () {
         documents = docs;
         cb();
       };
-      spyOn(cd.recap, 'getPacerCaseIdFromPacerDocId').and.callFake((_, callback) => {
-        callback.tab = { id: 1234 };
-        return Promise.resolve(callback('531931'));
-      });
       await cd.findAndStorePacerDocIds();
+      window.getPacerCaseIdFromPacerDocId = jasmine
+        .createSpy('getPacerCaseIdFromPacerDocId')
+        .and.callFake((tbId, pdid) => {
+          return null;
+        });
       expect(documents).toEqual({ '034031424910': '1234', '034031424911': '1234' });
     });
     it('should iterate links for PACER case id', async function () {

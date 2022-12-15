@@ -122,7 +122,7 @@ ContentDelegate.prototype.checkRestrictions = function () {
 
 // Use a variety of approaches to get and store pacer_doc_id to pacer_case_id
 // mappings in local storage.
-ContentDelegate.prototype.findAndStorePacerDocIds = function () {
+ContentDelegate.prototype.findAndStorePacerDocIds = async function () {
   if (!PACER.hasPacerCookie(document.cookie)) {
     return;
   }
@@ -131,7 +131,7 @@ ContentDelegate.prototype.findAndStorePacerDocIds = function () {
   // where there are links to documents on another case.
   let page_pacer_case_id = this.pacer_case_id
     ? this.pacer_case_id
-    : this.recap.getPacerCaseIdFromPacerDocId(this.pacer_doc_id, function () {});
+    : await getPacerCaseIdFromPacerDocId(this.tabId, this.pacer_doc_id);
 
   let docsToCases = {};
 
@@ -171,6 +171,7 @@ ContentDelegate.prototype.findAndStorePacerDocIds = function () {
   if (PACER.isDocketQueryUrl(this.url) && page_pacer_case_id) {
     payload['caseId'] = page_pacer_case_id;
   }
+
   updateTabStorage({
     [this.tabId]: payload,
   });
@@ -563,7 +564,7 @@ ContentDelegate.prototype.showPdfPage = async function (
 
   const pacer_case_id = this.pacer_case_id
     ? this.pacer_case_id
-    : await this.recap.getPacerCaseIdFromPacerDocId(this.pacer_doc_id, () => {});
+    : await getPacerCaseIdFromPacerDocId(this.tabId, this.pacer_doc_id);
 
   const generateFileName = (pacer_case_id) => {
     let filename, pieces;
