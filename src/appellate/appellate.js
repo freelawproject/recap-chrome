@@ -164,7 +164,7 @@ AppellateDelegate.prototype.handleDocketDisplayPage = async function () {
 AppellateDelegate.prototype.handleAttachmentPage = async function () {
   this.pacer_case_id = await APPELLATE.getCaseId(this.tabId, this.queryParameters, this.docId);
 
-  if (this.pacer_case_id) {
+  if (!this.pacer_case_id) {
     return;
   }
 
