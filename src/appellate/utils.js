@@ -123,17 +123,13 @@ let APPELLATE = {
     return { links, docsToCases };
   },
 
-  // get the docId from the servelet parameter of the attachment page or the single doc page
+  // get the docId from the servlet parameter of the attachment page or the single doc page
   getDocIdFromServlet: (servlet) => {
-    if (!servlet) {
-      return;
-    }
+    if (!servlet) return;
 
     let docString = /^ShowDoc\/(\d+)/.exec(servlet);
 
-    if (!docString) {
-      return;
-    }
+    if (!docString) return;
 
     let [_, docId] = docString;
 
