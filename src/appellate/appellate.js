@@ -6,12 +6,13 @@ let AppellateDelegate = function (tabId, court, url, links) {
   this.links = links || [];
   this.recap = importInstance(Recap);
   this.notifier = importInstance(Notifier);
+  this.queryParameters = APPELLATE.getQueryParameters(this.url);
+  this.docId = APPELLATE.getDocIdFromServlet(this.queryParameters.get('servlet'))
 };
 
 // Identify the current page using the URL and the query string,
 // then dispatch the associated handler
 AppellateDelegate.prototype.dispatchPageHandler = function () {
-  this.queryParameters = APPELLATE.getQueryParameters(this.url);
   let targetPage = this.queryParameters.get('servlet') || APPELLATE.getServletFromInputs();
   switch (targetPage) {
     case 'CaseSummary.jsp':
@@ -40,15 +41,20 @@ AppellateDelegate.prototype.handleCaseSelectionPage = async function () {
 
 // check every link in the document to see if RECAP has it
 AppellateDelegate.prototype.attachRecapLinksToEligibleDocs = async function () {
-  // filter the links for the documents available on the page
-  APPELLATE.createDummyIframe('dummyframe');
-
+ 
   let form = document.getElementsByName('doDocPostURLForm');
   if (form.length) {
-    form[0].setAttribute('target', 'dummyframe');
+    form[0].setAttribute('target', '_self');
   }
 
-  const links = APPELLATE.findDocLinksFromAnchors(this.links);
+  // filter the links for the documents available on the page
+  let { links, docsToCases } = APPELLATE.findDocLinksFromAnchors(this.links);
+
+  updateTabStorage({
+    [this.tabId]: {
+      docsToCases: docsToCases,
+    },
+  });
 
   let linkCount = links.length;
   console.info(`RECAP: Attaching links to all eligible documents (${linkCount} found)`);
