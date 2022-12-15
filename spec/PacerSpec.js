@@ -612,4 +612,26 @@ describe('The PACER module', function() {
       });
     })
   })
+
+  describe('parseDoDocPostURL', function () {
+    it('gets the right values for an example doDoc string', function () {
+      let goDLSSampleString = "return doDocPostURL('009032024698','318547');";
+      expect(PACER.parseDoDocPostURL(goDLSSampleString)).toEqual({
+        doc_id: '009032024698',
+        case_id: '318547',
+      });
+    });
+
+    it('returns false for an invalid string', function () {
+      expect(PACER.parseGoDLSFunction('not a goDLS function call')).toBeNull();
+    });
+
+    it('returns false for a null input', function () {
+      expect(PACER.parseGoDLSFunction(null)).toBeNull();
+    });
+
+    it('returns false for an undefined input', function () {
+      expect(PACER.parseGoDLSFunction(undefined)).toBeNull();
+    });
+  });
 });
