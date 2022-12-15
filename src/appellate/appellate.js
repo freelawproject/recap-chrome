@@ -35,13 +35,12 @@ AppellateDelegate.prototype.dispatchPageHandler = function () {
 
 AppellateDelegate.prototype.handleCaseSelectionPage = async function () {
   // retrieve pacer_case_id from the link related to the Case Query
-  let pacer_case_id = APPELLATE.getCaseIdFromCaseSelection();
-  await saveCaseIdinTabStorage({ tabId: this.tabId }, pacer_case_id);
+  this.pacer_case_id = APPELLATE.getCaseIdFromCaseSelection();
+  await saveCaseIdinTabStorage({ tabId: this.tabId }, this.pacer_case_id);
 };
 
 // check every link in the document to see if RECAP has it
 AppellateDelegate.prototype.attachRecapLinksToEligibleDocs = async function () {
- 
   let form = document.getElementsByName('doDocPostURLForm');
   if (form.length) {
     form[0].setAttribute('target', '_self');
@@ -49,6 +48,14 @@ AppellateDelegate.prototype.attachRecapLinksToEligibleDocs = async function () {
 
   // filter the links for the documents available on the page
   let { links, docsToCases } = APPELLATE.findDocLinksFromAnchors(this.links);
+
+  this.pacer_case_id = this.pacer_case_id
+    ? this.pacer_case_id
+    : await APPELLATE.getCaseId(this.tabId, this.queryParameters, this.docId);
+
+  if (this.pacer_case_id && this.docId) {
+    docsToCases[this.docId] = this.pacer_case_id;
+  }
 
   updateTabStorage({
     [this.tabId]: {
@@ -103,24 +110,24 @@ AppellateDelegate.prototype.attachRecapLinksToEligibleDocs = async function () {
 };
 
 AppellateDelegate.prototype.handleDocketDisplayPage = async function () {
-  let pacer_case_id = await APPELLATE.getCaseId(this.tabId, this.queryParameters);
+  this.pacer_case_id = await APPELLATE.getCaseId(this.tabId, this.queryParameters, this.docId);
  
-  if (!pacer_case_id) {
+  if (!this.pacer_case_id) {
     return;
   }
 
   // Query the first table with case data and insert the RECAP actions button
   let table = document.querySelectorAll('table')[3];
-  let button = recapActionsButton(this.court, pacer_case_id, false);
+  let button = recapActionsButton(this.court, this.pacer_case_id, false);
   table.after(button);
 
-  this.recap.getAvailabilityForDocket(this.court, pacer_case_id, (result) => {
+  this.recap.getAvailabilityForDocket(this.court, this.pacer_case_id, (result) => {
     if (result.count === 0) {
       console.warn('RECAP: Zero results found for docket lookup.');
     } else if (result.count > 1) {
       console.error(`RECAP: More than one result found for docket lookup. Found ${result.count}`);
     } else {
-      addAlertButtonInRecapAction(this.court, pacer_case_id);
+      addAlertButtonInRecapAction(this.court, this.pacer_case_id);
       let cl_id = getClIdFromAbsoluteURL(result.results[0].absolute_url);
       addSearchDocketInRecapAction(cl_id);
     }
@@ -136,13 +143,13 @@ AppellateDelegate.prototype.handleDocketDisplayPage = async function () {
   if (options['recap_enabled']) {
     let callback = (ok) => {
       if (ok) {
-        addAlertButtonInRecapAction(this.court, pacer_case_id);
+        addAlertButtonInRecapAction(this.court, this.pacer_case_id);
         history.replaceState({ uploaded: true }, '');
         this.notifier.showUpload('Docket uploaded to the public RECAP Archive.', function () {});
       }
     };
 
-    this.recap.uploadDocket(this.court, pacer_case_id, document.documentElement.innerHTML, 'APPELLATE_DOCKET', (ok) =>
+    this.recap.uploadDocket(this.court, this.pacer_case_id, document.documentElement.innerHTML, 'APPELLATE_DOCKET', (ok) =>
       callback(ok)
     );
   } else {
@@ -151,13 +158,13 @@ AppellateDelegate.prototype.handleDocketDisplayPage = async function () {
 };
 
 AppellateDelegate.prototype.handleAttachmentPage = async function () {
-  if (history.state && history.state.uploaded) {
+  this.pacer_case_id = await APPELLATE.getCaseId(this.tabId, this.queryParameters, this.docId);
+
+  if (this.pacer_case_id) {
     return;
   }
-
-  let pacer_case_id = await APPELLATE.getCaseId(this.tabId, this.queryParameters);
-
-  if (!pacer_case_id) {
+  
+  if (history.state && history.state.uploaded) {
     return;
   }
 
@@ -176,7 +183,7 @@ AppellateDelegate.prototype.handleAttachmentPage = async function () {
 
   this.recap.uploadAttachmentMenu(
     this.court,
-    pacer_case_id,
+    this.pacer_case_id,
     document.documentElement.innerHTML,
     'APPELLATE_ATTACHMENT_PAGE',
     (ok) => callback(ok)
