@@ -97,15 +97,10 @@ AppellateDelegate.prototype.attachRecapLinksToEligibleDocs = async function () {
 };
 
 AppellateDelegate.prototype.handleDocketDisplayPage = async function () {
-  let pacer_case_id = APPELLATE.getCaseIdFromSearchQuery(this.queryParameters) || APPELLATE.getCaseIdFromInputs();
-
-  // if the last step didn't find the caseId in the query parameter, It will check the storage
+  let pacer_case_id = await APPELLATE.getCaseId(this.tabId, this.queryParameters);
+ 
   if (!pacer_case_id) {
-    const tabStorage = await getItemsFromStorage(this.tabId);
-    if (!tabStorage && !tabStorage.caseId) {
-      return;
-    }
-    pacer_case_id = tabStorage.caseId;
+    return;
   }
 
   // Query the first table with case data and insert the RECAP actions button
@@ -154,16 +149,7 @@ AppellateDelegate.prototype.handleAttachmentPage = async function () {
     return;
   }
 
-  let pacer_case_id = APPELLATE.getCaseIdFromSearchQuery(this.queryParameters) || APPELLATE.getCaseIdFromInputs();
-
-  // if the last step didn't find the caseId in the query parameter, It will check the storage
-  if (!pacer_case_id) {
-    const tabStorage = await getItemsFromStorage(this.tabId);
-    if (!tabStorage && !tabStorage.caseId) {
-      return;
-    }
-    pacer_case_id = tabStorage.caseId;
-  }
+  let pacer_case_id = await APPELLATE.getCaseId(this.tabId, this.queryParameters);
 
   if (!pacer_case_id) {
     return;

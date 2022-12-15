@@ -16,15 +16,24 @@ let APPELLATE = {
     if (input) return input.value;
   },
 
-  // returns the pacer_case_id from the inputs on the page
-  getCaseIdFromInputs: () => {
+  // tries to retrieve the pacer_case_id using different approaches:
+  //
+  //   - Check the URL's query string if its available
+  //   - Check inputs on the page
+  //   - Check the storage
+  getCaseId: async (tabId, queryParameters) => {
     let input = document.querySelector('input[name=caseId]');
-    if (input) return input.value;
-  },
+    let pacer_case_id = queryParameters.get('caseid') || queryParameters.get('caseId') || (input && input.value);
 
-  // returns the pacer_case_id from the URL's query string if its available
-  getCaseIdFromSearchQuery: (queryParameters) => {
-    let pacer_case_id = queryParameters.get('caseid') || queryParameters.get('caseId');
+    // if the last step didn't find the caseId, It will check the storage
+    if (!pacer_case_id) {
+      const tabStorage = await getItemsFromStorage(tabId);
+      if (!tabStorage && !tabStorage.caseId) {
+        return;
+      }
+      pacer_case_id = tabStorage.caseId;
+    }
+
     return pacer_case_id;
   },
 
