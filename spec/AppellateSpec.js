@@ -141,8 +141,8 @@ describe('The Appellate module', function () {
 
   describe('findDocLinksFromAnchors', function () {
     it('returns empty array for empty input', function () {
-      let [doc_id, ] = APPELLATE.findDocLinksFromAnchors([]);
-      expect(doc_id.length).toBe(0);
+      let {links, } = APPELLATE.findDocLinksFromAnchors([]);
+      expect(links.length).toBe(0);
     });
 
     describe('for documents with links', function () {
@@ -166,8 +166,8 @@ describe('The Appellate module', function () {
 
         it('returns empty array', function () {
           let anchors = document.querySelectorAll('#no_links > a');
-          let [doc_id,_] = APPELLATE.findDocLinksFromAnchors(anchors);
-          expect(doc_id.length).toBe(0);
+          let { links, _ } = APPELLATE.findDocLinksFromAnchors(anchors);
+          expect(links.length).toBe(0);
         });
       });
 
@@ -191,9 +191,9 @@ describe('The Appellate module', function () {
 
         it('returns array with doc_ids', function () {
           let anchors = document.querySelectorAll('#links > a');
-          let [doc_id, _] = APPELLATE.findDocLinksFromAnchors(anchors);
-          expect(doc_id.length).toBe(2);
-          expect(doc_id).toEqual(['009031927529', '009031956734']);
+          let { links, _ } = APPELLATE.findDocLinksFromAnchors(anchors);
+          expect(links.length).toBe(2);
+          expect(links).toEqual(['009031927529', '009031956734']);
         });
       });
     });
