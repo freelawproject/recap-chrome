@@ -11,6 +11,8 @@ describe('The Appellate module', function () {
     'https://ecf.ca9.uscourts.gov/docs1/009031927529',
     'https://ecf.ca9.uscourts.gov/docs1/009031956734',
   ];
+  const searchParamsWithCaseId = new URLSearchParams('servlet=DocketReportFilter.jsp&caseId=318547');
+  const searchParamsWithoutCaseId = new URLSearchParams('servlet=DocketReportFilter.jsp');
 
   function clearBody() {
     document.body.innerHTML = '';
@@ -52,9 +54,9 @@ describe('The Appellate module', function () {
     });
   });
 
-  describe('getCaseIdFromInputs', function () {
+  describe('getCaseId', function () {
 
-    describe('for pages with matching format', function(){
+    describe('for pages with inputs', function(){
 
       beforeEach(function () {
         clearBody();
@@ -67,8 +69,8 @@ describe('The Appellate module', function () {
         });
       });
 
-      it('returns the caseId value', function () {
-        expect(APPELLATE.getCaseIdFromInputs()).toBe('318457');
+      it('returns the caseId value', async function () {
+        expect(await APPELLATE.getCaseId('1234', searchParamsWithoutCaseId)).toBe('318457');
       });
 
     })
@@ -76,10 +78,22 @@ describe('The Appellate module', function () {
     describe('for pages with non-matching format', function () {
       beforeEach(function () {
         clearBody();
+        window.chrome = {
+          storage: {
+            local: {
+              get: jasmine.createSpy().and.callFake(function (_, cb) {
+                cb({
+                  [1234]: { },
+                  options: { recap_enabled: true },
+                });
+              })
+            },
+          },
+        };
       });
 
-      it('returns undefined', function () {
-        expect(APPELLATE.getCaseIdFromInputs()).toBeUndefined();
+      it('returns undefined', async function () {
+        expect(await APPELLATE.getCaseId('1234', searchParamsWithoutCaseId)).toBeUndefined();
       });
     });
   });
