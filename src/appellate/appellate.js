@@ -7,7 +7,7 @@ let AppellateDelegate = function (tabId, court, url, links) {
   this.recap = importInstance(Recap);
   this.notifier = importInstance(Notifier);
   this.queryParameters = APPELLATE.getQueryParameters(this.url);
-  this.docId = APPELLATE.getDocIdFromServlet(this.queryParameters.get('servlet'))
+  this.docId = APPELLATE.getDocIdFromServlet(this.queryParameters.get('servlet'));
 };
 
 // Identify the current page using the URL and the query string,
@@ -111,7 +111,7 @@ AppellateDelegate.prototype.attachRecapLinksToEligibleDocs = async function () {
 
 AppellateDelegate.prototype.handleDocketDisplayPage = async function () {
   this.pacer_case_id = await APPELLATE.getCaseId(this.tabId, this.queryParameters, this.docId);
- 
+
   if (!this.pacer_case_id) {
     return;
   }
@@ -149,8 +149,12 @@ AppellateDelegate.prototype.handleDocketDisplayPage = async function () {
       }
     };
 
-    this.recap.uploadDocket(this.court, this.pacer_case_id, document.documentElement.innerHTML, 'APPELLATE_DOCKET', (ok) =>
-      callback(ok)
+    this.recap.uploadDocket(
+      this.court,
+      this.pacer_case_id,
+      document.documentElement.innerHTML,
+      'APPELLATE_DOCKET',
+      (ok) => callback(ok)
     );
   } else {
     console.info(`RECAP: Not uploading docket. RECAP is disabled.`);
@@ -163,7 +167,7 @@ AppellateDelegate.prototype.handleAttachmentPage = async function () {
   if (this.pacer_case_id) {
     return;
   }
-  
+
   if (history.state && history.state.uploaded) {
     return;
   }
