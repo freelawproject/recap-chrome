@@ -86,7 +86,8 @@ let APPELLATE = {
 
   // Create a list of doc_ids from the list of all links available on the page
   findDocLinksFromAnchors: (nodeList) => {
-    const links = [];
+    let links = [];
+    let docsToCases = {};
     Array.from(nodeList).map((a) => {
       if (!PACER.isDocumentUrl(a.href)) return;
 
@@ -96,6 +97,7 @@ let APPELLATE = {
       let params = {};
       if (doDocPost) {
         [, params.doc_id, params.case_id] = doDocPost;
+        docsToCases[params.doc_id] = params.case_id;
       }
 
       a.removeAttribute('onclick');
@@ -118,19 +120,23 @@ let APPELLATE = {
       let docId = PACER.getDocumentIdFromUrl(a.href);
       links.push(docId);
     });
-    return links;
+    return [links, docsToCases];
   },
 
-  // Create dummy iframe to use as a target for the forms on different pages
-  createDummyIframe: (name) => {
-    // A few pages from Appellate PACER use a hidden form that is submitted when an
-    // anchor link is clicked. This hidden form has its target attribute set to open
-    // a new tab, so We're using this iframe to change the target of the hidden form
-    // and avoid opening multiple tabs for the same PACER case.
-    let iframe = document.createElement('iframe');
-    iframe.setAttribute('name', name);
-    iframe.setAttribute('id', name);
-    iframe.style.display = 'none';
-    document.body.appendChild(iframe);
+  // get the docId from the servelet parameter of the attachment page or the single doc page
+  getDocIdFromServlet: (servlet) => {
+    if (!servlet) {
+      return;
+    }
+
+    let docString = /^ShowDoc\/(\d+)/.exec(servlet);
+
+    if (!docString) {
+      return;
+    }
+
+    let [_, docId] = docString;
+
+    return docId;
   },
 };
