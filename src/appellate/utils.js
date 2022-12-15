@@ -20,7 +20,7 @@ let APPELLATE = {
   //
   //   - Check the URL's query string if its available
   //   - Check inputs on the page
-  //   - Check collection of docId and caseId 
+  //   - Check collection of docId and caseId
   //   - Check the storage
   getCaseId: async (tabId, queryParameters, docId) => {
     let input = document.querySelector('input[name=caseId]');
@@ -97,13 +97,9 @@ let APPELLATE = {
     Array.from(nodeList).map((a) => {
       if (!PACER.isDocumentUrl(a.href)) return;
 
-      // this regex will match the doc_id and case_id passed as an argument in the
-      // onclick event of each anchor element related to a document
-      let doDocPost = /^return doDocPostURL\('([^']*)','([^']*)'\);/.exec(a.getAttribute('onclick'));
-      let params = {};
-      if (doDocPost) {
-        [, params.doc_id, params.case_id] = doDocPost;
-        docsToCases[params.doc_id] = params.case_id;
+      let doDoc = PACER.parseDoDocPostURL(a.getAttribute('onclick'));
+      if (doDoc && doDoc.doc_id && doDoc.case_id) {
+        docsToCases[doDoc.doc_id] = doDoc.case_id;
       }
 
       a.removeAttribute('onclick');
