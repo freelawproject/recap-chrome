@@ -43,11 +43,11 @@ AppellateDelegate.prototype.handleCaseSelectionPage = async function () {
 AppellateDelegate.prototype.attachRecapLinksToEligibleDocs = async function () {
   // When you click a document link, it runs JS that submits this form.
   // Here, we override the target attribute of the form. If you don't do
-  // this, the form opens a new tab (target="_blank" by default), and 
-  // we would be unable to link that tab back to the metadata we 
-  // captured here. Thus, by overriding this form, we are able to 
+  // this, the form opens a new tab (target="_blank" by default), and
+  // we would be unable to link that tab back to the metadata we
+  // captured here. Thus, by overriding this form, we are able to
   // maintain the context we need to upload docs to the archive.
-  
+
   let form = document.getElementsByName('doDocPostURLForm');
   if (form.length) {
     form[0].setAttribute('target', '_self');
