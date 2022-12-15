@@ -20,10 +20,16 @@ let APPELLATE = {
   //
   //   - Check the URL's query string if its available
   //   - Check inputs on the page
+  //   - Check collection of docId and caseId 
   //   - Check the storage
-  getCaseId: async (tabId, queryParameters) => {
+  getCaseId: async (tabId, queryParameters, docId) => {
     let input = document.querySelector('input[name=caseId]');
     let pacer_case_id = queryParameters.get('caseid') || queryParameters.get('caseId') || (input && input.value);
+
+    // try to get a mapping from a pacer_doc_id in the URL to the pacer_case_id
+    if (!pacer_case_id && docId) {
+      pacer_case_id = await getPacerCaseIdFromPacerDocId(tabId, docId);
+    }
 
     // if the last step didn't find the caseId, It will check the storage
     if (!pacer_case_id) {
