@@ -97,7 +97,6 @@ AppellateDelegate.prototype.attachRecapLinksToEligibleDocs = async function () {
 };
 
 AppellateDelegate.prototype.handleDocketDisplayPage = async function () {
-  // retrieve pacer_case_id from URL query parameters
   let pacer_case_id = APPELLATE.getCaseIdFromSearchQuery(this.queryParameters) || APPELLATE.getCaseIdFromInputs();
 
   // if the last step didn't find the caseId in the query parameter, It will check the storage
