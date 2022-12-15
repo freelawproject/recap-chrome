@@ -120,7 +120,7 @@ let APPELLATE = {
       let docId = PACER.getDocumentIdFromUrl(a.href);
       links.push(docId);
     });
-    return [links, docsToCases];
+    return { links, docsToCases };
   },
 
   // get the docId from the servelet parameter of the attachment page or the single doc page
