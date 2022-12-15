@@ -141,7 +141,7 @@ describe('The Appellate module', function () {
 
   describe('findDocLinksFromAnchors', function () {
     it('returns empty array for empty input', function () {
-      let doc_id = APPELLATE.findDocLinksFromAnchors([]);
+      let [doc_id, ] = APPELLATE.findDocLinksFromAnchors([]);
       expect(doc_id.length).toBe(0);
     });
 
@@ -166,7 +166,7 @@ describe('The Appellate module', function () {
 
         it('returns empty array', function () {
           let anchors = document.querySelectorAll('#no_links > a');
-          let doc_id = APPELLATE.findDocLinksFromAnchors(anchors);
+          let [doc_id,_] = APPELLATE.findDocLinksFromAnchors(anchors);
           expect(doc_id.length).toBe(0);
         });
       });
@@ -191,7 +191,7 @@ describe('The Appellate module', function () {
 
         it('returns array with doc_ids', function () {
           let anchors = document.querySelectorAll('#links > a');
-          let doc_id = APPELLATE.findDocLinksFromAnchors(anchors);
+          let [doc_id, _] = APPELLATE.findDocLinksFromAnchors(anchors);
           expect(doc_id.length).toBe(2);
           expect(doc_id).toEqual(['009031927529', '009031956734']);
         });
@@ -297,15 +297,4 @@ describe('The Appellate module', function () {
     });
   });
 
-  describe('createDummyIframe', function () {
-    beforeEach(function () {
-      clearBody();
-    });
-
-    it('inserts iframe in document body', function () {
-      APPELLATE.createDummyIframe('dummy_frame');
-      let iframe = document.querySelectorAll("iframe[name='dummy_frame']");
-      expect(iframe.length).toBe(1);
-    });
-  });
 });
