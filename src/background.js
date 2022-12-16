@@ -73,10 +73,13 @@ function showNotificationTab(details){
     chrome.tabs.create({
       url: 'https://free.law/fundraisers/2019/recap/'
     });
-  }
-  else if (details.reason === 'update' && currentVersion === '1.2.27'){
+  } else if (details.reason === 'update' && currentVersion === '1.2.27'){
     chrome.tabs.create({
       url: 'https://free.law/fundraiser/2021/recap'
+    });
+  } else if (details.reason === 'update' && currentVersion === '1.2.31'){
+    chrome.tabs.create({
+      url: 'https://free.law/fundraiser/2022/recap'
     });
   }
 }
