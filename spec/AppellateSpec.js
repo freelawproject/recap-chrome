@@ -11,16 +11,121 @@ describe('The Appellate module', function () {
     'https://ecf.ca9.uscourts.gov/docs1/009031927529',
     'https://ecf.ca9.uscourts.gov/docs1/009031956734',
   ];
+  const searchParamsWithCaseId = new URLSearchParams('servlet=DocketReportFilter.jsp&caseId=318547');
+  const searchParamsWithoutCaseId = new URLSearchParams('servlet=DocketReportFilter.jsp');
 
   function clearBody() {
     document.body.innerHTML = '';
   }
 
   describe('getQueryParameters', function () {
-
     it('returns URLSearchParams interface', function () {
       expect(APPELLATE.getQueryParameters(nonQueryStringUrl)).toBeInstanceOf(URLSearchParams);
       expect(APPELLATE.getQueryParameters(caseSummaryPage)).toBeInstanceOf(URLSearchParams);
+    });
+  });
+
+  describe('getServletFromInputs', function () {
+    describe('for pages with matching format', function () {
+      beforeEach(function () {
+        clearBody();
+        let input = document.createElement('input');
+        input.setAttribute('name', 'servlet');
+        input.setAttribute('value', 'CaseSelectionTable.jsp');
+        document.body.appendChild(input);
+        document.querySelector = jasmine.createSpy('querySelector').and.callFake((query) => {
+          return document.querySelectorAll(query).length ? document.querySelectorAll(query)[0] : null;
+        });
+      });
+
+      it('returns the servlet parameter', function () {
+        expect(APPELLATE.getServletFromInputs()).toBe('CaseSelectionTable.jsp');
+      });
+    });
+
+    describe('for pages with non-matching format', function () {
+      beforeEach(function () {
+        clearBody();
+      });
+
+      it('returns undefined', function () {
+        expect(APPELLATE.getServletFromInputs()).toBeUndefined();
+      });
+    });
+  });
+
+  describe('getCaseId', function () {
+
+    describe('for pages with inputs', function(){
+
+      beforeEach(function () {
+        clearBody();
+        let input = document.createElement('input');
+        input.setAttribute('name', 'caseId');
+        input.setAttribute('value', '318457');
+        document.body.appendChild(input);
+        document.querySelector = jasmine.createSpy('querySelector').and.callFake((query) => {
+          return document.querySelectorAll(query).length ? document.querySelectorAll(query)[0] : null;
+        });
+      });
+
+      it('returns the caseId value', async function () {
+        expect(await APPELLATE.getCaseId('1234', searchParamsWithoutCaseId)).toBe('318457');
+      });
+
+    })
+
+    describe('for pages with non-matching format', function () {
+      beforeEach(function () {
+        clearBody();
+        window.chrome = {
+          storage: {
+            local: {
+              get: jasmine.createSpy().and.callFake(function (_, cb) {
+                cb({
+                  [1234]: { },
+                  options: { recap_enabled: true },
+                });
+              })
+            },
+          },
+        };
+      });
+
+      it('returns undefined', async function () {
+        expect(await APPELLATE.getCaseId('1234', searchParamsWithoutCaseId)).toBeUndefined();
+      });
+    });
+  });
+
+  describe('isAttachmentPage', function () {
+    describe('for pages with matching format', function () {
+      beforeEach(function () {
+        clearBody();
+        let form = document.createElement('form');
+        form.setAttribute('name', 'dktEntry');
+        document.body.appendChild(form);
+        document.querySelector = jasmine.createSpy('querySelector').and.callFake((query) => {
+          return document.querySelectorAll(query).length ? document.querySelectorAll(query)[0] : null;
+        });
+      });
+
+      it('returns true', function () {
+        expect(APPELLATE.isAttachmentPage()).toBe(true);
+      });
+    });
+
+    describe('for pages with non-matching format', function () {
+      beforeEach(function () {
+        clearBody();
+        document.querySelector = jasmine.createSpy('querySelector').and.callFake((query) => {
+          return document.querySelectorAll(query).length ? document.querySelectorAll(query)[0] : null;
+        });
+      });
+
+      it('returns false', function () {
+        expect(APPELLATE.isAttachmentPage()).toBe(false);
+      });
     });
   });
 
@@ -36,8 +141,8 @@ describe('The Appellate module', function () {
 
   describe('findDocLinksFromAnchors', function () {
     it('returns empty array for empty input', function () {
-      let doc_id = APPELLATE.findDocLinksFromAnchors([]);
-      expect(doc_id.length).toBe(0);
+      let {links, } = APPELLATE.findDocLinksFromAnchors([]);
+      expect(links.length).toBe(0);
     });
 
     describe('for documents with links', function () {
@@ -61,8 +166,8 @@ describe('The Appellate module', function () {
 
         it('returns empty array', function () {
           let anchors = document.querySelectorAll('#no_links > a');
-          let doc_id = APPELLATE.findDocLinksFromAnchors(anchors);
-          expect(doc_id.length).toBe(0);
+          let { links, _ } = APPELLATE.findDocLinksFromAnchors(anchors);
+          expect(links.length).toBe(0);
         });
       });
 
@@ -86,9 +191,9 @@ describe('The Appellate module', function () {
 
         it('returns array with doc_ids', function () {
           let anchors = document.querySelectorAll('#links > a');
-          let doc_id = APPELLATE.findDocLinksFromAnchors(anchors);
-          expect(doc_id.length).toBe(2);
-          expect(doc_id).toEqual(['009031927529', '009031956734']);
+          let { links, _ } = APPELLATE.findDocLinksFromAnchors(anchors);
+          expect(links.length).toBe(2);
+          expect(links).toEqual(['009031927529', '009031956734']);
         });
       });
     });
@@ -191,4 +296,5 @@ describe('The Appellate module', function () {
       });
     });
   });
+
 });

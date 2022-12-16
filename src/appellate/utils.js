@@ -5,6 +5,50 @@ let APPELLATE = {
     return new URLSearchParams(window.location.search);
   },
 
+  // returns the servlet parameter from the inputs on the page
+  getServletFromInputs: () => {
+    // Appellate PACER uses the servlet parameter to identify pages. This parameter
+    // can be usually found in the URL's query string but there's also a hidden input
+    // on some pages that has the same name and value, so We can use it to identify
+    // the page when the parameter is not present in the URL like in the Case Selection
+    // page.
+    let input = document.querySelector('input[name=servlet]');
+    if (input) return input.value;
+  },
+
+  // tries to retrieve the pacer_case_id using different approaches:
+  //
+  //   - Check the URL's query string if its available
+  //   - Check inputs on the page
+  //   - Check collection of docId and caseId
+  //   - Check the storage
+  getCaseId: async (tabId, queryParameters, docId) => {
+    let input = document.querySelector('input[name=caseId]');
+    let pacer_case_id = queryParameters.get('caseid') || queryParameters.get('caseId') || (input && input.value);
+
+    // try to get a mapping from a pacer_doc_id in the URL to the pacer_case_id
+    if (!pacer_case_id && docId) {
+      pacer_case_id = await getPacerCaseIdFromPacerDocId(tabId, docId);
+    }
+
+    // if the last step didn't find the caseId, It will check the storage
+    if (!pacer_case_id) {
+      const tabStorage = await getItemsFromStorage(tabId);
+      if (!tabStorage && !tabStorage.caseId) {
+        return;
+      }
+      pacer_case_id = tabStorage.caseId;
+    }
+
+    return pacer_case_id;
+  },
+
+  // Returns true if this is a "Attachment page"
+  isAttachmentPage: () => {
+    let form = document.querySelector("form[name='dktEntry']");
+    return form !== null;
+  },
+
   // Returns true if the URL is for the case selection page.
   isCaseSelectionPage: (url) => {
     // The URL for the selection page used in Appellate PACER is:
@@ -48,12 +92,49 @@ let APPELLATE = {
 
   // Create a list of doc_ids from the list of all links available on the page
   findDocLinksFromAnchors: (nodeList) => {
-    const links = [];
+    let links = [];
+    let docsToCases = {};
     Array.from(nodeList).map((a) => {
-      if (a.title !== 'Open Document') return;
+      if (!PACER.isDocumentUrl(a.href)) return;
+
+      let doDoc = PACER.parseDoDocPostURL(a.getAttribute('onclick'));
+      if (doDoc && doDoc.doc_id && doDoc.case_id) {
+        docsToCases[doDoc.doc_id] = doDoc.case_id;
+      }
+
+      a.removeAttribute('onclick');
+      a.setAttribute('target', '_self');
+
+      // clone and replace anchor elements to remove all listeners
+      let clonedNode = a.cloneNode(true);
+      a.replaceWith(clonedNode);
+
+      // add a new listener that allows the anchors to target the active tab
+      clonedNode.addEventListener('click', (event) => {
+        let form = document.getElementsByName('doDocPostURLForm')[0];
+        if (form) {
+          form.dls_id.value = params.doc_id;
+          form.caseId.value = params.case_id;
+          form.submit();
+        }
+      });
+
       let docId = PACER.getDocumentIdFromUrl(a.href);
       links.push(docId);
     });
-    return links;
+    return { links, docsToCases };
+  },
+
+  // get the docId from the servlet parameter of the attachment page or the single doc page
+  getDocIdFromServlet: (servlet) => {
+    if (!servlet) return;
+
+    let docString = /^ShowDoc\/(\d+)/.exec(servlet);
+
+    if (!docString) return;
+
+    let [_, docId] = docString;
+
+    return docId;
   },
 };

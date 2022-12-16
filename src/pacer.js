@@ -397,6 +397,24 @@ let PACER = {
     return r;
   },
 
+  // Parse the doDocPostURL function returning its parameters as a dict.
+  parseDoDocPostURL: function(doDoc_string){
+    // CMECF provides extra information on Document Links in the onclick event
+    // function doDocPostURL(), e.g.:
+    //
+    //   return doDocPostURL('009031927529','318547');
+    //
+    // this regex will match the doc_id and case_id passed as an argument in the
+    // onclick event of each anchor element related to a document from Appellate Pacer.
+    let doDocPost = /^return doDocPostURL\('([^']*)','([^']*)'\);/.exec(doDoc_string);
+    if (!doDocPost) {
+      return;
+    }
+    let params = {};
+    [, params.doc_id, params.case_id] = doDocPost;
+    return params;
+  },
+
   // Given document.cookie, returns true if the user is logged in to PACER.
   hasPacerCookie: function (cookieString) {
     let cookies = {};

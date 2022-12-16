@@ -343,12 +343,12 @@ ContentDelegate.prototype.handleAttachmentMenuPage = function () {
           }
         }, this);
 
-        this.recap.uploadAttachmentMenu(this.court, this.pacer_case_id, document.documentElement.innerHTML, callback);
-      } else {
-        console.info('RECAP: Not uploading attachment menu. RECAP is disabled.');
-      }
-    }.bind(this)
-  );
+      this.recap.uploadAttachmentMenu(this.court, this.pacer_case_id,
+        document.documentElement.innerHTML, 'ATTACHMENT_PAGE', callback);
+    } else {
+      console.info("RECAP: Not uploading attachment menu. RECAP is disabled.");
+    }
+  }.bind(this));
 };
 
 //if this a iquery page with case information, upload it to RECAP

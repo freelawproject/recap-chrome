@@ -105,11 +105,11 @@ function Recap() {
 
     // Uploads a "Document Selection Menu" page to the RECAP server, calling
     // the callback with a boolean success flag.
-    uploadAttachmentMenu: function (pacer_court, pacer_case_id, html, cb) {
+    uploadAttachmentMenu: function (pacer_court, pacer_case_id, html, upload_type, cb) {
       let formData = new FormData();
       formData.append('court', PACER.convertToCourtListenerCourt(pacer_court));
       pacer_case_id && formData.append('pacer_case_id', pacer_case_id);
-      formData.append('upload_type', UPLOAD_TYPES['ATTACHMENT_PAGE']);
+      formData.append('upload_type', UPLOAD_TYPES[upload_type]);
       formData.append('filepath_local', new Blob([html], { type: 'text/html' }));
       formData.append('debug', DEBUG);
       $.ajax({
