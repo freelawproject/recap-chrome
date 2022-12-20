@@ -35,8 +35,33 @@ AppellateDelegate.prototype.dispatchPageHandler = function () {
 
 AppellateDelegate.prototype.handleCaseSelectionPage = async function () {
   // retrieve pacer_case_id from the link related to the Case Query
-  this.pacer_case_id = APPELLATE.getCaseIdFromCaseSelection();
-  await saveCaseIdinTabStorage({ tabId: this.tabId }, this.pacer_case_id);
+  if (document.getElementsByName('csnum1')[0].value || document.getElementsByName('csnum2')[0].value){
+    this.pacer_case_id = APPELLATE.getCaseIdFromCaseSelection();
+    await saveCaseIdinTabStorage({ tabId: this.tabId }, this.pacer_case_id);
+  }
+  
+  const options = await getItemsFromStorage('options');
+  
+  if (!options['recap_enabled']) {
+    console.info('RECAP: Not uploading case selection page. RECAP is disabled.');
+    return;
+  }
+
+  let callback = (ok) => {
+    if (ok) {
+      history.replaceState({ uploaded: true }, '');
+      this.notifier.showUpload('Case selection page uploaded to the public RECAP Archive.', function () {});
+    }
+  };
+
+  this.recap.uploadIQueryPage(
+    this.court,
+    null,
+    document.documentElement.innerHTML,
+    'APPELLATE_CASE_QUERY_RESULT_PAGE',
+    callback
+  );
+  
 };
 
 // check every link in the document to see if RECAP has it
