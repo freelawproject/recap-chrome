@@ -151,6 +151,18 @@ let PACER = {
     return /iquery.pl/.test(url) && !/[?&]/.test(url)
   },
 
+  // Returns true if the page contains a Transaction Receipt table
+  hasTransactionReceipt(){
+    return !!$('th>font:contains("Transaction Receipt")').length;
+  },
+
+  // Returns true if the description in the transaction receipt is "Search" and
+  // the title of the page is "Select a Case"
+  isCaseQueryAdvance: function(){
+    let title = document.querySelector('#cmecfMainContent>h2')
+    return !!$('td>font:contains(Search)').length && /Select a Case/i.test(title.innerHTML);
+  },
+
   // Returns the URL with the case id as a query parameter. This function makes
   // sure every URL related to the Docket report has the same format
   formatDocketQueryUrl: function(url, case_id){
