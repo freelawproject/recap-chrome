@@ -361,8 +361,19 @@ ContentDelegate.prototype.handleiQuerySummaryPage = async function () {
   if (!PACER.isIQuerySummaryURL(this.url)) {
     return;
   }
+  
+  if (PACER.hasTransactionReceipt() && !PACER.isCaseQueryAdvance()) {
+    // when a user tries to search a case using the first/middle/last name in the iquery form
+    // they might get redirected to a list of matching people before they reach the list of cases
+    // related to that name. Currently, we are not interested in this page where the user can
+    // choose a person.
+    //
+    // This if statement will end this function early if the user reaches this unwanted page.
 
-  if (!this.pacer_case_id) {
+    return;
+  }
+
+  if (!this.pacer_case_id && !PACER.isCaseQueryAdvance()) {
     let caseId = PACER.getCaseIdFromIQuerySummary();
     // End this function early if we're not able to find a case id
     if (!caseId) {
@@ -372,7 +383,6 @@ ContentDelegate.prototype.handleiQuerySummaryPage = async function () {
   }
 
   const options = await getItemsFromStorage('options');
-
   if (options['recap_enabled']) {
     let callback = $.proxy(function (ok) {
       if (ok) {
@@ -380,8 +390,14 @@ ContentDelegate.prototype.handleiQuerySummaryPage = async function () {
         this.notifier.showUpload('iQuery page uploaded to the public RECAP Archive.', function () {});
       }
     }, this);
-
-    this.recap.uploadIQueryPage(this.court, this.pacer_case_id, document.documentElement.innerHTML, callback);
+    let upload_type = PACER.isCaseQueryAdvance() ? 'CASE_QUERY_RESULT_PAGE' : 'IQUERY_PAGE';
+    this.recap.uploadIQueryPage(
+      this.court,
+      this.pacer_case_id,
+      document.documentElement.innerHTML,
+      upload_type,
+      callback
+    );
   } else {
     console.info('RECAP: Not uploading iquery page. RECAP is disabled.');
   }
