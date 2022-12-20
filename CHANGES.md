@@ -5,21 +5,36 @@
 The following changes are not yet released, but are code complete:
 
 Features:
- - Add an actions button to PACER docket pages ([#308](https://github.com/freelawproject/recap/issues/308), [#282](https://github.com/freelawproject/recap-chrome/pull/282))
- - Adds annual tab popup asking for support from all users (sorry).
+ - None yet
 
 Changes:
- - Remove option to "Confirm before opening RECAP documents" ([#216](https://github.com/freelawproject/recap/issues/216))
- - Upload iquery.pl docket summary page ([#251](https://github.com/freelawproject/recap/issues/251))
- 
+ - None yet
 
 Fixes: 
- - Tighten security by verifying the sender's identity in communication between Window objects. This prevents a theoretical attack vector that might, with a lot of care and effort, have been able to send bad data to the RECAP Archive. ([#236](https://github.com/freelawproject/recap/issues/236))
- - Fix logic to handle links from appellate PACER to district PACER ([#222](https://github.com/freelawproject/recap/issues/222))
- - Fix logic to avoid duplicating RECAP banners ([#318](https://github.com/freelawproject/recap/issues/318))
+ - None yet
 
 For developers:
  - Nothing yet
+
+
+## 1.2.31 (2022-12-16)
+
+Features:
+ - Beta support for the appellate courts is finally here. It's missing a few parts, but will start uploading docket and attachment pages now. We'll collect those and work on merging them into the RECAP Archive, and the next version will add support for uploading documents and telling you when we have content in the archive. For now, we thank you for being so very patient over the many years, and we're excited to start collecting _something_! The real deal is coming, and feel free to report bugs if you find them.
+
+ - Add an actions button to PACER docket pages ([#308](https://github.com/freelawproject/recap/issues/308), [#282](https://github.com/freelawproject/recap-chrome/pull/282))
+
+ - Adds annual tab popup asking for support from all users (sorry).
+
+Changes:
+ - Remove option to "Confirm before opening RECAP documents". This option really just slowed down our users, so we finally removed it.  ([#216](https://github.com/freelawproject/recap/issues/216))
+ - Now we upload iquery.pl docket summary page from district courts, so we can get even more information into RECAP. ([#251](https://github.com/freelawproject/recap/issues/251))
+ 
+Fixes: 
+ - Tighten security by verifying the sender's identity in communication between Window objects. This prevents a theoretical attack vector that might, with a lot of care and effort, have been able to send bad data to the RECAP Archive. We have no evidence of this ever being abused. ([#236](https://github.com/freelawproject/recap/issues/236))
+ - Fix logic to handle links from appellate PACER to district PACER ([#222](https://github.com/freelawproject/recap/issues/222))
+ - Fix logic to avoid duplicating RECAP banners ([#318](https://github.com/freelawproject/recap/issues/318))
+ - Better case ID capturing on district court docket pages ([#319](https://github.com/freelawproject/recap/issues/319))
 
 
 ## 1.2.30 (2022-11-18)
