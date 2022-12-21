@@ -34,14 +34,27 @@ AppellateDelegate.prototype.dispatchPageHandler = function () {
 };
 
 AppellateDelegate.prototype.handleCaseSelectionPage = async function () {
-  // retrieve pacer_case_id from the link related to the Case Query
-  if (document.getElementsByName('csnum1')[0].value || document.getElementsByName('csnum2')[0].value){
+ 
+  if (document.querySelectorAll('input:not([type=hidden])').length) {
+    // When the users go back to the Case Selection Page from the Docket Report using the back button
+    // Appellate PACER loads the Case Search Page instead but in the HTML body has the servlet hidden input
+    // and shows 'CaseSelectionTable.jsp' as its value.
+    //
+    // This check avoids sending pages like the one previously described to the API.
+    return;
+  }
+
+  if (APPELLATE.caseSelectionPageHasOneRow()) {
+    // Retrieve pacer_case_id from the Case Query link
     this.pacer_case_id = APPELLATE.getCaseIdFromCaseSelection();
     await saveCaseIdinTabStorage({ tabId: this.tabId }, this.pacer_case_id);
+  } else {
+    // Add the pacer_case_id to each docket link to use it in the docket report
+    APPELLATE.addCaseIdToDocketSummaryLink();
   }
-  
+
   const options = await getItemsFromStorage('options');
-  
+
   if (!options['recap_enabled']) {
     console.info('RECAP: Not uploading case selection page. RECAP is disabled.');
     return;
@@ -56,7 +69,7 @@ AppellateDelegate.prototype.handleCaseSelectionPage = async function () {
 
   this.recap.uploadIQueryPage(
     this.court,
-    null,
+    this.pacer_case_id,
     document.documentElement.innerHTML,
     'APPELLATE_CASE_QUERY_RESULT_PAGE',
     callback
