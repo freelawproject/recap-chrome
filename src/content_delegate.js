@@ -362,14 +362,8 @@ ContentDelegate.prototype.handleiQuerySummaryPage = async function () {
     return;
   }
   
-  if (PACER.hasTransactionReceipt() && !PACER.isCaseQueryAdvance()) {
-    // when a user tries to search a case using the first/middle/last name in the iquery form
-    // they might get redirected to a list of matching people before they reach the list of cases
-    // related to that name. Currently, we are not interested in this page where the user can
-    // choose a person.
-    //
-    // This if statement will end this function early if the user reaches this unwanted page.
-
+  if (PACER.isSelectAPersonPage()) {
+    // This if statement will end this function early if the user reaches this page.
     return;
   }
 
