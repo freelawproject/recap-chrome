@@ -161,6 +161,8 @@ AppellateDelegate.prototype.handleDocketDisplayPage = async function () {
     return;
   }
 
+  await saveCaseIdinTabStorage({ tabId: this.tabId }, this.pacer_case_id);
+
   // Query the first table with case data and insert the RECAP actions button
   let table = document.querySelectorAll('table')[3];
   let button = recapActionsButton(this.court, this.pacer_case_id, false);
