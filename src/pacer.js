@@ -407,11 +407,17 @@ let PACER = {
     // this regex will match the doc_id and case_id passed as an argument in the
     // onclick event of each anchor element related to a document from Appellate Pacer.
     let doDocPost = /^return doDocPostURL\('([^']*)','([^']*)'\);/.exec(doDoc_string);
-    if (!doDocPost) {
+    let doDocPostAttachment = /^return doDocPostURL\('([^']*)'\)/.exec(doDoc_string);
+    if (!doDocPost && !doDocPostAttachment) {
       return;
     }
     let params = {};
-    [, params.doc_id, params.case_id] = doDocPost;
+    if (doDocPost){
+      [, params.doc_id, params.case_id] = doDocPost;
+    }else{
+      [, params.doc_id] = doDocPostAttachment;
+      params.case_id = null 
+    }
     return params;
   },
 
@@ -443,6 +449,32 @@ let PACER = {
     banners.forEach(banner => { banner.remove() });
   },
   
+  // returns document data as an object
+  parsePdfDataFromReceipt: () => {
+    // this method uses regex expressions to match that the case number, document number and the attachment 
+    // number from the receipt table and returns an object with the following attributes:
+    //  - case_num
+    //  - doc_num
+    //  - att_num
+    
+    let image_string = $('td:contains(Image)').text();
+    let regex = /(\d+)-(\d+)/;
+    let matches = regex.exec(image_string);
+    if (!matches) {
+      return null;
+    }
+    let r = {};
+    [ , r.doc_num, r.att_num] = matches
+    r.case_num = $.trim($('tr:contains(Case Number) td:nth(1)').text());
+
+    return r;
+  },
+
+  // returns HTML to create a full page iframe that loads the url passed as an argument
+  getFullPageIframe: (url) => {
+  return `<style>body { margin: 0; } iframe { border: none; }</style>
+                  <iframe src="${url}" width="100%" height="100%"></iframe>`;
+  },
 
   // These are all the supported PACER court identifiers, together with their
   // West-style court name abbreviations.
