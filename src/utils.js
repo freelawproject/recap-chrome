@@ -103,7 +103,7 @@ function getClIdFromAbsoluteURL(absoluteURL){
 // type and response (interpreted according to responseType).  See XHR2 spec
 // for details on responseType and response.  Uses GET if postData is null or
 // POST otherwise.  postData can be any type accepted by XMLHttpRequest.send().
-function httpRequest(url, postData, callback) {
+function httpRequest(url, postData, contentType, callback) {
   let type = null,
     result = null,
     xhr;
@@ -133,9 +133,15 @@ function httpRequest(url, postData, callback) {
   };
   if (postData) {
     xhr.open('POST', url);
+    if (contentType){
+      xhr.setRequestHeader("Content-Type", contentType);
+    }
     xhr.send(postData);
   } else {
     xhr.open('GET', url);
+    if (contentType){
+      xhr.setRequestHeader("Content-Type", contentType);
+    }
     xhr.send();
   }
 }
