@@ -203,7 +203,7 @@ function Recap() {
           console.info(`RECAP: Successfully uploaded PDF: 'Success' ` +
             `with processing queue id of ${result.id}`);
           cb(result || null);
-          destroyTabStorage(cb.tab.id);
+          updateTabStorage({ [cb.tab.id]: { ['pdf_blob']: null } });
         })
         .catch(error => console.log(`RECAP: Error uploading PDF: ${error}`));
     },
@@ -246,7 +246,7 @@ function Recap() {
           console.info(`RECAP: Successfully uploaded Zip: 'Success' ` +
             `with processing queue id of ${result.id}`);
           cb(result);
-          destroyTabStorage(cb.tab.id);
+          updateTabStorage({ [cb.tab.id]: { ['zip_blob']: null } });
         })
         .catch(error => {
           cb(null);
