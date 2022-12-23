@@ -32,6 +32,7 @@ module.exports = function(config) {
       'src/toolbar_button.js',
       'src/utils.js',
       'src/action_button.js',
+      'src/pdf_upload.js',
       'test/mock-utils.js',
       'src/content_delegate.js',
       'src/appellate/utils.js',
