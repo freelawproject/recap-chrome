@@ -26,6 +26,8 @@ AppellateDelegate.prototype.dispatchPageHandler = function () {
       if (APPELLATE.isAttachmentPage()) {
         this.handleAttachmentPage();
         this.attachRecapLinksToEligibleDocs();
+      } else if (APPELLATE.isSingleDocumentPage()) {
+        this.handleSingleDocumentPageView();
       } else {
         console.info('No identified appellate page found');
       }
@@ -92,12 +94,12 @@ AppellateDelegate.prototype.attachRecapLinksToEligibleDocs = async function () {
         let result = api_results.results.filter(function (obj) {
           return obj.pacer_doc_id === pacer_doc_id;
         })[0];
+
         if (!result) {
           continue;
         }
         let href = `https://storage.courtlistener.com/${result.filepath_local}`;
         let recap_link = $('<a/>', {
-          class: 'recap-inline',
           title: 'Available for free from the RECAP Archive.',
           href: href,
         });
@@ -106,7 +108,11 @@ AppellateDelegate.prototype.attachRecapLinksToEligibleDocs = async function () {
             src: chrome.extension.getURL('assets/images/icon-16.png'),
           })
         );
-        recap_link.insertAfter(this.links[i]);
+        let recap_div = $('<div>', {
+          class: 'recap-inline-appellate',
+        });
+        recap_div.append(recap_link);
+        recap_div.insertAfter(this.links[i]);
       }
       let spinner = document.getElementById('recap-button-spinner');
       if (spinner) {
@@ -199,4 +205,180 @@ AppellateDelegate.prototype.handleAttachmentPage = async function () {
     'APPELLATE_ATTACHMENT_PAGE',
     (ok) => callback(ok)
   );
+};
+
+// If this page offers a single document, intercept navigation to the document view page.
+AppellateDelegate.prototype.handleSingleDocumentPageView = async function () {
+  overwriteFormSubmitMethod();
+
+  this.pacer_case_id = await APPELLATE.getCaseId(this.tabId, this.queryParameters, this.docId);
+  await saveCaseIdinTabStorage({ tabId: this.tabId }, this.pacer_case_id);
+
+  // When we receive the message from the above submit method, submit the form
+  // via XHR so we can get the document before the browser does.
+  window.addEventListener('message', this.onDocumentViewSubmit.bind(this), false);
+
+  let callback = $.proxy(function (api_results) {
+    console.info(`RECAP: Got results from API. Running callback on API results to ` + `insert link`);
+    let result = api_results.results.filter((obj) => obj.pacer_doc_id == this.docId, this)[0];
+
+    if (!result) {
+      return;
+    }
+
+    let href = `https://www.courtlistener.com/${result.filepath_local}`;
+    // Insert a RECAP download link at the bottom of the form.
+    $('<div class="recap-banner"/>')
+      .append(
+        $('<a/>', {
+          title: 'Document is available for free in the RECAP Archive.',
+          href: href,
+        })
+          .append($('<img/>', { src: chrome.extension.getURL('assets/images/icon-16.png') }))
+          .append(' Get this document for free from the RECAP Archive.')
+      )
+      .appendTo($('body'));
+  }, this);
+
+  this.recap.getAvailabilityForDocuments([this.docId], this.court, callback);
+};
+
+AppellateDelegate.prototype.onDocumentViewSubmit = function (event) {
+  // Security check to ensure message is from a PACER website.
+  if (!PACER.getCourtFromUrl(event.origin)) {
+    console.warn(
+      'Received message from non PACER origin. This should only ' +
+        'happen when the extension is being abused by a bad actor.'
+    );
+    return;
+  }
+
+  let previousPageHtml = copyPDFDocumentPage();
+  let form = document.getElementById(event.data.id);
+
+  let title = document.querySelectorAll('strong')[1].innerHTML;
+  let dataFromTitle = APPELLATE.parsePdfDataFromTitle(title);
+  if (!dataFromTitle) {
+    form.submit();
+    return;
+  }
+  $('body').css('cursor', 'wait');
+  let query_string = new URLSearchParams(new FormData(form)).toString();
+  httpRequest(
+    form.action,
+    query_string,
+    'application/x-www-form-urlencoded',
+    function (type, ab, xhr) {
+      console.info(`RECAP: Successfully submitted RECAP "View" button form: ${xhr.statusText}`);
+
+      const blob = new Blob([new Uint8Array(ab)], { type: type });
+      // If we got a PDF, we wrap it in a simple HTML page.  This lets us treat
+      // both cases uniformly: either way we have an HTML page with an <iframe>
+      // in it, which is handled by showPdfPage.
+      if (type === 'application/pdf') {
+        // canb and ca9 return PDFs and trigger this code path.
+        let html = APPELLATE.getFullPageIframe(URL.createObjectURL(blob));
+        this.showPdfPage(
+          document.documentElement,
+          html,
+          previousPageHtml,
+          dataFromTitle.doc_num,
+          dataFromTitle.att_num,
+          dataFromTitle.case_num
+        );
+      } else {
+        const reader = new FileReader();
+        reader.onload = function () {
+          let html = reader.result;
+          // check if we have an HTML page which redirects the user to the PDF
+          // this was first display by the Northern District of Georgia
+          // https://github.com/freelawproject/recap/issues/277
+          const redirectResult = Array.from(html.matchAll(/window\.location\s*=\s*["']([^"']+)["'];?/g));
+          if (redirectResult.length > 0) {
+            const url = redirectResult[0][1];
+            html = APPELLATE.getFullPageIframe(url);
+          }
+          this.showPdfPage(
+            document.documentElement,
+            html,
+            previousPageHtml,
+            dataFromTitle.doc_num,
+            dataFromTitle.att_num,
+            dataFromTitle.case_num
+          );
+        }.bind(this);
+        reader.readAsText(blob); // convert blob to HTML text
+      }
+    }.bind(this)
+  );
+};
+
+// Given the HTML for a page with an <iframe> in it, downloads the PDF
+// document in the iframe, displays it in the browser, and also
+// uploads the PDF document to RECAP.
+AppellateDelegate.prototype.showPdfPage = async function (
+  documentElement,
+  html,
+  previousPageHtml,
+  document_number,
+  attachment_number,
+  docket_number
+) {
+  // Find the <iframe> URL in the HTML string.
+  let match = html.match(/([^]*?)<iframe[^>]*src="(.*?)"([^]*)/);
+  if (!match) {
+    document.documentElement.innerHTML = html;
+    return;
+  }
+
+  const options = await getItemsFromStorage('options');
+
+  showWaitingMessage(match);
+
+  // Make the Back button redisplay the previous page.
+  window.onpopstate = function (event) {
+    if (event.state.content) {
+      document.documentElement.innerHTML = event.state.content;
+    }
+  };
+  history.replaceState({ content: previousPageHtml }, '');
+
+  let blob = await downloadDataFromIframe(match, this.tabId);
+  let blobUrl = URL.createObjectURL(blob);
+  let pacer_case_id;
+
+  if (attachment_number) {
+    pacer_case_id = this.pacer_case_id
+      ? this.pacer_case_id
+      : await APPELLATE.getCaseId(this.tabId, this.queryParameters, this.docId);
+  } else {
+    pacer_case_id = this.pacer_case_id
+      ? this.pacer_case_id
+      : await getPacerCaseIdFromPacerDocId(this.tabId, this.docId);
+  }
+
+  let filename = generateFileName(
+    options,
+    this.court,
+    pacer_case_id,
+    docket_number,
+    document_number,
+    attachment_number
+  );
+  displayPDFOrSaveIt(options, filename, match, blob, blobUrl);
+
+  if (options['recap_enabled']) {
+    // If we have the pacer_case_id, upload the file to RECAP.
+    // We can't pass an ArrayBuffer directly to the background
+    // page, so we have to convert to a regular array.
+    this.recap.uploadDocument(this.court, pacer_case_id, this.docId, document_number, attachment_number, (ok) => {
+      // callback
+      if (ok) {
+        this.notifier.showUpload('PDF uploaded to the public RECAP Archive.', () => {});
+      }
+      ``;
+    });
+  } else {
+    console.info('RECAP: Not uploading PDF. RECAP is disabled.');
+  }
 };
