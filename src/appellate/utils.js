@@ -97,6 +97,25 @@ let APPELLATE = {
     //  - Link to get the Case Query (this one has the pacer_case_id as a URL parameter)
     //  - Link to get the Case Summary for Originating Case
     //
+    // The HTML structure of a row is the following:
+    //   
+    //  <tr>
+    //    <td>
+    //      <a href='TransportRoom?servlet=CaseSummary.jsp&amp;caseNum=20-15021'> 
+    //        20-15021 
+    //      </a>
+    //      <a href='TransportRoom?servlet=CaseQuery.jsp&caseid=318557&csnum1=20-15021'> 
+    //        Edward Ray, Jr. v. A. Ribera, et al 
+    //      </a>
+    //    </td>
+    //    ...
+    //    <td>
+    //      <a href='https://ecf.caed.uscourts.gov/cgi-bin/DktRpt.pl?caseNumber=1:19-cv-01561-AWI-SKO'> 
+    //        1:19-cv-01561-AWI-SKO 
+    //      </a>
+    //    </td>
+    //  </tr>
+    //
     // The extension is able to get the pacer_case_id and saves it to the tab storage when the Case Selection 
     // shows only a case but this approach is not possible when multiple cases are listed so this method allows 
     // us to support Case Selection pages with multiple cases.
