@@ -22,6 +22,9 @@ AppellateDelegate.prototype.dispatchPageHandler = function () {
     case 'CaseSelectionTable.jsp':
       this.handleCaseSelectionPage();
       break;
+    case 'CaseSearch.jsp':
+      this.handleCaseSearchPage();
+      break;
     default:
       if (APPELLATE.isAttachmentPage()) {
         this.handleAttachmentPage();
@@ -199,4 +202,15 @@ AppellateDelegate.prototype.handleAttachmentPage = async function () {
     'APPELLATE_ATTACHMENT_PAGE',
     (ok) => callback(ok)
   );
+};
+
+AppellateDelegate.prototype.handleCaseSearchPage = () => {
+  if (!PACER.hasFilingCookie(document.cookie)) {
+    return;
+  }
+
+  form = document.querySelector('form');
+  if (!document.querySelector('.recap-email-banner-full')) {
+    form.appendChild(recapEmailBanner('recap-email-banner-full'));
+  }
 };
