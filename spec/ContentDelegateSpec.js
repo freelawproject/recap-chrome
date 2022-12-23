@@ -834,17 +834,6 @@ describe('The ContentDelegate class', function () {
       form.remove();
     });
 
-    it('handles appellate check', function () {
-      const cd = appellateContentDelegate;
-      spyOn(console, 'log');
-      spyOn(PACER, 'isSingleDocumentPage').and.returnValue(true);
-      let restore = DEBUGLEVEL;
-      DEBUGLEVEL = 4;
-      cd.handleSingleDocumentPageView();
-      expect(console.log).toHaveBeenCalledWith('RECAP debug [4]: No interposition for appellate downloads yet');
-      DEBUGLEVEL = restore;
-    });
-
     describe('when there is NO appropriate form', function () {
       it('has no effect when the URL is wrong', function () {
         const cd = nonsenseUrlContentDelegate;
@@ -937,16 +926,6 @@ describe('The ContentDelegate class', function () {
     afterEach(function () {
       form.remove();
       table.remove();
-    });
-
-    it('handles appellate check', function () {
-      const cd = appellateContentDelegate;
-      spyOn(console, 'log');
-      let restore = DEBUGLEVEL;
-      DEBUGLEVEL = 4;
-      cd.onDocumentViewSubmit(event);
-      expect(console.log).toHaveBeenCalledWith('RECAP debug [4]: Appellate parsing not yet implemented');
-      DEBUGLEVEL = restore;
     });
 
     it('sets the onsubmit attribute of the page form', function () {
