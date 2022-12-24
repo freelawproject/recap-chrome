@@ -72,7 +72,7 @@ function updateToolbarButton(tab) {
           url: tab.url,
           name: 'PacerPref'
         }, function (pref_cookie) {
-          if (pref_cookie && pref_cookie.value.match(/receipt=N/)) {
+          if (PACER.areTransactionReceiptsDisabled(pref_cookie)) {
             // Receipts are disabled. Show the warning.
             setTitleIcon("Receipts are disabled in your PACER settings",{
               '19': 'assets/images/warning-19.png',
