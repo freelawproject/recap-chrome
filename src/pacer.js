@@ -156,6 +156,11 @@ let PACER = {
     return !!$('th>font:contains("Transaction Receipt")').length;
   },
 
+  // Returns true if the receipts are disabled globally
+  areTransactionReceiptsDisabled: function(cookie){
+    return cookie && cookie.value.match(/receipt=N/)
+  },
+  
   // Returns true if the description in the Transaction Receipt table is 'Search'
   isSearchPage: function(){
     return this.hasTransactionReceipt && !!$('td>font:contains(Search)').length;
