@@ -314,7 +314,7 @@ describe('The Recap export module', function () {
       expected.append('filepath_local', new Blob(
         [html], { type: type }), filename);
 
-      recap.uploadIQueryPage(court, pacer_case_id, html, function () { });
+      recap.uploadIQueryPage(court, pacer_case_id, html, 'IQUERY_PAGE', function () { });
       const actualData = jasmine.Ajax.requests.mostRecent().data();
       expect(actualData).toEqual(jasmine.objectContaining(expected));
     });

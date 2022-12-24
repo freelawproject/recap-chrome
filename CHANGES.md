@@ -11,7 +11,7 @@ Changes:
  - None yet
 
 Fixes: 
- - None yet
+ - More robust uploading of case query pages([#321](https://github.com/freelawproject/recap/issues/321), [#2419](https://github.com/freelawproject/courtlistener/issues/2419),)
 
 For developers:
  - Nothing yet

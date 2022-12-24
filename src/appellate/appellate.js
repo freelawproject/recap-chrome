@@ -37,9 +37,47 @@ AppellateDelegate.prototype.dispatchPageHandler = function () {
 };
 
 AppellateDelegate.prototype.handleCaseSelectionPage = async function () {
-  // retrieve pacer_case_id from the link related to the Case Query
-  this.pacer_case_id = APPELLATE.getCaseIdFromCaseSelection();
-  await saveCaseIdinTabStorage({ tabId: this.tabId }, this.pacer_case_id);
+ 
+  if (document.querySelectorAll('input:not([type=hidden])').length) {
+    // When the users go back to the Case Selection Page from the Docket Report using the back button
+    // Appellate PACER loads the Case Search Page instead but in the HTML body has the servlet hidden input
+    // and shows 'CaseSelectionTable.jsp' as its value.
+    //
+    // This check avoids sending pages like the one previously described to the API.
+    return;
+  }
+
+  if (APPELLATE.caseSelectionPageHasOneRow()) {
+    // Retrieve pacer_case_id from the Case Query link
+    this.pacer_case_id = APPELLATE.getCaseIdFromCaseSelection();
+    await saveCaseIdinTabStorage({ tabId: this.tabId }, this.pacer_case_id);
+  } else {
+    // Add the pacer_case_id to each docket link to use it in the docket report
+    APPELLATE.addCaseIdToDocketSummaryLink();
+  }
+
+  const options = await getItemsFromStorage('options');
+
+  if (!options['recap_enabled']) {
+    console.info('RECAP: Not uploading case selection page. RECAP is disabled.');
+    return;
+  }
+
+  let callback = (ok) => {
+    if (ok) {
+      history.replaceState({ uploaded: true }, '');
+      this.notifier.showUpload('Case selection page uploaded to the public RECAP Archive.', function () {});
+    }
+  };
+
+  this.recap.uploadIQueryPage(
+    this.court,
+    this.pacer_case_id,
+    document.documentElement.innerHTML,
+    'APPELLATE_CASE_QUERY_RESULT_PAGE',
+    callback
+  );
+  
 };
 
 // check every link in the document to see if RECAP has it
@@ -125,6 +163,8 @@ AppellateDelegate.prototype.handleDocketDisplayPage = async function () {
   if (!this.pacer_case_id) {
     return;
   }
+
+  await saveCaseIdinTabStorage({ tabId: this.tabId }, this.pacer_case_id);
 
   // Query the first table with case data and insert the RECAP actions button
   let table = document.querySelectorAll('table')[3];
