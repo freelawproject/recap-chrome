@@ -295,14 +295,18 @@ let PACER = {
     return !!pageCheck;
   },
 
+  cleanPacerDocId: (pacer_doc_id)=>{
+    // PACER sites use the fourth digit of the pacer_doc_id to flag whether
+    // the user has been shown a receipt page.  We don't care about that, so
+    // we always set the fourth digit to 0 when getting a doc ID.
+    return `${pacer_doc_id.slice(0, 3)}0${pacer_doc_id.slice(4)}`;
+  },
+
   // Returns the document ID for a document view page or single-document page.
   getDocumentIdFromUrl: function (url) {
     let match = (url || '').match(/\/(?:doc1|docs1)\/(\d+)/);
     if (match) {
-      // PACER sites use the fourth digit of the pacer_doc_id to flag whether
-      // the user has been shown a receipt page.  We don't care about that, so
-      // we always set the fourth digit to 0 when getting a doc ID.
-      return `${match[1].slice(0, 3)}0${match[1].slice(4)}`;
+      return this.cleanPacerDocId(match[1])
     }
   },
 

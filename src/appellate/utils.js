@@ -209,7 +209,7 @@ let APPELLATE = {
     let [_, docId] = docString;
 
     if (docId){
-      return `${docId.slice(0, 3)}0${docId.slice(4)}`;
+      return PACER.cleanPacerDocId(docId)
     }    
   },
 
