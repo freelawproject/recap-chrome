@@ -485,7 +485,7 @@ footer #version {
   display: none !important;
 }
 
-.appellate-full-page-iframe{
+.full-page-iframe{
   position: absolute; 
   left: 0; 
   right: 0; 

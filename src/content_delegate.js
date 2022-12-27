@@ -468,7 +468,7 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
       // in it, which is handled by showPdfPage.
       if (type === 'application/pdf') {
         // canb and ca9 return PDFs and trigger this code path.
-        const html = PACER.getFullPageIframe(URL.createObjectURL(blob))
+        const html = PACER.makeFullPageIFrame(URL.createObjectURL(blob));
         this.showPdfPage(
           document.documentElement,
           html,
@@ -488,7 +488,7 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
           const redirectResult = Array.from(html.matchAll(/window\.location\s*=\s*["']([^"']+)["'];?/g));
           if (redirectResult.length > 0) {
             const url = redirectResult[0][1];
-            html = PACER.getFullPageIframe(url)
+            html = PACER.makeFullPageIFrame(url);
           }
           this.showPdfPage(
             document.documentElement,

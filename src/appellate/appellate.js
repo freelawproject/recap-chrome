@@ -329,7 +329,7 @@ AppellateDelegate.prototype.onDocumentViewSubmit = function (event) {
       // in it, which is handled by showPdfPage.
       if (type === 'application/pdf') {
         // canb and ca9 return PDFs and trigger this code path.
-        let html = APPELLATE.getFullPageIframe(URL.createObjectURL(blob));
+        let html = PACER.makeFullPageIFrame(URL.createObjectURL(blob));
         this.showPdfPage(
           document.documentElement,
           html,
@@ -348,7 +348,7 @@ AppellateDelegate.prototype.onDocumentViewSubmit = function (event) {
           const redirectResult = Array.from(html.matchAll(/window\.location\s*=\s*["']([^"']+)["'];?/g));
           if (redirectResult.length > 0) {
             const url = redirectResult[0][1];
-            html = APPELLATE.getFullPageIframe(url);
+            html = PACER.makeFullPageIFrame(url);
           }
           this.showPdfPage(
             document.documentElement,
@@ -377,6 +377,7 @@ AppellateDelegate.prototype.showPdfPage = async function (
   docket_number
 ) {
   // Find the <iframe> URL in the HTML string.
+  console.log(html)
   let match = html.match(/([^]*?)<iframe[^>]*src="(.*?)"([^]*)/);
   if (!match) {
     document.documentElement.innerHTML = html;

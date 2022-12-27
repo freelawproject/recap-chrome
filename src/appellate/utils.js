@@ -128,7 +128,7 @@ let APPELLATE = {
 
     document.querySelectorAll('a[href*="caseid"]').forEach((caseQueryAnchor) => {
       let params = new URLSearchParams(caseQueryAnchor.href);
-      let caseId = params.get('caseId') || params.get('caseid')
+      let caseId = params.get('caseId') || params.get('caseid');
       // the Docket Report and the Case Query links are enclosed by the same HTML tag and the anchor for
       // the Docket Report is the first element inside this tag so using the parentElement and the firstChild
       // attribute allow us to get the desired HTML element.
@@ -208,9 +208,9 @@ let APPELLATE = {
 
     let [_, docId] = docString;
 
-    if (docId){
-      return PACER.cleanPacerDocId(docId)
-    }    
+    if (docId) {
+      return PACER.cleanPacerDocId(docId);
+    }
   },
 
   // returns data from from the title of the receipt page as an object
@@ -241,13 +241,5 @@ let APPELLATE = {
       r.att_num = 0;
     }
     return r;
-  },
-
-  // returns HTML to create a full page iframe that loads the url passed as an argument
-  getFullPageIframe: (url) => {
-    return `<style>body { margin: 0; padding: 0; height: 100%; overflow: hidden; } iframe { border: none; }</style> 
-            <div class='appellate-full-page-iframe'>
-            <iframe src="${url}" width="100%" height="100%" frameborder="0"></iframe>
-            </div>`;
   },
 };

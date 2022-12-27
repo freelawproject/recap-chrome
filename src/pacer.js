@@ -520,9 +520,11 @@ let PACER = {
   },
 
   // returns HTML to create a full page iframe that loads the url passed as an argument
-  getFullPageIframe: (url) => {
-  return `<style>body { margin: 0; } iframe { border: none; }</style>
-                  <iframe src="${url}" width="100%" height="100%"></iframe>`;
+  makeFullPageIFrame: (url) => {
+    return `<style>body { margin: 0; padding: 0; height: 100%; overflow: hidden; } iframe { border: none; }</style> 
+            <div class='full-page-iframe'>
+            <iframe src="${url}" width="100%" height="100%" frameborder="0"></iframe>
+            </div>`;
   },
 
   // These are all the supported PACER court identifiers, together with their
