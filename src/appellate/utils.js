@@ -71,6 +71,72 @@ let APPELLATE = {
     return /servlet\/TransportRoom/.test(url) && !/[?&]/.test(url);
   },
 
+  // Returns true if the case selection page has one row.
+  caseSelectionPageHasOneRow: () => {
+    // The Case Selection Page from Appellate shows cases that match the user's search criteria defined 
+    // on the Case Search page. This case selection can show multiple cases and has a few hidden inputs. 
+    // The csnum1 and csnum2 are two of them. These hidden input fields are populated in the following cases:
+    //
+    // - When the Case Selection Page shows one case because the user used the Case Number/Range field 
+    // to find a case by case number (csnum1 is populated, csnum2 is not populated).
+    // - When the Case Selection Page shows one or more cases because the user used the Case Number/Range 
+    // field to find cases within a range of case numbers (both inputs are populated)
+    //
+    // These inputs are not populated when the user have defined another criteria on the Case Search page and 
+    // thus we will also use the number of case_ids on the page to check the number of cases listed on the page.
+
+    let anchors = document.querySelectorAll('a[href*="caseid"]');
+
+    let csnum1 = document.getElementsByName('csnum1')[0];
+    let csnum2 = document.getElementsByName('csnum2')[0];
+
+    return (csnum1.value && !csnum2.value) || anchors.length == 1;
+  },
+
+  // This method updates the href attribute of each Case Summary anchors.
+  addCaseIdToDocketSummaryLink: () => {
+    // This method extracts the pacer_case_id from each row on the Case Selection Page and appends it to
+    // the docker report link as a URL parameters so the extension can retrieve if the users select the case. 
+    // Each row in the Case selection page has the following links:
+    //
+    //  - Link to get the Docket Report Summary (This one does not have the pacer_case_id)
+    //  - Link to get the Case Query (this one has the pacer_case_id as a URL parameter)
+    //  - Link to get the Case Summary for Originating Case
+    //
+    // The HTML structure of a row is the following:
+    //   
+    //  <tr>
+    //    <td>
+    //      <a href='TransportRoom?servlet=CaseSummary.jsp&amp;caseNum=20-15021'> 
+    //        20-15021 
+    //      </a>
+    //      <a href='TransportRoom?servlet=CaseQuery.jsp&caseid=318557&csnum1=20-15021'> 
+    //        Edward Ray, Jr. v. A. Ribera, et al 
+    //      </a>
+    //    </td>
+    //    ...
+    //    <td>
+    //      <a href='https://ecf.caed.uscourts.gov/cgi-bin/DktRpt.pl?caseNumber=1:19-cv-01561-AWI-SKO'> 
+    //        1:19-cv-01561-AWI-SKO 
+    //      </a>
+    //    </td>
+    //  </tr>
+    //
+    // The extension is able to get the pacer_case_id and saves it to the tab storage when the Case Selection 
+    // shows only a case but this approach is not possible when multiple cases are listed so this method allows 
+    // us to support Case Selection pages with multiple cases.
+
+    document.querySelectorAll('a[href*="caseid"]').forEach((caseQueryAnchor) => {
+      let params = new URLSearchParams(caseQueryAnchor.href);
+      let caseId = params.get('caseId') || params.get('caseid')
+      // the Docket Report and the Case Query links are enclosed by the same HTML tag and the anchor for
+      // the Docket Report is the first element inside this tag so using the parentElement and the firstChild
+      // attribute allow us to get the desired HTML element.
+      let caseSummaryAnchor = caseQueryAnchor.parentElement.firstChild;
+      caseSummaryAnchor.setAttribute('href', `${caseSummaryAnchor.href}&caseId=${caseId}`);
+    });
+  },
+
   // Returns caseId from href attribute of Case Query link on the Case Selection Page.
   getCaseIdFromCaseSelection: () => {
     let table = document.querySelectorAll('table');

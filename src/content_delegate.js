@@ -361,8 +361,13 @@ ContentDelegate.prototype.handleiQuerySummaryPage = async function () {
   if (!PACER.isIQuerySummaryURL(this.url)) {
     return;
   }
+  
+  if (PACER.isSelectAPersonPage()) {
+    // This if statement will end this function early if the user reaches this page.
+    return;
+  }
 
-  if (!this.pacer_case_id) {
+  if (!this.pacer_case_id && !PACER.isCaseQueryAdvance()) {
     let caseId = PACER.getCaseIdFromIQuerySummary();
     // End this function early if we're not able to find a case id
     if (!caseId) {
@@ -372,7 +377,6 @@ ContentDelegate.prototype.handleiQuerySummaryPage = async function () {
   }
 
   const options = await getItemsFromStorage('options');
-
   if (options['recap_enabled']) {
     let callback = $.proxy(function (ok) {
       if (ok) {
@@ -380,8 +384,14 @@ ContentDelegate.prototype.handleiQuerySummaryPage = async function () {
         this.notifier.showUpload('iQuery page uploaded to the public RECAP Archive.', function () {});
       }
     }, this);
-
-    this.recap.uploadIQueryPage(this.court, this.pacer_case_id, document.documentElement.innerHTML, callback);
+    let upload_type = PACER.isCaseQueryAdvance() ? 'CASE_QUERY_RESULT_PAGE' : 'IQUERY_PAGE';
+    this.recap.uploadIQueryPage(
+      this.court,
+      this.pacer_case_id,
+      document.documentElement.innerHTML,
+      upload_type,
+      callback
+    );
   } else {
     console.info('RECAP: Not uploading iquery page. RECAP is disabled.');
   }

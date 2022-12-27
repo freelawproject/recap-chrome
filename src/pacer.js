@@ -151,6 +151,51 @@ let PACER = {
     return /iquery.pl/.test(url) && !/[?&]/.test(url)
   },
 
+  // Returns true if the page contains a Transaction Receipt table
+  hasTransactionReceipt: function(){
+    return !!$('th>font:contains("Transaction Receipt")').length;
+  },
+
+  // Returns true if the receipts are disabled globally
+  areTransactionReceiptsDisabled: function(cookie){
+    return cookie && cookie.value.match(/receipt=N/)
+  },
+  
+  // Returns true if the description in the Transaction Receipt table is 'Search'
+  isSearchPage: function(){
+    return this.hasTransactionReceipt && !!$('td>font:contains(Search)').length;
+  }, 
+
+  // Returns true if the user reaches the 'Select a Person' page
+  isSelectAPersonPage: function(){
+    // when a user tries to search a case using the first/middle/last name in the iquery form
+    // they might get redirected to a list of matching people before they reach the list of cases
+    // related to that name. The pacer_case_id cannot be extracted from the HTML elements on this page
+    //
+    // This function checks the description in the transaction receipt and the title of the page to
+    // to identify the 'select a person' page.
+  
+    let title = document.querySelector('#cmecfMainContent>h2');
+    return this.isSearchPage() && /Select a Person/i.test(title.innerHTML);
+  },
+
+  // Returns true if the user reaches the 'Case selection' page.
+  isCaseQueryAdvance: function(){
+    // In district court PACER, the users usually reach the case selection page directly if they avoid 
+    // using the first/middle/last name fields in the iquery form, they reach the select a person page  
+    // otherwise.
+    //
+    // In bankruptcy court PACER, the users always reach this page after they submit the iquery form.
+    //
+    // We should upload this page because the pacer_case_id can be extracted from the HTML for each case
+    //
+    // This function uses the description in the transaction receipt and the title of the page to
+    // to identify the 'select a case' page.
+
+    let title = document.querySelector('#cmecfMainContent>h2');
+    return this.isSearchPage() && /Select a Case/i.test(title.innerHTML);
+  },
+
   // Returns the URL with the case id as a query parameter. This function makes
   // sure every URL related to the Docket report has the same format
   formatDocketQueryUrl: function(url, case_id){
