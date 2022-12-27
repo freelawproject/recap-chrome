@@ -309,7 +309,7 @@ AppellateDelegate.prototype.onDocumentViewSubmit = function (event) {
   let form = document.getElementById(event.data.id);
 
   let title = document.querySelectorAll('strong')[1].innerHTML;
-  let dataFromTitle = APPELLATE.parsePdfDataFromTitle(title);
+  let dataFromTitle = APPELLATE.parseReceiptPageTitle(title);
   if (!dataFromTitle) {
     form.submit();
     return;
@@ -334,9 +334,9 @@ AppellateDelegate.prototype.onDocumentViewSubmit = function (event) {
           document.documentElement,
           html,
           previousPageHtml,
-          dataFromTitle.doc_num,
-          dataFromTitle.att_num,
-          dataFromTitle.case_num
+          dataFromTitle.doc_number,
+          dataFromTitle.att_number,
+          dataFromTitle.docket_number
         );
       } else {
         const reader = new FileReader();
@@ -354,9 +354,9 @@ AppellateDelegate.prototype.onDocumentViewSubmit = function (event) {
             document.documentElement,
             html,
             previousPageHtml,
-            dataFromTitle.doc_num,
-            dataFromTitle.att_num,
-            dataFromTitle.case_num
+            dataFromTitle.doc_number,
+            dataFromTitle.att_number,
+            dataFromTitle.docket_number
           );
         }.bind(this);
         reader.readAsText(blob); // convert blob to HTML text

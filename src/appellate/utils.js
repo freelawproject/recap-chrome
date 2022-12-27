@@ -213,10 +213,10 @@ let APPELLATE = {
     }    
   },
 
-  // returns document data as an object
-  parsePdfDataFromTitle: (title_string) => {
+  // returns data from from the title of the receipt page as an object
+  parseReceiptPageTitle: (title_string) => {
     // The title in the Download Confirmation page from Appellate pacer shows useful information about the document.
-    // this title has the case number, document number and the attachment number (if the document belongs to an attachment
+    // this title has the docket number, document number and the attachment number (if the document belongs to an attachment
     // page). Here are some examples:
     //
     //  - Document: PDF Document (Case: 20-15019, Document: 11)
@@ -224,9 +224,9 @@ let APPELLATE = {
     //
     // this method uses regex expressions to match that information from the title and returns an object with the following
     // attributes:
-    //  - case_num
-    //  - doc_num
-    //  - att_num
+    //  - docket_number
+    //  - doc_number
+    //  - att_number
 
     let dataFromAttachment = /^Document: PDF Document \(Case: ([^']*), Document: (\d)-(\d)\)/.exec(title_string);
     let dataFromSingleDoc = /^Document: PDF Document \(Case: ([^']*), Document: (\d+)\)/.exec(title_string);
@@ -235,9 +235,9 @@ let APPELLATE = {
     }
     let r = {};
     if (dataFromAttachment) {
-      [, r.case_num, r.doc_num, r.att_num] = dataFromAttachment;
+      [, r.docket_number, r.doc_number, r.att_number] = dataFromAttachment;
     } else {
-      [, r.case_num, r.doc_num] = dataFromSingleDoc;
+      [, r.docket_number, r.doc_number] = dataFromSingleDoc;
       r.att_num = 0;
     }
     return r;
