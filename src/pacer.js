@@ -504,13 +504,13 @@ let PACER = {
     banners.forEach(banner => { banner.remove() });
   },
   
-  // returns document data as an object
-  parsePdfDataFromReceipt: () => {
-    // this method uses regex expressions to match that the case number, document number and the attachment 
+  // returns data from receipt table as an object
+  parseDataFromReceipt: () => {
+    // this method uses regex expressions to match that the docket number, document number and the attachment 
     // number from the receipt table and returns an object with the following attributes:
-    //  - case_num
-    //  - doc_num
-    //  - att_num
+    //  - docket_number
+    //  - doc_number
+    //  - att_number
     
     let image_string = $('td:contains(Image)').text();
     let regex = /(\d+)-(\d+)/;
@@ -519,8 +519,8 @@ let PACER = {
       return null;
     }
     let r = {};
-    [ , r.doc_num, r.att_num] = matches
-    r.case_num = $.trim($('tr:contains(Case Number) td:nth(1)').text());
+    [ , r.doc_number, r.att_number] = matches;
+    r.docket_number = $.trim($('tr:contains(Case Number) td:nth(1)').text());
 
     return r;
   },
