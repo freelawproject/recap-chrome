@@ -330,6 +330,22 @@ const recapEmailBanner = (css_class = 'recap-email-banner') => {
   return div
 }
 
+// Creates a div element to show a document is available for free in RECAP archive
+const insertAvailableDocBanner = (doc_url, html_element) =>{
+  let href = `https://storage.courtlistener.com/${doc_url}`;
+  // Insert a RECAP download link at the bottom of the form.
+  $('<div class="recap-banner"/>')
+    .append(
+      $('<a/>', {
+        title: 'Document is available for free in the RECAP Archive.',
+        href: href,
+      })
+        .append($('<img/>', { src: chrome.extension.getURL('assets/images/icon-16.png') }))
+        .append(' Get this document for free from the RECAP Archive.')
+    )
+    .appendTo($(html_element));
+}
+
 //Given a pacer_doc_id, return the pacer_case_id that it is associated with
 async function getPacerCaseIdFromPacerDocId(tabId, pacer_doc_id) {
   const tabStorage = await getItemsFromStorage(tabId);
