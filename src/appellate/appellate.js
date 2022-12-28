@@ -310,46 +310,8 @@ AppellateDelegate.prototype.onDocumentViewSubmit = function (event) {
     query_string,
     'application/x-www-form-urlencoded',
     function (type, ab, xhr) {
-      console.info(`RECAP: Successfully submitted RECAP "View" button form: ${xhr.statusText}`);
-
-      const blob = new Blob([new Uint8Array(ab)], { type: type });
-      // If we got a PDF, we wrap it in a simple HTML page.  This lets us treat
-      // both cases uniformly: either way we have an HTML page with an <iframe>
-      // in it, which is handled by showPdfPage.
-      if (type === 'application/pdf') {
-        // canb and ca9 return PDFs and trigger this code path.
-        let html = PACER.makeFullPageIFrame(URL.createObjectURL(blob));
-        this.showPdfPage(
-          document.documentElement,
-          html,
-          previousPageHtml,
-          dataFromTitle.doc_number,
-          dataFromTitle.att_number,
-          dataFromTitle.docket_number
-        );
-      } else {
-        const reader = new FileReader();
-        reader.onload = function () {
-          let html = reader.result;
-          // check if we have an HTML page which redirects the user to the PDF
-          // this was first display by the Northern District of Georgia
-          // https://github.com/freelawproject/recap/issues/277
-          const redirectResult = Array.from(html.matchAll(/window\.location\s*=\s*["']([^"']+)["'];?/g));
-          if (redirectResult.length > 0) {
-            const url = redirectResult[0][1];
-            html = PACER.makeFullPageIFrame(url);
-          }
-          this.showPdfPage(
-            document.documentElement,
-            html,
-            previousPageHtml,
-            dataFromTitle.doc_number,
-            dataFromTitle.att_number,
-            dataFromTitle.docket_number
-          );
-        }.bind(this);
-        reader.readAsText(blob); // convert blob to HTML text
-      }
+      let requestHandler = handleDocFormResponse.bind(this);
+      requestHandler(type, ab, xhr, previousPageHtml, dataFromTitle);
     }.bind(this)
   );
 };
