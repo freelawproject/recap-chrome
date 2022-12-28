@@ -361,7 +361,7 @@ ContentDelegate.prototype.handleiQuerySummaryPage = async function () {
   if (!PACER.isIQuerySummaryURL(this.url)) {
     return;
   }
-  
+
   if (PACER.isSelectAPersonPage()) {
     // This if statement will end this function early if the user reaches this page.
     return;
@@ -412,18 +412,7 @@ ContentDelegate.prototype.handleSingleDocumentPageCheck = function () {
       return;
     }
 
-    let href = `https://www.courtlistener.com/${result.filepath_local}`;
-    // Insert a RECAP download link at the bottom of the form.
-    $('<div class="recap-banner"/>')
-      .append(
-        $('<a/>', {
-          title: 'Document is available for free in the RECAP Archive.',
-          href: href,
-        })
-          .append($('<img/>', { src: chrome.extension.getURL('assets/images/icon-16.png') }))
-          .append(' Get this document for free from the RECAP Archive.')
-      )
-      .appendTo($('form'));
+    insertAvailableDocBanner(result.filepath_local, 'form');
   }, this);
 
   let cl_court = PACER.convertToCourtListenerCourt(this.court);
@@ -440,34 +429,14 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
     return;
   }
 
-  // Save a copy of the page source, altered so that the "View Document"
-  // button goes forward in the history instead of resubmitting the form.
-  let originalForm = document.forms[0];
-  let originalSubmit = originalForm.getAttribute('onsubmit');
-  originalForm.setAttribute('onsubmit', 'history.forward(); return false;');
-  let previousPageHtml = document.documentElement.innerHTML;
-  originalForm.setAttribute('onsubmit', originalSubmit);
-
+  let previousPageHtml = copyPDFDocumentPage();
   let form = document.getElementById(event.data.id);
 
-  // Grab the document number, attachment number, and docket number
-  let document_number, attachment_number, docket_number;
+  let pdfData = PACER.parseDataFromReceipt();
 
-  if (!PACER.isAppellateCourt(this.court)) {
-    // This CSS selector duplicated in isSingleDocumentPage
-    let image_string = $('td:contains(Image)').text();
-    let regex = /(\d+)-(\d+)/;
-    let matches = regex.exec(image_string);
-    if (!matches) {
-      form.submit();
-      return;
-    }
-    document_number = matches[1];
-    attachment_number = matches[2];
-    docket_number = $.trim($('tr:contains(Case Number) td:nth(1)').text());
-  } else {
-    // Appellate
-    debug(4, 'Appellate parsing not yet implemented');
+  if (!pdfData) {
+    form.submit();
+    return;
   }
 
   // Now do the form request to get to the view page.  Some PACER sites will
@@ -479,49 +448,10 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
   httpRequest(
     form.action,
     data,
+    null,
     function (type, ab, xhr) {
-      console.info(`RECAP: Successfully submitted RECAP "View" button form: ${xhr.statusText}`);
-      const blob = new Blob([new Uint8Array(ab)], { type: type });
-      // If we got a PDF, we wrap it in a simple HTML page.  This lets us treat
-      // both cases uniformly: either way we have an HTML page with an <iframe>
-      // in it, which is handled by showPdfPage.
-      if (type === 'application/pdf') {
-        // canb and ca9 return PDFs and trigger this code path.
-        const html = `<style>body { margin: 0; } iframe { border: none; }</style>
-                  <iframe src="${URL.createObjectURL(blob)}" width="100%" height="100%"></iframe>`;
-        this.showPdfPage(
-          document.documentElement,
-          html,
-          previousPageHtml,
-          document_number,
-          attachment_number,
-          docket_number
-        );
-      } else {
-        // dcd (and presumably others) trigger this code path.
-        const reader = new FileReader();
-        reader.onload = function () {
-          let html = reader.result;
-          // check if we have an HTML page which redirects the user to the PDF
-          // this was first display by the Northern District of Georgia
-          // https://github.com/freelawproject/recap/issues/277
-          const redirectResult = Array.from(html.matchAll(/window\.location\s*=\s*["']([^"']+)["'];?/g));
-          if (redirectResult.length > 0) {
-            const url = redirectResult[0][1];
-            html = `<style>body { margin: 0; } iframe { border: none; }</style>
-                    <iframe src="${url}" width="100%" height="100%"></iframe>`;
-          }
-          this.showPdfPage(
-            document.documentElement,
-            html,
-            previousPageHtml,
-            document_number,
-            attachment_number,
-            docket_number
-          );
-        }.bind(this);
-        reader.readAsText(blob); // convert blob to HTML text
-      }
+      let requestHandler = handleDocFormResponse.bind(this);
+      requestHandler(type, ab, xhr, previousPageHtml, pdfData);
     }.bind(this)
   );
 };
@@ -533,123 +463,22 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
 // The documentElement is provided via dependency injection so that it
 // can be properly mocked in tests.
 ContentDelegate.prototype.showPdfPage = async function (
-  documentElement,
   html,
   previousPageHtml,
   document_number,
   attachment_number,
   docket_number
 ) {
-  // Find the <iframe> URL in the HTML string.
-  let match = html.match(/([^]*?)<iframe[^>]*src="(.*?)"([^]*)/);
-  if (!match) {
-    document.documentElement.innerHTML = html;
-    return;
-  }
-
-  const options = await getItemsFromStorage('options');
-
-  // Show the page with a blank <iframe> while waiting for the download.
-  document.documentElement.innerHTML = `${match[1]}<p id="recap-waiting">Waiting for download...</p><iframe src="about:blank"${match[3]}`;
-
-  // Make the Back button redisplay the previous page.
-  window.onpopstate = function (event) {
-    if (event.state.content) {
-      document.documentElement.innerHTML = event.state.content;
-    }
-  };
-  history.replaceState({ content: previousPageHtml }, '');
-
-  // Download the file from the <iframe> URL.
-  const browserSpecificFetch =
-    navigator.userAgent.indexOf('Safari') + navigator.userAgent.indexOf('Chrome') < 0 ? content.fetch : window.fetch;
-  const blob = await browserSpecificFetch(match[2]).then((res) => res.blob());
-  let blobUrl = URL.createObjectURL(blob);
-  const dataUrl = await blobToDataURL(blob);
-  await updateTabStorage({ [this.tabId]: { ['pdf_blob']: dataUrl } });
-  console.info('RECAP: Successfully got PDF as arraybuffer via ajax request.');
-  // Get the PACER case ID and, on completion, define displayPDF()
-  // to either display the PDF in the provided <iframe>, or, if
-  // external_pdf is set, save it using FileSaver.js's saveAs().
-
-  const pacer_case_id = this.pacer_case_id
-    ? this.pacer_case_id
-    : await getPacerCaseIdFromPacerDocId(this.tabId, this.pacer_doc_id);
-
-  const generateFileName = (pacer_case_id) => {
-    let filename, pieces;
-    if (options.ia_style_filenames) {
-      pieces = [
-        'gov',
-        'uscourts',
-        this.court,
-        pacer_case_id || 'unknown-case-id',
-        document_number || '0',
-        attachment_number || '0',
-      ];
-      filename = `${pieces.join('.')}.pdf`;
-    } else if (options.lawyer_style_filenames) {
-      pieces = [
-        PACER.COURT_ABBREVS[this.court],
-        docket_number || '0',
-        document_number || '0',
-        attachment_number || '0',
-      ];
-      filename = `${pieces.join('_')}.pdf`;
-    }
-    return filename;
-  };
-
-  const setInnerHtml = (pacer_case_id) => {
-    const filename = generateFileName(pacer_case_id);
-    let external_pdf = options.external_pdf;
-    if (navigator.userAgent.indexOf('Chrome') >= 0 && !navigator.plugins.namedItem('Chrome PDF Viewer')) {
-      // We are in Google Chrome, and the built-in PDF Viewer has been disabled.
-      // So we autodetect and force external_pdf true for proper filenames.
-      external_pdf = true;
-    }
-    if (!external_pdf) {
-      let downloadLink = `<div id="recap-download" class="initial">
-                            <a href="${blobUrl}" download="${filename}">Save as ${filename}</a>
-                          </div>`;
-      html = `${match[1]}${downloadLink}<iframe onload="setTimeout(function() {
-                document.getElementById('recap-download').className = '';
-              }, 7500)" src="${blobUrl}"${match[3]}`;
-      document.documentElement.innerHTML = html;
-      history.pushState({ content: html }, '');
-    } else {
-      // Saving to an external PDF.
-      const waitingGraph = document.getElementById('recap-waiting');
-      if (waitingGraph) {
-        waitingGraph.remove();
-      }
-      window.saveAs(blob, filename);
-    }
-  };
-
-  setInnerHtml(pacer_case_id);
-
-  // store the blob in chrome storage for background worker
-  if (options['recap_enabled'] && !this.restricted) {
-    // If we have the pacer_case_id, upload the file to RECAP.
-    // We can't pass an ArrayBuffer directly to the background
-    // page, so we have to convert to a regular array.
-    this.recap.uploadDocument(
-      this.court,
-      pacer_case_id,
-      this.pacer_doc_id,
-      document_number,
-      attachment_number,
-      (ok) => {
-        // callback
-        if (ok) {
-          this.notifier.showUpload('PDF uploaded to the public RECAP Archive.', () => {});
-        }
-      }
-    );
-  } else {
-    console.info('RECAP: Not uploading PDF. RECAP is disabled.');
-  }
+  let helperMethod = showAndUploadPdf.bind(this);
+  await helperMethod(
+    html,
+    previousPageHtml,
+    document_number,
+    attachment_number,
+    docket_number,
+    this.pacer_doc_id,
+    this.restricted
+  );
 };
 
 // If this page offers a single document, intercept navigation to the document
@@ -660,21 +489,7 @@ ContentDelegate.prototype.handleSingleDocumentPageView = function () {
     return;
   }
 
-  if (PACER.isAppellateCourt(this.court)) {
-    debug(4, 'No interposition for appellate downloads yet');
-    return;
-  }
-
-  // Monkey-patch the <form> prototype so that its submit() method sends a
-  // message to this content script instead of submitting the form.  To do this
-  // in the page context instead of this script's, we inject a <script> element.
-  let script = document.createElement('script');
-  script.innerText =
-    'document.createElement("form").__proto__.submit = function () {' +
-    '  this.id = "form" + new Date().getTime();' +
-    '  window.postMessage({id: this.id}, "*");' +
-    '};';
-  document.body.appendChild(script);
+  overwriteFormSubmitMethod();
 
   // When we receive the message from the above submit method, submit the form
   // via XHR so we can get the document before the browser does.

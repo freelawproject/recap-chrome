@@ -49,6 +49,12 @@ let APPELLATE = {
     return form !== null;
   },
 
+  // Returns true if this is a "Download Confirmation page"
+  isSingleDocumentPage: () => {
+    let form = document.querySelector("form[name='AccCharge']");
+    return form !== null;
+  },
+
   // Returns true if the URL is for the case selection page.
   isCaseSelectionPage: (url) => {
     // The URL for the selection page used in Appellate PACER is:
@@ -122,7 +128,7 @@ let APPELLATE = {
 
     document.querySelectorAll('a[href*="caseid"]').forEach((caseQueryAnchor) => {
       let params = new URLSearchParams(caseQueryAnchor.href);
-      let caseId = params.get('caseId') || params.get('caseid')
+      let caseId = params.get('caseId') || params.get('caseid');
       // the Docket Report and the Case Query links are enclosed by the same HTML tag and the anchor for
       // the Docket Report is the first element inside this tag so using the parentElement and the firstChild
       // attribute allow us to get the desired HTML element.
@@ -167,7 +173,7 @@ let APPELLATE = {
       if (doDoc && doDoc.doc_id && doDoc.case_id) {
         docsToCases[doDoc.doc_id] = doDoc.case_id;
       }
-
+      
       a.removeAttribute('onclick');
       a.setAttribute('target', '_self');
 
@@ -186,6 +192,7 @@ let APPELLATE = {
       });
 
       let docId = PACER.getDocumentIdFromUrl(a.href);
+      clonedNode.setAttribute('data-pacer_doc_id', docId);
       links.push(docId);
     });
     return { links, docsToCases };
@@ -201,6 +208,38 @@ let APPELLATE = {
 
     let [_, docId] = docString;
 
-    return docId;
+    if (docId) {
+      return PACER.cleanPacerDocId(docId);
+    }
+  },
+
+  // returns data from the title of the Receipt Page as an object
+  parseReceiptPageTitle: (title_string) => {
+    // The title in the Download Confirmation page from Appellate pacer shows useful information about the document.
+    // this title has the docket number, document number and the attachment number (if the document belongs to an attachment
+    // page). Here are some examples:
+    //
+    //  - Document: PDF Document (Case: 20-15019, Document: 11)
+    //  - Document: PDF Document (Case: 20-15019, Document: 1-1) (document from attachment page)
+    //
+    // this method uses regex expressions to match that information from the title and returns an object with the following
+    // attributes:
+    //  - docket_number
+    //  - doc_number
+    //  - att_number
+
+    let dataFromAttachment = /^Document: PDF Document \(Case: ([^']*), Document: (\d)-(\d)\)/.exec(title_string);
+    let dataFromSingleDoc = /^Document: PDF Document \(Case: ([^']*), Document: (\d+)\)/.exec(title_string);
+    if (!dataFromAttachment && !dataFromSingleDoc) {
+      return null;
+    }
+    let r = {};
+    if (dataFromAttachment) {
+      [, r.docket_number, r.doc_number, r.att_number] = dataFromAttachment;
+    } else {
+      [, r.docket_number, r.doc_number] = dataFromSingleDoc;
+      r.att_num = 0;
+    }
+    return r;
   },
 };

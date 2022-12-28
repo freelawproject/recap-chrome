@@ -484,3 +484,16 @@ footer #version {
 .recap-btn-spinner-hidden{
   display: none !important;
 }
+
+.full-page-iframe{
+  position: absolute; 
+  left: 0; 
+  right: 0; 
+  bottom: 0; 
+  top: 0; 
+}
+
+.recap-inline-appellate{
+  display: inline-flex;
+  padding: 0px 3px;
+}

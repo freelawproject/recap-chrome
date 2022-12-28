@@ -799,7 +799,7 @@ describe('The ContentDelegate class', function () {
           expect(banner).not.toBeNull();
           const link = banner.querySelector('a');
           expect(link).not.toBeNull();
-          expect(link.href).toBe('https://www.courtlistener.com/download/1234');
+          expect(link.href).toBe('https://storage.courtlistener.com/download/1234');
         });
 
         it('responds to a negative result', function () {
@@ -832,17 +832,6 @@ describe('The ContentDelegate class', function () {
 
     afterEach(function () {
       form.remove();
-    });
-
-    it('handles appellate check', function () {
-      const cd = appellateContentDelegate;
-      spyOn(console, 'log');
-      spyOn(PACER, 'isSingleDocumentPage').and.returnValue(true);
-      let restore = DEBUGLEVEL;
-      DEBUGLEVEL = 4;
-      cd.handleSingleDocumentPageView();
-      expect(console.log).toHaveBeenCalledWith('RECAP debug [4]: No interposition for appellate downloads yet');
-      DEBUGLEVEL = restore;
     });
 
     describe('when there is NO appropriate form', function () {
@@ -937,16 +926,6 @@ describe('The ContentDelegate class', function () {
     afterEach(function () {
       form.remove();
       table.remove();
-    });
-
-    it('handles appellate check', function () {
-      const cd = appellateContentDelegate;
-      spyOn(console, 'log');
-      let restore = DEBUGLEVEL;
-      DEBUGLEVEL = 4;
-      cd.onDocumentViewSubmit(event);
-      expect(console.log).toHaveBeenCalledWith('RECAP debug [4]: Appellate parsing not yet implemented');
-      DEBUGLEVEL = restore;
     });
 
     it('sets the onsubmit attribute of the page form', function () {
@@ -1047,12 +1026,12 @@ describe('The ContentDelegate class', function () {
 
     it('handles no iframe', function () {
       let inner = '<span>html</span>';
-      cd.showPdfPage(documentElement, pre + inner + post);
+      cd.showPdfPage(pre + inner + post);
       expect(document.documentElement.innerHTML).toBe(pre + inner + post);
     });
 
     it('correctly extracts the data before and after the iframe', async function () {
-      await cd.showPdfPage(documentElement, html);
+      await cd.showPdfPage(html);
       // removed waiting check because the content_delegate
       // removes the paragraph if successful which seems to occur prior
       // to the test running - checking for the new Iframe should be sufficient
@@ -1085,14 +1064,14 @@ describe('The ContentDelegate class', function () {
       })
 
       it('makes the back button redisplay the previous page', async function () {
-        await cd.showPdfPage(documentElement, html);
+        await cd.showPdfPage(html);
         expect(window.onpopstate).toEqual(jasmine.any(Function));
         window.onpopstate({ state: { content: 'previous' } });
         expect(document.documentElement.innerHTML).toBe('<head></head><body>previous</body>');
       });
 
       it('displays the page with the downloaded file in an iframe', async function () {
-        await cd.showPdfPage(documentElement, html);
+        await cd.showPdfPage(html);
         if (navigator.userAgent.indexOf('Chrome') < 0 && navigator.plugins.namedItem('Chrome PDF Viewer')) {
           // isExternalPdf, file is saved with saveAs
           // Test fails on Chrome 78.0.3904 because carriage returns
@@ -1109,7 +1088,7 @@ describe('The ContentDelegate class', function () {
       });
 
       it('puts the generated HTML in the page history', async function () {
-        await cd.showPdfPage(documentElement, html);
+        await cd.showPdfPage(html);
         if (navigator.userAgent.indexOf('Chrome') < 0 && navigator.plugins.namedItem('Chrome PDF Viewer')) {
           // isExternalPdf, file is saved with saveAs
           expect(history.pushState).toHaveBeenCalled();
@@ -1120,12 +1099,12 @@ describe('The ContentDelegate class', function () {
       });
 
       it('uploads the PDF to RECAP', async function () {
-        await cd.showPdfPage(documentElement, html);
+        await cd.showPdfPage(html);
         expect(cd.recap.uploadDocument).toHaveBeenCalled();
       });
 
       it('calls the notifier once the upload finishes', async function () {
-        await cd.showPdfPage(documentElement, html);
+        await cd.showPdfPage(html);
         expect(cd.notifier.showUpload).toHaveBeenCalled();
       });
     });

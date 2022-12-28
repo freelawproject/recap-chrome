@@ -295,14 +295,18 @@ let PACER = {
     return !!pageCheck;
   },
 
+  cleanPacerDocId: (pacer_doc_id)=>{
+    // PACER sites use the fourth digit of the pacer_doc_id to flag whether
+    // the user has been shown a receipt page.  We don't care about that, so
+    // we always set the fourth digit to 0 when getting a doc ID.
+    return `${pacer_doc_id.slice(0, 3)}0${pacer_doc_id.slice(4)}`;
+  },
+
   // Returns the document ID for a document view page or single-document page.
   getDocumentIdFromUrl: function (url) {
     let match = (url || '').match(/\/(?:doc1|docs1)\/(\d+)/);
     if (match) {
-      // PACER sites use the fourth digit of the pacer_doc_id to flag whether
-      // the user has been shown a receipt page.  We don't care about that, so
-      // we always set the fourth digit to 0 when getting a doc ID.
-      return `${match[1].slice(0, 3)}0${match[1].slice(4)}`;
+      return this.cleanPacerDocId(match[1])
     }
   },
 
@@ -444,19 +448,31 @@ let PACER = {
 
   // Parse the doDocPostURL function returning its parameters as a dict.
   parseDoDocPostURL: function(doDoc_string){
-    // CMECF provides extra information on Document Links in the onclick event
-    // function doDocPostURL(), e.g.:
+    // CMECF provides extra information on Document Links as arguments of the onclick event
+    // handler called doDocPostURL(). This function is used in attachment pages and docket
+    // reports. e.g.:
     //
+    // In docket reports, CMECF passes the doc_id and the case_id as arguments
     //   return doDocPostURL('009031927529','318547');
+    //
+    // In attachment pages, CMECF passes only the doc_id as an argument
+    //   return doDocPostURL('009131506511')
     //
     // this regex will match the doc_id and case_id passed as an argument in the
     // onclick event of each anchor element related to a document from Appellate Pacer.
+
     let doDocPost = /^return doDocPostURL\('([^']*)','([^']*)'\);/.exec(doDoc_string);
-    if (!doDocPost) {
+    let doDocPostAttachment = /^return doDocPostURL\('([^']*)'\)/.exec(doDoc_string);
+    if (!doDocPost && !doDocPostAttachment) {
       return;
     }
     let params = {};
-    [, params.doc_id, params.case_id] = doDocPost;
+    if (doDocPost){
+      [, params.doc_id, params.case_id] = doDocPost;
+    }else{
+      [, params.doc_id] = doDocPostAttachment;
+      params.case_id = null 
+    }
     return params;
   },
 
@@ -488,6 +504,34 @@ let PACER = {
     banners.forEach(banner => { banner.remove() });
   },
   
+  // returns data from receipt table as an object
+  parseDataFromReceipt: () => {
+    // this method uses regex expressions to match that the docket number, document number and the attachment 
+    // number from the receipt table and returns an object with the following attributes:
+    //  - docket_number
+    //  - doc_number
+    //  - att_number
+    
+    let image_string = $('td:contains(Image)').text();
+    let regex = /(\d+)-(\d+)/;
+    let matches = regex.exec(image_string);
+    if (!matches) {
+      return null;
+    }
+    let r = {};
+    [ , r.doc_number, r.att_number] = matches;
+    r.docket_number = $.trim($('tr:contains(Case Number) td:nth(1)').text());
+
+    return r;
+  },
+
+  // returns HTML to create a full page iframe that loads the url passed as an argument
+  makeFullPageIFrame: (url) => {
+    return `<style>body { margin: 0; padding: 0; height: 100%; overflow: hidden; } iframe { border: none; }</style> 
+            <div class='full-page-iframe'>
+            <iframe src="${url}" width="100%" height="100%" frameborder="0"></iframe>
+            </div>`;
+  },
 
   // These are all the supported PACER court identifiers, together with their
   // West-style court name abbreviations.

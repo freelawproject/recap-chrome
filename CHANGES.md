@@ -5,7 +5,8 @@
 The following changes are not yet released, but are code complete:
 
 Features:
- - None yet
+ - Add support to upload documents from appellate courts ([#316](https://github.com/freelawproject/recap/issues/316), [#296](https://github.com/freelawproject/recap-chrome/pull/296) ).
+ - Add banners to advertise RECAP Email in appellate courts ([#313](https://github.com/freelawproject/recap/issues/313), [#295](https://github.com/freelawproject/recap-chrome/pull/295)).
 
 Changes:
  - None yet

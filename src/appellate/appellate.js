@@ -29,6 +29,8 @@ AppellateDelegate.prototype.dispatchPageHandler = function () {
       if (APPELLATE.isAttachmentPage()) {
         this.handleAttachmentPage();
         this.attachRecapLinksToEligibleDocs();
+      } else if (APPELLATE.isSingleDocumentPage()) {
+        this.handleSingleDocumentPageView();
       } else {
         console.info('No identified appellate page found');
       }
@@ -36,8 +38,18 @@ AppellateDelegate.prototype.dispatchPageHandler = function () {
   }
 };
 
+AppellateDelegate.prototype.handleCaseSearchPage = () => {
+  if (!PACER.hasFilingCookie(document.cookie)) {
+    return;
+  }
+
+  form = document.querySelector('form');
+  if (!document.querySelector('.recap-email-banner-full')) {
+    form.appendChild(recapEmailBanner('recap-email-banner-full'));
+  }
+};
+
 AppellateDelegate.prototype.handleCaseSelectionPage = async function () {
- 
   if (document.querySelectorAll('input:not([type=hidden])').length) {
     // When the users go back to the Case Selection Page from the Docket Report using the back button
     // Appellate PACER loads the Case Search Page instead but in the HTML body has the servlet hidden input
@@ -51,6 +63,24 @@ AppellateDelegate.prototype.handleCaseSelectionPage = async function () {
     // Retrieve pacer_case_id from the Case Query link
     this.pacer_case_id = APPELLATE.getCaseIdFromCaseSelection();
     await saveCaseIdinTabStorage({ tabId: this.tabId }, this.pacer_case_id);
+
+    this.recap.getAvailabilityForDocket(this.court, this.pacer_case_id, (result) => {
+      if (result.count === 0) {
+        console.warn('RECAP: Zero results found for docket lookup.');
+      } else if (result.count > 1) {
+        console.error(`RECAP: More than one result found for docket lookup. Found ${result.count}`);
+      } else {
+        if (result.results) {
+          PACER.removeBanners();
+          const footer = document.querySelector('div.noprint:last-of-type');
+          const div = document.createElement('div');
+          div.classList.add('recap-banner');
+          div.appendChild(recapAlertButton(this.court, this.pacer_case_id, true));
+          footer.before(recapBanner(result.results[0]));
+          footer.before(div);
+        }
+      }
+    });
   } else {
     // Add the pacer_case_id to each docket link to use it in the docket report
     APPELLATE.addCaseIdToDocketSummaryLink();
@@ -77,7 +107,6 @@ AppellateDelegate.prototype.handleCaseSelectionPage = async function () {
     'APPELLATE_CASE_QUERY_RESULT_PAGE',
     callback
   );
-  
 };
 
 // check every link in the document to see if RECAP has it
@@ -133,12 +162,12 @@ AppellateDelegate.prototype.attachRecapLinksToEligibleDocs = async function () {
         let result = api_results.results.filter(function (obj) {
           return obj.pacer_doc_id === pacer_doc_id;
         })[0];
+
         if (!result) {
           continue;
         }
         let href = `https://storage.courtlistener.com/${result.filepath_local}`;
         let recap_link = $('<a/>', {
-          class: 'recap-inline',
           title: 'Available for free from the RECAP Archive.',
           href: href,
         });
@@ -147,7 +176,11 @@ AppellateDelegate.prototype.attachRecapLinksToEligibleDocs = async function () {
             src: chrome.extension.getURL('assets/images/icon-16.png'),
           })
         );
-        recap_link.insertAfter(this.links[i]);
+        let recap_div = $('<div>', {
+          class: 'recap-inline-appellate',
+        });
+        recap_div.append(recap_link);
+        recap_div.insertAfter(this.links[i]);
       }
       let spinner = document.getElementById('recap-button-spinner');
       if (spinner) {
@@ -244,13 +277,73 @@ AppellateDelegate.prototype.handleAttachmentPage = async function () {
   );
 };
 
-AppellateDelegate.prototype.handleCaseSearchPage = () => {
-  if (!PACER.hasFilingCookie(document.cookie)) {
+// If this page offers a single document, intercept navigation to the document view page.
+AppellateDelegate.prototype.handleSingleDocumentPageView = async function () {
+  overwriteFormSubmitMethod();
+
+  this.pacer_case_id = await APPELLATE.getCaseId(this.tabId, this.queryParameters, this.docId);
+  await saveCaseIdinTabStorage({ tabId: this.tabId }, this.pacer_case_id);
+
+  // When we receive the message from the above submit method, submit the form
+  // via XHR so we can get the document before the browser does.
+  window.addEventListener('message', this.onDocumentViewSubmit.bind(this), false);
+
+  let callback = $.proxy(function (api_results) {
+    console.info(`RECAP: Got results from API. Running callback on API results to ` + `insert banner`);
+    let result = api_results.results.filter((obj) => obj.pacer_doc_id == this.docId, this)[0];
+
+    if (!result) {
+      return;
+    }
+
+    insertAvailableDocBanner(result.filepath_local, 'body');
+  }, this);
+
+  this.recap.getAvailabilityForDocuments([this.docId], this.court, callback);
+};
+
+AppellateDelegate.prototype.onDocumentViewSubmit = function (event) {
+  // Security check to ensure message is from a PACER website.
+  if (!PACER.getCourtFromUrl(event.origin)) {
+    console.warn(
+      'Received message from non PACER origin. This should only ' +
+        'happen when the extension is being abused by a bad actor.'
+    );
     return;
   }
 
-  form = document.querySelector('form');
-  if (!document.querySelector('.recap-email-banner-full')) {
-    form.appendChild(recapEmailBanner('recap-email-banner-full'));
+  let previousPageHtml = copyPDFDocumentPage();
+  let form = document.getElementById(event.data.id);
+
+  let title = document.querySelectorAll('strong')[1].innerHTML;
+  let dataFromTitle = APPELLATE.parseReceiptPageTitle(title);
+  if (!dataFromTitle) {
+    form.submit();
+    return;
   }
+  $('body').css('cursor', 'wait');
+  let query_string = new URLSearchParams(new FormData(form)).toString();
+  httpRequest(
+    form.action,
+    query_string,
+    'application/x-www-form-urlencoded',
+    function (type, ab, xhr) {
+      let requestHandler = handleDocFormResponse.bind(this);
+      requestHandler(type, ab, xhr, previousPageHtml, dataFromTitle);
+    }.bind(this)
+  );
+};
+
+// Given the HTML for a page with an <iframe> in it, downloads the PDF
+// document in the iframe, displays it in the browser, and also
+// uploads the PDF document to RECAP.
+AppellateDelegate.prototype.showPdfPage = async function (
+  html,
+  previousPageHtml,
+  document_number,
+  attachment_number,
+  docket_number
+) {
+  let helperMethod = showAndUploadPdf.bind(this);
+  await helperMethod(html, previousPageHtml, document_number, attachment_number, docket_number, this.docId);
 };

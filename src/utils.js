@@ -103,7 +103,7 @@ function getClIdFromAbsoluteURL(absoluteURL){
 // type and response (interpreted according to responseType).  See XHR2 spec
 // for details on responseType and response.  Uses GET if postData is null or
 // POST otherwise.  postData can be any type accepted by XMLHttpRequest.send().
-function httpRequest(url, postData, callback) {
+function httpRequest(url, postData, contentType, callback) {
   let type = null,
     result = null,
     xhr;
@@ -133,9 +133,15 @@ function httpRequest(url, postData, callback) {
   };
   if (postData) {
     xhr.open('POST', url);
+    if (contentType){
+      xhr.setRequestHeader("Content-Type", contentType);
+    }
     xhr.send(postData);
   } else {
     xhr.open('GET', url);
+    if (contentType){
+      xhr.setRequestHeader("Content-Type", contentType);
+    }
     xhr.send();
   }
 }
@@ -322,6 +328,22 @@ const recapEmailBanner = (css_class = 'recap-email-banner') => {
   anchor.innerHTML = `${img.outerHTML} Use @recap.email to automatically contribute all your cases to RECAP.`;
   div.appendChild(anchor);
   return div
+}
+
+// Creates a div element to show a document is available for free in RECAP archive
+const insertAvailableDocBanner = (doc_url, html_element) =>{
+  let href = `https://storage.courtlistener.com/${doc_url}`;
+  // Insert a RECAP download link at the bottom of the form.
+  $('<div class="recap-banner"/>')
+    .append(
+      $('<a/>', {
+        title: 'Document is available for free in the RECAP Archive.',
+        href: href,
+      })
+        .append($('<img/>', { src: chrome.extension.getURL('assets/images/icon-16.png') }))
+        .append(' Get this document for free from the RECAP Archive.')
+    )
+    .appendTo($(html_element));
 }
 
 //Given a pacer_doc_id, return the pacer_case_id that it is associated with
