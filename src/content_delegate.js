@@ -412,18 +412,7 @@ ContentDelegate.prototype.handleSingleDocumentPageCheck = function () {
       return;
     }
 
-    let href = `https://www.courtlistener.com/${result.filepath_local}`;
-    // Insert a RECAP download link at the bottom of the form.
-    $('<div class="recap-banner"/>')
-      .append(
-        $('<a/>', {
-          title: 'Document is available for free in the RECAP Archive.',
-          href: href,
-        })
-          .append($('<img/>', { src: chrome.extension.getURL('assets/images/icon-16.png') }))
-          .append(' Get this document for free from the RECAP Archive.')
-      )
-      .appendTo($('form'));
+    insertAvailableDocBanner(result.filepath_local, 'form')
   }, this);
 
   let cl_court = PACER.convertToCourtListenerCourt(this.court);
