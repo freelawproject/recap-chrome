@@ -143,7 +143,7 @@ const showAndUploadPdf = async function (
   // Find the <iframe> URL in the HTML string.
   let match = html_elements.match(/([^]*?)<iframe[^>]*src="(.*?)"([^]*)/);
   if (!match) {
-    document.documentElement.innerHTML = html;
+    document.documentElement.innerHTML = html_elements;
     return;
   }
 
