@@ -278,18 +278,7 @@ AppellateDelegate.prototype.handleSingleDocumentPageView = async function () {
       return;
     }
 
-    let href = `https://storage.courtlistener.com/${result.filepath_local}`;
-    // Insert a RECAP download link at the bottom of the form.
-    $('<div class="recap-banner"/>')
-      .append(
-        $('<a/>', {
-          title: 'Document is available for free in the RECAP Archive.',
-          href: href,
-        })
-          .append($('<img/>', { src: chrome.extension.getURL('assets/images/icon-16.png') }))
-          .append(' Get this document for free from the RECAP Archive.')
-      )
-      .appendTo($('body'));
+    insertAvailableDocBanner(result.filepath_local, 'body')
   }, this);
 
   this.recap.getAvailabilityForDocuments([this.docId], this.court, callback);
@@ -377,7 +366,6 @@ AppellateDelegate.prototype.showPdfPage = async function (
   docket_number
 ) {
   // Find the <iframe> URL in the HTML string.
-  console.log(html)
   let match = html.match(/([^]*?)<iframe[^>]*src="(.*?)"([^]*)/);
   if (!match) {
     document.documentElement.innerHTML = html;
