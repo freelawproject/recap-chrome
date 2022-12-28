@@ -213,7 +213,7 @@ let APPELLATE = {
     }
   },
 
-  // returns data from from the title of the receipt page as an object
+  // returns data from the title of the Receipt Page as an object
   parseReceiptPageTitle: (title_string) => {
     // The title in the Download Confirmation page from Appellate pacer shows useful information about the document.
     // this title has the docket number, document number and the attachment number (if the document belongs to an attachment
