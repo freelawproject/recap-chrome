@@ -448,13 +448,19 @@ let PACER = {
 
   // Parse the doDocPostURL function returning its parameters as a dict.
   parseDoDocPostURL: function(doDoc_string){
-    // CMECF provides extra information on Document Links in the onclick event
-    // function doDocPostURL(), e.g.:
+    // CMECF provides extra information on Document Links as arguments of the onclick event
+    // handler called doDocPostURL(). This function is used in attachment pages and docket
+    // reports. e.g.:
     //
+    // In docket reports, CMECF passes the doc_id and the case_id as arguments
     //   return doDocPostURL('009031927529','318547');
+    //
+    // In attachment pages, CMECF passes only the doc_id as an argument
+    //   return doDocPostURL('009131506511')
     //
     // this regex will match the doc_id and case_id passed as an argument in the
     // onclick event of each anchor element related to a document from Appellate Pacer.
+
     let doDocPost = /^return doDocPostURL\('([^']*)','([^']*)'\);/.exec(doDoc_string);
     let doDocPostAttachment = /^return doDocPostURL\('([^']*)'\)/.exec(doDoc_string);
     if (!doDocPost && !doDocPostAttachment) {
