@@ -278,7 +278,7 @@ AppellateDelegate.prototype.handleSingleDocumentPageView = async function () {
       return;
     }
 
-    insertAvailableDocBanner(result.filepath_local, 'body')
+    insertAvailableDocBanner(result.filepath_local, 'body');
   }, this);
 
   this.recap.getAvailabilityForDocuments([this.docId], this.court, callback);
@@ -320,68 +320,12 @@ AppellateDelegate.prototype.onDocumentViewSubmit = function (event) {
 // document in the iframe, displays it in the browser, and also
 // uploads the PDF document to RECAP.
 AppellateDelegate.prototype.showPdfPage = async function (
-  documentElement,
   html,
   previousPageHtml,
   document_number,
   attachment_number,
   docket_number
 ) {
-  // Find the <iframe> URL in the HTML string.
-  let match = html.match(/([^]*?)<iframe[^>]*src="(.*?)"([^]*)/);
-  if (!match) {
-    document.documentElement.innerHTML = html;
-    return;
-  }
-
-  const options = await getItemsFromStorage('options');
-
-  showWaitingMessage(match);
-
-  // Make the Back button redisplay the previous page.
-  window.onpopstate = function (event) {
-    if (event.state.content) {
-      document.documentElement.innerHTML = event.state.content;
-    }
-  };
-  history.replaceState({ content: previousPageHtml }, '');
-
-  let blob = await downloadDataFromIframe(match, this.tabId);
-  let blobUrl = URL.createObjectURL(blob);
-  let pacer_case_id;
-
-  if (attachment_number) {
-    pacer_case_id = this.pacer_case_id
-      ? this.pacer_case_id
-      : await APPELLATE.getCaseId(this.tabId, this.queryParameters, this.docId);
-  } else {
-    pacer_case_id = this.pacer_case_id
-      ? this.pacer_case_id
-      : await getPacerCaseIdFromPacerDocId(this.tabId, this.docId);
-  }
-
-  let filename = generateFileName(
-    options,
-    this.court,
-    pacer_case_id,
-    docket_number,
-    document_number,
-    attachment_number
-  );
-  displayPDFOrSaveIt(options, filename, match, blob, blobUrl);
-
-  if (options['recap_enabled']) {
-    // If we have the pacer_case_id, upload the file to RECAP.
-    // We can't pass an ArrayBuffer directly to the background
-    // page, so we have to convert to a regular array.
-    this.recap.uploadDocument(this.court, pacer_case_id, this.docId, document_number, attachment_number, (ok) => {
-      // callback
-      if (ok) {
-        this.notifier.showUpload('PDF uploaded to the public RECAP Archive.', () => {});
-      }
-      ``;
-    });
-  } else {
-    console.info('RECAP: Not uploading PDF. RECAP is disabled.');
-  }
+  let helperMethod = showAndUploadPdf.bind(this);
+  await helperMethod(html, previousPageHtml, document_number, attachment_number, docket_number, this.docId);
 };

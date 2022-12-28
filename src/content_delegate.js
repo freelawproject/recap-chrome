@@ -361,7 +361,7 @@ ContentDelegate.prototype.handleiQuerySummaryPage = async function () {
   if (!PACER.isIQuerySummaryURL(this.url)) {
     return;
   }
-  
+
   if (PACER.isSelectAPersonPage()) {
     // This if statement will end this function early if the user reaches this page.
     return;
@@ -412,7 +412,7 @@ ContentDelegate.prototype.handleSingleDocumentPageCheck = function () {
       return;
     }
 
-    insertAvailableDocBanner(result.filepath_local, 'form')
+    insertAvailableDocBanner(result.filepath_local, 'form');
   }, this);
 
   let cl_court = PACER.convertToCourtListenerCourt(this.court);
@@ -429,10 +429,10 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
     return;
   }
 
-  let previousPageHtml = copyPDFDocumentPage()
+  let previousPageHtml = copyPDFDocumentPage();
   let form = document.getElementById(event.data.id);
 
-  let pdfData = PACER.parseDataFromReceipt()
+  let pdfData = PACER.parseDataFromReceipt();
 
   if (!pdfData) {
     form.submit();
@@ -448,7 +448,7 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
   httpRequest(
     form.action,
     data,
-    null, 
+    null,
     function (type, ab, xhr) {
       let requestHandler = handleDocFormResponse.bind(this);
       requestHandler(type, ab, xhr, previousPageHtml, pdfData);
@@ -463,70 +463,22 @@ ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
 // The documentElement is provided via dependency injection so that it
 // can be properly mocked in tests.
 ContentDelegate.prototype.showPdfPage = async function (
-  documentElement,
   html,
   previousPageHtml,
   document_number,
   attachment_number,
   docket_number
 ) {
-  // Find the <iframe> URL in the HTML string.
-  let match = html.match(/([^]*?)<iframe[^>]*src="(.*?)"([^]*)/);
-  if (!match) {
-    document.documentElement.innerHTML = html;
-    return;
-  }
-
-  const options = await getItemsFromStorage('options');
-
-  showWaitingMessage(match)
-
-  // Make the Back button redisplay the previous page.
-  window.onpopstate = function (event) {
-    if (event.state.content) {
-      document.documentElement.innerHTML = event.state.content;
-    }
-  };
-  history.replaceState({ content: previousPageHtml }, '');
-
-  let blob = await downloadDataFromIframe(match, this.tabId);
-  let blobUrl = URL.createObjectURL(blob);
-
-  const pacer_case_id = this.pacer_case_id
-    ? this.pacer_case_id
-    : await getPacerCaseIdFromPacerDocId(this.tabId, this.pacer_doc_id);
-
-  let filename = generateFileName(
-    options,
-    this.court,
-    pacer_case_id,
-    docket_number,
+  let helperMethod = showAndUploadPdf.bind(this);
+  await helperMethod(
+    html,
+    previousPageHtml,
     document_number,
-    attachment_number
+    attachment_number,
+    docket_number,
+    this.pacer_doc_id,
+    this.restricted
   );
-  displayPDFOrSaveIt(options, filename, match, blob, blobUrl);
-
-  // store the blob in chrome storage for background worker
-  if (options['recap_enabled'] && !this.restricted) {
-    // If we have the pacer_case_id, upload the file to RECAP.
-    // We can't pass an ArrayBuffer directly to the background
-    // page, so we have to convert to a regular array.
-    this.recap.uploadDocument(
-      this.court,
-      pacer_case_id,
-      this.pacer_doc_id,
-      document_number,
-      attachment_number,
-      (ok) => {
-        // callback
-        if (ok) {
-          this.notifier.showUpload('PDF uploaded to the public RECAP Archive.', () => {});
-        }
-      }
-    );
-  } else {
-    console.info('RECAP: Not uploading PDF. RECAP is disabled.');
-  }
 };
 
 // If this page offers a single document, intercept navigation to the document
@@ -537,8 +489,8 @@ ContentDelegate.prototype.handleSingleDocumentPageView = function () {
     return;
   }
 
-  overwriteFormSubmitMethod()
-  
+  overwriteFormSubmitMethod();
+
   // When we receive the message from the above submit method, submit the form
   // via XHR so we can get the document before the browser does.
   window.addEventListener('message', this.onDocumentViewSubmit.bind(this), false);
