@@ -63,6 +63,24 @@ AppellateDelegate.prototype.handleCaseSelectionPage = async function () {
     // Retrieve pacer_case_id from the Case Query link
     this.pacer_case_id = APPELLATE.getCaseIdFromCaseSelection();
     await saveCaseIdinTabStorage({ tabId: this.tabId }, this.pacer_case_id);
+
+    this.recap.getAvailabilityForDocket(this.court, this.pacer_case_id, (result) => {
+      if (result.count === 0) {
+        console.warn('RECAP: Zero results found for docket lookup.');
+      } else if (result.count > 1) {
+        console.error(`RECAP: More than one result found for docket lookup. Found ${result.count}`);
+      } else {
+        if (result.results) {
+          PACER.removeBanners();
+          const footer = document.querySelector('div.noprint:last-of-type');
+          const div = document.createElement('div');
+          div.classList.add('recap-banner');
+          div.appendChild(recapAlertButton(this.court, this.pacer_case_id, true));
+          footer.before(recapBanner(result.results[0]));
+          footer.before(div);
+        }
+      }
+    });
   } else {
     // Add the pacer_case_id to each docket link to use it in the docket report
     APPELLATE.addCaseIdToDocketSummaryLink();
@@ -271,7 +289,7 @@ AppellateDelegate.prototype.handleSingleDocumentPageView = async function () {
   window.addEventListener('message', this.onDocumentViewSubmit.bind(this), false);
 
   let callback = $.proxy(function (api_results) {
-    console.info(`RECAP: Got results from API. Running callback on API results to ` + `insert link`);
+    console.info(`RECAP: Got results from API. Running callback on API results to ` + `insert banner`);
     let result = api_results.results.filter((obj) => obj.pacer_doc_id == this.docId, this)[0];
 
     if (!result) {
