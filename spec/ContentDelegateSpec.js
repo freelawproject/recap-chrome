@@ -799,7 +799,7 @@ describe('The ContentDelegate class', function () {
           expect(banner).not.toBeNull();
           const link = banner.querySelector('a');
           expect(link).not.toBeNull();
-          expect(link.href).toBe('https://www.courtlistener.com/download/1234');
+          expect(link.href).toBe('https://storage.courtlistener.com/download/1234');
         });
 
         it('responds to a negative result', function () {
