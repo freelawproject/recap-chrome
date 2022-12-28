@@ -278,7 +278,7 @@ AppellateDelegate.prototype.handleSingleDocumentPageView = async function () {
       return;
     }
 
-    let href = `https://www.courtlistener.com/${result.filepath_local}`;
+    let href = `https://storage.courtlistener.com/${result.filepath_local}`;
     // Insert a RECAP download link at the bottom of the form.
     $('<div class="recap-banner"/>')
       .append(
