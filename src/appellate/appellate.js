@@ -25,6 +25,9 @@ AppellateDelegate.prototype.dispatchPageHandler = function () {
     case 'CaseSearch.jsp':
       this.handleCaseSearchPage();
       break;
+    case 'CaseQuery.jsp':
+      this.handleCaseQueryPage();
+      break;
     default:
       if (APPELLATE.isAttachmentPage()) {
         this.handleAttachmentPage();
@@ -107,6 +110,30 @@ AppellateDelegate.prototype.handleCaseSelectionPage = async function () {
     'APPELLATE_CASE_QUERY_RESULT_PAGE',
     callback
   );
+};
+
+// Upload the case query page to RECAP
+AppellateDelegate.prototype.handleCaseQueryPage = async function () {
+  this.pacer_case_id = await APPELLATE.getCaseId(this.tabId, this.queryParameters, this.docId);
+
+  const options = await getItemsFromStorage('options');
+
+  if (options['recap_enabled']) {
+    let callback = (ok) => {
+      if (ok) {
+        history.replaceState({ uploaded: true }, '');
+        this.notifier.showUpload('Case query page uploaded to the public RECAP Archive.', function () {});
+      }
+    };
+
+    this.recap.uploadDocket(
+      this.court,
+      this.pacer_case_id,
+      document.documentElement.innerHTML,
+      'APPELLATE_CASE_QUERY_PAGE',
+      (ok) => callback(ok)
+    );
+  }
 };
 
 // check every link in the document to see if RECAP has it
