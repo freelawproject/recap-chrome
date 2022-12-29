@@ -177,7 +177,7 @@ let APPELLATE = {
       a.removeAttribute('onclick');
       a.setAttribute('target', '_self');
 
-      if(doDoc.case_id){
+      if(doDoc && doDoc.case_id){
         let href = a.getAttribute('href')
         a.setAttribute('href', `${href}?caseId=${doDoc.case_id}`)
       }
