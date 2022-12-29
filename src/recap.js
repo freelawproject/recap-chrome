@@ -13,6 +13,7 @@ function Recap() {
       'CLAIMS_REGISTER_PAGE': 9,
       'ZIP': 10,
       'IQUERY_PAGE': 12,
+      'APPELLATE_CASE_QUERY_PAGE': 13,
       'CASE_QUERY_RESULT_PAGE': 14,
       'APPELLATE_CASE_QUERY_RESULT_PAGE': 15
     };
