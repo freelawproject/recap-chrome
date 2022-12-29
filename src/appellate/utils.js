@@ -177,6 +177,11 @@ let APPELLATE = {
       a.removeAttribute('onclick');
       a.setAttribute('target', '_self');
 
+      if(doDoc && doDoc.case_id){
+        let href = a.getAttribute('href')
+        a.setAttribute('href', `${href}?caseId=${doDoc.case_id}`)
+      }
+
       // clone and replace anchor elements to remove all listeners
       let clonedNode = a.cloneNode(true);
       a.replaceWith(clonedNode);

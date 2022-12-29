@@ -13,6 +13,7 @@ Changes:
 
 Fixes: 
  - More robust uploading of case query pages([#321](https://github.com/freelawproject/recap/issues/321), [#2419](https://github.com/freelawproject/courtlistener/issues/2419),)
+ - Add the caseId parameter to doc links in Appellate Pacer ([#324](https://github.com/freelawproject/recap/issues/324))
 
 For developers:
  - Nothing yet
