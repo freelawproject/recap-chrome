@@ -451,6 +451,20 @@ describe('The ContentDelegate class', function () {
           tbody.appendChild(tr);
           table.appendChild(tbody);
           document.body.appendChild(table);
+          window.chrome = {
+            extension: { getURL: jasmine.createSpy('gerURL') },
+            storage: {
+              local: {
+                get: jasmine.createSpy().and.callFake((_, cb) => {
+                  cb({
+                    [1234]: { caseId: '531591' },
+                    options: { recap_enabled: true },
+                  });
+                }),
+                set: jasmine.createSpy('set').and.callFake(function () {}),
+              },
+            },
+          };
         });
 
         it('inserts a button linking the user to a create alert page on CL', async () => {
