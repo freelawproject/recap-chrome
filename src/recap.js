@@ -21,22 +21,30 @@ function Recap() {
 
     // Asks RECAP whether it has a docket page for the specified case.  If it
     // is available, the callback will be called with a
-    getAvailabilityForDocket: function (pacer_court, pacer_case_id, cb) {
-      if (!pacer_case_id) {
-        console.error("RECAP: Cannot get availability of docket without pacer_case_id.");
+    getAvailabilityForDocket: function (pacer_court, pacer_case_id, docket_number_core ,cb) {
+      if (!pacer_case_id && !docket_number_core) {
+        console.error("RECAP: Cannot get availability of docket without pacer_case_id or docket_number_core.");
         return;
       }
-      console.info(`RECAP: Getting availability of docket ${pacer_case_id} at ` +
+      console.info(`RECAP: Getting availability of docket ${pacer_case_id || docket_number_core} at ` +
         `${pacer_court}`);
+
+      let requestData = {
+        // Ensure RECAP is a source so we don't get back IDB-only dockets.
+        source__in: '1,3,5,7,9,11,13,15',
+        court: PACER.convertToCourtListenerCourt(pacer_court),
+        fields: 'absolute_url,date_modified'
+      }
+
+      if (pacer_case_id){
+        requestData.pacer_case_id = pacer_case_id
+      }else{
+        requestData.docket_number_core = docket_number_core
+      }
+      
       $.ajax({
         url: `${SERVER_ROOT}dockets/`,
-        data: {
-          pacer_case_id: pacer_case_id,
-          // Ensure RECAP is a source so we don't get back IDB-only dockets.
-          source__in: '1,3,5,7,9,11,13,15',
-          court: PACER.convertToCourtListenerCourt(pacer_court),
-          fields: 'absolute_url,date_modified'
-        },
+        data: requestData,
         success: function (data, textStatus, xhr) {
           console.info(`RECAP: Got successful response from server on docket ` +
             `query: ${textStatus}`);
