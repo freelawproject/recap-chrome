@@ -137,8 +137,14 @@ let APPELLATE = {
     });
   },
 
-  // Returns caseId from href attribute of Case Query link on the Case Selection Page.
-  getCaseIdFromCaseSelection: () => {
+  getTableWithDataFromCaseSelection: () =>{
+    // Pages in Appellate PACER use three tables to align items in the headers (one for items on 
+    // the right side, one for items on the left side, and one table to wrap the previous ones), so
+    // the 4th table is the one that lists all the cases that match the user's search criteria.
+    //
+    // This method uses the querySelectorAll method to get all the tables on the page and find the
+    // one with data. 
+
     let table = document.querySelectorAll('table');
 
     if (table.length < 3) {
@@ -147,7 +153,15 @@ let APPELLATE = {
       );
       return;
     }
-    let anchor = table[3].querySelectorAll('tr > td > a');
+    return table[3]
+  },
+
+  // Returns caseId from href attribute of Case Query link on the Case Selection Page.
+  getCaseIdFromCaseSelection: function () {
+    let dataTable = this.getTableWithDataFromCaseSelection()
+    if (!dataTable) return;
+
+    let anchor = dataTable.querySelectorAll('a');
 
     if (anchor.length < 3) {
       console.info(
@@ -155,6 +169,7 @@ let APPELLATE = {
       );
       return;
     }
+
     let queryString = anchor[1].href.split('?')[1];
     let queryParameters = new URLSearchParams(queryString);
     let caseId = queryParameters.get('caseid') || queryParameters.get('caseId');
