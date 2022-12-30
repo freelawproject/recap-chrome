@@ -99,8 +99,8 @@ describe('The Recap export module', function () {
       expect(jasmine.Ajax.requests.mostRecent().url).toBe(
         'https://www.courtlistener.com/api/rest/v3/dockets/' +
         '?source__in=1%2C3%2C5%2C7%2C9%2C11%2C13%2C15' +
-        '&court=canb&' +
-        'fields=absolute_url%2Cdate_modified'+
+        '&court=canb' +
+        '&fields=absolute_url%2Cdate_modified'+
         '&pacer_case_id=531316');
     });
 
