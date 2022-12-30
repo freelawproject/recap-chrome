@@ -18,15 +18,14 @@ function addRecapInformation(msg) {
   // destructure the msg object to get the tabId
   const { tabId } = msg;
 
-  if (!PACER.hasPacerCookie(document.cookie)) {
-    console.info(`RECAP: Taking no actions because not logged in: ${url}`);
-
+  if (PACER.isLoginPage(url)) {
+    
     let redactionConfirmation = document.getElementById('redactionConfirmation');
-
     let emailInput = document.getElementById('loginForm:loginName');
     let passwordInput = document.getElementById('loginForm:password');
 
     if (emailInput && passwordInput && redactionConfirmation) {
+      console.info(`RECAP: Taking no actions because not logged in: ${url}`);
       removeFilingState(msg);
     }
 
