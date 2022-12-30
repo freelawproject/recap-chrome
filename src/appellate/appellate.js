@@ -74,33 +74,32 @@ AppellateDelegate.prototype.handleCaseSelectionPage = async function () {
 
     let dataTable = APPELLATE.getTableWithDataFromCaseSelection();
     let anchors = dataTable.querySelectorAll('a');
-    let districtLink = anchors[anchors.length-1]
+    let districtLink = anchors[anchors.length - 1];
     let districtLinkData = APPELLATE.getDatafromDistrictLinkUrl(districtLink.href);
 
     this.recap.getAvailabilityForDocket(this.court, this.pacer_case_id, null, (result) => {
-        if (result.count === 1 && result.results) {
-          PACER.removeBanners();
-          
-          const footer = document.querySelector('div.noprint:last-of-type');
-          const div = document.createElement('div');
-          div.classList.add('recap-banner');
-          div.appendChild(recapAlertButton(this.court, this.pacer_case_id, true));
-          footer.before(div);
-
-          const rIcon = APPELLATE.makeRButtonForCases(result.results[0].absolute_url);
-          const appellateLink = anchors[0];
-          rIcon.insertAfter(appellateLink);
-        }else{
-          PACER.handleDocketAvailabilityMessages(result);
-        }
-      }
-    );
-
-    this.recap.getAvailabilityForDocket(districtLinkData.court, null, districtLinkData.docket_number_core, (result)=>{
       if (result.count === 1 && result.results) {
-          const rIcon = APPELLATE.makeRButtonForCases(result.results[0].absolute_url);
-          rIcon.insertAfter(districtLink);
-      }else{
+        PACER.removeBanners();
+
+        const footer = document.querySelector('div.noprint:last-of-type');
+        const div = document.createElement('div');
+        div.classList.add('recap-banner');
+        div.appendChild(recapAlertButton(this.court, this.pacer_case_id, true));
+        footer.before(div);
+
+        const rIcon = APPELLATE.makeRButtonForCases(result.results[0].absolute_url);
+        const appellateLink = anchors[0];
+        rIcon.insertAfter(appellateLink);
+      } else {
+        PACER.handleDocketAvailabilityMessages(result);
+      }
+    });
+
+    this.recap.getAvailabilityForDocket(districtLinkData.court, null, districtLinkData.docket_number_core, (result) => {
+      if (result.count === 1 && result.results) {
+        const rIcon = APPELLATE.makeRButtonForCases(result.results[0].absolute_url);
+        rIcon.insertAfter(districtLink);
+      } else {
         PACER.handleDocketAvailabilityMessages(result);
       }
     });
