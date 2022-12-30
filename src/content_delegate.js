@@ -202,7 +202,7 @@ ContentDelegate.prototype.handleDocketQueryUrl = function () {
     return;
   }
   
-  this.recap.getAvailabilityForDocket(this.court, this.pacer_case_id, (result) => {
+  this.recap.getAvailabilityForDocket(this.court, this.pacer_case_id, null, (result) => {
     if (result.count === 0) {
       console.warn('RECAP: Zero results found for docket lookup.');
     } else if (result.count > 1) {
