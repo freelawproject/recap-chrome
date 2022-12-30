@@ -2,6 +2,18 @@
 describe('The ContentDelegate class', function () {
   // 'tabId' values
   const tabId = 1234;
+  // create initial chrome object
+  window.chrome = {
+    storage: {
+      local: {
+        get: jasmine.createSpy().and.callFake(function (_, cb) {
+          cb({ options: {} });
+        }),
+        set: jasmine.createSpy('set').and.callFake(function () {}),
+        remove: jasmine.createSpy('remove').and.callFake(() => {}),
+      },
+    }
+  }
 
   // 'path' values
   const districtCourtURI = 'https://ecf.canb.uscourts.gov';
@@ -236,16 +248,6 @@ describe('The ContentDelegate class', function () {
       expect(PACER.hasPacerCookie).not.toHaveBeenCalled();
     });
 
-    it('checks for a Pacer cookie', function () {
-      // test is dependent on function order of operations, but does exercise all existing branches
-      const cd = nonsenseUrlContentDelegate;
-      spyOn(cd.recap, 'getAvailabilityForDocket');
-      spyOn(PACER, 'hasPacerCookie').and.returnValue(false);
-      spyOn(PACER, 'isDocketQueryUrl').and.returnValue(true);
-      cd.handleDocketQueryUrl();
-      expect(cd.recap.getAvailabilityForDocket).not.toHaveBeenCalled();
-    });
-
     it('handles zero results from getAvailabilityForDocket', function () {
       const cd = docketQueryContentDelegate;
       spyOn(PACER, 'hasPacerCookie').and.returnValue(true);
@@ -449,6 +451,20 @@ describe('The ContentDelegate class', function () {
           tbody.appendChild(tr);
           table.appendChild(tbody);
           document.body.appendChild(table);
+          window.chrome = {
+            extension: { getURL: jasmine.createSpy('gerURL') },
+            storage: {
+              local: {
+                get: jasmine.createSpy().and.callFake((_, cb) => {
+                  cb({
+                    [1234]: { caseId: '531591' },
+                    options: { recap_enabled: true },
+                  });
+                }),
+                set: jasmine.createSpy('set').and.callFake(function () {}),
+              },
+            },
+          };
         });
 
         it('inserts a button linking the user to a create alert page on CL', async () => {

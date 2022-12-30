@@ -121,10 +121,7 @@ ContentDelegate.prototype.checkRestrictions = function () {
 // Use a variety of approaches to get and store pacer_doc_id to pacer_case_id
 // mappings in local storage.
 ContentDelegate.prototype.findAndStorePacerDocIds = async function () {
-  if (!PACER.hasPacerCookie(document.cookie)) {
-    return;
-  }
-
+  
   // Not all pages have a case ID, and there are corner-cases in merged dockets
   // where there are links to documents on another case.
   let page_pacer_case_id = this.pacer_case_id
@@ -204,13 +201,8 @@ ContentDelegate.prototype.handleDocketQueryUrl = function () {
   if (!PACER.isDocketQueryUrl(this.url)) {
     return;
   }
-  // Logged out users that load a docket page, see a login page, so they
-  // shouldn't check for docket availability.
-  if (!PACER.hasPacerCookie(document.cookie)) {
-    return;
-  }
-
-  this.recap.getAvailabilityForDocket(this.court, this.pacer_case_id, null, (result) => {
+  
+  this.recap.getAvailabilityForDocket(this.court, this.pacer_case_id, (result) => {
     if (result.count === 0) {
       console.warn('RECAP: Zero results found for docket lookup.');
     } else if (result.count > 1) {

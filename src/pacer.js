@@ -54,6 +54,11 @@ let PACER = {
     return match ? match[2] : null;
   },
 
+  // Returns true if the URL is for the login page
+  isLoginPage: function(url) {
+    return this.getCourtFromUrl(url) === 'login';
+  },
+
   convertToCourtListenerCourt: function(pacer_court_id) {
     return PACER_TO_CL_IDS[pacer_court_id] || pacer_court_id;
   },

@@ -59,6 +59,11 @@ AppellateDelegate.prototype.handleCaseSelectionPage = async function () {
     // and shows 'CaseSelectionTable.jsp' as its value.
     //
     // This check avoids sending pages like the one previously described to the API.
+    form = document.querySelector('form');
+    if (!document.querySelector('.recap-email-banner-full')) {
+      form.appendChild(recapEmailBanner('recap-email-banner-full'));
+    }
+
     return;
   }
 
