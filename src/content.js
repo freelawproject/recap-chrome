@@ -14,7 +14,7 @@ let links = document.body.getElementsByTagName('a');
 
 // seed the content_delegate with the tabId by using the message
 // returned from the background worker
-function addRecapInformation(msg) {
+async function addRecapInformation(msg) {
   // destructure the msg object to get the tabId
   const { tabId } = msg;
 
@@ -48,6 +48,9 @@ function addRecapInformation(msg) {
   } else {
     let content_delegate = new ContentDelegate(tabId, url, path, court, pacer_case_id, pacer_doc_id, links);
 
+    // Checks links on the page to get and store the pacer_doc_id and pacer_case_id found in document links.
+    await content_delegate.findAndStorePacerDocIds();
+    
     // If this is a blank iquery or manage my account page, add RECAP Email advertisement banner.
     content_delegate.addRecapEmailAdvertisement();
 
