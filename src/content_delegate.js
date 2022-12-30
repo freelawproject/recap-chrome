@@ -31,8 +31,6 @@ let ContentDelegate = function (tabId, url, path, court, pacer_case_id, pacer_do
   this.notifier = importInstance(Notifier);
   this.recap = importInstance(Recap);
 
-  this.findAndStorePacerDocIds();
-
   this.restricted = this.checkRestrictions();
 };
 
@@ -212,7 +210,7 @@ ContentDelegate.prototype.handleDocketQueryUrl = function () {
     return;
   }
 
-  this.recap.getAvailabilityForDocket(this.court, this.pacer_case_id, (result) => {
+  this.recap.getAvailabilityForDocket(this.court, this.pacer_case_id, null, (result) => {
     if (result.count === 0) {
       console.warn('RECAP: Zero results found for docket lookup.');
     } else if (result.count > 1) {
@@ -276,7 +274,7 @@ ContentDelegate.prototype.handleDocketDisplayPage = async function () {
     tableBody.insertBefore(tr, tableBody.childNodes[0]);
   }
 
-  this.recap.getAvailabilityForDocket(this.court, this.pacer_case_id, (result) => {
+  this.recap.getAvailabilityForDocket(this.court, this.pacer_case_id, null, (result) => {
     if (result.count === 0) {
       console.warn('RECAP: Zero results found for docket lookup.');
     } else if (result.count > 1) {
