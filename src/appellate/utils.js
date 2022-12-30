@@ -280,4 +280,25 @@ let APPELLATE = {
       docket_number_core: docketNumber
     }
   },
+
+  // returns div element that contains an anchor with the RECAP icon
+  makeRButtonForCases: (url)=>{
+    let href = `https://www.courtlistener.com${url}`;
+    let recap_link = $('<a/>', {
+      title: 'Docket is available for free in the RECAP Archive.',
+      href: href,
+      target: '_blank'
+    });
+    recap_link.append(
+      $('<img/>').attr({
+        src: chrome.extension.getURL('assets/images/icon-16.png'),
+      })
+    );
+    let recap_div = $('<div>', {
+      class: 'recap-inline-appellate',
+    });
+    recap_div.append(recap_link);
+    
+    return recap_div;
+  }
 };
