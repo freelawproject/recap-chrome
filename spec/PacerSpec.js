@@ -634,4 +634,41 @@ describe('The PACER module', function() {
       expect(PACER.parseGoDLSFunction(undefined)).toBeNull();
     });
   });
+
+  describe('normalizeDashes', function(){
+    it('can convert dashes nicely', function(){
+      let tests = {
+          "en dash –": "en dash -",  // En-dash
+          "em dash —": "em dash -",  // Em-dash
+          "dash -": "dash -",  // Regular dash
+      }
+      for (const [key, value] of Object.entries(tests)) {
+        expect(PACER.normalizeDashes(key)).toBe(value)
+      }
+    });
+  });
+
+  describe('makeDocketNumberCore', function(){
+    it('works as expected', function(){
+      let expected = "1201032";
+
+      expect(PACER.makeDocketNumberCore("2:12-cv-01032-JKG-MJL")).toBe(expected);
+      expect(PACER.makeDocketNumberCore("12-cv-01032-JKG-MJL")).toBe(expected)
+      expect(PACER.makeDocketNumberCore("2:12-cv-01032")).toBe(expected)
+      expect(PACER.makeDocketNumberCore("12-cv-01032")).toBe(expected)
+
+      // Do we automatically zero-pad short docket numbers?
+      expect(PACER.makeDocketNumberCore("12-cv-1032")).toBe(expected)
+
+      // bankruptcy numbers
+      expect(PACER.makeDocketNumberCore("12-33112")).toBe("12033112")
+      expect(PACER.makeDocketNumberCore("12-00001")).toBe("12000001")
+      expect(PACER.makeDocketNumberCore("12-0001")).toBe("12000001")
+      expect(PACER.makeDocketNumberCore("06-10672-DHW")).toBe("06010672")
+
+      // docket_number fields can be null. If so, the core value should be
+      // an empty string.
+      expect(PACER.makeDocketNumberCore(null)).toBe("")
+    })
+  })
 });
