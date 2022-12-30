@@ -262,4 +262,22 @@ let APPELLATE = {
     }
     return r;
   },
+
+  // Returns an object with the court Id and docket number core extracted from a link to district court
+  getDatafromDistrictLinkUrl: (url) =>{
+    let court = PACER.getCourtFromUrl(url)
+
+    let queryString = url.split('?')[1];
+    let queryParameters = new URLSearchParams(queryString);
+    let docketNumber = queryParameters.get('caseNumber') || queryParameters.get('casenumber');
+
+    if (docketNumber){
+      docketNumber = PACER.makeDocketNumberCore(docketNumber)
+    }
+
+    return { 
+      court: court, 
+      docket_number_core: docketNumber
+    }
+  },
 };
