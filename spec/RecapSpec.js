@@ -95,20 +95,20 @@ describe('The Recap export module', function () {
     it('encodes the court and caseId in the GET params', function () {
       const expectedCourt = 'canb';
       const expectedCaseId = '531316';
-      recap.getAvailabilityForDocket(expectedCourt, expectedCaseId);
+      recap.getAvailabilityForDocket(expectedCourt, expectedCaseId, null);
       expect(jasmine.Ajax.requests.mostRecent().url).toBe(
         'https://www.courtlistener.com/api/rest/v3/dockets/' +
-        '?pacer_case_id=531316' +
-        '&source__in=1%2C3%2C5%2C7%2C9%2C11%2C13%2C15' +
-        '&court=canb&' +
-        'fields=absolute_url%2Cdate_modified');
+        '?source__in=1%2C3%2C5%2C7%2C9%2C11%2C13%2C15' +
+        '&court=canb' +
+        '&fields=absolute_url%2Cdate_modified'+
+        '&pacer_case_id=531316');
     });
 
     it('calls the callback with the parsed server response', function () {
       const callback = jasmine.createSpy();
       const expectedCourt = 'canb';
       const expectedCaseNum = '531316';
-      recap.getAvailabilityForDocket(expectedCourt, expectedCaseNum, callback);
+      recap.getAvailabilityForDocket(expectedCourt, expectedCaseNum, null, callback);
       jasmine.Ajax.requests.mostRecent().respondWith({
         "status": 200,
         "contentType": 'application/json',

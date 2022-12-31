@@ -89,6 +89,53 @@ let PACER = {
       return match[0].slice(1);
     }
   },
+
+  normalizeDashes: (text) =>{
+    // Convert en & em dash(es) to hyphen(s)
+    let normal_dash = "-";
+    let en_dash = "–";
+    let em_dash = "—";
+    let hyphen = "‐";
+    let non_breaking_hyphen = "‑";
+    let figure_dash = "‒";
+    let horizontal_bar = "―";
+    return text.replace(
+        new RegExp(`[${en_dash}${em_dash}${hyphen}${non_breaking_hyphen}${figure_dash}${horizontal_bar}]+`),
+        normal_dash);
+  },
+
+  makeDocketNumberCore: function(docket_number){
+    // Make a core docket number from an existing docket number.
+    //
+    // Converts docket numbers like:
+    //
+    //    2:12-cv-01032
+    //    12-cv-01032
+    //    12-332
+    //
+    // Into:
+    //
+    //    1201032 
+
+    if (!docket_number){
+      return "";
+    }
+
+    docket_number = this.normalizeDashes(docket_number);
+
+    district_m = docket_number.match(/(?:\d:)?(\d\d)-..-(\d+)/);
+    if (district_m){
+      return `${district_m[1]}${district_m[2].padStart(5,0)}`;
+    }
+        
+    bankr_m = docket_number.match(/(\d\d)-(\d+)/);
+    if (bankr_m){
+      //Pad to six characters because some courts have a LOT of bankruptcies
+      return `${bankr_m[1]}${bankr_m[2].padStart(6,0)}`;
+    }
+
+    return "";
+  },
   
   // Returns true if the URL is for docket query page.
   isDocketQueryUrl: function (url) {
@@ -536,6 +583,15 @@ let PACER = {
             <div class='full-page-iframe'>
             <iframe src="${url}" width="100%" height="100%" frameborder="0"></iframe>
             </div>`;
+  },
+
+
+  handleDocketAvailabilityMessages: (result) =>{
+    if (result.count === 0) {
+      console.warn('RECAP: Zero results found for docket lookup.');
+    } else if (result.count > 1) {
+      console.error(`RECAP: More than one result found for docket lookup. Found ${result.count}`);
+    }
   },
 
   // These are all the supported PACER court identifiers, together with their

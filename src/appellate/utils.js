@@ -137,8 +137,14 @@ let APPELLATE = {
     });
   },
 
-  // Returns caseId from href attribute of Case Query link on the Case Selection Page.
-  getCaseIdFromCaseSelection: () => {
+  getTableWithDataFromCaseSelection: () =>{
+    // Pages in Appellate PACER use three tables to align items in the headers (one for items on 
+    // the right side, one for items on the left side, and one table to wrap the previous ones), so
+    // the 4th table is the one that lists all the cases that match the user's search criteria.
+    //
+    // This method uses the querySelectorAll method to get all the tables on the page and find the
+    // one with data. 
+
     let table = document.querySelectorAll('table');
 
     if (table.length < 3) {
@@ -147,7 +153,15 @@ let APPELLATE = {
       );
       return;
     }
-    let anchor = table[3].querySelectorAll('tr > td > a');
+    return table[3]
+  },
+
+  // Returns caseId from href attribute of Case Query link on the Case Selection Page.
+  getCaseIdFromCaseSelection: function () {
+    let dataTable = this.getTableWithDataFromCaseSelection()
+    if (!dataTable) return;
+
+    let anchor = dataTable.querySelectorAll('a');
 
     if (anchor.length < 3) {
       console.info(
@@ -155,6 +169,7 @@ let APPELLATE = {
       );
       return;
     }
+
     let queryString = anchor[1].href.split('?')[1];
     let queryParameters = new URLSearchParams(queryString);
     let caseId = queryParameters.get('caseid') || queryParameters.get('caseId');
@@ -247,4 +262,54 @@ let APPELLATE = {
     }
     return r;
   },
+
+  // Returns an object with the court Id and docket number core extracted from a link to district court
+  getDatafromDistrictLinkUrl: (url) =>{
+    // Converts links to district courts like:
+    //
+    //   https://ecf.dcd.uscourts.gov/cgi-bin/iquery.pl?caseNumber=1:16-cv-00745-ESH
+    //
+    // into:
+    //
+    // {
+    //   court: 'dcd',
+    //   docket_number_core: 1600745
+    // }
+
+    let court = PACER.getCourtFromUrl(url)
+
+    let queryString = url.split('?')[1];
+    let queryParameters = new URLSearchParams(queryString);
+    let docketNumber = queryParameters.get('caseNumber') || queryParameters.get('casenumber');
+
+    if (docketNumber){
+      docketNumber = PACER.makeDocketNumberCore(docketNumber)
+    }
+
+    return { 
+      court: court, 
+      docket_number_core: docketNumber
+    }
+  },
+
+  // returns div element that contains an anchor with the RECAP icon
+  makeRButtonForCases: (url)=>{
+    let href = `https://www.courtlistener.com${url}`;
+    let recap_link = $('<a/>', {
+      title: 'Docket is available for free in the RECAP Archive.',
+      href: href,
+      target: '_blank'
+    });
+    recap_link.append(
+      $('<img/>').attr({
+        src: chrome.extension.getURL('assets/images/icon-16.png'),
+      })
+    );
+    let recap_div = $('<div>', {
+      class: 'recap-inline-appellate',
+    });
+    recap_div.append(recap_link);
+    
+    return recap_div;
+  }
 };
