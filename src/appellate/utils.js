@@ -265,6 +265,17 @@ let APPELLATE = {
 
   // Returns an object with the court Id and docket number core extracted from a link to district court
   getDatafromDistrictLinkUrl: (url) =>{
+    // Converts links to district courts like:
+    //
+    //   https://ecf.dcd.uscourts.gov/cgi-bin/iquery.pl?caseNumber=1:16-cv-00745-ESH
+    //
+    // into:
+    //
+    // {
+    //   court: 'dcd',
+    //   docket_number_core: 1600745
+    // }
+
     let court = PACER.getCourtFromUrl(url)
 
     let queryString = url.split('?')[1];
