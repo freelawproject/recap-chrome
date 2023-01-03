@@ -67,6 +67,24 @@ if (navigator.userAgent.indexOf('Chrome') < 0) {
   external_pdf.classList.remove('hidden');
 }
 
+if (/Firefox/.test(navigator.userAgent) && !/Seamonkey/.test(navigator.userAgent)){
+  // Detect firefox engine 
+  let firefox_button = document.getElementById('firefox_store_button')
+  firefox_button.classList.remove('hidden')
+}
+
+if (/Safari/.test(navigator.userAgent) && !/Chrome|Chromium/.test(navigator.userAgent)){
+  // Detect Safari engine 
+  let safari_button = document.getElementById('safari_store_button')
+  safari_button.classList.remove('hidden')
+}
+
+if (/Chrome|Edg./.test(navigator.userAgent) && !/Chromium/.test(navigator.userAgent)){
+  // Detect Chrome engine 
+  let chrome_button = document.getElementById('chrome_store_button')
+  chrome_button.classList.remove('hidden')
+}
+
 load_options();
 handle_storage_changes();
 for (let i = 0; i < inputs.length; i++) {
