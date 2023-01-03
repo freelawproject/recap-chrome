@@ -28,7 +28,7 @@
           <a id="nav-donate-tab" class="col-sm text-center nav-item nav-link"
           data-toggle="tab" role="tab" href="#nav-donate"
           aria-controls="nav-donate" aria-selected="false">
-            Donate
+            Help RECAP
           </a>
         </div>
       </nav>
@@ -136,19 +136,40 @@
                 <form method="GET" action="https://www.courtlistener.com/donate/#how-much-donate" target="_blank">
                   <input type="hidden" name="referrer" value="recap-extension" />
                   <input type="hidden" name="amount" value="other">
-                  <div class="input-group mb-3">
+                  <div class="input-group mb-3"> 
                     <div class="input-group-prepend">
                       <span class="input-group-text" id="basic-addon1">$</span>
                     </div>
-                    <input type="text" name="amount_other" placeholder="Amount (min $5)" class="form-control" id="id_amount_other" />
-                  </div>
-
-                  <div id="donate-button-wrapper">
-                    <button type="submit" class="center btn btn-primary" id="donate-button">
-                      <i class="fa fa-heart"></i>&nbsp;Donate
-                    </button>
+                    <input type="number" name="amount_other" placeholder="Amount (Suggested $50)" class="form-control" id="id_amount_other"/>
+                    <div class="input-group-append">
+                      <div id="donate-button-wrapper">
+                        <button type="submit" class="center btn btn-primary" id="donate-button">
+                          <i class="fa fa-heart"></i>&nbsp;Donate
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </form>
+
+                <h2>Review RECAP</h2>
+                
+                <div class="mt-2">
+                  <p>If you have a minute, please review RECAP using the link below. Your feedback helps us promote RECAP and improve our products.</p>
+                </div>
+                <div class="d-flex justify-content-around">
+                  <a href="https://chrome.google.com/webstore/detail/recap/oiillickanjlaeghobeeknbddaonmjnc/" target="_blank" 
+                    rel="noopener" class="btn btn-primary hidden" role="button" id="chrome_store_button">
+                    Chrome Web Store
+                  </a>
+                  <a href="https://addons.mozilla.org/en-US/firefox/addon/recap-195534/" target="_blank" 
+                    rel="noopener" class="btn btn-primary hidden" role="button" id="firefox_store_button">
+                    Firefox Add-Ons
+                  </a>
+                  <a href="https://apps.apple.com/us/app/recap/id1600281788/" target="_blank" 
+                    rel="noopener" class="btn btn-primary hidden" role="button" id="safari_store_button">
+                    Apple App Store
+                  </a>
+                </div>
               </div>
             </div>
           </div>
