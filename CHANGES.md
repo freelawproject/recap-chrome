@@ -7,6 +7,7 @@ The following changes are not yet released, but are code complete:
 Features:
  - Add support to upload documents from appellate courts ([#316](https://github.com/freelawproject/recap/issues/316), [#296](https://github.com/freelawproject/recap-chrome/pull/296) ).
  - Add banners to advertise RECAP Email in appellate courts ([#313](https://github.com/freelawproject/recap/issues/313), [#295](https://github.com/freelawproject/recap-chrome/pull/295)).
+ - Add links to review RECAP in the extension Popup ([#286](https://github.com/freelawproject/recap/issues/286), [#303](https://github.com/freelawproject/recap-chrome/pull/303))
 
 Changes:
  - None yet
