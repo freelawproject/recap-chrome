@@ -131,7 +131,7 @@ const handleDocFormResponse = function (type, ab, xhr, previousPageHtml, dataFro
   }
 };
 
-handleFreeDocResponse = async function (type, ab, xhr) {
+const handleFreeDocResponse = async function (type, ab, xhr) {
   if (type === 'application/pdf') {
     let blob = new Blob([new Uint8Array(ab)], { type: type });
     let dataUrl = await blobToDataURL(blob);
