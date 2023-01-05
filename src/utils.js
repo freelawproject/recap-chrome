@@ -191,7 +191,7 @@ const updateTabStorage = async object => {
   const updatedVars = object[tabId];
   const store = await getItemsFromStorage(tabId);
   // keep store immutable
-  await saveItemToStorage({ [tabId]: { ...store, ...updatedVars } });
+  saveItemToStorage({ [tabId]: { ...store, ...updatedVars } });
 };
 
 // Save case_id in the chrome local storage
