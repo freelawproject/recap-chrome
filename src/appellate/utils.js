@@ -177,7 +177,7 @@ let APPELLATE = {
     return caseId;
   },
 
-  onClickEventHandler: function (e) {
+  onClickEventHandlerForDocLinks: function (e) {
     let target = e.currentTarget || e.srcElement;
     let params = {
       dls_id: target.dataset.pacer_dls_id,
@@ -228,10 +228,11 @@ let APPELLATE = {
       let clonedNode = a.cloneNode(true);
       a.replaceWith(clonedNode);
 
-      // add a new listener that allows the anchors to target the active tab
+      // add a new listener that allows us to request the document data to PACER
+      // and check the response content-type. 
       clonedNode.onclick = function (e) {
         document.body.style.cursor = 'wait'
-        this.onClickEventHandler(e);
+        this.onClickEventHandlerForDocLinks(e);
         return false;
       }.bind(this);
 
