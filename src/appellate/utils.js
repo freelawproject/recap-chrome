@@ -239,8 +239,10 @@ let APPELLATE = {
       let docId = PACER.getDocumentIdFromUrl(clonedNode.href)
       let attNumber = PACER.getAttachmentNumberFromAnchor(clonedNode);
       clonedNode.setAttribute('data-pacer_doc_id', docId);
-      clonedNode.setAttribute('data-pacer_dls_id', doDoc.doc_id);
-      clonedNode.setAttribute('data-pacer_case_id', doDoc.case_id || queryParameters.get('caseId'));
+      if (doDoc && doDoc.doc_id){
+        clonedNode.setAttribute('data-pacer_dls_id', doDoc.doc_id);
+      }
+      clonedNode.setAttribute('data-pacer_case_id', (doDoc && doDoc.case_id) || queryParameters.get('caseId'));
       clonedNode.setAttribute('data-pacer_tab_id', tabId);
       clonedNode.setAttribute('data-document_number', docNum ? docNum : docId);
       clonedNode.setAttribute('data-attachment_number', attNumber);
