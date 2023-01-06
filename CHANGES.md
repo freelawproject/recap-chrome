@@ -39,6 +39,7 @@ Fixes:
  - Fix logic to handle links from appellate PACER to district PACER ([#222](https://github.com/freelawproject/recap/issues/222))
  - Fix logic to avoid duplicating RECAP banners ([#318](https://github.com/freelawproject/recap/issues/318))
  - Better case ID capturing on district court docket pages ([#319](https://github.com/freelawproject/recap/issues/319))
+ - Fix Refresh links button in appellate pages ([#328](https://github.com/freelawproject/recap/issues/328))
 
 
 ## 1.2.30 (2022-11-18)
