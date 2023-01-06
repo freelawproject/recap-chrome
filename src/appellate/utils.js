@@ -284,7 +284,7 @@ let APPELLATE = {
     //  - doc_number
     //  - att_number
 
-    let dataFromAttachment = /^Document: PDF Document \(Case: ([^']*), Document: (\d)-(\d)\)/.exec(title_string);
+    let dataFromAttachment = /^Document: PDF Document \(Case: ([^']*), Document: (\d+)-(\d+)\)/.exec(title_string);
     let dataFromSingleDoc = /^Document: PDF Document \(Case: ([^']*), Document: (\d+)\)/.exec(title_string);
     if (!dataFromAttachment && !dataFromSingleDoc) {
       return null;
