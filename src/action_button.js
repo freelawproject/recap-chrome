@@ -72,6 +72,20 @@ const recapDropdownMenu = (court, pacerCaseId) => {
   checkDoc.setAttribute('id', 'refresh-recap-links');
   checkDoc.setAttribute('role', 'button');
 
+  checkDoc.addEventListener('click', () => {
+    let links = document.querySelectorAll('.recap-inline, .recap-inline-appellate');
+    links.forEach((link) => {
+      link.remove();
+    });
+    let spinner = document.getElementById('recap-button-spinner');
+    if (spinner) {
+      spinner.classList.remove('recap-btn-spinner-hidden');
+    }
+    getTabIdForContentScript().then((msg) => {
+      addRecapInformation(msg);
+    });
+  });
+
   checkLi.appendChild(checkDoc);
   dropdownWrapper.appendChild(checkLi);
 
