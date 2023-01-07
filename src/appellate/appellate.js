@@ -250,8 +250,11 @@ AppellateDelegate.prototype.handleDocketDisplayPage = async function () {
 
   // Query the first table with case data and insert the RECAP actions button
   let table = document.querySelectorAll('table')[3];
-  let button = recapActionsButton(this.court, this.pacer_case_id, false);
-  table.after(button);
+  const existingActionButton = document.getElementById('recap-action-button');
+  if (!existingActionButton) {
+    let button = recapActionsButton(this.court, this.pacer_case_id, false);
+    table.after(button);
+  }
 
   this.recap.getAvailabilityForDocket(this.court, this.pacer_case_id, null, (result) => {
     if (result.count === 0) {

@@ -19,7 +19,6 @@ async function addRecapInformation(msg) {
   const { tabId } = msg;
 
   if (PACER.isLoginPage(url)) {
-    
     let redactionConfirmation = document.getElementById('redactionConfirmation');
     let emailInput = document.getElementById('loginForm:loginName');
     let passwordInput = document.getElementById('loginForm:password');
@@ -49,7 +48,7 @@ async function addRecapInformation(msg) {
 
     // Checks links on the page to get and store the pacer_doc_id and pacer_case_id found in document links.
     await content_delegate.findAndStorePacerDocIds();
-    
+
     // If this is a blank iquery or manage my account page, add RECAP Email advertisement banner.
     content_delegate.addRecapEmailAdvertisement();
 
@@ -109,27 +108,6 @@ function handleRedactionConfirmation(mutationRecords) {
   });
 }
 
-// Callback function to execute when the RECAP actions button
-// is inserted in the docket display page
-function handleRecapActionButtonInsertion(mutationRecords) {
-  let recapRefreshButton = document.getElementById('refresh-recap-links');
-  if (recapRefreshButton) {
-    recapRefreshButton.addEventListener('click', () => {
-      let links = document.querySelectorAll('.recap-inline');
-      links.forEach((link) => {
-        link.remove();
-      });
-      let spinner = document.getElementById('recap-button-spinner');
-      if (spinner) {
-        spinner.classList.remove('recap-btn-spinner-hidden');
-      }
-      getTabIdForContentScript().then((msg) => {
-        addRecapInformation(msg);
-      });
-    });
-  }
-}
-
 // Query relevant inputs in the page.
 let caseNumberInput = document.getElementById('case_number_text_area_0');
 let allCaseInput = document.getElementById('all_case_ids');
@@ -151,27 +129,6 @@ if (caseNumberInput) {
   // Add listener to the search bar
   caseNumberInput.addEventListener('input', () => {
     PACER.removeBanners();
-  });
-}
-
-// if the content script found a tbody element on the page, It would create an
-// observer to watch for insertions/removal of a child inside that HTML tag.
-//
-// This operation(insertion/removal) is relevant because the "RECAP actions" button
-// is inserted inside a tbody tag some time after the js files from the extension
-// are loaded, so it's not possible to query or add a listener to this button right
-// from the start.
-//
-// this mutation will help the extension know when a new element is inserted in the
-// tbody tag and the callback function will check if this new element is the "RECAP
-// actions" button.
-if (tableBody) {
-  // create a mutation observer to watch for changes being made to
-  // the childlist of the table element
-  const observer = new MutationObserver((mutationRecords) => handleRecapActionButtonInsertion(mutationRecords));
-  observer.observe(tableBody, {
-    subtree: false,
-    childList: true,
   });
 }
 
