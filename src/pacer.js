@@ -644,7 +644,7 @@ let PACER = {
     //  attachment number of the document.
 
     let row = anchor.parentNode.parentNode;
-    if (row.childElementCount < 3) {
+    if (row.childElementCount <= 3) {
       // Attachment menu pages should have more than 3 element per row.
       return 0;
     }
