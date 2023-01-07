@@ -214,12 +214,16 @@ let APPELLATE = {
       a.setAttribute('target', '_self');
 
       let url = new URL(a.href);
-      if (doDoc && doDoc.case_id) {
-        url.searchParams.set('caseId', doDoc.case_id);
-      }
+      url.searchParams.set('caseId', (doDoc && doDoc.case_id) || queryParameters.get('caseId'));
 
       if (docNum) {
         url.searchParams.set('docNum', docNum);
+      }
+
+      // if an attachment number is found, it adds it to the link href
+      let attNumber = PACER.getAttachmentNumberFromAnchor(a);
+      if (attNumber != 0) {
+        url.searchParams.set('attNum', attNumber);
       }
 
       a.setAttribute('href', url.toString());
@@ -229,18 +233,18 @@ let APPELLATE = {
       a.replaceWith(clonedNode);
 
       // add a new listener that allows us to request the document data to PACER
-      // and check the response content-type. 
+      // and check the response content-type.
       clonedNode.onclick = function (e) {
-        document.body.style.cursor = 'wait'
+        document.body.style.cursor = 'wait';
         this.onClickEventHandlerForDocLinks(e);
         return false;
       }.bind(this);
 
       // store extra information on anchors to use it while handling the onClick listener
-      let docId = PACER.getDocumentIdFromUrl(clonedNode.href)
-      let attNumber = PACER.getAttachmentNumberFromAnchor(clonedNode);
+      let docId = PACER.getDocumentIdFromUrl(clonedNode.href);
+
       clonedNode.setAttribute('data-pacer_doc_id', docId);
-      if (doDoc && doDoc.doc_id){
+      if (doDoc && doDoc.doc_id) {
         clonedNode.setAttribute('data-pacer_dls_id', doDoc.doc_id);
       }
       clonedNode.setAttribute('data-pacer_case_id', (doDoc && doDoc.case_id) || queryParameters.get('caseId'));
@@ -248,7 +252,6 @@ let APPELLATE = {
       clonedNode.setAttribute('data-document_number', docNum ? docNum : docId);
       clonedNode.setAttribute('data-attachment_number', attNumber);
 
-      
       links.push(docId);
     });
     return { links, docsToCases };
@@ -294,7 +297,7 @@ let APPELLATE = {
       [, r.docket_number, r.doc_number, r.att_number] = dataFromAttachment;
     } else {
       [, r.docket_number, r.doc_number] = dataFromSingleDoc;
-      r.att_num = 0;
+      r.att_number = 0;
     }
     return r;
   },
