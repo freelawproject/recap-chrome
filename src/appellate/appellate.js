@@ -74,8 +74,7 @@ AppellateDelegate.prototype.handleCaseSelectionPage = async function () {
 
     let dataTable = APPELLATE.getTableWithDataFromCaseSelection();
     let anchors = dataTable.querySelectorAll('a');
-    let districtLink = anchors[anchors.length - 1];
-    let districtLinkData = APPELLATE.getDatafromDistrictLinkUrl(districtLink.href);
+    
 
     this.recap.getAvailabilityForDocket(this.court, this.pacer_case_id, null, (result) => {
       if (result.count === 1 && result.results) {
@@ -95,14 +94,18 @@ AppellateDelegate.prototype.handleCaseSelectionPage = async function () {
       }
     });
 
-    this.recap.getAvailabilityForDocket(districtLinkData.court, null, districtLinkData.docket_number_core, (result) => {
-      if (result.count === 1 && result.results) {
-        const rIcon = APPELLATE.makeRButtonForCases(result.results[0].absolute_url);
-        rIcon.insertAfter(districtLink);
-      } else {
-        PACER.handleDocketAvailabilityMessages(result);
-      }
-    });
+    if (anchors.length == 3){
+      let districtLink = anchors[anchors.length - 1];
+      let districtLinkData = APPELLATE.getDatafromDistrictLinkUrl(districtLink.href);
+      this.recap.getAvailabilityForDocket(districtLinkData.court, null, districtLinkData.docket_number_core, (result) => {
+        if (result.count === 1 && result.results) {
+          const rIcon = APPELLATE.makeRButtonForCases(result.results[0].absolute_url);
+          rIcon.insertAfter(districtLink);
+        } else {
+          PACER.handleDocketAvailabilityMessages(result);
+        }
+      });
+    }
   } else {
     // Add the pacer_case_id to each docket link to use it in the docket report
     APPELLATE.addCaseIdToDocketSummaryLink();
@@ -170,7 +173,7 @@ AppellateDelegate.prototype.attachRecapLinksToEligibleDocs = async function () {
   }
 
   // filter the links for the documents available on the page
-  let { links, docsToCases } = APPELLATE.findDocLinksFromAnchors(this.links);
+  let { links, docsToCases } = APPELLATE.findDocLinksFromAnchors(this.links, this.tabId, this.queryParameters);
 
   this.pacer_case_id = this.pacer_case_id
     ? this.pacer_case_id

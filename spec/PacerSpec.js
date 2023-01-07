@@ -648,4 +648,84 @@ describe('The PACER module', function () {
       expect(PACER.makeDocketNumberCore(null)).toBe('');
     });
   });
+
+  describe('cleanDocLinkNumber', function () {
+    it('can remove whitespace nicely', function () {
+      let tests = {
+        ' 89 ': '89',
+        '&nbsp;89&nbsp;': '89',
+        ' &nbsp; 89 &nbsp; ': '89',
+        ' &nbsp;89&nbsp; ': '89',
+        '&nbsp; 89 &nbsp;': '89',
+        ' 89': '89',
+        '89 ': '89',
+      };
+      for (const [key, value] of Object.entries(tests)) {
+        expect(PACER.cleanDocLinkNumber(key)).toBe(value);
+      }
+    });
+  });
+
+  describe('getDocNumberFromAnchor', function () {
+    it('can get number as expected', function () {
+      let anchor = document.createElement('a');
+      anchor.innerHTML = '&nbsp;89&nbsp;';
+      expect(PACER.getDocNumberFromAnchor(anchor)).toBe('89');
+    });
+
+    it('returns null if the anchor shows an image', function () {
+      let anchor = document.createElement('a');
+      let img = document.createElement('img');
+      anchor.appendChild(img);
+      expect(PACER.getDocNumberFromAnchor(anchor)).toBeNull();
+    });
+  });
+
+  describe('getAttachmentNumberFromAnchor', function () {
+    it('returns 0 if the table has less than four columns', function () {
+      let tr = document.createElement('tr');
+      let anchor_td = document.createElement('td');
+      let anchor = document.createElement('a');
+      anchor_td.appendChild(anchor);
+      tr.appendChild(document.createElement('td'));
+      tr.appendChild(anchor_td);
+      tr.appendChild(document.createElement('td'));
+      expect(PACER.getAttachmentNumberFromAnchor(anchor)).toBe(0);
+    });
+
+    it('returns the attachment number if the table uses checkboxes', function () {
+      let tr = document.createElement('tr');
+
+      let number_td = document.createElement('td');
+      number_td.innerHTML = '5';
+
+      let anchor_td = document.createElement('td');
+      let anchor = document.createElement('a');
+      anchor_td.appendChild(anchor);
+
+      tr.appendChild(document.createElement('td'));
+      tr.appendChild(number_td);
+      tr.appendChild(anchor_td);
+      tr.appendChild(document.createElement('td'));
+      tr.appendChild(document.createElement('td'));
+      expect(PACER.getAttachmentNumberFromAnchor(anchor)).toBe('5');
+    });
+
+    it('returns the attachment number if the table does not have checkboxes', function () {
+      let tr = document.createElement('tr');
+
+      let number_td = document.createElement('td');
+      number_td.innerHTML = '4';
+
+      let anchor_td = document.createElement('td');
+      let anchor = document.createElement('a');
+      anchor_td.appendChild(anchor);
+
+      tr.appendChild(number_td);
+      tr.appendChild(anchor_td);
+      tr.appendChild(document.createElement('td'));
+      tr.appendChild(document.createElement('td'));
+      expect(PACER.getAttachmentNumberFromAnchor(anchor)).toBe('4');
+    });
+  });
 });

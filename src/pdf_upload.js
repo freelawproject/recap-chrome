@@ -131,6 +131,25 @@ const handleDocFormResponse = function (type, ab, xhr, previousPageHtml, dataFro
   }
 };
 
+const handleFreeDocResponse = async function (type, ab, xhr) {
+  if (type === 'application/pdf') {
+    let blob = new Blob([new Uint8Array(ab)], { type: type });
+    let dataUrl = await blobToDataURL(blob);
+    await updateTabStorage({ [this.dataset.pacer_tab_id]: { ['pdf_blob']: dataUrl } });
+    // get data attributes through the dataset object  
+    let options = {
+      court: PACER.getCourtFromUrl(window.location.href),
+      pacer_doc_id: this.dataset.pacer_doc_id,
+      pacer_case_id: this.dataset.pacer_case_id,
+      document_number: this.dataset.document_number,
+      attachment_number: this.dataset.attachment_number,
+    };
+    await chrome.runtime.sendMessage({ message: 'upload', type: 'doc', options });
+  }
+
+  window.location.href = this.href;
+};
+
 const showAndUploadPdf = async function (
   html_elements,
   previousPageHtml,
@@ -138,7 +157,7 @@ const showAndUploadPdf = async function (
   attachment_number,
   docket_number,
   pacer_doc_id,
-  restricted = false 
+  restricted = false
 ) {
   // Find the <iframe> URL in the HTML string.
   let match = html_elements.match(/([^]*?)<iframe[^>]*src="(.*?)"([^]*)/);

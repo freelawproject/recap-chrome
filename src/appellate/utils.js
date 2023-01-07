@@ -163,7 +163,7 @@ let APPELLATE = {
 
     let anchor = dataTable.querySelectorAll('a');
 
-    if (anchor.length < 3) {
+    if (anchor.length < 2) {
       console.info(
         "RECAP: no matching format was detected. There aren't enough anchors in the table that the extension found."
       );
@@ -177,42 +177,78 @@ let APPELLATE = {
     return caseId;
   },
 
+  onClickEventHandlerForDocLinks: function (e) {
+    let target = e.currentTarget || e.srcElement;
+    let params = {
+      dls_id: target.dataset.pacer_dls_id,
+      caseId: target.dataset.pacer_case_id,
+      servlet: 'ShowDoc',
+      dktType: 'dktPublic',
+    };
+    let query_string = new URLSearchParams(params).toString();
+    httpRequest(
+      'TransportRoom',
+      query_string,
+      'application/x-www-form-urlencoded',
+      function (type, ab, xhr) {
+        let requestHandler = handleFreeDocResponse.bind(this);
+        requestHandler(type, ab, xhr);
+      }.bind(target)
+    );
+  },
+
   // Create a list of doc_ids from the list of all links available on the page
-  findDocLinksFromAnchors: (nodeList) => {
+  findDocLinksFromAnchors: function (nodeList, tabId, queryParameters) {
     let links = [];
     let docsToCases = {};
     Array.from(nodeList).map((a) => {
       if (!PACER.isDocumentUrl(a.href)) return;
 
+      let docNum = PACER.getDocNumberFromAnchor(a) || queryParameters.get('docNum');
       let doDoc = PACER.parseDoDocPostURL(a.getAttribute('onclick'));
       if (doDoc && doDoc.doc_id && doDoc.case_id) {
         docsToCases[doDoc.doc_id] = doDoc.case_id;
       }
-      
+
       a.removeAttribute('onclick');
       a.setAttribute('target', '_self');
 
-      if(doDoc && doDoc.case_id){
-        let href = a.getAttribute('href')
-        a.setAttribute('href', `${href}?caseId=${doDoc.case_id}`)
+      let url = new URL(a.href);
+      if (doDoc && doDoc.case_id) {
+        url.searchParams.set('caseId', doDoc.case_id);
       }
+
+      if (docNum) {
+        url.searchParams.set('docNum', docNum);
+      }
+
+      a.setAttribute('href', url.toString());
 
       // clone and replace anchor elements to remove all listeners
       let clonedNode = a.cloneNode(true);
       a.replaceWith(clonedNode);
 
-      // add a new listener that allows the anchors to target the active tab
-      clonedNode.addEventListener('click', (event) => {
-        let form = document.getElementsByName('doDocPostURLForm')[0];
-        if (form) {
-          form.dls_id.value = params.doc_id;
-          form.caseId.value = params.case_id;
-          form.submit();
-        }
-      });
+      // add a new listener that allows us to request the document data to PACER
+      // and check the response content-type. 
+      clonedNode.onclick = function (e) {
+        document.body.style.cursor = 'wait'
+        this.onClickEventHandlerForDocLinks(e);
+        return false;
+      }.bind(this);
 
-      let docId = PACER.getDocumentIdFromUrl(a.href);
+      // store extra information on anchors to use it while handling the onClick listener
+      let docId = PACER.getDocumentIdFromUrl(clonedNode.href)
+      let attNumber = PACER.getAttachmentNumberFromAnchor(clonedNode);
       clonedNode.setAttribute('data-pacer_doc_id', docId);
+      if (doDoc && doDoc.doc_id){
+        clonedNode.setAttribute('data-pacer_dls_id', doDoc.doc_id);
+      }
+      clonedNode.setAttribute('data-pacer_case_id', (doDoc && doDoc.case_id) || queryParameters.get('caseId'));
+      clonedNode.setAttribute('data-pacer_tab_id', tabId);
+      clonedNode.setAttribute('data-document_number', docNum ? docNum : docId);
+      clonedNode.setAttribute('data-attachment_number', attNumber);
+
+      
       links.push(docId);
     });
     return { links, docsToCases };
@@ -248,7 +284,7 @@ let APPELLATE = {
     //  - doc_number
     //  - att_number
 
-    let dataFromAttachment = /^Document: PDF Document \(Case: ([^']*), Document: (\d)-(\d)\)/.exec(title_string);
+    let dataFromAttachment = /^Document: PDF Document \(Case: ([^']*), Document: (\d+)-(\d+)\)/.exec(title_string);
     let dataFromSingleDoc = /^Document: PDF Document \(Case: ([^']*), Document: (\d+)\)/.exec(title_string);
     if (!dataFromAttachment && !dataFromSingleDoc) {
       return null;

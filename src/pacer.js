@@ -585,6 +585,78 @@ let PACER = {
             </div>`;
   },
 
+  // removes whitespace and returns a number
+  cleanDocLinkNumber: (number) => {
+    // Converts links numbers like:
+    //  -  89 
+    //  - &nbsp;89&nbsp;
+    //  - &nbsp; 89 &nbsp; 
+    //
+    // into:
+    //
+    //  - 89
+
+    let match = /(?:\s*(?:&nbsp;)?\s*)(\d+)(?:\s*(?:&nbsp;)?\s*)/.exec(number);
+    if (!match) {
+      return null;
+    }
+    return match[1];
+  },
+
+  // return the document number of a document link 
+  getDocNumberFromAnchor: function (anchor) {
+    // Document links from the full docket report and the general docket  
+    // report take the following shape (most of the time): 
+    // 
+    //  <a
+    //    href="https://ecf.cafc.uscourts.gov/docs1/01301646325"
+    //    onclick="return doDocPostURL('01301646325','16239');"
+    //    title="Open Document"
+    //  >
+    //    &nbsp;1&nbsp;
+    //  </a>
+    //  
+    // This method returns the number inside the anchor tag without whitespace
+
+    if (anchor.childElementCount) {
+      // Pacer pages that have docket entry number turned off show an 
+      // image inside the anchor element. We want to avoid these cases.
+      return null;
+    }
+
+    return this.cleanDocLinkNumber(anchor.innerHTML);
+  },
+
+  // returns the attachment number of a document link
+  getAttachmentNumberFromAnchor: function (anchor) {
+    //  The attachment number is not inside the anchor tag that has the document link as in
+    //  the docket report, but We can get this number if we access the row that contains the 
+    //  link. Each row of the attachment menu has the following information:
+    //  
+    //   - A checkbox (optional, not all attachment tables has this checkbox)
+    //   - The Attachment number  
+    //   - The document Link
+    //   - A description 
+    //   - The number of pages
+    //    
+    //  This method accesses the tr element that contains the document link, checks the number
+    //  of elements inside this tag (we want to exclude rows from docket reports) and returns the 
+    //  attachment number of the document.
+
+    let row = anchor.parentNode.parentNode;
+    if (row.childElementCount < 3) {
+      // Attachment menu pages should have more than 3 element per row.
+      return 0;
+    }
+
+    //  If the attachment page uses checkboxes, each row should have five child nodes and the attachment
+    //  number should be inside the second one(the first node has the checkbox). Attachment pages that does
+    //  not have checkboxes shows the attachment number inside the first child node.
+
+    let rowNumber = row.childElementCount == 5 ? row.childNodes[1].innerHTML : row.childNodes[0].innerHTML;
+    let cleanNumber = this.cleanDocLinkNumber(rowNumber);
+    return cleanNumber ? cleanNumber : 0;
+  },
 
   handleDocketAvailabilityMessages: (result) =>{
     if (result.count === 0) {
