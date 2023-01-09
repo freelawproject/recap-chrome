@@ -638,7 +638,18 @@ let PACER = {
     //   - The document Link
     //   - A description 
     //   - The number of pages
+    //
+    //  Each row of the docket report has the following information:
+    //
+    //   - filed date
+    //   - docket entry number
+    //   - A description
     //    
+    //  We can use the number of elements per row to group the possible cases:
+    //
+    //  - Rows with 3 or less elements belong to a docket report. 
+    //  - Rows with four or five elements belong to an attachment menu.
+    //
     //  This method accesses the tr element that contains the document link, checks the number
     //  of elements inside this tag (we want to exclude rows from docket reports) and returns the 
     //  attachment number of the document.
