@@ -24,7 +24,11 @@ let APPELLATE = {
   //   - Check the storage
   getCaseId: async (tabId, queryParameters, docId) => {
     let input = document.querySelector('input[name=caseId]');
-    let pacer_case_id = queryParameters.get('caseid') || queryParameters.get('caseId') || (input && input.value);
+    let pacer_case_id =
+      queryParameters.get('recapCaseId') ||
+      queryParameters.get('caseid') ||
+      queryParameters.get('caseId') ||
+      (input && input.value);
 
     // try to get a mapping from a pacer_doc_id in the URL to the pacer_case_id
     if (!pacer_case_id && docId) {
@@ -204,7 +208,7 @@ let APPELLATE = {
     Array.from(nodeList).map((a) => {
       if (!PACER.isDocumentUrl(a.href)) return;
 
-      let docNum = PACER.getDocNumberFromAnchor(a) || queryParameters.get('docNum');
+      let docNum = PACER.getDocNumberFromAnchor(a) || queryParameters.get('recapDocNum');
       let doDoc = PACER.parseDoDocPostURL(a.getAttribute('onclick'));
       if (doDoc && doDoc.doc_id && doDoc.case_id) {
         docsToCases[doDoc.doc_id] = doDoc.case_id;
@@ -214,16 +218,17 @@ let APPELLATE = {
       a.setAttribute('target', '_self');
 
       let url = new URL(a.href);
-      url.searchParams.set('caseId', (doDoc && doDoc.case_id) || queryParameters.get('caseId'));
+      let pacerCaseId = (doDoc && doDoc.case_id) || queryParameters.get('recapCaseId') || queryParameters.get('caseId');
+      url.searchParams.set('recapCaseId', pacerCaseId);
 
       if (docNum) {
-        url.searchParams.set('docNum', docNum);
+        url.searchParams.set('recapDocNum', docNum);
       }
 
       // if an attachment number is found, it adds it to the link href
       let attNumber = PACER.getAttachmentNumberFromAnchor(a);
       if (attNumber != 0) {
-        url.searchParams.set('attNum', attNumber);
+        url.searchParams.set('recapAttNum', attNumber);
       }
 
       a.setAttribute('href', url.toString());
@@ -247,7 +252,7 @@ let APPELLATE = {
       if (doDoc && doDoc.doc_id) {
         clonedNode.setAttribute('data-pacer_dls_id', doDoc.doc_id);
       }
-      clonedNode.setAttribute('data-pacer_case_id', (doDoc && doDoc.case_id) || queryParameters.get('caseId'));
+      clonedNode.setAttribute('data-pacer_case_id', pacerCaseId);
       clonedNode.setAttribute('data-pacer_tab_id', tabId);
       clonedNode.setAttribute('data-document_number', docNum ? docNum : docId);
       clonedNode.setAttribute('data-attachment_number', attNumber);

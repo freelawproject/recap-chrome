@@ -370,8 +370,8 @@ AppellateDelegate.prototype.onDocumentViewSubmit = function (event) {
   let title = document.querySelectorAll('strong')[1].innerHTML;
   let dataFromTitle = APPELLATE.parseReceiptPageTitle(title);
 
-  if (dataFromTitle.att_number == 0 && this.queryParameters.get('attNum')){
-    dataFromTitle.att_number = this.queryParameters.get('attNum')
+  if (dataFromTitle.att_number == 0 && this.queryParameters.get('recapAttNum')){
+    dataFromTitle.att_number = this.queryParameters.get('recapAttNum')
   }
 
   if (!dataFromTitle) {
