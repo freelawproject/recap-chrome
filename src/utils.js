@@ -215,7 +215,7 @@ const removeFilingState = () => {
   document.cookie = "isFilingAccount=false;path=/;domain=.uscourts.gov";
 }
 
-//takes a date in 'YYYY-MM-DD' format returns it in 'MM/DD/YYYY' format
+// converts an ISO-8601 date str to 'MM/DD/YYYY' format
 function pacerDateFormat(date) {
   return date.replace(/(\d+)-(\d+)-(\d+)/, "$2/$3/$1");
 }
