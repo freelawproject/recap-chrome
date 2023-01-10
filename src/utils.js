@@ -289,38 +289,37 @@ const recapAlertButton = (court, pacerCaseId, isActive) => {
 };
 
 // Creates an anchor element to autofill the Docket Query form
-const recapAddLatestFilingButton = (result) =>{
-  
-  let date = result.date_last_filing
+const recapAddLatestFilingButton = (result) => {
+  let date = result.date_last_filing;
   let formatted_date = pacerDateFormat(date)
 
   const anchor = document.createElement('a');
-  anchor.classList.add("recap-filing-button");
-  anchor.title = 'This will purchase filings since the latest we have on RECAP, omitting parties and member cases.'
+  anchor.classList.add('recap-filing-button');
+  anchor.title = 'This will purchase filings since the latest we have on RECAP, omitting parties and member cases.';
   anchor.setAttribute('data-date_from', formatted_date);
-  anchor.href = '#'
+  anchor.href = '#';
 
   const img = document.createElement('img');
   img.src = chrome.extension.getURL('assets/images/icon-16.png');
 
-  anchor.innerHTML =`${img.outerHTML}`
+  anchor.innerHTML = `${img.outerHTML}`;
 
   anchor.onclick = function (e) {
     let target = e.currentTarget || e.target;
 
     let dateInput = document.querySelector("[name='date_from']");
-    let partyCheckbox = document.getElementById("list_of_parties_and_counsel");
+    let partyCheckbox = document.getElementById('list_of_parties_and_counsel');
     let filedCheckbox = document.querySelector('input[value="Filed"]');
 
-    dateInput.value = target.dataset.date_from
-    partyCheckbox.checked = false
-    filedCheckbox.checked = true
-    
-    return false
-  }
+    dateInput.value = target.dataset.date_from;
+    partyCheckbox.checked = false;
+    filedCheckbox.checked = true;
+
+    return false;
+  };
 
   return anchor;
-}
+};
 
 // Creates a div element to show a docket is available for free  
 const recapBanner = (result) => {
