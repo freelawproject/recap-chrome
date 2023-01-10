@@ -219,7 +219,7 @@ ContentDelegate.prototype.handleDocketQueryUrl = function () {
         form.appendChild(recapBanner(result.results[0]));
         form.appendChild(div);
 
-        dateToInput.after(recapAddLatestFilingButton(result.results[0]));
+        if (result.results[0].date_last_filing) dateToInput.after(recapAddLatestFilingButton(result.results[0]));
       }
     }
   });
