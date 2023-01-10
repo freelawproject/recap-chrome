@@ -12,8 +12,8 @@ describe('The ContentDelegate class', function () {
         set: jasmine.createSpy('set').and.callFake(function () {}),
         remove: jasmine.createSpy('remove').and.callFake(() => {}),
       },
-    }
-  }
+    },
+  };
 
   // 'path' values
   const districtCourtURI = 'https://ecf.canb.uscourts.gov';
@@ -232,8 +232,15 @@ describe('The ContentDelegate class', function () {
     beforeEach(function () {
       clearDocumentBody();
       form = document.createElement('form');
+
+      dateToField = document.createElement('input');
+      dateToField.setAttribute('name', 'date_to');
+      document.body.appendChild(dateToField);
+
       document.body.appendChild(form);
-      document.querySelector = jasmine.createSpy('querySelector').and.callFake((id) => (id != 'form' ? null : form));
+      document.querySelector = jasmine
+        .createSpy('querySelector')
+        .and.callFake((id) => (document.querySelectorAll(id).length ? document.querySelectorAll(id)[0] : null));
     });
 
     afterEach(function () {
@@ -268,10 +275,12 @@ describe('The ContentDelegate class', function () {
         status: 200,
         contentType: 'application/json',
         responseText:
-          '{"count": 1, "results": [' +
-          '{"date_modified": "04/16/15", "absolute_url": ' +
-          '"/download/gov.uscourts.' +
-          'canb.531591/gov.uscourts.canb.531591.docket.html"}]}',
+          '{"count": 1,' +
+          '"results": [{' +
+          '"date_modified": "04/16/15",' +
+          '"absolute_url": "/download/gov.uscourts.canb.531591/gov.uscourts.canb.531591.docket.html",' +
+          '"date_last_filing": "2015-04-20"' +
+          '}]}',
       });
       const banner = document.querySelectorAll('.recap-banner')[0];
       expect(banner).not.toBeNull();
@@ -1075,9 +1084,9 @@ describe('The ContentDelegate class', function () {
         // });
       });
 
-      afterEach(function(){
-        window.getPacerCaseIdFromPacerDocId = jasmine.createSpy().and.callThrough()
-      })
+      afterEach(function () {
+        window.getPacerCaseIdFromPacerDocId = jasmine.createSpy().and.callThrough();
+      });
 
       it('makes the back button redisplay the previous page', async function () {
         await cd.showPdfPage(html);
