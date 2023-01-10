@@ -290,6 +290,28 @@ describe('The ContentDelegate class', function () {
       expect(link.href).toBe(
         'https://www.courtlistener.com/download/gov.uscourts.' + 'canb.531591/gov.uscourts.canb.531591.docket.html'
       );
+      const autofill = document.querySelector('.recap-filing-button');
+      expect(autofill).not.toBeNull();
+    });
+
+    it("don't inserts the autofill button when a docket don't have last_filing", function () {
+      const cd = docketQueryContentDelegate;
+      spyOn(PACER, 'hasPacerCookie').and.returnValue(true);
+      cd.handleDocketQueryUrl();
+      jasmine.Ajax.requests.mostRecent().respondWith({
+        status: 200,
+        contentType: 'application/json',
+        responseText: '{"count": 1,' +
+        '"results": [{' +
+        '"date_modified": "04/16/15",' +
+        '"absolute_url": "/download/gov.uscourts.canb.531591/gov.uscourts.canb.531591.docket.html",' +
+        '"date_last_filing": null' +
+        '}]}',
+      });
+      const banner = document.querySelectorAll('.recap-banner')[0];
+      expect(banner).not.toBeNull();
+      const autofill = document.querySelector('.recap-filing-button');
+      expect(autofill).toBeNull();
     });
 
     it('has no effect when on a docket query that has no RECAP', function () {
