@@ -25,7 +25,6 @@ let APPELLATE = {
   getCaseId: async (tabId, queryParameters, docId) => {
     let input = document.querySelector('input[name=caseId]');
     let pacer_case_id =
-      queryParameters.get('recapCaseId') ||
       queryParameters.get('caseid') ||
       queryParameters.get('caseId') ||
       (input && input.value);
@@ -218,8 +217,8 @@ let APPELLATE = {
       a.setAttribute('target', '_self');
 
       let url = new URL(a.href);
-      let pacerCaseId = (doDoc && doDoc.case_id) || queryParameters.get('recapCaseId') || queryParameters.get('caseId');
-      url.searchParams.set('recapCaseId', pacerCaseId);
+      let pacerCaseId = (doDoc && doDoc.case_id) || queryParameters.get('caseId');
+      url.searchParams.set('caseId', pacerCaseId);
 
       if (docNum) {
         url.searchParams.set('recapDocNum', docNum);
