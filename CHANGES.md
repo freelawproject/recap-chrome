@@ -9,6 +9,7 @@ Features:
  - Add banners to advertise RECAP Email in appellate courts ([#313](https://github.com/freelawproject/recap/issues/313), [#295](https://github.com/freelawproject/recap-chrome/pull/295)).
  - Add links to review RECAP in the extension Popup ([#286](https://github.com/freelawproject/recap/issues/286), [#303](https://github.com/freelawproject/recap-chrome/pull/303))
  - Upload free documents from Appellate PACER ([#322](https://github.com/freelawproject/recap/issues/322), [#305](https://github.com/freelawproject/recap-chrome/pull/305))
+ - Add button to autofill docket query form in district courts ([#311](https://github.com/freelawproject/recap-chrome/pull/311), [#190](https://github.com/freelawproject/recap/issues/190))
 
 Changes:
  - None yet

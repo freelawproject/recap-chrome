@@ -498,3 +498,12 @@ footer #version {
   display: inline-flex;
   padding: 0px 3px;
 }
+
+.recap-filing-button{
+  vertical-align: middle;
+  padding-left: 4px;
+}
+
+.recap-filing-button > img{
+  padding-top: 2px;
+}

@@ -181,7 +181,7 @@ let PACER = {
 
   // Remove banners inserted by the extension
   removeBanners: ()=>{
-    let banners = document.querySelectorAll('.recap-banner');
+    let banners = document.querySelectorAll('.recap-banner, .recap-filing-button');
     banners.forEach(banner => { banner.remove(); });
   },
 

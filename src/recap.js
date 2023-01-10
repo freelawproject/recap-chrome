@@ -33,7 +33,7 @@ function Recap() {
         // Ensure RECAP is a source so we don't get back IDB-only dockets.
         source__in: '1,3,5,7,9,11,13,15',
         court: PACER.convertToCourtListenerCourt(pacer_court),
-        fields: 'absolute_url,date_modified'
+        fields: 'absolute_url,date_modified,date_last_filing'
       }
 
       if (pacer_case_id){
