@@ -210,12 +210,16 @@ ContentDelegate.prototype.handleDocketQueryUrl = function () {
     } else {
       if (result.results) {
         PACER.removeBanners();
+        const dateToInput = document.querySelector('input[name=date_to]');
         const form = document.querySelector('form');
         const div = document.createElement('div');
+        
         div.classList.add('recap-banner');
         div.appendChild(recapAlertButton(this.court, this.pacer_case_id, true));
         form.appendChild(recapBanner(result.results[0]));
         form.appendChild(div);
+
+        dateToInput.after(recapAddLatestFilingButton(result.results[0]));
       }
     }
   });
