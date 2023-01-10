@@ -215,6 +215,11 @@ const removeFilingState = () => {
   document.cookie = "isFilingAccount=false;path=/;domain=.uscourts.gov";
 }
 
+//takes a date in 'YYYY-MM-DD' format returns it in 'MM/DD/YYYY' format
+function pacerDateFormat(date) {
+  return date.replace(/(\d+)-(\d+)-(\d+)/, "$2/$3/$1");
+}
+
 // Default settings for any jquery $.ajax call.
 $.ajaxSetup({
   // The dataType parameter is a security measure requested by Opera code
@@ -283,7 +288,39 @@ const recapAlertButton = (court, pacerCaseId, isActive) => {
   return anchor;
 };
 
+// Creates an anchor element to autofill the Docket Query form
+const recapAddLatestFilingButton = (result) =>{
+  
+  let date = result.date_last_filing
+  let formatted_date = pacerDateFormat(date)
 
+  const anchor = document.createElement('a');
+  anchor.classList.add("recap-filing-button");
+  anchor.title = 'This will purchase filings since the latest we have on RECAP, omitting parties and member cases.'
+  anchor.setAttribute('data-date_from', formatted_date);
+  anchor.href = '#'
+
+  const img = document.createElement('img');
+  img.src = chrome.extension.getURL('assets/images/icon-16.png');
+
+  anchor.innerHTML =`${img.outerHTML}`
+
+  anchor.onclick = function (e) {
+    let target = e.currentTarget || e.target;
+
+    let dateInput = document.querySelector("[name='date_from']");
+    let partyCheckbox = document.getElementById("list_of_parties_and_counsel");
+    let filedCheckbox = document.querySelector('input[value="Filed"]');
+
+    dateInput.value = target.dataset.date_from
+    partyCheckbox.checked = false
+    filedCheckbox.checked = true
+    
+    return false
+  }
+
+  return anchor;
+}
 
 // Creates a div element to show a docket is available for free  
 const recapBanner = (result) => {
