@@ -215,7 +215,7 @@ const removeFilingState = () => {
   document.cookie = "isFilingAccount=false;path=/;domain=.uscourts.gov";
 }
 
-//takes a date in 'YYYY-MM-DD' format returns it in 'MM/DD/YYYY' format
+// converts an ISO-8601 date str to 'MM/DD/YYYY' format
 function pacerDateFormat(date) {
   return date.replace(/(\d+)-(\d+)-(\d+)/, "$2/$3/$1");
 }
@@ -295,7 +295,7 @@ const recapAddLatestFilingButton = (result) => {
 
   const anchor = document.createElement('a');
   anchor.classList.add('recap-filing-button');
-  anchor.title = 'This will purchase filings since the latest we have on RECAP, omitting parties and member cases.';
+  anchor.title = 'Autofill the form to get the latest content not yet in RECAP, omitting parties and member cases.';
   anchor.setAttribute('data-date_from', formatted_date);
   anchor.href = '#';
 
