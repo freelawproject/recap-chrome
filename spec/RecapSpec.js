@@ -100,7 +100,7 @@ describe('The Recap export module', function () {
         'https://www.courtlistener.com/api/rest/v3/dockets/' +
         '?source__in=1%2C3%2C5%2C7%2C9%2C11%2C13%2C15' +
         '&court=canb' +
-        '&fields=absolute_url%2Cdate_modified'+
+        '&fields=absolute_url%2Cdate_modified%2Cdate_last_filing'+
         '&pacer_case_id=531316');
     });
 
