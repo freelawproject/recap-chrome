@@ -77,7 +77,9 @@ When a new version is needed, the release process is:
 
 1. Do the [manual QA tests][qa]
 1. Update `package.json` and `manifest.json` with a new release version.
-1. Run `web-ext lint` to ensure no regressions.
+1. Run `web-ext lint` to ensure no regressions. 
+1. Update CHANGES.md
+1. Make a new release on [Github announcing the release][ghtags].
 1. Commit the code.
 1. Tag the code with something like:
 
@@ -91,7 +93,6 @@ When a new version is needed, the release process is:
 
 1. Upload that to the [Chrome Market][market].
 1. Upload that to addons.mozilla.org
-1. Make a new release on [Github announcing the release][ghtags].
 
 
 Copyright
