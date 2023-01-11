@@ -5,7 +5,7 @@
 The following changes are not yet released, but are code complete:
 
 Features:
- - None yet
+ - Uncheck terminates parties field of docket query form in district courts([#329](https://github.com/freelawproject/recap/issues/329), [#313](https://github.com/freelawproject/recap-chrome/pull/313))
 
 Changes:
  - None yet

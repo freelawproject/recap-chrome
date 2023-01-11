@@ -310,9 +310,11 @@ const recapAddLatestFilingButton = (result) => {
     let dateInput = document.querySelector("[name='date_from']");
     let partyCheckbox = document.getElementById('list_of_parties_and_counsel');
     let filedCheckbox = document.querySelector('input[value="Filed"]');
+    let terminatedParties = document.getElementById('terminated_parties');
 
     dateInput.value = target.dataset.date_from;
     partyCheckbox.checked = false;
+    terminatedParties.checked = false;
     filedCheckbox.checked = true;
 
     return false;
