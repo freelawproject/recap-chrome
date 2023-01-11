@@ -1,6 +1,6 @@
 {
   "name": "recap-chrome",
-  "version": "1.2.31",
+  "version": "2.0.0",
   "description": "RECAP improves the experience of using PACER, the online public acces system for the U.S. federal courts",
   "main": " ",
   "directories": {
@@ -38,7 +38,7 @@
     "karma-jasmine": "^5.1.0",
     "karma-jasmine-ajax": "^0.1.13",
     "karma-jquery": "^0.2.4",
-    "puppeteer": "^19.4.1",
+    "puppeteer": "^19.5.0",
     "vendor-copy": "^3.0.1",
     "whatwg-fetch": "^3.6.2"
   },
