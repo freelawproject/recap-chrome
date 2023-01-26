@@ -11,8 +11,8 @@ Changes:
  - None yet
 
 Fixes:
- - None yet
- - 
+ - More robust uploading of case summary pages from appellate ([#330](https://github.com/freelawproject/recap/issues/330))
+  
 For developers:
  - Nothing yet
 
