@@ -60,9 +60,9 @@ let APPELLATE = {
     let docketNumber =
       queryParameters.get('casenum') ||
       queryParameters.get('caseNum') ||
-      queryParameters.get('recapCaseNum') ||
       (csNum1Input && csNum1Input.value) ||
-      (caseNumInput && caseNumInput.value);
+      (caseNumInput && caseNumInput.value) ||
+      queryParameters.get('recapCaseNum');
 
     return docketNumber;
   },
