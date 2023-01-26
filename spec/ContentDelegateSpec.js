@@ -403,6 +403,20 @@ describe('The ContentDelegate class', function () {
           tbody.appendChild(tr);
           table.appendChild(tbody);
           document.body.appendChild(table);
+          window.chrome = {
+            extension: { getURL: jasmine.createSpy('gerURL') },
+            storage: {
+              local: {
+                get: jasmine.createSpy().and.callFake((_, cb) => {
+                  cb({
+                    [1234]: { caseId: '531591' },
+                    options: { recap_enabled: true },
+                  });
+                }),
+                set: jasmine.createSpy('set').and.callFake(function () {}),
+              },
+            },
+          };
         });
 
         it('when not on a docket display url', function () {
@@ -430,6 +444,20 @@ describe('The ContentDelegate class', function () {
           table.appendChild(tbody);
           document.body.appendChild(table);
           history.replaceState({ uploaded: true }, '');
+          window.chrome = {
+            extension: { getURL: jasmine.createSpy('gerURL') },
+            storage: {
+              local: {
+                get: jasmine.createSpy().and.callFake((_, cb) => {
+                  cb({
+                    [1234]: { caseId: '531591' },
+                    options: { recap_enabled: true },
+                  });
+                }),
+                set: jasmine.createSpy('set').and.callFake(function () {}),
+              },
+            },
+          };
         });
 
         afterEach(function () {
@@ -463,6 +491,20 @@ describe('The ContentDelegate class', function () {
           document.body.appendChild(input);
           document.body.appendChild(input2);
           document.body.appendChild(table);
+          window.chrome = {
+            extension: { getURL: jasmine.createSpy('gerURL') },
+            storage: {
+              local: {
+                get: jasmine.createSpy().and.callFake((_, cb) => {
+                  cb({
+                    [1234]: { caseId: '531591' },
+                    options: { recap_enabled: true },
+                  });
+                }),
+                set: jasmine.createSpy('set').and.callFake(function () {}),
+              },
+            },
+          };
         });
 
         it('does not call uploadDocket', async function () {
