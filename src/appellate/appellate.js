@@ -8,6 +8,7 @@ let AppellateDelegate = function (tabId, court, url, links) {
   this.notifier = importInstance(Notifier);
   this.queryParameters = APPELLATE.getQueryParameters(this.url);
   this.docId = APPELLATE.getDocIdFromServlet(this.queryParameters.get('servlet'));
+  this.docketNumber = APPELLATE.getDocketNumber(this.queryParameters);
 };
 
 // Identify the current page using the URL and the query string,
@@ -70,11 +71,18 @@ AppellateDelegate.prototype.handleCaseSelectionPage = async function () {
   if (APPELLATE.caseSelectionPageHasOneRow()) {
     // Retrieve pacer_case_id from the Case Query link
     this.pacer_case_id = APPELLATE.getCaseIdFromCaseSelection();
-    await saveCaseIdinTabStorage({ tabId: this.tabId }, this.pacer_case_id);
 
     let dataTable = APPELLATE.getTableWithDataFromCaseSelection();
     let anchors = dataTable.querySelectorAll('a');
-    
+
+    this.docketNumber = anchors[0].innerHTML
+   
+    await updateTabStorage({
+      [this.tabId]: {
+        caseId: this.pacer_case_id,
+        docketNumber: this.docketNumber
+      },
+    });
 
     this.recap.getAvailabilityForDocket(this.court, this.pacer_case_id, null, (result) => {
       if (result.count === 1 && result.results) {
@@ -94,17 +102,22 @@ AppellateDelegate.prototype.handleCaseSelectionPage = async function () {
       }
     });
 
-    if (anchors.length == 3){
+    if (anchors.length == 3) {
       let districtLink = anchors[anchors.length - 1];
       let districtLinkData = APPELLATE.getDatafromDistrictLinkUrl(districtLink.href);
-      this.recap.getAvailabilityForDocket(districtLinkData.court, null, districtLinkData.docket_number_core, (result) => {
-        if (result.count === 1 && result.results) {
-          const rIcon = APPELLATE.makeRButtonForCases(result.results[0].absolute_url);
-          rIcon.insertAfter(districtLink);
-        } else {
-          PACER.handleDocketAvailabilityMessages(result);
+      this.recap.getAvailabilityForDocket(
+        districtLinkData.court,
+        null,
+        districtLinkData.docket_number_core,
+        (result) => {
+          if (result.count === 1 && result.results) {
+            const rIcon = APPELLATE.makeRButtonForCases(result.results[0].absolute_url);
+            rIcon.insertAfter(districtLink);
+          } else {
+            PACER.handleDocketAvailabilityMessages(result);
+          }
         }
-      });
+      );
     }
   } else {
     // Add the pacer_case_id to each docket link to use it in the docket report
@@ -137,6 +150,17 @@ AppellateDelegate.prototype.handleCaseSelectionPage = async function () {
 // Upload the case query page to RECAP
 AppellateDelegate.prototype.handleCaseQueryPage = async function () {
   this.pacer_case_id = await APPELLATE.getCaseId(this.tabId, this.queryParameters, this.docId);
+
+  if (!this.pacer_case_id) {
+    return;
+  }
+
+  await updateTabStorage({
+    [this.tabId]: {
+      caseId: this.pacer_case_id,
+      docketNumber: this.docketNumber
+    },
+  });
 
   const options = await getItemsFromStorage('options');
 
@@ -173,11 +197,11 @@ AppellateDelegate.prototype.attachRecapLinksToEligibleDocs = async function () {
   }
 
   // filter the links for the documents available on the page
-  let { links, docsToCases } = APPELLATE.findDocLinksFromAnchors(this.links, this.tabId, this.queryParameters);
+  let { links, docsToCases } = APPELLATE.findDocLinksFromAnchors(this.links, this.tabId, this.queryParameters, this.docketNumber);
 
   this.pacer_case_id = this.pacer_case_id
     ? this.pacer_case_id
-    : await APPELLATE.getCaseId(this.tabId, this.queryParameters, this.docId);
+    : await APPELLATE.getCaseId(this.tabId, this.queryParameters, this.docId, this.docketNumber);
 
   if (this.pacer_case_id && this.docId) {
     docsToCases[this.docId] = this.pacer_case_id;
@@ -185,6 +209,8 @@ AppellateDelegate.prototype.attachRecapLinksToEligibleDocs = async function () {
 
   updateTabStorage({
     [this.tabId]: {
+      caseId: this.pacer_case_id,
+      docketNumber: this.docketNumber,
       docsToCases: docsToCases,
     },
   });
@@ -240,13 +266,12 @@ AppellateDelegate.prototype.attachRecapLinksToEligibleDocs = async function () {
 };
 
 AppellateDelegate.prototype.handleDocketDisplayPage = async function () {
-  this.pacer_case_id = await APPELLATE.getCaseId(this.tabId, this.queryParameters, this.docId);
+
+  this.pacer_case_id = await APPELLATE.getCaseId(this.tabId, this.queryParameters, this.docId, this.docketNumber);
 
   if (!this.pacer_case_id) {
     return;
   }
-
-  await saveCaseIdinTabStorage({ tabId: this.tabId }, this.pacer_case_id);
 
   // Query the first table with case data and insert the RECAP actions button
   let table = document.querySelectorAll('table')[3];
@@ -334,7 +359,17 @@ AppellateDelegate.prototype.handleSingleDocumentPageView = async function () {
   overwriteFormSubmitMethod();
 
   this.pacer_case_id = await APPELLATE.getCaseId(this.tabId, this.queryParameters, this.docId);
-  await saveCaseIdinTabStorage({ tabId: this.tabId }, this.pacer_case_id);
+  
+  let title = document.querySelectorAll('strong')[1].innerHTML;
+  let dataFromTitle = APPELLATE.parseReceiptPageTitle(title);
+  this.docketNumber =  dataFromTitle.docket_number
+  
+  await updateTabStorage({
+    [this.tabId]: {
+      caseId: this.pacer_case_id,
+      docketNumber: this.docketNumber
+    },
+  });
 
   // When we receive the message from the above submit method, submit the form
   // via XHR so we can get the document before the browser does.
@@ -370,8 +405,8 @@ AppellateDelegate.prototype.onDocumentViewSubmit = function (event) {
   let title = document.querySelectorAll('strong')[1].innerHTML;
   let dataFromTitle = APPELLATE.parseReceiptPageTitle(title);
 
-  if (dataFromTitle.att_number == 0 && this.queryParameters.get('recapAttNum')){
-    dataFromTitle.att_number = this.queryParameters.get('recapAttNum')
+  if (dataFromTitle.att_number == 0 && this.queryParameters.get('recapAttNum')) {
+    dataFromTitle.att_number = this.queryParameters.get('recapAttNum');
   }
 
   if (!dataFromTitle) {
