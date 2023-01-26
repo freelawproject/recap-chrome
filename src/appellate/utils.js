@@ -22,12 +22,9 @@ let APPELLATE = {
   //   - Check inputs on the page
   //   - Check collection of docId and caseId
   //   - Check the storage
-  getCaseId: async (tabId, queryParameters, docId) => {
+  getCaseId: async (tabId, queryParameters, docId, docketNumber = null) => {
     let input = document.querySelector('input[name=caseId]');
-    let pacer_case_id =
-      queryParameters.get('caseid') ||
-      queryParameters.get('caseId') ||
-      (input && input.value);
+    let pacer_case_id = queryParameters.get('caseid') || queryParameters.get('caseId') || (input && input.value);
 
     // try to get a mapping from a pacer_doc_id in the URL to the pacer_case_id
     if (!pacer_case_id && docId) {
@@ -37,13 +34,37 @@ let APPELLATE = {
     // if the last step didn't find the caseId, It will check the storage
     if (!pacer_case_id) {
       const tabStorage = await getItemsFromStorage(tabId);
-      if (!tabStorage && !tabStorage.caseId) {
+      if (!tabStorage) {
         return;
       }
-      pacer_case_id = tabStorage.caseId;
+
+      if (!('docketNumber' in tabStorage) || !('caseId' in tabStorage)) {
+        return;
+      }
+
+      if (docketNumber == tabStorage.docketNumber) {
+        pacer_case_id = tabStorage.caseId;
+      }
     }
 
     return pacer_case_id;
+  },
+
+  // Tries to retrieve the docket number using different approches
+  //
+  //   - Check the URL's query string if its available
+  //   - Check inputs on the page
+  getDocketNumber: (queryParameters) => {
+    let caseNumInput = document.querySelector('input[name=caseNum]');
+    let csNum1Input = document.querySelector('input[name=csnum1]');
+    let docketNumber =
+      queryParameters.get('casenum') ||
+      queryParameters.get('caseNum') ||
+      queryParameters.get('recapCaseNum') ||
+      (csNum1Input && csNum1Input.value) ||
+      (caseNumInput && caseNumInput.value);
+
+    return docketNumber;
   },
 
   // Returns true if this is a "Attachment page"
@@ -76,16 +97,16 @@ let APPELLATE = {
 
   // Returns true if the case selection page has one row.
   caseSelectionPageHasOneRow: () => {
-    // The Case Selection Page from Appellate shows cases that match the user's search criteria defined 
-    // on the Case Search page. This case selection can show multiple cases and has a few hidden inputs. 
+    // The Case Selection Page from Appellate shows cases that match the user's search criteria defined
+    // on the Case Search page. This case selection can show multiple cases and has a few hidden inputs.
     // The csnum1 and csnum2 are two of them. These hidden input fields are populated in the following cases:
     //
-    // - When the Case Selection Page shows one case because the user used the Case Number/Range field 
+    // - When the Case Selection Page shows one case because the user used the Case Number/Range field
     // to find a case by case number (csnum1 is populated, csnum2 is not populated).
-    // - When the Case Selection Page shows one or more cases because the user used the Case Number/Range 
+    // - When the Case Selection Page shows one or more cases because the user used the Case Number/Range
     // field to find cases within a range of case numbers (both inputs are populated)
     //
-    // These inputs are not populated when the user have defined another criteria on the Case Search page and 
+    // These inputs are not populated when the user have defined another criteria on the Case Search page and
     // thus we will also use the number of case_ids on the page to check the number of cases listed on the page.
 
     let anchors = document.querySelectorAll('a[href*="caseid"]');
@@ -99,7 +120,7 @@ let APPELLATE = {
   // This method updates the href attribute of each Case Summary anchors.
   addCaseIdToDocketSummaryLink: () => {
     // This method extracts the pacer_case_id from each row on the Case Selection Page and appends it to
-    // the docker report link as a URL parameters so the extension can retrieve if the users select the case. 
+    // the docker report link as a URL parameters so the extension can retrieve if the users select the case.
     // Each row in the Case selection page has the following links:
     //
     //  - Link to get the Docket Report Summary (This one does not have the pacer_case_id)
@@ -107,26 +128,26 @@ let APPELLATE = {
     //  - Link to get the Case Summary for Originating Case
     //
     // The HTML structure of a row is the following:
-    //   
+    //
     //  <tr>
     //    <td>
-    //      <a href='TransportRoom?servlet=CaseSummary.jsp&amp;caseNum=20-15021'> 
-    //        20-15021 
+    //      <a href='TransportRoom?servlet=CaseSummary.jsp&amp;caseNum=20-15021'>
+    //        20-15021
     //      </a>
-    //      <a href='TransportRoom?servlet=CaseQuery.jsp&caseid=318557&csnum1=20-15021'> 
-    //        Edward Ray, Jr. v. A. Ribera, et al 
+    //      <a href='TransportRoom?servlet=CaseQuery.jsp&caseid=318557&csnum1=20-15021'>
+    //        Edward Ray, Jr. v. A. Ribera, et al
     //      </a>
     //    </td>
     //    ...
     //    <td>
-    //      <a href='https://ecf.caed.uscourts.gov/cgi-bin/DktRpt.pl?caseNumber=1:19-cv-01561-AWI-SKO'> 
-    //        1:19-cv-01561-AWI-SKO 
+    //      <a href='https://ecf.caed.uscourts.gov/cgi-bin/DktRpt.pl?caseNumber=1:19-cv-01561-AWI-SKO'>
+    //        1:19-cv-01561-AWI-SKO
     //      </a>
     //    </td>
     //  </tr>
     //
-    // The extension is able to get the pacer_case_id and saves it to the tab storage when the Case Selection 
-    // shows only a case but this approach is not possible when multiple cases are listed so this method allows 
+    // The extension is able to get the pacer_case_id and saves it to the tab storage when the Case Selection
+    // shows only a case but this approach is not possible when multiple cases are listed so this method allows
     // us to support Case Selection pages with multiple cases.
 
     document.querySelectorAll('a[href*="caseid"]').forEach((caseQueryAnchor) => {
@@ -140,13 +161,13 @@ let APPELLATE = {
     });
   },
 
-  getTableWithDataFromCaseSelection: () =>{
-    // Pages in Appellate PACER use three tables to align items in the headers (one for items on 
+  getTableWithDataFromCaseSelection: () => {
+    // Pages in Appellate PACER use three tables to align items in the headers (one for items on
     // the right side, one for items on the left side, and one table to wrap the previous ones), so
     // the 4th table is the one that lists all the cases that match the user's search criteria.
     //
     // This method uses the querySelectorAll method to get all the tables on the page and find the
-    // one with data. 
+    // one with data.
 
     let table = document.querySelectorAll('table');
 
@@ -156,12 +177,12 @@ let APPELLATE = {
       );
       return;
     }
-    return table[3]
+    return table[3];
   },
 
   // Returns caseId from href attribute of Case Query link on the Case Selection Page.
   getCaseIdFromCaseSelection: function () {
-    let dataTable = this.getTableWithDataFromCaseSelection()
+    let dataTable = this.getTableWithDataFromCaseSelection();
     if (!dataTable) return;
 
     let anchor = dataTable.querySelectorAll('a');
@@ -201,7 +222,7 @@ let APPELLATE = {
   },
 
   // Create a list of doc_ids from the list of all links available on the page
-  findDocLinksFromAnchors: function (nodeList, tabId, queryParameters) {
+  findDocLinksFromAnchors: function (nodeList, tabId, queryParameters, docketNumber) {
     let links = [];
     let docsToCases = {};
     Array.from(nodeList).map((a) => {
@@ -222,6 +243,10 @@ let APPELLATE = {
 
       if (docNum) {
         url.searchParams.set('recapDocNum', docNum);
+      }
+
+      if (docketNumber) {
+        url.searchParams.set('recapCaseNum', docketNumber);
       }
 
       // if an attachment number is found, it adds it to the link href
@@ -307,7 +332,7 @@ let APPELLATE = {
   },
 
   // Returns an object with the court Id and docket number core extracted from a link to district court
-  getDatafromDistrictLinkUrl: (url) =>{
+  getDatafromDistrictLinkUrl: (url) => {
     // Converts links to district courts like:
     //
     //   https://ecf.dcd.uscourts.gov/cgi-bin/iquery.pl?caseNumber=1:16-cv-00745-ESH
@@ -319,29 +344,29 @@ let APPELLATE = {
     //   docket_number_core: 1600745
     // }
 
-    let court = PACER.getCourtFromUrl(url)
+    let court = PACER.getCourtFromUrl(url);
 
     let queryString = url.split('?')[1];
     let queryParameters = new URLSearchParams(queryString);
     let docketNumber = queryParameters.get('caseNumber') || queryParameters.get('casenumber');
 
-    if (docketNumber){
-      docketNumber = PACER.makeDocketNumberCore(docketNumber)
+    if (docketNumber) {
+      docketNumber = PACER.makeDocketNumberCore(docketNumber);
     }
 
-    return { 
-      court: court, 
-      docket_number_core: docketNumber
-    }
+    return {
+      court: court,
+      docket_number_core: docketNumber,
+    };
   },
 
   // returns div element that contains an anchor with the RECAP icon
-  makeRButtonForCases: (url)=>{
+  makeRButtonForCases: (url) => {
     let href = `https://www.courtlistener.com${url}`;
     let recap_link = $('<a/>', {
       title: 'Docket is available for free in the RECAP Archive.',
       href: href,
-      target: '_blank'
+      target: '_blank',
     });
     recap_link.append(
       $('<img/>').attr({
@@ -352,7 +377,7 @@ let APPELLATE = {
       class: 'recap-inline-appellate',
     });
     recap_div.append(recap_link);
-    
+
     return recap_div;
-  }
+  },
 };
