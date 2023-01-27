@@ -79,13 +79,13 @@ When a new version is needed, the release process is:
 1. Update `package.json` and `manifest.json` with a new release version.
 1. Run `web-ext lint` to ensure no regressions. 
 1. Update CHANGES.md
-1. Make a new release on [Github announcing the release][ghtags].
 1. Commit the code.
 1. Tag the code with something like:
 
         git tag -s '0.8.4' -m "Releases 0.8.4, fixing replaceState and pushState to work in Chrome 43." -u 'mike@freelawproject.org' -f
         git push --tags -f
 
+1. Make a new release on [Github announcing the release][ghtags].
 1. Make sure you don't have any working/testing code in your tree that could get zipped up in the next step.
 1. Zip up the archive with the rather archaic:
 
