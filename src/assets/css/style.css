@@ -507,3 +507,16 @@ footer #version {
 .recap-filing-button > img{
   padding-top: 2px;
 }
+
+.recap-banner-inner-div{
+  display: inline-flex;
+}
+
+.recap-banner-inner-div > p{
+  margin: 0px;
+  padding: 0px 2px;
+}
+
+.recap-banner-inner-div > img{
+  margin-right: 0.25rem;
+}
