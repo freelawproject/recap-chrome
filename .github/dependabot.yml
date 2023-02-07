@@ -3,10 +3,8 @@ updates:
 - package-ecosystem: npm
   directory: "/"
   schedule:
-    interval: weekly
-    time: "13:00"
-  open-pull-requests-limit: 10
+    interval: monthly
+  # Only do security updates. Ignore everything.
+  open-pull-requests-limit: 0
   ignore:
-  - dependency-name: eslint
-    versions:
-    - 7.19.0
+  - dependency-name: '*'
