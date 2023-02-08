@@ -1,16 +1,16 @@
 // Content script to run when DOM finishes loading (run_at: "document_end").
 
-let url = window.location.href;
-let court = PACER.getCourtFromUrl(url);
+var url = window.location.href;
+var court = PACER.getCourtFromUrl(url);
 
 // Create a delegate for handling the various states we might be in.
-let path = window.location.pathname;
+var path = window.location.pathname;
 // Referrer is used here because typically the URL that has the pacer_case_id is
 // the one that with the form that generates the docket.
-let pacer_case_id =
+var pacer_case_id =
   PACER.getCaseNumberFromInputs(url, document) || PACER.getCaseNumberFromUrls([url, document.referrer]);
-let pacer_doc_id = PACER.getDocumentIdFromForm(url, document) || PACER.getDocumentIdFromUrl(url);
-let links = document.body.getElementsByTagName('a');
+var pacer_doc_id = PACER.getDocumentIdFromForm(url, document) || PACER.getDocumentIdFromUrl(url);
+var links = document.body.getElementsByTagName('a');
 
 // seed the content_delegate with the tabId by using the message
 // returned from the background worker
@@ -109,11 +109,11 @@ function handleRedactionConfirmation(mutationRecords) {
 }
 
 // Query relevant inputs in the page.
-let caseNumberInput = document.getElementById('case_number_text_area_0');
-let allCaseInput = document.getElementById('all_case_ids');
+var caseNumberInput = document.getElementById('case_number_text_area_0');
+var allCaseInput = document.getElementById('all_case_ids');
 
 // Query the body content of the first table on the page.
-let tableBody = document.querySelector('tbody');
+var tableBody = document.querySelector('tbody');
 
 if (allCaseInput) {
   // create a mutation observer to watch for changes being made to

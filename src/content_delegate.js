@@ -14,7 +14,7 @@
 //  onDownloadAllSubmit
 //  handleZipFilePageView
 
-let ContentDelegate = function (tabId, url, path, court, pacer_case_id, pacer_doc_id, links) {
+var ContentDelegate = function (tabId, url, path, court, pacer_case_id, pacer_doc_id, links) {
   this.tabId = tabId;
   this.url = url;
   this.path = path;
@@ -139,7 +139,7 @@ ContentDelegate.prototype.findAndStorePacerDocIds = async function () {
   for (let i = 0; i < this.links.length; i++) {
     let link = this.links[i];
     if (PACER.isDocumentUrl(link.href)) {
-      let pacer_doc_id = PACER.getDocumentIdFromUrl(link.href);
+      var pacer_doc_id = PACER.getDocumentIdFromUrl(link.href);
       $(link).data('pacer_doc_id', pacer_doc_id);
       this.pacer_doc_ids.push(pacer_doc_id);
 
@@ -508,7 +508,7 @@ ContentDelegate.prototype.attachRecapLinkToEligibleDocs = function () {
         `RECAP: Got results from API. Running callback on API results to ` + `attach links and icons where appropriate.`
       );
       for (let i = 0; i < this.links.length; i++) {
-        let pacer_doc_id = $(this.links[i]).data('pacer_doc_id');
+        var pacer_doc_id = $(this.links[i]).data('pacer_doc_id');
         if (!pacer_doc_id) {
           continue;
         }
@@ -557,7 +557,7 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
   };
 
   // helper function - returns filename based on user preferences
-  const generateFileName = (options, pacerCaseId) => {
+  var generateFileName = (options, pacerCaseId) => {
     if (options.ia_style_filenames) {
       return ['gov', 'uscourts', this.court, pacerCaseId || 'unknown-case-id'].join('.').concat('.zip');
     } else if (options.lawyer_style_filenames) {
@@ -651,7 +651,7 @@ ContentDelegate.prototype.handleZipFilePageView = function () {
   // "Download Documents" buttons
   const inputs = [...document.getElementsByTagName('input')];
   const targetInputs = inputs.filter((input) => input.type === 'button' && input.value === 'Download Documents');
-  const url = targetInputs[0]
+  var url = targetInputs[0]
     .getAttribute('onclick')
     .replace(/p.*\//, '') // remove parent.location='/cgi-bin/
     .replace(/\'(?=$)/, ''); // remove endquote

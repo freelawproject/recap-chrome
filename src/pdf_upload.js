@@ -1,4 +1,4 @@
-const overwriteFormSubmitMethod = () => {
+var overwriteFormSubmitMethod = () => {
   // Monkey-patch the <form> prototype so its submit() method sends a message
   // instead of submitting the form.  To do this in the page context instead
   // of this script's, we inject a <script> element.
@@ -12,7 +12,7 @@ const overwriteFormSubmitMethod = () => {
   document.body.appendChild(script);
 };
 
-const copyPDFDocumentPage = () => {
+var copyPDFDocumentPage = () => {
   // Save a copy of the page, altered so that the "View Document"
   // button goes forward in the history instead of resubmitting the form.
   let originalForm = document.forms[0];
@@ -24,7 +24,7 @@ const copyPDFDocumentPage = () => {
   return previousPageHtml;
 };
 
-const downloadDataFromIframe = async (match, tabId) => {
+var downloadDataFromIframe = async (match, tabId) => {
   // Download the file from the <iframe> URL.
   const browserSpecificFetch =
     navigator.userAgent.indexOf('Safari') + navigator.userAgent.indexOf('Chrome') < 0 ? content.fetch : window.fetch;
@@ -37,7 +37,7 @@ const downloadDataFromIframe = async (match, tabId) => {
   return blob;
 };
 
-const generateFileName = (options, court, pacer_case_id, docket_number, document_number, attachment_number) => {
+var generateFileName = (options, court, pacer_case_id, docket_number, document_number, attachment_number) => {
   // Computes a name for the file using the configuration from RECAP options
   let filename, pieces;
   if (options.ia_style_filenames) {
@@ -57,12 +57,12 @@ const generateFileName = (options, court, pacer_case_id, docket_number, document
   return filename;
 };
 
-const showWaitingMessage = (match) => {
+var showWaitingMessage = (match) => {
   // Show the page with a blank <iframe> while waiting for the download.
   document.documentElement.innerHTML = `${match[1]}<p id="recap-waiting">Waiting for download...</p><iframe src="about:blank"${match[3]}`;
 };
 
-const displayPDFOrSaveIt = (options, filename, match, blob, blobUrl) => {
+var displayPDFOrSaveIt = (options, filename, match, blob, blobUrl) => {
   // display the PDF in the provided <iframe>, or, if external_pdf is set,
   // save it using FileSaver.js's saveAs().
   let external_pdf = options.external_pdf;
@@ -90,7 +90,7 @@ const displayPDFOrSaveIt = (options, filename, match, blob, blobUrl) => {
   }
 };
 
-const handleDocFormResponse = function (type, ab, xhr, previousPageHtml, dataFromReceipt) {
+var handleDocFormResponse = function (type, ab, xhr, previousPageHtml, dataFromReceipt) {
   console.info(`RECAP: Successfully submitted RECAP "View" button form: ${xhr.statusText}`);
 
   const blob = new Blob([new Uint8Array(ab)], { type: type });
@@ -116,7 +116,7 @@ const handleDocFormResponse = function (type, ab, xhr, previousPageHtml, dataFro
       // https://github.com/freelawproject/recap/issues/277
       const redirectResult = Array.from(html.matchAll(/window\.location\s*=\s*["']([^"']+)["'];?/g));
       if (redirectResult.length > 0) {
-        const url = redirectResult[0][1];
+        var url = redirectResult[0][1];
         html = PACER.makeFullPageIFrame(url);
       }
       this.showPdfPage(
@@ -131,7 +131,7 @@ const handleDocFormResponse = function (type, ab, xhr, previousPageHtml, dataFro
   }
 };
 
-const handleFreeDocResponse = async function (type, ab, xhr) {
+var handleFreeDocResponse = async function (type, ab, xhr) {
   if (type === 'application/pdf') {
     let blob = new Blob([new Uint8Array(ab)], { type: type });
     let dataUrl = await blobToDataURL(blob);
@@ -150,7 +150,7 @@ const handleFreeDocResponse = async function (type, ab, xhr) {
   window.location.href = this.href;
 };
 
-const showAndUploadPdf = async function (
+var showAndUploadPdf = async function (
   html_elements,
   previousPageHtml,
   document_number,
@@ -180,7 +180,7 @@ const showAndUploadPdf = async function (
 
   let blob = await downloadDataFromIframe(match, this.tabId);
   let blobUrl = URL.createObjectURL(blob);
-  let pacer_case_id;
+  var pacer_case_id;
 
   if (attachment_number && PACER.isAppellateCourt(this.court)) {
     pacer_case_id = this.pacer_case_id

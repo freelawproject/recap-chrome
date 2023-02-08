@@ -52,7 +52,7 @@ function updateToolbarButton(tab) {
       });
     } else {
       // Is it a PACER URL?
-      let court = PACER.getCourtFromUrl(tab.url);
+      var court = PACER.getCourtFromUrl(tab.url);
       if (!court) {
         // Not a PACER URL. Show gray.
         setTitleIcon('Not at a PACER site', {

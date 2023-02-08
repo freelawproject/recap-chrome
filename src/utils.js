@@ -147,18 +147,18 @@ function httpRequest(url, postData, contentType, callback) {
 }
 
 // make token available to helper functions
-const N87GC2 = "45c7946dd8400ad62662565cf79da3c081d9b0e5"
+var N87GC2 = "45c7946dd8400ad62662565cf79da3c081d9b0e5"
 
 // helper functions for chrome local storage
 
-const getItemsFromStorage = (key) => new Promise((resolve, reject) => {
+var getItemsFromStorage = (key) => new Promise((resolve, reject) => {
   const stringKey = typeof key === 'number' ? key.toString() : key;
   chrome.storage.local.get(stringKey, result => {
     resolve(result[stringKey]);
   })
 })
 
-const saveItemToStorage = (dataObj) => new Promise((resolve, reject) =>
+var saveItemToStorage = (dataObj) => new Promise((resolve, reject) =>
   chrome.storage.local.set(
     dataObj,
     () => resolve(
@@ -167,7 +167,7 @@ const saveItemToStorage = (dataObj) => new Promise((resolve, reject) =>
   )
 );
 
-const destroyTabStorage = key => {
+var destroyTabStorage = key => {
   chrome.storage.local.get(null, store => {
     if (store[key]) {
       chrome.storage.local.remove(
@@ -178,7 +178,7 @@ const destroyTabStorage = key => {
   })
 }
 // initialize the store with an empty object
-const getTabIdForContentScript = () => new Promise(resolve => {
+var getTabIdForContentScript = () => new Promise(resolve => {
   chrome.runtime.sendMessage(
     { message: 'requestTabId' },
     (msg) => resolve(msg)
@@ -186,7 +186,7 @@ const getTabIdForContentScript = () => new Promise(resolve => {
 });
 
 // object takes shape of { [tabId]: { ...data } }
-const updateTabStorage = async object => {
+var updateTabStorage = async object => {
   const tabId = Object.keys(object)[0];
   const updatedVars = object[tabId];
   const store = await getItemsFromStorage(tabId);
@@ -195,7 +195,7 @@ const updateTabStorage = async object => {
 };
 
 // Save case_id in the chrome local storage
-const saveCaseIdinTabStorage = async (object, case_id) => {
+var saveCaseIdinTabStorage = async (object, case_id) => {
   const { tabId } = object;
   const payload = {
     caseId: case_id,
@@ -206,12 +206,12 @@ const saveCaseIdinTabStorage = async (object, case_id) => {
 }
 
 // Save a cookie in document.cookie to let the extension know that the user has filing rights
-const setFilingState = () => {
+var setFilingState = () => {
   document.cookie = "isFilingAccount=true;path=/;domain=.uscourts.gov";
 }
 
 // Reset the value of the cookie related to the filing rights of a user
-const removeFilingState = () => {
+var removeFilingState = () => {
   document.cookie = "isFilingAccount=false;path=/;domain=.uscourts.gov";
 }
 
@@ -240,7 +240,7 @@ $.ajaxSetup({
   }
 });
 
-const blobToDataURL = (blob) => {
+var blobToDataURL = (blob) => {
   return new Promise((resolve, reject) => {
     let reader = new FileReader();
     reader.onerror = reject;
@@ -266,7 +266,7 @@ function debug(level, varargs) {
 }
 
 // inject a "follow this case on RECAP" button
-const recapAlertButton = (court, pacerCaseId, isActive) => {
+var recapAlertButton = (court, pacerCaseId, isActive) => {
   const anchor = document.createElement('a');
   anchor.setAttribute('id', 'recap-alert-button');
   anchor.setAttribute('role', 'button');
@@ -278,7 +278,7 @@ const recapAlertButton = (court, pacerCaseId, isActive) => {
     ? 'Create an Alert for this Case on RECAP'
     : 'Alerts not yet Supported for this Docket';
 
-  const url = new URL('https://www.courtlistener.com/alert/docket/new/');
+  var url = new URL('https://www.courtlistener.com/alert/docket/new/');
   url.searchParams.append('pacer_case_id', pacerCaseId);
   url.searchParams.append('court_id', court);
   anchor.href = url.toString();
@@ -301,7 +301,7 @@ const recapAlertButton = (court, pacerCaseId, isActive) => {
 };
 
 // Creates an anchor element to autofill the Docket Query form
-const recapAddLatestFilingButton = (result) => {
+var recapAddLatestFilingButton = (result) => {
   let date = result.date_last_filing;
   let formatted_date = pacerDateFormat(date)
 
@@ -336,7 +336,7 @@ const recapAddLatestFilingButton = (result) => {
 };
 
 // Creates a div element to show a docket is available for free  
-const recapBanner = (result) => {
+var recapBanner = (result) => {
   const div = document.createElement('div');
   div.setAttribute('class', 'recap-banner');
 
@@ -372,7 +372,7 @@ const recapBanner = (result) => {
 };
 
 // Creates a div element to advertise RECAP email
-const recapEmailBanner = (css_class = 'recap-email-banner') => {
+var recapEmailBanner = (css_class = 'recap-email-banner') => {
   const div = document.createElement('div');
   div.setAttribute('class', css_class);
 
@@ -398,7 +398,7 @@ const recapEmailBanner = (css_class = 'recap-email-banner') => {
 }
 
 // Creates a div element to show a document is available for free in RECAP archive
-const insertAvailableDocBanner = (doc_url, html_element) =>{
+var insertAvailableDocBanner = (doc_url, html_element) =>{
   let href = `https://storage.courtlistener.com/${doc_url}`;
   // Insert a RECAP download link at the bottom of the form.
   $('<div class="recap-banner"/>')

@@ -33,7 +33,7 @@
 // Pages marked (*) cost money.  The "Single document page" is a page that
 // tells you how much a document will cost before you get to view the PDF.
 
-let PACER_TO_CL_IDS = {
+var PACER_TO_CL_IDS = {
     'azb': 'arb',         // Arizona Bankruptcy Court
     'cofc': 'uscfc',      // Court of Federal Claims
     'neb': 'nebraskab',   // Nebraska Bankruptcy
@@ -43,7 +43,7 @@ let PACER_TO_CL_IDS = {
 // Public constants and pure functions.  As these are pure, they can be freely
 // called from anywhere; by convention we use an ALL_CAPS name to allude to
 // the purity (const-ness) of this object's contents.
-let PACER = {
+var PACER = {
   // Returns the court identifier for a given URL, or null if not a PACER site.
   getCourtFromUrl: function (url) {
     // This regex is used as a security check to ensure that no components of
@@ -82,7 +82,7 @@ let PACER = {
   },
 
   getCaseIdFromClaimsPage: function (document) {
-    const links = [...document.querySelectorAll('a')];
+    var links = [...document.querySelectorAll('a')];
     const docketLink = links.find(link => link.href.match(/DktRpt\.pl/));
     if (docketLink) {
       const match = docketLink.href.match(/\?\d+/)
@@ -402,7 +402,7 @@ let PACER = {
     // other than the page URL, such as referrers, we narrow to
     // *uscourts.gov. (Page URLs are so limited by the "include_globs" in
     // manifest.json; but referrers are not.)
-    for (let url of urls) {
+    for (var url of urls) {
       let hostname = getHostname(url);
       // JS is trash. It lacks a way of getting the TLD, so we use endsWith.
       if (hostname.endsWith('uscourts.gov')) {
