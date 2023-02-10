@@ -170,6 +170,10 @@ footer #version {
   color: #aaa;
 }
 
+.d-inline-flex{
+  display: inline-flex !important;
+}
+
 .recap-email-banner-full{
   font-family: helvetica, arial, serif;
   font-size: 13px;
@@ -508,15 +512,11 @@ footer #version {
   padding-top: 2px;
 }
 
-.recap-banner-inner-div{
-  display: inline-flex;
-}
-
-.recap-banner-inner-div > p{
+.banner-message > p {
   margin: 0px;
   padding: 0px 2px;
 }
 
-.recap-banner-inner-div > img{
+.banner-message > img{
   margin-right: 0.25rem;
 }
