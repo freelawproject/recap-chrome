@@ -364,6 +364,9 @@ const recapBanner = (result) => {
   let message = `View and Search this docket as of ${time.outerHTML} for free from RECAP`;
   let innerDiv = makeMessageForBanners(message)
 
+  const small = document.createElement('small');
+  small.innerText = 'Note that archived dockets may be out of date';
+  
   anchor.append(innerDiv)
 
   div.appendChild(anchor);
