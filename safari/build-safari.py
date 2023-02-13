@@ -1,4 +1,3 @@
-import glob
 import json
 import os
 import plistlib
@@ -80,38 +79,6 @@ def update_css_and_macOS_html(operating_system: str) -> None:
         shutil.copyfile(src, dst)
 
 
-def update_js_files(operating_system: str):
-    """ Wrap JS files into a function to avoid being called multiple times. 
-
-    Safari injects JS files multiple times generating variables being duplicated
-    so this method wraps the indicated JS files in a method that avoid being 
-    executed multiple times.
-
-    :param operating_system: The OS to update the plist for
-    :return: None
-    """
-    
-    if operating_system == "iOS":
-        path = "iOS/Recap!/Recap! Extension/Resources/assets/js/bootstrap.bundle.js"
-    
-    if operating_system == "macOS":
-        path = "macOS/Recap!/Recap! Extension/Resources/assets/js/bootstrap.bundle.js"
-
-    for file in glob.glob(path):
-        with open(file, 'r+') as f:
-            lines = f.readlines()
-            f.seek(0)
-            line1 = "if (typeof injectedYet === 'undefined') { \n"
-            line2 = "// the script has not been injected, so we can run it  \n"
-            line3 = "var injectedYet = 1; \n\n"
-            f.writelines([line1, line2, line3])
-            for line in lines:
-                f.write(line)
-            line4 = "\n}"
-            f.writelines([line4])
-            f.close()
-
-
 def convert_recap_chrome_to_safari(operating_system: str) -> None:
     """Generate an iOS and macOS version of the extension.
 
@@ -144,10 +111,6 @@ def convert_recap_chrome_to_safari(operating_system: str) -> None:
 
     # Update CSS for iOS
     update_css_and_macOS_html(operating_system)
-
-    # Update JS files for each OS
-    update_js_files(operating_system)
-
 
 if __name__ == "__main__":
     if sys.platform != "darwin":
