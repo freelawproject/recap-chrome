@@ -24,6 +24,7 @@
     "notifications",
     "storage",
     "unlimitedStorage",
+    "activeTab",
     "tabs",
     "cookies"
   ],
@@ -44,24 +45,6 @@
     "css": [
       "assets/css/style.css",
       "assets/css/font-awesome.css"
-    ],
-    "js": [
-      "assets/js/jquery.js",
-      "assets/js/FileSaver.js",
-      "assets/js/moment.js",
-      "assets/js/livestamp.js",
-      "assets/js/bootstrap.bundle.js",
-      "action_button.js",
-      "pdf_upload.js",
-      "utils.js",
-      "notifier.js",
-      "toolbar_button.js",
-      "pacer.js",
-      "recap.js",
-      "content_delegate.js",
-      "appellate/utils.js",
-      "appellate/appellate.js",
-      "content.js"
     ],
     "run_at": "document_end"
   }, {
