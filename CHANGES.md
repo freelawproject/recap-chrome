@@ -5,16 +5,25 @@
 The following changes are not yet released, but are code complete:
 
 Features:
- - Uncheck terminates parties field of docket query form in district courts([#329](https://github.com/freelawproject/recap/issues/329), [#313](https://github.com/freelawproject/recap-chrome/pull/313))
+ - Nothing yet
 
 Changes:
  - None yet
 
 Fixes:
- - More robust uploading of case summary pages from appellate ([#330](https://github.com/freelawproject/recap/issues/330))
-  
+ - Nothing yet
+
 For developers:
  - Nothing yet
+
+
+## 2.0.1 (2023-01-26)
+
+Changes:
+ - Uncheck terminates parties field of docket query form in district courts([#329](https://github.com/freelawproject/recap/issues/329), [#313](https://github.com/freelawproject/recap-chrome/pull/313))
+
+Fixes:
+ - More robust uploading of case summary pages from appellate ([#330](https://github.com/freelawproject/recap/issues/330))
 
 
 ## 2.0.0 (2023-01-10)
