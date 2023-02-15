@@ -265,6 +265,24 @@ function debug(level, varargs) {
   }
 }
 
+// Creates a div element with the recap logo and a message
+const makeMessageForBanners = (text) =>{
+  const innerDiv = document.createElement('div');
+  innerDiv.classList.add("d-inline-flex");
+  innerDiv.classList.add("banner-message");
+  
+  const img = document.createElement('img');
+  img.src = chrome.extension.getURL('assets/images/icon-16.png');
+
+  const p = document.createElement('p');
+  p.innerHTML = text;
+
+  innerDiv.appendChild(img);
+  innerDiv.appendChild(p);
+
+  return innerDiv
+}
+
 // inject a "follow this case on RECAP" button
 const recapAlertButton = (court, pacerCaseId, isActive) => {
   const anchor = document.createElement('a');
@@ -282,9 +300,14 @@ const recapAlertButton = (court, pacerCaseId, isActive) => {
   url.searchParams.append('pacer_case_id', pacerCaseId);
   url.searchParams.append('court_id', court);
   anchor.href = url.toString();
+  
   const img = document.createElement('img');
   img.src = chrome.extension.getURL(`assets/images/${icon}-16.png`);
-  anchor.innerHTML = `${img.outerHTML} ${text}`;
+
+  let innerDiv = makeMessageForBanners(text)
+ 
+  anchor.append(innerDiv)
+  
   return anchor;
 };
 
@@ -302,7 +325,7 @@ const recapAddLatestFilingButton = (result) => {
   const img = document.createElement('img');
   img.src = chrome.extension.getURL('assets/images/icon-16.png');
 
-  anchor.innerHTML = `${img.outerHTML}`;
+  anchor.appendChild(img);
 
   anchor.onclick = function (e) {
     let target = e.currentTarget || e.target;
@@ -332,18 +355,19 @@ const recapBanner = (result) => {
   anchor.title = 'Docket is available for free in the RECAP Archive.';
   anchor.target = '_blank';
   anchor.href = `https://www.courtlistener.com${result.absolute_url}`
-  const img = document.createElement('img');
-  img.src = chrome.extension.getURL('assets/images/icon-16.png');
+  
   const time = document.createElement('time');
   time.setAttribute('data-livestamp', result.date_modified);
   time.setAttribute('title', result.date_modified);
   time.innerHTML = result.date_modified;
-  const anchorHtml = `${img.outerHTML} View and Search this docket as of ${time.outerHTML} for free from RECAP`;
+
+  let message = `View and Search this docket as of ${time.outerHTML} for free from RECAP`;
+  let innerDiv = makeMessageForBanners(message)
 
   const small = document.createElement('small');
   small.innerText = 'Note that archived dockets may be out of date';
-
-  anchor.innerHTML = anchorHtml;
+  
+  anchor.append(innerDiv)
 
   div.appendChild(anchor);
   div.appendChild(document.createElement('br'));
@@ -360,10 +384,10 @@ const recapEmailBanner = (css_class = 'recap-email-banner') => {
   anchor.target = '_blank';
   anchor.href = `https://www.courtlistener.com/help/recap/email/`
 
-  const img = document.createElement('img');
-  img.src = chrome.extension.getURL('assets/images/icon-16.png');
-
-  anchor.innerHTML = `${img.outerHTML} Use @recap.email to automatically contribute all your cases to RECAP.`;
+  let message = 'Use @recap.email to automatically contribute all your cases to RECAP.'
+  let innerDiv = makeMessageForBanners(message)
+  
+  anchor.appendChild(innerDiv)
   div.appendChild(anchor);
   return div
 }

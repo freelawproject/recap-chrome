@@ -11,7 +11,7 @@ Changes:
  - None yet
 
 Fixes:
- - Nothing yet
+ - Support for Safari on macOS and iPhone([#332](https://github.com/freelawproject/recap/issues/332)).
 
 For developers:
  - Nothing yet

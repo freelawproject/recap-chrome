@@ -78,6 +78,7 @@ def update_css_and_macOS_html(operating_system: str) -> None:
         dst = f"macOS/Recap!/Recap!/Base.lproj/Main.html"
         shutil.copyfile(src, dst)
 
+
 def convert_recap_chrome_to_safari(operating_system: str) -> None:
     """Generate an iOS and macOS version of the extension.
 
@@ -110,7 +111,6 @@ def convert_recap_chrome_to_safari(operating_system: str) -> None:
 
     # Update CSS for iOS
     update_css_and_macOS_html(operating_system)
-
 
 if __name__ == "__main__":
     if sys.platform != "darwin":

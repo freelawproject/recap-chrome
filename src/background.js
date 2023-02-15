@@ -1,3 +1,23 @@
+const CONTENT_SCRIPT_FILES = [
+  'InjectManager.js',
+  'assets/js/jquery.js',
+  'assets/js/FileSaver.js',
+  'assets/js/moment.js',
+  'assets/js/livestamp.js',
+  'assets/js/bootstrap.bundle.js',
+  'action_button.js',
+  'pdf_upload.js',
+  'utils.js',
+  'notifier.js',
+  'toolbar_button.js',
+  'pacer.js',
+  'recap.js',
+  'content_delegate.js',
+  'appellate/utils.js',
+  'appellate/appellate.js',
+  'content.js',
+];
+
 // Make services callable from content scripts.
 exportInstance(Notifier);
 exportInstance(Recap);
@@ -84,6 +104,26 @@ function showNotificationTab(details){
   }
 }
 
+async function injectContentScript(tabId, status, url) {
+  if (status == 'complete' && PACER.getCourtFromUrl(url)) {
+    chrome.tabs.sendMessage(tabId, { message: 'content_script_status' }, function (msg) {
+      if (chrome.runtime.lastError) {
+        console.info(`RECAP: Content scripts are not loaded yet`);
+      }
+      msg = msg || {};
+      if (msg.status != 'loaded') {
+        console.info(`RECAP: Injecting content scripts`);
+        for (var script of CONTENT_SCRIPT_FILES) {
+          chrome.tabs.executeScript(tabId, {
+            file: script,
+            allFrames: false,
+          });
+        }
+      }
+    });
+  }
+}
+
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.message === 'requestTabId') {
     sendResponse({ tabId: sender.tab.id });
@@ -113,8 +153,9 @@ chrome.runtime.onInstalled.addListener(setDefaultOptions);
 chrome.runtime.onInstalled.addListener(showNotificationTab);
 
 // Watches all the tabs so we can update their toolbar buttons on navigation.
-chrome.tabs.onUpdated.addListener(function (tabId, details, tab) {
+chrome.tabs.onUpdated.addListener(async function (tabId, details, tab) {
   updateToolbarButton(tab);
+  await injectContentScript(tabId, details.status, tab.url);
 });
 chrome.tabs.onActivated.addListener(function(activeInfo){
   getTabById(activeInfo.tabId, updateToolbarButton);
