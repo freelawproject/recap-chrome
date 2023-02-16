@@ -12,7 +12,7 @@ def update_extension_plist(operating_system: str):
     :param operating_system: The OS to update the plist for
     :return: None
     """
-    with open(f"{operating_system}/Recap!/Recap! Extension/Info.plist", "rb") as f:
+    with open(f"{operating_system}/Recap/Recap Extension/Info.plist", "rb") as f:
         p = plistlib.loads(f.read())
     p["NSExtension"]["SFSafariPageProperties"] = {
         "Level": "Some",
@@ -23,7 +23,7 @@ def update_extension_plist(operating_system: str):
             "*.uscourts.gov",
         ],
     }
-    with open(f"{operating_system}/Recap!/Recap! Extension/Info.plist", "wb") as f:
+    with open(f"{operating_system}/Recap/Recap Extension/Info.plist", "wb") as f:
         plistlib.dump(p, fp=f)
 
 
@@ -38,10 +38,10 @@ def update_manifest_files(operating_system: str) -> None:
 
     #This runs XC (Xcode) commandline tool to automate the build and versions numbers.
     os.system(
-        f"cd {operating_system}/Recap! && xcrun agvtool new-version {manifest['version']}"
+        f"cd {operating_system}/Recap && xcrun agvtool new-version {manifest['version']}"
     )
     os.system(
-        f"cd {operating_system}/Recap! && xcrun agvtool new-marketing-version {manifest['version']}"
+        f"cd {operating_system}/Recap && xcrun agvtool new-marketing-version {manifest['version']}"
     )
 
     manifest["permissions"] = [
@@ -57,7 +57,7 @@ def update_manifest_files(operating_system: str) -> None:
         manifest["background"]["persistent"] = False
 
     with open(
-        f"{operating_system}/Recap!/Recap! Extension/Resources/manifest.json", "w"
+        f"{operating_system}/Recap/Recap Extension/Resources/manifest.json", "w"
     ) as f:
         json.dump(manifest, f, indent=2)
 
@@ -69,13 +69,17 @@ def update_css_and_macOS_html(operating_system: str) -> None:
     :return: None
     """
     if operating_system == "iOS":
-        src = f"iOS/Recap!/Recap! Extension/Resources/assets/css/style-ios.css"
-        dst = f"iOS/Recap!/Recap! Extension/Resources/assets/css/style.css"
+        src = f"iOS/Recap/Recap Extension/Resources/assets/css/style-ios.css"
+        dst = f"iOS/Recap/Recap Extension/Resources/assets/css/style.css"
         os.rename(src, dst)
+
+        src = f"resources/recap-iOS.html"
+        dst = f"iOS/Recap/Recap/Base.lproj/Main.html"
+        shutil.copyfile(src, dst)
 
     if operating_system == "macOS":
         src = f"resources/recap-macOS.html"
-        dst = f"macOS/Recap!/Recap!/Base.lproj/Main.html"
+        dst = f"macOS/Recap/Recap/Base.lproj/Main.html"
         shutil.copyfile(src, dst)
 
 
@@ -94,7 +98,7 @@ def convert_recap_chrome_to_safari(operating_system: str) -> None:
     os.system(
         f"xcrun safari-web-extension-converter {os.getcwd()}/../src/ "
         f"--project-location {operating_system}/ "
-        f"--app-name Recap! "
+        f"--app-name Recap "
         f"--bundle-identifier free.law.recap "
         f"--no-open "
         f"--force "
