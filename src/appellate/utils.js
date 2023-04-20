@@ -159,9 +159,9 @@ let APPELLATE = {
       // attribute allow us to get the desired HTML element.
       let caseSummaryAnchor = caseQueryAnchor.parentElement.firstChild;
       // This has the side effect of making this URL absolute, when it may have started out relative.
-      summaryUrl = new URL(window.location, caseSummaryAnchor.href);
+      let summaryUrl = new URL(window.location, caseSummaryAnchor.href);
       summaryUrl.searchParams.set('caseId', caseId);
-      caseSummaryAnchor.setAttribute('href', summaryURL);
+      caseSummaryAnchor.setAttribute('href', summaryUrl);
     });
   },
 
