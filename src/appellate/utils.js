@@ -151,13 +151,17 @@ let APPELLATE = {
     // us to support Case Selection pages with multiple cases.
 
     document.querySelectorAll('a[href*="caseid"]').forEach((caseQueryAnchor) => {
-      let params = new URLSearchParams(caseQueryAnchor.href);
-      let caseId = params.get('caseId') || params.get('caseid');
+      let queryUrl = new URL(window.location, caseQueryAnchor.href);
+      let queryParams = queryUrl.searchParams;
+      let caseId = queryParams.get('caseId') || queryParams.get('caseid');
       // the Docket Report and the Case Query links are enclosed by the same HTML tag and the anchor for
       // the Docket Report is the first element inside this tag so using the parentElement and the firstChild
       // attribute allow us to get the desired HTML element.
       let caseSummaryAnchor = caseQueryAnchor.parentElement.firstChild;
-      caseSummaryAnchor.setAttribute('href', `${caseSummaryAnchor.href}&caseId=${caseId}`);
+      // This has the side effect of making this URL absolute, when it may have started out relative.
+      summaryUrl = new URL(window.location, caseSummaryAnchor.href);
+      summaryUrl.searchParams.set('caseId', caseId);
+      caseSummaryAnchor.setAttribute('href', summaryURL);
     });
   },
 
@@ -194,8 +198,8 @@ let APPELLATE = {
       return;
     }
 
-    let queryString = anchor[1].href.split('?')[1];
-    let queryParameters = new URLSearchParams(queryString);
+    let url = new URL(window.location, anchor[1].href);
+    let queryParameters = url.searchParams;
     let caseId = queryParameters.get('caseid') || queryParameters.get('caseId');
 
     return caseId;
