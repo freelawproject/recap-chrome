@@ -158,6 +158,8 @@ let APPELLATE = {
       // attribute allow us to get the desired HTML element.
       let caseSummaryAnchor = caseQueryAnchor.parentElement.firstChild;
       caseSummaryAnchor.setAttribute('href', `${caseSummaryAnchor.href}&caseId=${caseId}`);
+      caseSummaryAnchor.dataset.recap = 'Modified by RECAP Extension to add caseId attribute.';
+      caseSummaryAnchor.classList.add('recap_modified');
     });
   },
 
