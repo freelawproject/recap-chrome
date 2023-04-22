@@ -158,6 +158,8 @@ let APPELLATE = {
       // attribute allow us to get the desired HTML element.
       let caseSummaryAnchor = caseQueryAnchor.parentElement.firstChild;
       caseSummaryAnchor.setAttribute('href', `${caseSummaryAnchor.href}&caseId=${caseId}`);
+      caseSummaryAnchor.dataset.recap = 'Modified by RECAP Extension to add caseId attribute.';
+      caseSummaryAnchor.classList.add('recap_modified');
     });
   },
 
@@ -272,14 +274,14 @@ let APPELLATE = {
       // store extra information on anchors to use it while handling the onClick listener
       let docId = PACER.getDocumentIdFromUrl(clonedNode.href);
 
-      clonedNode.setAttribute('data-pacer_doc_id', docId);
+      clonedNode.dataset.pacerDocId = docId;
       if (doDoc && doDoc.doc_id) {
-        clonedNode.setAttribute('data-pacer_dls_id', doDoc.doc_id);
+        clonedNode.dataset.pacerDlsId = doDoc.doc_id;
       }
-      clonedNode.setAttribute('data-pacer_case_id', pacerCaseId);
-      clonedNode.setAttribute('data-pacer_tab_id', tabId);
-      clonedNode.setAttribute('data-document_number', docNum ? docNum : docId);
-      clonedNode.setAttribute('data-attachment_number', attNumber);
+      clonedNode.dataset.pacerCaseId = pacerCaseId;
+      clonedNode.dataset.pacerTabId = tabId;
+      clonedNode.dataset.documentNumber = docNum ? docNum : docId;
+      clonedNode.dataset.attachmentNumber = attNumber;
 
       links.push(docId);
     });

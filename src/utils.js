@@ -319,7 +319,7 @@ const recapAddLatestFilingButton = (result) => {
   const anchor = document.createElement('a');
   anchor.classList.add('recap-filing-button');
   anchor.title = 'Autofill the form to get the latest content not yet in RECAP, omitting parties and member cases.';
-  anchor.setAttribute('data-date_from', formatted_date);
+  anchor.dataset.dateFrom = formatted_date;
   anchor.href = '#';
 
   const img = document.createElement('img');
@@ -357,7 +357,7 @@ const recapBanner = (result) => {
   anchor.href = `https://www.courtlistener.com${result.absolute_url}`
   
   const time = document.createElement('time');
-  time.setAttribute('data-livestamp', result.date_modified);
+  time.dataset.livestamp = result.date_modified;
   time.setAttribute('title', result.date_modified);
   time.innerHTML = result.date_modified;
 
