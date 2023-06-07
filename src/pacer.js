@@ -64,11 +64,18 @@ let PACER = {
   },
 
   // Returns true if the given URL looks like a link to a PACER document.
-  // For CMECF District:
-  //   https://ecf.dcd.uscourts.gov/doc1/04503837920
-  // For CMECF Appellate:
-  //   https://ecf.ca2.uscourts.gov/docs1/00205695758
   isDocumentUrl: function (url) {
+    // This function will return true for the following URLs:
+    //
+    //  - Claims:
+    //    - /cgi-bin/show_doc.pl?caseid=171908&claim_id=15151763&claim_num=7-1&magic_num=MAGIC
+    //    - /doc1/072035305573?caseid=671949&claim_id=34489904&claim_num=28-1&magic_num=MAGIC&pdf_header=1
+    //
+    //  - Docket entry:
+    //	  - /cgi-bin/show_doc.pl?caseid=171908&de_seq_num=981&dm_id=15184563&doc_num=287
+    //    - /doc1/150014580417
+    //    - /docs1/00205695758
+    //
     if (
         url.match(/\/(?:doc1|docs1)\/\d+/) ||
         url.match(/\/cgi-bin\/show_doc/) ||
@@ -77,6 +84,21 @@ let PACER = {
       if (PACER.getCourtFromUrl(url)) {
         return true;
       }
+    }
+    return false;
+  },
+
+  // Returns true if the given URL is a doc1 link.
+  isDoc1Url: function (url) {
+    // This function will return true for the following URLs:
+    //
+    // For CMECF District:
+    //   https://ecf.dcd.uscourts.gov/doc1/04503837920
+    // For CMECF Appellate:
+    //   https://ecf.ca2.uscourts.gov/docs1/00205695758
+    //
+    if (url.match(/\/(?:doc1|docs1)\/\d+/) && PACER.getCourtFromUrl(url)) {
+      return true;
     }
     return false;
   },
