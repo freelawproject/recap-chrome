@@ -80,7 +80,7 @@ AppellateDelegate.prototype.handleCaseSelectionPage = async function () {
     let anchors = dataTable.querySelectorAll('a');
 
     this.docketNumber = anchors[0].innerHTML
-   
+
     await updateTabStorage({
       [this.tabId]: {
         caseId: this.pacer_case_id,
@@ -234,7 +234,7 @@ AppellateDelegate.prototype.attachRecapLinksToEligibleDocs = async function () {
         `RECAP: Got results from API. Running callback on API results to ` + `attach links and icons where appropriate.`
       );
       for (let i = 0; i < this.links.length; i++) {
-        let pacer_doc_id = $(this.links[i]).data('pacer_doc_id');
+        let pacer_doc_id = this.links[i].dataset.pacerDocId;
         if (!pacer_doc_id) {
           continue;
         }
@@ -363,11 +363,11 @@ AppellateDelegate.prototype.handleSingleDocumentPageView = async function () {
   overwriteFormSubmitMethod();
 
   this.pacer_case_id = await APPELLATE.getCaseId(this.tabId, this.queryParameters, this.docId);
-  
+
   let title = document.querySelectorAll('strong')[1].innerHTML;
   let dataFromTitle = APPELLATE.parseReceiptPageTitle(title);
   this.docketNumber =  dataFromTitle.docket_number
-  
+
   await updateTabStorage({
     [this.tabId]: {
       caseId: this.pacer_case_id,

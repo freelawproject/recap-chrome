@@ -210,8 +210,8 @@ let APPELLATE = {
   onClickEventHandlerForDocLinks: function (e) {
     let target = e.currentTarget || e.srcElement;
     let params = {
-      dls_id: target.dataset.pacer_dls_id,
-      caseId: target.dataset.pacer_case_id,
+      dls_id: target.dataset.pacerDlsId,
+      caseId: target.dataset.pacerCaseId,
       servlet: 'ShowDoc',
       dktType: 'dktPublic',
     };
