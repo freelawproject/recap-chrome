@@ -1303,6 +1303,39 @@ describe('The ContentDelegate class', function () {
         '034031424911': '123456',
       });
     });
+    it('should work only for doc1 links', async function () {
+      let test_links = [];
+      let urls = [
+        'https://ecf.canb.uscourts.gov/notacase/034031424909',
+        'https://ecf.canb.uscourts.gov/doc1/034031424910',
+        'https://ecf.canb.uscourts.gov/doc1/034031424911',
+        'https://ecf.pamb.uscourts.gov/cgi-bin/show_doc.pl?caseid=260973&claim_id=15342915&claim_num=1-1&magic_num=MAGIC',
+        'https://ecf.pamb.uscourts.gov/cgi-bin/show_doc.pl?caseid=171908&de_seq_num=981&dm_id=15184563&doc_num=287'
+      ];
+      for (url of urls) {
+        link = document.createElement('a');
+        link.href = url;
+        test_links.push(link);
+      }
+      const docketQueryWithLinks = new ContentDelegate(
+        tabId,
+        docketQueryUrl, // url
+        docketQueryPath, // path
+        'canb', // court
+        '123456', // pacer_case_id
+        'redfox', // pacer_doc_id
+        test_links // links
+      );
+      spyOn(PACER, 'hasPacerCookie').and.returnValue(true);
+      spyOn(PACER, 'getDocumentIdFromUrl').and.callThrough();
+      chrome.storage.local.set = function (storagePayload, cb) {
+        const docs = storagePayload[tabId].docsToCases;
+        documents = docs;
+        cb();
+      };
+      await docketQueryWithLinks.findAndStorePacerDocIds();
+      expect(PACER.getDocumentIdFromUrl).toHaveBeenCalledTimes(2);
+    })
   });
 
   // TODO: Figure out where the functionality of
