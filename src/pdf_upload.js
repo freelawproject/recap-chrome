@@ -135,14 +135,14 @@ const handleFreeDocResponse = async function (type, ab, xhr) {
   if (type === 'application/pdf') {
     let blob = new Blob([new Uint8Array(ab)], { type: type });
     let dataUrl = await blobToDataURL(blob);
-    await updateTabStorage({ [this.dataset.pacer_tab_id]: { ['pdf_blob']: dataUrl } });
-    // get data attributes through the dataset object  
+    await updateTabStorage({ [this.dataset.pacerTabId]: { ['pdf_blob']: dataUrl } });
+    // get data attributes through the dataset object
     let options = {
       court: PACER.getCourtFromUrl(window.location.href),
-      pacer_doc_id: this.dataset.pacer_doc_id,
-      pacer_case_id: this.dataset.pacer_case_id,
-      document_number: this.dataset.document_number,
-      attachment_number: this.dataset.attachment_number,
+      pacer_doc_id: this.dataset.pacerDocId,
+      pacer_case_id: this.dataset.pacerCaseId,
+      document_number: this.dataset.documentNumber,
+      attachment_number: this.dataset.attachmentNumber,
     };
     await chrome.runtime.sendMessage({ message: 'upload', type: 'doc', options });
   }
