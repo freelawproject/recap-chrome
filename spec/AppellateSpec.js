@@ -8,8 +8,8 @@ describe('The Appellate module', function () {
     'http://www.ca9.uscourts.gov/opinions/',
   ];
   const documentLinks = [
-    'https://ecf.ca9.uscourts.gov/docs1/009031927529',
-    'https://ecf.ca9.uscourts.gov/docs1/009031956734',
+    {href: 'https://ecf.ca9.uscourts.gov/docs1/009031927529', onClick:"return doDocPostURL('009031927529','290338');"},
+    {href: 'https://ecf.ca9.uscourts.gov/docs1/009031956734', onClick:"return doDocPostURL('009031956734','290338');"}
   ];
   const searchParamsWithCaseId = new URLSearchParams('servlet=DocketReportFilter.jsp&caseId=318547');
   const searchParamsWithoutCaseId = new URLSearchParams('servlet=DocketReportFilter.jsp');
@@ -178,7 +178,8 @@ describe('The Appellate module', function () {
           docLinksDiv.setAttribute('id', 'links');
           documentLinks.forEach(function (item, index) {
             let anchor = document.createElement('a');
-            anchor.href = item;
+            anchor.href = item['href'];
+            anchor.setAttribute('onclick', item['onClick'])
             anchor.title = 'Open Document';
             docLinksDiv.appendChild(anchor);
           });
@@ -190,10 +191,19 @@ describe('The Appellate module', function () {
         });
 
         it('returns array with doc_ids', function () {
-          let anchors = document.querySelectorAll('#links > a');
-          let { links, _ } = APPELLATE.findDocLinksFromAnchors(anchors, '3', new URLSearchParams('docNum=30'));
+          let anchors = document.getElementsByTagName('a');
+          console.log(anchors)
+          let { links, _ } = APPELLATE.findDocLinksFromAnchors(anchors, '3', new URLSearchParams({ recapDocNum: "30"}), '20-15019');
           expect(links.length).toBe(2);
           expect(links).toEqual(['009031927529', '009031956734']);
+
+          for (let i = 0; i < anchors.length; i++) {
+            let item = anchors[i]
+            expect(item.dataset.pacerDlsId).toBe(links[i]);
+            expect(item.dataset.pacerCaseId).toBe('290338');
+            expect(item.dataset.pacerTabId).toBe('3');
+            expect(item.dataset.attachmentNumber).toBe('0');
+          }
         });
       });
     });
