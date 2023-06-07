@@ -85,6 +85,31 @@ describe('The PACER module', function () {
     });
   });
 
+  describe('isDoc1Url', function () {
+    it('matches a valid doc1 URL', function () {
+      expect(PACER.isDoc1Url(singleDocUrl)).toBe(true);
+    });
+
+    it('matches a valid appellate document URL', function () {
+      expect(PACER.isDoc1Url(appellateDocumentUrl)).toBe(true);
+    });
+
+    const showDocUrl =
+      'https://ecf.cacd.uscourts.gov/cgi-bin/show_doc.pl?' + 'caseid=560453&de_seq_num=24&dm_id=15521444&doc_num=7';
+
+    it('returns false for a valid show_doc document URL', function () {
+      expect(PACER.isDoc1Url(showDocUrl)).toBe(false);
+    });
+
+    it('returns false for a non-document court URL', function () {
+      expect(PACER.isDoc1Url(docketQueryUrl)).toBe(false);
+    });
+
+    it('returns false for patent nonsense', function () {
+      expect(PACER.isDoc1Url(nonsenseUrl)).toBe(false);
+    });
+  });
+
   describe('isDocketQueryUrl', function () {
     it('matches a docket query URL with digits in the query string', function () {
       expect(PACER.isDocketQueryUrl(docketQueryUrl)).toBe(true);

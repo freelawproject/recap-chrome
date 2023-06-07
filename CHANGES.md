@@ -12,6 +12,7 @@ Changes:
 
 Fixes:
  - Support for Safari on macOS and iPhone([#332](https://github.com/freelawproject/recap/issues/332)).
+ - Better document link filtering on district and appellate court reports([#341](https://github.com/freelawproject/recap/issues/341)).
 
 For developers:
  - Nothing yet
