@@ -232,7 +232,7 @@ let APPELLATE = {
     let links = [];
     let docsToCases = {};
     Array.from(nodeList).map((a) => {
-      if (!PACER.isDocumentUrl(a.href)) return;
+      if (!PACER.isDoc1Url(a.href)) return;
 
       let docNum = PACER.getDocNumberFromAnchor(a) || queryParameters.get('recapDocNum');
       let doDoc = PACER.parseDoDocPostURL(a.getAttribute('onclick'));

@@ -121,7 +121,7 @@ ContentDelegate.prototype.checkRestrictions = function () {
 // Use a variety of approaches to get and store pacer_doc_id to pacer_case_id
 // mappings in local storage.
 ContentDelegate.prototype.findAndStorePacerDocIds = async function () {
-  
+
   // Not all pages have a case ID, and there are corner-cases in merged dockets
   // where there are links to documents on another case.
   let page_pacer_case_id = this.pacer_case_id
@@ -135,10 +135,9 @@ ContentDelegate.prototype.findAndStorePacerDocIds = async function () {
     debug(3, `Z doc ${this.pacer_doc_id} to ${page_pacer_case_id}`);
     docsToCases[this.pacer_doc_id] = page_pacer_case_id;
   }
-
   for (let i = 0; i < this.links.length; i++) {
     let link = this.links[i];
-    if (PACER.isDocumentUrl(link.href)) {
+    if (PACER.isDoc1Url(link.href)) {
       let pacer_doc_id = PACER.getDocumentIdFromUrl(link.href);
       $(link).data('pacer_doc_id', pacer_doc_id);
       this.pacer_doc_ids.push(pacer_doc_id);
@@ -201,7 +200,7 @@ ContentDelegate.prototype.handleDocketQueryUrl = function () {
   if (!PACER.isDocketQueryUrl(this.url)) {
     return;
   }
-  
+
   this.recap.getAvailabilityForDocket(this.court, this.pacer_case_id, null, (result) => {
     if (result.count === 0) {
       console.warn('RECAP: Zero results found for docket lookup.');
@@ -213,7 +212,7 @@ ContentDelegate.prototype.handleDocketQueryUrl = function () {
         const dateToInput = document.querySelector('input[name=date_to]');
         const form = document.querySelector('form');
         const div = document.createElement('div');
-        
+
         div.classList.add('recap-banner');
         div.appendChild(recapAlertButton(this.court, this.pacer_case_id, true));
         form.appendChild(recapBanner(result.results[0]));
