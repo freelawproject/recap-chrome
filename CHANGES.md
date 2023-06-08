@@ -13,6 +13,8 @@ Changes:
 Fixes:
  - Support for Safari on macOS and iPhone([#332](https://github.com/freelawproject/recap/issues/332)).
  - Better document link filtering on district and appellate court reports([#341](https://github.com/freelawproject/recap/issues/341)).
+ - Change the naming style of the data attributes the extension attaches to documents links.
+ - Better case ID capturing on district court docket reports.
 
 For developers:
  - Nothing yet

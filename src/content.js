@@ -90,7 +90,7 @@ async function addRecapInformation(msg) {
 // the id "all_case_id" are observed
 function handleCaseIdChange(mutationRecords) {
   let target = mutationRecords[0].target;
-  if (target.value != 0) {
+  if (target.value != 0 && target.value != '0') {
     pacer_case_id = target.value;
     url = PACER.formatDocketQueryUrl(url, pacer_case_id);
     getTabIdForContentScript().then((msg) => {
@@ -136,7 +136,7 @@ if (caseNumberInput) {
 // check the page for the value in the input with the id 'all_case_ids'.
 if (!pacer_case_id) {
   let inputValue = !!allCaseInput && allCaseInput.value;
-  if (!!inputValue) {
+  if (!!inputValue && inputValue!='0') {
     pacer_case_id = inputValue;
     url = PACER.formatDocketQueryUrl(url, pacer_case_id);
   }
