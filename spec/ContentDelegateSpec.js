@@ -292,6 +292,7 @@ describe('The ContentDelegate class', function () {
       );
       const autofill = document.querySelector('.recap-filing-button');
       expect(autofill).not.toBeNull();
+      expect(autofill.dataset.dateFrom).toBe('04/20/2015')
     });
 
     it("don't inserts the autofill button when a docket don't have last_filing", function () {
