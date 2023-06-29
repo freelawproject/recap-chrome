@@ -5,7 +5,7 @@
 The following changes are not yet released, but are code complete:
 
 Features:
- - Nothing yet
+ - PDFs containing audio recordings will now be uploaded to the RECAP Archive ([#244](https://github.com/freelawproject/recap/issues/244), [#326](https://github.com/freelawproject/recap-chrome/pull/326))
 
 Changes:
  - None yet
