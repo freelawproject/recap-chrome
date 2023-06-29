@@ -4,6 +4,7 @@ describe('The PACER module', function () {
   const noTrailingSlashUrl = 'https://ecf.canb.uscourts.gov';
   const docketReportURL = 'https://ecf.canb.uscourts.gov/cgi-bin/DktRpt.pl';
   const singleDocUrl = 'https://ecf.canb.uscourts.gov/doc1/034031424909';
+  const singleDocAudioUrl = 'https://ecf.canb.audio.uscourts.gov/doc1/034031424909';
   const docketQueryUrl = 'https://ecf.canb.uscourts.gov/cgi-bin/' + 'HistDocQry.pl?531316';
   const docketQueryUrlFromAppellate =
     'https://ecf.canb.uscourts.gov/cgi-bin/' + 'DktRpt.pl?caseNumber=2:16-cv-01129-RFB-DJA';
@@ -36,6 +37,10 @@ describe('The PACER module', function () {
 
     it('matches a valid single doc URL', function () {
       expect(PACER.getCourtFromUrl(singleDocUrl)).toBe('canb');
+    });
+
+    it('matches a valid single doc audio URL', function () {
+      expect(PACER.getCourtFromUrl(singleDocAudioUrl)).toBe('canb');
     });
 
     it('ignores patent nonsense', function () {

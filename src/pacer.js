@@ -50,7 +50,7 @@ let PACER = {
     // RECAP are being used outside of PACER. Be sure tests pass appropriately
     // before tweaking this regex.
     let match = (url || '').toLowerCase().match(
-        /^\w+:\/\/(ecf|pacer)\.(\w+)\.uscourts\.gov(?:\/.*)?$/);
+        /^\w+:\/\/(ecf|pacer)\.(\w+)(?:\.audio)?\.uscourts\.gov(?:\/.*)?$/);
     return match ? match[2] : null;
   },
 
@@ -355,14 +355,17 @@ let PACER = {
   isSingleDocumentPage: function (url, document) {
     let inputs = document.getElementsByTagName('input');
     let lastInput = inputs.length && inputs[inputs.length - 1].value;
-    // If the receipt doesn't say "Image" we don't yet support it on the server.
+    // If the receipt doesn't say "AUDIO", "Image" or "TRANSCRIPT"
+    // we don't yet support it on the server.
     // So far, this only appears to apply to bankruptcy claims. This CSS
     // selector is duplicated in onDocumentViewSubmit.
+    let hasAudioReceipt = !!$('td:contains(AUDIO)').length;
     let hasImageReceipt = !!$('td:contains(Image)').length;
+    let hasTranscriptReceipt = !!$('td:contains(TRANSCRIPT)').length;
 
 
     let pageCheck = (PACER.isDocumentUrl(url) &&
-                     hasImageReceipt &&
+                     (hasAudioReceipt || hasImageReceipt || hasTranscriptReceipt) &&
                      (lastInput === 'View Document') ||
                      (lastInput === 'Accept Charges and Retrieve'));
     debug(4,` lastInput ${lastInput}`);
@@ -586,9 +589,13 @@ let PACER = {
     //  - doc_number
     //  - att_number
     
+    let audio_string = $('td:contains(AUDIO)').text();
     let image_string = $('td:contains(Image)').text();
+    let transcript_string = $('td:contains(TRANSCRIPT)').text();
+
+    let receipt_description = image_string || audio_string || transcript_string;
     let regex = /(\d+)-(\d+)/;
-    let matches = regex.exec(image_string);
+    let matches = regex.exec(receipt_description);
     if (!matches) {
       return null;
     }
