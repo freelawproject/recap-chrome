@@ -11,7 +11,7 @@ Changes:
  - None yet
 
 Fixes:
- - None yet
+ - Fix button to autofill docket query form([#344](https://github.com/freelawproject/recap/issues/344)).
 
 For developers:
  - Nothing yet
