@@ -5,16 +5,26 @@
 The following changes are not yet released, but are code complete:
 
 Features:
- - PDFs containing audio recordings will now be uploaded to the RECAP Archive ([#244](https://github.com/freelawproject/recap/issues/244), [#326](https://github.com/freelawproject/recap-chrome/pull/326))
+ - None yet
 
 Changes:
  - None yet
 
 Fixes:
- - Fix button to autofill docket query form([#344](https://github.com/freelawproject/recap/issues/344)).
+ - None yet
 
 For developers:
  - Nothing yet
+
+
+## 2.1.0 (2023-06-30)
+
+Features:
+ - PDFs containing audio recordings will now be uploaded to the RECAP Archive ([#244](https://github.com/freelawproject/recap/issues/244), [#326](https://github.com/freelawproject/recap-chrome/pull/326))
+
+Fixes:
+ - Fix button to autofill docket query form([#344](https://github.com/freelawproject/recap/issues/344)).
+
 
 ## 2.0.2 (2023-06-08)
 
