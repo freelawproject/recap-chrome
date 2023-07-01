@@ -11,7 +11,7 @@ Changes:
  - None yet
 
 Fixes:
- - None yet
+ - More robust logic to get the document id from appellate courts([#340](https://github.com/freelawproject/recap/issues/340))
 
 For developers:
  - Nothing yet
