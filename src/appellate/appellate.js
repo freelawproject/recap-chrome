@@ -7,7 +7,7 @@ let AppellateDelegate = function (tabId, court, url, links) {
   this.recap = importInstance(Recap);
   this.notifier = importInstance(Notifier);
   this.queryParameters = APPELLATE.getQueryParameters(this.url);
-  this.docId = APPELLATE.getDocIdFromServlet(this.queryParameters.get('servlet'));
+  this.docId = APPELLATE.getDocIdFromServlet(this.queryParameters.get('servlet')) || this.queryParameters.get('dls_id');
   this.docketNumber = APPELLATE.getDocketNumber(this.queryParameters);
 };
 
