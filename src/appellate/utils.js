@@ -307,6 +307,25 @@ let APPELLATE = {
     }
   },
 
+  // get the docId from the URL of the attachment page or the single doc page
+  getDocIdFromURL: function (queryParameters) {
+    // this method retrieves the document id using different approaches:
+    //
+    //   - checks the dls_id parameter in the given query string
+    //   - checks the servlet parameter in the query string
+    //
+    // in cases where both dls_id is specified AND there is a pathname appended to the
+    // ShowDoc servlet, the dls_id takes precedence. E.g.
+    //
+    //   - if queryParameters is ?servlet=ShowDoc/009032127512&dls_id=009032292595, this
+    //   method returns 009032292595.
+    //   - if queryParameters is ?servlet=ShowDoc/009032127512&caseId=325867, this method
+    //   returns 009032127512
+    //   - if queryParameters is ?servlet=ShowDoc&dls_id=009032127512, this method returns
+    //   009032127512
+    return queryParameters.get('dls_id') || this.getDocIdFromServlet(queryParameters.get('servlet'));
+  },
+
   // returns data from the title of the Receipt Page as an object
   parseReceiptPageTitle: (title_string) => {
     // The title in the Download Confirmation page from Appellate pacer shows useful information about the document.

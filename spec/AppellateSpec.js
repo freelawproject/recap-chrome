@@ -8,11 +8,33 @@ describe('The Appellate module', function () {
     'http://www.ca9.uscourts.gov/opinions/',
   ];
   const documentLinks = [
-    {href: 'https://ecf.ca9.uscourts.gov/docs1/009031927529', onClick:"return doDocPostURL('009031927529','290338');"},
-    {href: 'https://ecf.ca9.uscourts.gov/docs1/009031956734', onClick:"return doDocPostURL('009031956734','290338');"}
+    {
+      href: 'https://ecf.ca9.uscourts.gov/docs1/009031927529',
+      onClick: "return doDocPostURL('009031927529','290338');",
+    },
+    {
+      href: 'https://ecf.ca9.uscourts.gov/docs1/009031956734',
+      onClick: "return doDocPostURL('009031956734','290338');",
+    },
   ];
   const searchParamsWithCaseId = new URLSearchParams('servlet=DocketReportFilter.jsp&caseId=318547');
   const searchParamsWithoutCaseId = new URLSearchParams('servlet=DocketReportFilter.jsp');
+
+  const showDocURLs = [
+    {
+      url: '?servlet=ShowDoc/009032127512&dls_id=009032292595',
+      docId: '009032292595',
+    },
+    {
+      url: '?servlet=ShowDoc/009032292595&dls_id=009032127512',
+      docId: '009032127512',
+    },
+    {
+      url: '?servlet=ShowDoc&pacer=i&caseId=325867&dls_id=009033761377',
+      docId: '009033761377',
+    },
+    { url: '?servlet=ShowDoc/009032145815&caseId=325867', docId: '009032145815' },
+  ];
 
   function clearBody() {
     document.body.innerHTML = '';
@@ -22,6 +44,16 @@ describe('The Appellate module', function () {
     it('returns URLSearchParams interface', function () {
       expect(APPELLATE.getQueryParameters(nonQueryStringUrl)).toBeInstanceOf(URLSearchParams);
       expect(APPELLATE.getQueryParameters(caseSummaryPage)).toBeInstanceOf(URLSearchParams);
+    });
+  });
+
+  describe('getDocIdFromURL', function () {
+    it('returns the document id ', function () {
+      for (const item of showDocURLs) {
+        var queryString = new URLSearchParams(item.url)
+        expect(APPELLATE.getDocIdFromURL(queryString)).toBe(item.docId);
+      }
+
     });
   });
 
@@ -55,9 +87,7 @@ describe('The Appellate module', function () {
   });
 
   describe('getCaseId', function () {
-
-    describe('for pages with inputs', function(){
-
+    describe('for pages with inputs', function () {
       beforeEach(function () {
         clearBody();
         let input = document.createElement('input');
@@ -72,8 +102,7 @@ describe('The Appellate module', function () {
       it('returns the caseId value', async function () {
         expect(await APPELLATE.getCaseId('1234', searchParamsWithoutCaseId)).toBe('318457');
       });
-
-    })
+    });
 
     describe('for pages with non-matching format', function () {
       beforeEach(function () {
@@ -83,10 +112,10 @@ describe('The Appellate module', function () {
             local: {
               get: jasmine.createSpy().and.callFake(function (_, cb) {
                 cb({
-                  [1234]: { },
+                  [1234]: {},
                   options: { recap_enabled: true },
                 });
-              })
+              }),
             },
           },
         };
@@ -141,7 +170,7 @@ describe('The Appellate module', function () {
 
   describe('findDocLinksFromAnchors', function () {
     it('returns empty array for empty input', function () {
-      let {links, } = APPELLATE.findDocLinksFromAnchors([], '3', new URLSearchParams('docNum=30'));
+      let { links } = APPELLATE.findDocLinksFromAnchors([], '3', new URLSearchParams('docNum=30'));
       expect(links.length).toBe(0);
     });
 
@@ -166,7 +195,7 @@ describe('The Appellate module', function () {
 
         it('returns empty array', function () {
           let anchors = document.querySelectorAll('#no_links > a');
-          let { links, _ } = APPELLATE.findDocLinksFromAnchors(anchors,'3', new URLSearchParams('docNum=30'));
+          let { links, _ } = APPELLATE.findDocLinksFromAnchors(anchors, '3', new URLSearchParams('docNum=30'));
           expect(links.length).toBe(0);
         });
       });
@@ -179,7 +208,7 @@ describe('The Appellate module', function () {
           documentLinks.forEach(function (item, index) {
             let anchor = document.createElement('a');
             anchor.href = item['href'];
-            anchor.setAttribute('onclick', item['onClick'])
+            anchor.setAttribute('onclick', item['onClick']);
             anchor.title = 'Open Document';
             docLinksDiv.appendChild(anchor);
           });
@@ -192,13 +221,18 @@ describe('The Appellate module', function () {
 
         it('returns array with doc_ids', function () {
           let anchors = document.getElementsByTagName('a');
-          console.log(anchors)
-          let { links, _ } = APPELLATE.findDocLinksFromAnchors(anchors, '3', new URLSearchParams({ recapDocNum: "30"}), '20-15019');
+          console.log(anchors);
+          let { links, _ } = APPELLATE.findDocLinksFromAnchors(
+            anchors,
+            '3',
+            new URLSearchParams({ recapDocNum: '30' }),
+            '20-15019'
+          );
           expect(links.length).toBe(2);
           expect(links).toEqual(['009031927529', '009031956734']);
 
           for (let i = 0; i < anchors.length; i++) {
-            let item = anchors[i]
+            let item = anchors[i];
             expect(item.dataset.pacerDlsId).toBe(links[i]);
             expect(item.dataset.pacerCaseId).toBe('290338');
             expect(item.dataset.pacerTabId).toBe('3');
@@ -306,5 +340,4 @@ describe('The Appellate module', function () {
       });
     });
   });
-
 });

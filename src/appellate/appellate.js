@@ -7,7 +7,7 @@ let AppellateDelegate = function (tabId, court, url, links) {
   this.recap = importInstance(Recap);
   this.notifier = importInstance(Notifier);
   this.queryParameters = APPELLATE.getQueryParameters(this.url);
-  this.docId = APPELLATE.getDocIdFromServlet(this.queryParameters.get('servlet')) || this.queryParameters.get('dls_id');
+  this.docId = APPELLATE.getDocIdFromURL(this.queryParameters);
   this.docketNumber = APPELLATE.getDocketNumber(this.queryParameters);
 };
 
@@ -79,12 +79,12 @@ AppellateDelegate.prototype.handleCaseSelectionPage = async function () {
     let dataTable = APPELLATE.getTableWithDataFromCaseSelection();
     let anchors = dataTable.querySelectorAll('a');
 
-    this.docketNumber = anchors[0].innerHTML
+    this.docketNumber = anchors[0].innerHTML;
 
     await updateTabStorage({
       [this.tabId]: {
         caseId: this.pacer_case_id,
-        docketNumber: this.docketNumber
+        docketNumber: this.docketNumber,
       },
     });
 
@@ -162,7 +162,7 @@ AppellateDelegate.prototype.handleCaseQueryPage = async function () {
   await updateTabStorage({
     [this.tabId]: {
       caseId: this.pacer_case_id,
-      docketNumber: this.docketNumber
+      docketNumber: this.docketNumber,
     },
   });
 
@@ -201,7 +201,12 @@ AppellateDelegate.prototype.attachRecapLinksToEligibleDocs = async function () {
   }
 
   // filter the links for the documents available on the page
-  let { links, docsToCases } = APPELLATE.findDocLinksFromAnchors(this.links, this.tabId, this.queryParameters, this.docketNumber);
+  let { links, docsToCases } = APPELLATE.findDocLinksFromAnchors(
+    this.links,
+    this.tabId,
+    this.queryParameters,
+    this.docketNumber
+  );
 
   this.pacer_case_id = this.pacer_case_id
     ? this.pacer_case_id
@@ -270,7 +275,6 @@ AppellateDelegate.prototype.attachRecapLinksToEligibleDocs = async function () {
 };
 
 AppellateDelegate.prototype.handleDocketDisplayPage = async function () {
-
   this.pacer_case_id = await APPELLATE.getCaseId(this.tabId, this.queryParameters, this.docId, this.docketNumber);
 
   if (!this.pacer_case_id) {
@@ -366,12 +370,12 @@ AppellateDelegate.prototype.handleSingleDocumentPageView = async function () {
 
   let title = document.querySelectorAll('strong')[1].innerHTML;
   let dataFromTitle = APPELLATE.parseReceiptPageTitle(title);
-  this.docketNumber =  dataFromTitle.docket_number
+  this.docketNumber = dataFromTitle.docket_number;
 
   await updateTabStorage({
     [this.tabId]: {
       caseId: this.pacer_case_id,
-      docketNumber: this.docketNumber
+      docketNumber: this.docketNumber,
     },
   });
 
