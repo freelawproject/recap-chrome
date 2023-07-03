@@ -90,7 +90,7 @@ When a new version is needed, the release process is:
 
         cd src && zip -FSr recap.zip *
 
-1. Make a new release on [Github announcing the release][ghtags].
+1. Make a new release on [Github announcing the release][ghtags] that includes the .zip file.
 1. Upload that to the [Chrome Market][market].
 1. Upload that to addons.mozilla.org
 
