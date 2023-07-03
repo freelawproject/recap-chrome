@@ -26,6 +26,9 @@ AppellateDelegate.prototype.dispatchPageHandler = function () {
     case 'CaseSearch.jsp':
       this.handleCaseSearchPage();
       break;
+    case 'DocketReportFilter.jsp':
+      this.handleDocketReportFilter();
+      break;
     case 'CaseQuery.jsp':
       this.handleCaseQueryPage();
       break;
@@ -51,6 +54,27 @@ AppellateDelegate.prototype.handleCaseSearchPage = () => {
   if (!document.querySelector('.recap-email-banner-full')) {
     form.appendChild(recapEmailBanner('recap-email-banner-full'));
   }
+};
+
+AppellateDelegate.prototype.handleDocketReportFilter = function () {
+  if (!this.docketNumber) {
+    return;
+  }
+  let docketNumberCore = PACER.makeDocketNumberCore(this.docketNumber);
+
+  this.recap.getAvailabilityForDocket(this.court, null, docketNumberCore, (result) => {
+    if (result.count === 1 && result.results) {
+      let form = document.getElementsByTagName('form')[0];
+      let banner = recapBanner(result.results[0]);
+      let recapAlert = document.createElement('div');
+      recapAlert.classList.add('recap-banner');
+      recapAlert.appendChild(recapAlertButton(this.court, this.pacer_case_id, true));
+      form.after(recapAlert);
+      form.after(banner);
+    } else {
+      PACER.handleDocketAvailabilityMessages(result);
+    }
+  });
 };
 
 AppellateDelegate.prototype.handleCaseSelectionPage = async function () {
