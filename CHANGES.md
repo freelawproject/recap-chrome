@@ -5,7 +5,7 @@
 The following changes are not yet released, but are code complete:
 
 Features:
- - None yet
+ - Adds RECAP banners to the docket query pages on appellate courts([#335](https://github.com/freelawproject/recap/issues/335), [#333](https://github.com/freelawproject/recap-chrome/pull/333))
 
 Changes:
  - None yet
