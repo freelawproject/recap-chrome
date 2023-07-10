@@ -317,9 +317,11 @@ let PACER = {
     let mainContent = document.getElementById("cmecfMainContent");
     // End this function early if we're on a management PACER page
     if (!mainContent){ return false }
-    let bottomNote = mainContent.lastChild.textContent.includes('view each document individually')
+    let paragraphs = mainContent.getElementsByTagName("p");
+    let topNote = paragraphs.length ? paragraphs[0].textContent.includes('Document Selection Menu') : false
+    let bottomNote = mainContent.lastChild.textContent.includes('view each document individually');
     let pageCheck = PACER.isDocumentUrl(url) && ( 
-      !!buttonText || !!bigFile || !!bottomNote);
+      !!buttonText || !!bigFile || !!topNote || !!bottomNote);
     return !!pageCheck;
   },
 
