@@ -13,8 +13,8 @@ describe('The Appellate module', function () {
       onClick: "return doDocPostURL('009031927529','290338');",
     },
     {
-      href: 'https://ecf.ca9.uscourts.gov/docs1/009031956734',
-      onClick: "return doDocPostURL('009031956734','290338');",
+      href: 'https://ecf.ca9.uscourts.gov/docs1/009131956734',
+      onClick: "return doDocPostURL('009131956734','290338');",
     },
   ];
   const searchParamsWithCaseId = new URLSearchParams('servlet=DocketReportFilter.jsp&caseId=318547');
