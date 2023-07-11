@@ -441,6 +441,12 @@ AppellateDelegate.prototype.onDocumentViewSubmit = function (event) {
     dataFromTitle.att_number = this.queryParameters.get('recapAttNum');
   }
 
+  if (dataFromTitle.doc_number.length > 9) {
+    // If the number is really big, it's probably a court that uses
+    // pacer_doc_id instead of regular docket entry numbering.
+    dataFromTitle.doc_number = PACER.cleanPacerDocId(dataFromTitle.doc_number);
+  }
+
   if (!dataFromTitle) {
     form.submit();
     return;

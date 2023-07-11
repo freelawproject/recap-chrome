@@ -280,7 +280,7 @@ let APPELLATE = {
 
       clonedNode.dataset.pacerDocId = docId;
       if (doDoc && doDoc.doc_id) {
-        clonedNode.dataset.pacerDlsId = doDoc.doc_id;
+        clonedNode.dataset.pacerDlsId = PACER.cleanPacerDocId(doDoc.doc_id);
       }
       clonedNode.dataset.pacerCaseId = pacerCaseId;
       clonedNode.dataset.pacerTabId = tabId;
