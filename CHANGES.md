@@ -8,10 +8,11 @@ Features:
  - Adds RECAP banners to the docket query pages on appellate courts([#335](https://github.com/freelawproject/recap/issues/335), [#333](https://github.com/freelawproject/recap-chrome/pull/333))
 
 Changes:
- - None yet
+ - Improve logic to identify attachment pages in district courts([#335](https://github.com/freelawproject/recap-chrome/pull/335))
 
 Fixes:
  - More robust logic to get the document id from appellate courts([#340](https://github.com/freelawproject/recap/issues/340))
+ - Normalize document numbers from appellate courts that uses the pacer_doc_id instead of the regular docket entry numbering([#2877](https://github.com/freelawproject/courtlistener/issues/2877)).
 
 For developers:
  - Nothing yet
