@@ -11,10 +11,12 @@ describe('The Appellate module', function () {
     {
       href: 'https://ecf.ca9.uscourts.gov/docs1/009031927529',
       onClick: "return doDocPostURL('009031927529','290338');",
+      dlsId: '009031927529',
     },
     {
       href: 'https://ecf.ca9.uscourts.gov/docs1/009131956734',
       onClick: "return doDocPostURL('009131956734','290338');",
+      dlsId: '009131956734',
     },
   ];
   const searchParamsWithCaseId = new URLSearchParams('servlet=DocketReportFilter.jsp&caseId=318547');
@@ -50,10 +52,9 @@ describe('The Appellate module', function () {
   describe('getDocIdFromURL', function () {
     it('returns the document id ', function () {
       for (const item of showDocURLs) {
-        var queryString = new URLSearchParams(item.url)
+        var queryString = new URLSearchParams(item.url);
         expect(APPELLATE.getDocIdFromURL(queryString)).toBe(item.docId);
       }
-
     });
   });
 
@@ -233,7 +234,7 @@ describe('The Appellate module', function () {
 
           for (let i = 0; i < anchors.length; i++) {
             let item = anchors[i];
-            expect(item.dataset.pacerDlsId).toBe(links[i]);
+            expect(item.dataset.pacerDlsId).toBe(documentLinks[i]['dlsId']);
             expect(item.dataset.pacerCaseId).toBe('290338');
             expect(item.dataset.pacerTabId).toBe('3');
             expect(item.dataset.attachmentNumber).toBe('0');
