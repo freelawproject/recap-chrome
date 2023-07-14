@@ -5,6 +5,21 @@
 The following changes are not yet released, but are code complete:
 
 Features:
+ - None yet
+
+Changes:
+ - None yet
+
+Fixes:
+ - None yet
+ - 
+For developers:
+ - Nothing yet
+
+
+## 2.2.0 (2023-07-13)
+
+Features:
  - Adds RECAP banners to the docket query pages on appellate courts([#335](https://github.com/freelawproject/recap/issues/335), [#333](https://github.com/freelawproject/recap-chrome/pull/333))
 
 Changes:
@@ -14,9 +29,6 @@ Fixes:
  - More robust logic to get the document id from appellate courts([#340](https://github.com/freelawproject/recap/issues/340))
  - Normalize document numbers from appellate courts that uses the pacer_doc_id instead of the regular docket entry numbering([#2877](https://github.com/freelawproject/courtlistener/issues/2877)).
  - Remove logic to normalize the pacer_dls_id attribute in the document links([#338](https://github.com/freelawproject/recap-chrome/pull/338))
-
-For developers:
- - Nothing yet
 
 
 ## 2.1.0 (2023-06-30)
