@@ -11,8 +11,8 @@ Changes:
  - None yet
 
 Fixes:
- - None yet
- - 
+ - More robust logic to inject content scripts([#346](https://github.com/freelawproject/recap/issues/346))
+
 For developers:
  - Nothing yet
 
