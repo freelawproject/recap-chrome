@@ -86,21 +86,31 @@ function showNotificationTab(details){
   }
 }
 
-function executeScripts(tabId, injectDetailsArray)
-{
-    function createCallback(tabId, injectDetails, innerCallback) {
-        return function () {
-            chrome.tabs.executeScript(tabId, injectDetails, innerCallback);
-        };
-    }
+function executeScripts(tabId, injectDetailsArray) {
+  // This method uses programmatic injection to load content scripts
+  // and waits until the helper finishes injecting a script before
+  // loading the succeeding one into the active tab.
+  //
+  // This helper uses the callback parameter of the executeScript and a
+  // recursive approach to define the sequence of operations that
+  // guarantees the files are loaded in the same order they are listed
+  // in the injectDetailsArray parameter.
+  //
+  // You can read more on this at this [PR](https://github.com/freelawproject/recap-chrome/pull/340).
 
-    var callback = null;
+  function createCallback(tabId, injectDetails, innerCallback) {
+    return function () {
+      chrome.tabs.executeScript(tabId, injectDetails, innerCallback);
+    };
+  }
 
-    for (var i = injectDetailsArray.length - 1; i >= 0; --i)
-        callback = createCallback(tabId, injectDetailsArray[i], callback);
+  var callback = null;
 
-    if (callback !== null)
-        callback();   // execute outermost function
+  for (var fileDetails of injectDetailsArray.reverse()) {
+    callback = createCallback(tabId, fileDetails, callback);
+  }
+
+  if (callback !== null) callback(); // execute outermost function
 }
 
 async function injectContentScript(tabId, status, url) {
