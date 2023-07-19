@@ -1,22 +1,4 @@
-const CONTENT_SCRIPT_FILES = [
-  'InjectManager.js',
-  'assets/js/jquery.js',
-  'assets/js/FileSaver.js',
-  'assets/js/moment.js',
-  'assets/js/livestamp.js',
-  'assets/js/bootstrap.bundle.js',
-  'action_button.js',
-  'pdf_upload.js',
-  'utils.js',
-  'notifier.js',
-  'toolbar_button.js',
-  'pacer.js',
-  'recap.js',
-  'content_delegate.js',
-  'appellate/utils.js',
-  'appellate/appellate.js',
-  'content.js',
-];
+
 
 // Make services callable from content scripts.
 exportInstance(Notifier);
@@ -104,21 +86,62 @@ function showNotificationTab(details){
   }
 }
 
+function executeScripts(tabId, injectDetailsArray) {
+  // This method uses programmatic injection to load content scripts
+  // and waits until the helper finishes injecting a script before
+  // loading the succeeding one into the active tab.
+  //
+  // This helper uses the callback parameter of the executeScript and a
+  // recursive approach to define the sequence of operations that
+  // guarantees the files are loaded in the same order they are listed
+  // in the injectDetailsArray parameter.
+  //
+  // You can read more on this at this [PR](https://github.com/freelawproject/recap-chrome/pull/340).
+
+  function createCallback(tabId, injectDetails, innerCallback) {
+    return function () {
+      chrome.tabs.executeScript(tabId, injectDetails, innerCallback);
+    };
+  }
+
+  var callback = null;
+
+  for (var fileDetails of injectDetailsArray.reverse()) {
+    callback = createCallback(tabId, fileDetails, callback);
+  }
+
+  if (callback !== null) callback(); // execute outermost function
+}
+
 async function injectContentScript(tabId, status, url) {
   if (status == 'complete' && PACER.getCourtFromUrl(url)) {
-    chrome.tabs.sendMessage(tabId, { message: 'content_script_status' }, function (msg) {
+    chrome.tabs.sendMessage(tabId, { message: 'content_script_status' }, async function (msg) {
       if (chrome.runtime.lastError) {
         console.info(`RECAP: Content scripts are not loaded yet`);
       }
       msg = msg || {};
       if (msg.status != 'loaded') {
         console.info(`RECAP: Injecting content scripts`);
-        for (var script of CONTENT_SCRIPT_FILES) {
-          chrome.tabs.executeScript(tabId, {
-            file: script,
-            allFrames: false,
-          });
-        }
+        executeScripts(tabId, [
+          { file: "InjectManager.js" },
+          { file: "assets/js/jquery.js" },
+          { file: "assets/js/FileSaver.js" },
+          { file: "assets/js/FileSaver.js" },
+          { file: 'assets/js/moment.js'},
+          { file: 'assets/js/livestamp.js'},
+          { file: 'assets/js/bootstrap.bundle.js'},
+          { file: 'action_button.js'},
+          { file: 'pdf_upload.js'},
+          { file: 'utils.js'},
+          { file: 'notifier.js'},
+          { file: 'toolbar_button.js'},
+          { file: 'pacer.js'},
+          { file: 'recap.js'},
+          { file: 'content_delegate.js'},
+          { file: 'appellate/utils.js'},
+          { file: 'appellate/appellate.js'},
+          { file: 'content.js'},
+      ])
       }
     });
   }
@@ -143,7 +166,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       options.pacer_case_id,
       options.pacer_doc_id,
       options.document_number,
-      options.attachment_number, 
+      options.attachment_number,
       callback
     )
   }
