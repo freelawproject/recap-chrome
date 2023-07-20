@@ -77,6 +77,10 @@ async function addRecapInformation(msg) {
     // creates a <form> element and calls submit() on it, so we hook into submit().
     content_delegate.handleSingleDocumentPageView();
 
+    // If this page offers a combined document, inserts a warning to let the user
+    // know this document is not supported.
+    content_delegate.handleCombinedPDFView();
+
     // If this is a Clams Register, we upload it to RECAP
     content_delegate.handleClaimsPageView();
 
