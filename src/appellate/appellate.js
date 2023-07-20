@@ -32,6 +32,9 @@ AppellateDelegate.prototype.dispatchPageHandler = function () {
     case 'CaseQuery.jsp':
       this.handleCaseQueryPage();
       break;
+    case 'ShowDocMulti':
+      this.handleCombinedPdfPageView();
+      break
     default:
       if (APPELLATE.isAttachmentPage()) {
         this.handleAttachmentPage();
@@ -384,6 +387,11 @@ AppellateDelegate.prototype.handleAttachmentPage = async function () {
     'APPELLATE_ATTACHMENT_PAGE',
     (ok) => callback(ok)
   );
+};
+
+AppellateDelegate.prototype.handleCombinedPdfPageView = async function () {
+  let warning = combinedPdfWarning()
+  document.body.appendChild(warning)
 };
 
 // If this page offers a single document, intercept navigation to the document view page.
