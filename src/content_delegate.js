@@ -682,6 +682,18 @@ ContentDelegate.prototype.handleZipFilePageView = function () {
   window.addEventListener('message', this.onDownloadAllSubmit.bind(this));
 };
 
+// If the page offers a combined document, inserts a warning to let
+// the user know this document won't be uploaded.
+ContentDelegate.prototype.handleCombinedPDFView = function () {
+  if (!PACER.isCombinedPdfPage(this.url, document)) {
+    return false;
+  }
+  // query the main div of the page
+  let mainDiv = document.getElementById(id='cmecfMainContent')
+  pdfWarning = combinedPdfWarning()
+  mainDiv.append(pdfWarning)
+};
+
 ContentDelegate.prototype.handleClaimsPageView = function () {
   // return if not a claims register page
   if (!PACER.isClaimsRegisterPage(this.url, document)) {

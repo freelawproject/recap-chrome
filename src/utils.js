@@ -408,6 +408,43 @@ const insertAvailableDocBanner = (doc_url, html_element) =>{
     .appendTo($(html_element));
 }
 
+// Creates a div element to let user know they're trying to buy a combined PDF
+const combinedPdfWarning = () => {
+  let img = document.createElement('img');
+  img.src = chrome.extension.getURL('assets/images/disabled-38.png');
+  img.style.width = 'auto';
+  img.style.height = 'auto';
+  img.style.maxWidth = '38px';
+  img.style.maxHeight = '38px';
+
+  let imgDiv = document.createElement('div');
+  imgDiv.style.padding = '12px';
+  imgDiv.style.display = 'flex';
+  imgDiv.style.alignItems = 'center';
+  imgDiv.appendChild(img);
+
+  let text = document.createElement('p');
+  text.innerHTML = `This document <b>will not be uploaded</b> to the RECAP Archive because the extension has detected that this page may return a combined PDF and consistently splitting these files in a proper manner is not possible for now.`;
+
+  let messageDiv = document.createElement('div');
+  messageDiv.style.display = 'flex';
+  messageDiv.style.alignContent = 'center';
+  messageDiv.appendChild(text);
+
+  let innerDiv = document.createElement('div');
+  innerDiv.classList.add('recap-banner');
+  innerDiv.style.display = 'flex';
+  innerDiv.appendChild(imgDiv);
+  innerDiv.appendChild(messageDiv);
+
+  let outerDiv = document.createElement('div');
+  outerDiv.style.display = 'flex';
+  outerDiv.style.justifyContent = 'center';
+  outerDiv.appendChild(innerDiv);
+
+  return outerDiv;
+};
+
 //Given a pacer_doc_id, return the pacer_case_id that it is associated with
 async function getPacerCaseIdFromPacerDocId(tabId, pacer_doc_id) {
   const tabStorage = await getItemsFromStorage(tabId);

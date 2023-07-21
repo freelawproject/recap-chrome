@@ -5,7 +5,7 @@
 The following changes are not yet released, but are code complete:
 
 Features:
- - None yet
+ - Adds a warning to let users know that combined PDFs won't be uploaded to the RECAP Archive([#337](https://github.com/freelawproject/recap/issues/337), [#341](https://github.com/freelawproject/recap-chrome/pull/341))
 
 Changes:
  - None yet

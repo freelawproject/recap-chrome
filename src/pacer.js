@@ -335,7 +335,27 @@ let PACER = {
       inputs[inputs.length-1].value === "Download Documents"
     return !!pageCheck
   },
+  
+  // Returns true if this is a combined PDF page (confirmation of
+  // pricing for all documents to receive a combined PDF file with
+  // all of them)
+  isCombinedPdfPage: function (url, document) {
+    // This method checks the page has the following elements:
+    //  - The URL contains the "zipit" parameters and its value is 0
+    //  - The URL contains the word "show_multidocs.pl"
+    //  - shows 2 or more buttons
+    let queryParameters = new URLSearchParams(window.location.search);
+    let isZipFile = queryParameters.get('zipit');
+    let buttons = document.getElementsByTagName('input');
+    let pageCheck =
+      !!url.match(/\/show_multidocs\.pl\?/) &&
+      isZipFile == 0 &&
+      buttons.length > 1 &&
+      buttons[buttons.length - 1].value === 'View Document';
 
+    return !!pageCheck;
+  },
+  
   // Claims Register Page includes an h2 tag with the court and words "Claims Register"
   // exampleUrl: https://ecf.nyeb.uscourts.gov/cgi-bin/SearchClaims.pl?610550152546515-L_1_0-1
   // exampleHeader: <h2>Eastern District of New York<br>Claims Register </h2>
