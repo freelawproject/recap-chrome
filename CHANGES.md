@@ -5,16 +5,24 @@
 The following changes are not yet released, but are code complete:
 
 Features:
- - Adds a warning to let users know that combined PDFs won't be uploaded to the RECAP Archive([#337](https://github.com/freelawproject/recap/issues/337), [#341](https://github.com/freelawproject/recap-chrome/pull/341))
+ - None yet
 
 Changes:
  - None yet
 
 Fixes:
- - More robust logic to inject content scripts([#346](https://github.com/freelawproject/recap/issues/346))
-
+ - None yet
+  
 For developers:
  - Nothing yet
+
+## 2.3.0 (2023-07-25)
+
+Features:
+ - Adds a warning to let users know that combined PDFs won't be uploaded to the RECAP Archive([#337](https://github.com/freelawproject/recap/issues/337), [#341](https://github.com/freelawproject/recap-chrome/pull/341))
+
+Fixes:
+ - More robust logic to inject content scripts([#346](https://github.com/freelawproject/recap/issues/346))
 
 
 ## 2.2.0 (2023-07-13)
