@@ -12,6 +12,15 @@ describe('The PACER module', function () {
     'https://ecf.canb.uscourts.gov/cgi-bin/' + 'DktRpt.pl?caseNumber=1:17-cv-10577&caseId=0';
   const appellateDocumentUrl = 'https://ecf.ca2.uscourts.gov/docs1/00205695758';
 
+  const AcmsDocketUrl = 'https://ca9-showdoc.azurewebsites.us/23-2081';
+  const AcmsDocumentUrl = 'https://ca9-showdoc.azurewebsites.us/download-confirmation/c61cb56b-9a5c-ee11-be6e-001dd8087d6a?loadEntry=1';
+  const EcfCaseQueryAcmsCaseUrl = 'https://ecf.ca9.uscourts.gov/n/beam/servlet/TransportRoom?servlet=CaseQuery.jsp&cnthd=1234567890&caseid=1007067&csnum1=23-2081&shorttitle=International+Brotherhood+of+Teamsters+v.+National+Labor+Relations+Board';
+  const nonAcmsAzureGovUrl = 'https://dc-ecosproduction.azurewebsites.us/login.aspx';
+  const AcmsFilingUrl = 'https://ca9-portal.powerappsportals.us/';
+  const AcmsFilingTestUrl = 'https://ca9-acms-pcx.powerappsportals.us/';
+  const FedcourtsNinthUrl = 'https://ca9.fedcourts.us';
+  const FedcourtsBogusUrl = 'https://bogus.fedcourts.us';
+
   function InputContainer() {
     document.body.innerHTML = '';
     const inputContainer = document.createElement('div');
@@ -54,6 +63,39 @@ describe('The PACER module', function () {
     it('matches even if trailing slash is absent', function () {
       expect(PACER.getCourtFromUrl(noTrailingSlashUrl)).toBe('canb');
     });
+
+    it('matches a valid ACMS docket URL', function () {
+      expect(PACER.getCourtFromUrl(AcmsDocketUrl)).toBe('ca9');
+    });
+
+    it('matches a valid ACMS document URL', function () {
+      expect(PACER.getCourtFromUrl(AcmsDocumentUrl)).toBe('ca9');
+    });
+
+    it('matches a valid ECF/PACER CaseQuery for an ACMS docket URL', function () {
+      expect(PACER.getCourtFromUrl(EcfCaseQueryAcmsCaseUrl)).toBe('ca9');
+    });
+
+    it('ignores a non-ACMS Azure URL', function () {
+      expect(PACER.getCourtFromUrl(nonAcmsAzureGovUrl)).toBe(null);
+    });
+
+    it('ignores an ACMS production filing URL', function () {
+      expect(PACER.getCourtFromUrl(AcmsFilingUrl)).toBe(null);
+    });
+
+    it('ignores an ACMS test filing URL', function () {
+      expect(PACER.getCourtFromUrl(AcmsFilingTestUrl)).toBe(null);
+    });
+
+    it('ignores a Fedcourts email domain as a URL', function () {
+      expect(PACER.getCourtFromUrl(FedcourtsNinthUrl)).toBe(null);
+    });
+
+    it('ignores a Fedcourts non-court URL', function () {
+      expect(PACER.getCourtFromUrl(FedcourtsBogusUrl)).toBe(null);
+    });
+
   });
 
   describe('convertToCourtListenerCourt', function () {
