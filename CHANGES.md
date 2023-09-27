@@ -5,7 +5,7 @@
 The following changes are not yet released, but are code complete:
 
 Features:
- - None yet
+ - Adds a warning sign to the toolbar icon when users are on a ACMS website([#346](https://github.com/freelawproject/recap-chrome/pull/346))
 
 Changes:
  - Adds permissions to access ACMS URLs. ACMS is the new CM/ECF replacement

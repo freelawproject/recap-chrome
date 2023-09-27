@@ -66,6 +66,10 @@ let PACER = {
     return null;
   },
 
+  isACMSWebsite: function(url){
+    return url.toLowerCase().includes('azurewebsites.us');
+  },
+
   // Returns true if the URL is for the login page
   isLoginPage: function(url) {
     return this.getCourtFromUrl(url) === 'login';
