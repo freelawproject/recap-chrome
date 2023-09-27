@@ -23,7 +23,7 @@ If you wish to contribute to our efforts to drain PACER, please get in touch usi
 
 Code Standards
 --------------
-1. We have an eslint configuration. Please use it. There are probably plugins for your editor to help you with this. 
+1. We have an eslint configuration (`.eslintrc.js`). Please try to ensure that new commits conform to it, but many existing files unfortunately do not. There are probably plugins for your editor to help you with this. 
 
 1. For commits, please adhere to [the guidance published here][commits]. Intellij has a plugin to help with this. Look for "Git Commit Template".
 
