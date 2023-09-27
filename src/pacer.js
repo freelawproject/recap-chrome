@@ -44,14 +44,26 @@ let PACER_TO_CL_IDS = {
 // called from anywhere; by convention we use an ALL_CAPS name to allude to
 // the purity (const-ness) of this object's contents.
 let PACER = {
-  // Returns the court identifier for a given URL, or null if not a PACER site.
+  // Returns the court identifier for a given URL, or null if not a
+  // PACER, CM/ECF, or ACMS site.
   getCourtFromUrl: function (url) {
-    // This regex is used as a security check to ensure that no components of
-    // RECAP are being used outside of PACER. Be sure tests pass appropriately
-    // before tweaking this regex.
-    let match = (url || '').toLowerCase().match(
-        /^\w+:\/\/(ecf|pacer)\.(\w+)(?:\.audio)?\.uscourts\.gov(?:\/.*)?$/);
-    return match ? match[2] : null;
+    // This function is used as a security check to ensure that no components of
+    // RECAP are being used outside of PACER/ECF/ACMS. Be sure tests
+    // pass appropriately before tweaking these regexes.
+    if (!url) { return null; }
+
+    let match;
+    // CM/ECF and PACER
+    match = url.toLowerCase().match(
+      /^\w+:\/\/(ecf|pacer)\.(\w+)(?:\.audio)?\.uscourts\.gov(?:\/.*)?$/);
+    if (match) { return match[2]; }
+
+    // ACMS
+    match = url.toLowerCase().match(
+      /^\w+:\/\/(\w+)-showdoc\.azurewebsites\.us(?:\/.*)?$/);
+    if (match) { return match[1]; }
+
+    return null;
   },
 
   // Returns true if the URL is for the login page

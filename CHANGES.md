@@ -8,7 +8,12 @@ Features:
  - None yet
 
 Changes:
- - None yet
+ - Adds permissions to access ACMS URLs. ACMS is the new CM/ECF replacement
+   for the Second and Ninth Circuit Courts of Appeals, which goes live
+   for all new cases on Oct. 1, 2023.  We do not currently support
+   ACMS, but because users have to acknlowledge permissions changes,
+   it's important to get that manual step out of the way as soon as
+   possible as we work on the code.
 
 Fixes:
  - None yet
