@@ -5,6 +5,20 @@
 The following changes are not yet released, but are code complete:
 
 Features:
+ - None yet
+
+Changes:
+ - None yet
+
+Fixes:
+ - None yet
+
+For developers:
+ - Nothing yet
+
+## 2.4.0 (2023-09-27)
+
+Features:
  - Adds a warning sign to the toolbar icon when users are on a ACMS website([#346](https://github.com/freelawproject/recap-chrome/pull/346))
 
 Changes:
@@ -15,11 +29,6 @@ Changes:
    it's important to get that manual step out of the way as soon as
    possible as we work on the code.
 
-Fixes:
- - None yet
-  
-For developers:
- - Nothing yet
 
 ## 2.3.0 (2023-07-25)
 
