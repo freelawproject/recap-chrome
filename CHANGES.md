@@ -8,7 +8,7 @@ Features:
  - None yet
 
 Changes:
- - None yet
+ - Enhanced logic to retrieve Zip URLs([#352](https://github.com/freelawproject/recap/issues/352)).
 
 Fixes:
  - None yet
