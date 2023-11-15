@@ -545,7 +545,16 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
     const page = document.createElement('html');
     page.innerHTML = html;
     const frames = page.querySelectorAll('iframe');
-    return frames[0].src;
+    if (frames.length) {
+      return frames[0].src;
+    }
+    // Try to extract the PDF URL from the HTML
+    const showTempURL = html.match(/\/cgi-bin\/show_temp.pl?(.*)/);
+    if (!showTempURL) {
+      return null;
+    }
+    // Clean the match found in the HTML
+    return showTempURL[0].replace(';"', '');
   };
 
   // helper function - convert string to html document
@@ -588,7 +597,6 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
 
   // fetch the html page which contains the <iframe> link to the zip document.
   const htmlPage = await browserSpecificFetch(event.data.id).then((res) => res.text());
-  console.log('RECAP: Successfully submitted zip file request');
   const zipUrl = extractUrl(htmlPage);
   //download zip file and save it to chrome storage
   const blob = await fetch(zipUrl).then((res) => res.blob());
@@ -622,10 +630,17 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
           const link = `<a id="recap-download" href=${blobUrl} download=${filename} width="0" height="0"/>`;
           const htmlBody = stringToDocBody(htmlPage);
           const frame = htmlBody.querySelector('iframe');
-          frame.insertAdjacentHTML('beforebegin', link);
-          frame.src = '';
-          frame.onload = () => document.getElementById('recap-download').click();
-          document.body = htmlBody;
+          if (frame) {
+            frame.insertAdjacentHTML('beforebegin', link);
+            frame.src = '';
+            frame.onload = () => document.getElementById('recap-download').click();
+            document.body = htmlBody;
+          } else {
+            let loadingMessage = document.getElementById('loading-message');
+            loadingMessage.remove();
+            document.body.insertAdjacentHTML('beforebegin', link);
+            document.getElementById('recap-download').click();
+          }
           history.pushState({ content: document.body.innerHTML }, '');
         }
       }
