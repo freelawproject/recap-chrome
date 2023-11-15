@@ -595,9 +595,7 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
   const browserSpecificFetch =
     navigator.userAgent.indexOf('Safari') + navigator.userAgent.indexOf('Chrome') < 0 ? content.fetch : window.fetch;
 
-  // load options
   const options = await getItemsFromStorage('options');
-  // generate the filename
   const pacerCaseId = event.data.id.match(/caseid=(\d*)/)[1];
   const filename = generateFileName(options, pacerCaseId);
 
