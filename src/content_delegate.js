@@ -595,6 +595,32 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
   const browserSpecificFetch =
     navigator.userAgent.indexOf('Safari') + navigator.userAgent.indexOf('Chrome') < 0 ? content.fetch : window.fetch;
 
+  // load options
+  const options = await getItemsFromStorage('options');
+  // generate the filename
+  const pacerCaseId = event.data.id.match(/caseid\=\d*/)[0].replace(/caseid\=/, '');
+  const filename = generateFileName(options, pacerCaseId);
+
+  // show loading message
+  let mainDiv = document.getElementById('cmecfMainContent');
+  let loadingMessageWrapper = document.createElement('div');
+  loadingMessageWrapper.setAttribute('id', 'loading-message');
+  loadingMessageWrapper.style.textAlign = 'center';
+
+  const spinner = document.createElement('i');
+  spinner.classList.add('fa', 'fa-spinner', 'fa-spin');
+  spinner.setAttribute('id', 'recap-button-spinner');
+
+  let spanText = document.createElement('span');
+  spanText.style.fontFamily = 'helvetica,arial,serif';
+  spanText.style.fontSize = '13px';
+  spanText.style.padding = '0px 10px';
+  spanText.innerHTML = `Download in progress for file ${filename}`;
+
+  loadingMessageWrapper.appendChild(spinner);
+  loadingMessageWrapper.appendChild(spanText);
+  mainDiv.append(loadingMessageWrapper);
+
   // fetch the html page which contains the <iframe> link to the zip document.
   const htmlPage = await browserSpecificFetch(event.data.id).then((res) => res.text());
   const zipUrl = extractUrl(htmlPage);
@@ -610,12 +636,6 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
 
   // create the blob and inject it into the page
   const blobUrl = URL.createObjectURL(blob);
-  const pacerCaseId = event.data.id.match(/caseid\=\d*/)[0].replace(/caseid\=/, '');
-
-  // load options
-  const options = await getItemsFromStorage('options');
-  // generate the filename
-  const filename = generateFileName(options, pacerCaseId);
 
   if (options['recap_enabled'] && !this.restricted) {
     this.recap.uploadZipFile(
