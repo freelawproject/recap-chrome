@@ -598,7 +598,7 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
   // load options
   const options = await getItemsFromStorage('options');
   // generate the filename
-  const pacerCaseId = event.data.id.match(/caseid\=\d*/)[0].replace(/caseid\=/, '');
+  const pacerCaseId = event.data.id.match(/caseid=(\d*)/)[1];
   const filename = generateFileName(options, pacerCaseId);
 
   // show loading message
