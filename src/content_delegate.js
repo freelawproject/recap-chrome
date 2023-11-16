@@ -549,7 +549,7 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
       return frames[0].src;
     }
     // Try to extract the PDF URL from the HTML
-    const showTempURL = html.match(/\/cgi-bin\/show_temp.pl?(.*)/);
+    const showTempURL = html.match(new RegExp(String.raw`/cgi-bin/show_temp\.pl\?.*`));
     if (!showTempURL) {
       return null;
     }
