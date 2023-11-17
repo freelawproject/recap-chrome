@@ -554,7 +554,10 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
       return null;
     }
     // Clean the match found in the HTML
-    return showTempURL[0].replace(';"', '');
+    let relativePath = showTempURL[0].replace(/\"|;/, '');
+
+    // Use absolute paths to avoid issue with Firefox.
+    return new URL(relativePath, window.location);
   };
 
   // helper function - convert string to html document
