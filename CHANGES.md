@@ -8,13 +8,19 @@ Features:
  - None yet
 
 Changes:
- - Enhanced logic to retrieve Zip URLs([#352](https://github.com/freelawproject/recap/issues/352)).
+ - None yet
 
 Fixes:
  - None yet
 
 For developers:
  - Nothing yet
+
+## 2.4.1 (2023-11-17)
+
+Changes:
+ - Enhanced logic to retrieve Zip URLs([#352](https://github.com/freelawproject/recap/issues/352)).
+
 
 ## 2.4.0 (2023-09-27)
 
