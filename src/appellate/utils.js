@@ -70,7 +70,11 @@ let APPELLATE = {
   // Returns true if this is a "Attachment page"
   isAttachmentPage: () => {
     let form = document.querySelector("form[name='dktEntry']");
-    return form !== null;
+    if (form !== null)
+      return true;
+    let table = document.getElementsByTagName("table");
+    let header = table.length ? table[0].getElementsByTagName("th") : false;
+    return (header && header.length) ? header[0].textContent.includes('Documents are attached to this filing') : false;
   },
 
   // Returns true if this is a "Download Confirmation page"
