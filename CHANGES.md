@@ -11,7 +11,7 @@ Changes:
  - None yet
 
 Fixes:
- - None yet
+ - Add additional appelate attachment page detection logic([#352](https://github.com/freelawproject/recap-chrome/pull/352))
 
 For developers:
  - Nothing yet
