@@ -85,7 +85,7 @@ function showNotificationTab(details){
     });
   } else if (details.reason === 'update' && currentVersion === '2.4.2'){
     chrome.tabs.create({
-      url: 'https://free.law/fundraiser/2023/recap'
+      url: 'https://donate.free.law/forms/11'
     });
   }
 }
