@@ -11,10 +11,19 @@ Changes:
  - None yet
 
 Fixes:
- - Add additional appelate attachment page detection logic([#352](https://github.com/freelawproject/recap-chrome/pull/352))
-
+ - None yet
+ 
 For developers:
  - Nothing yet
+
+## 2.4.2 (2023-12-15)
+
+Features: 
+ - Adds annual tab popup asking for support from all users (sorry).
+
+Fixes:
+ - Add additional appellate attachment page detection logic([#352](https://github.com/freelawproject/recap-chrome/pull/352))
+
 
 ## 2.4.1 (2023-11-17)
 
