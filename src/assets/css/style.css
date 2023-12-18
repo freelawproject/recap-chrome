@@ -23,8 +23,9 @@
 
 @font-face {
   font-family: 'RecapFontAwesome';
-  src: url("chrome-extension://__MSG_@@extension_id__/assets/fonts/fontawesome-webfont.woff2"), 
-  url("moz-extension://__MSG_@@extension_id__/assets/fonts/fontawesome-webfont.woff2");
+  src: url("moz-extension://__MSG_@@extension_id__/assets/fonts/fontawesome-webfont.woff2"),
+  url("chrome-extension://__MSG_@@extension_id__/assets/fonts/fontawesome-webfont.woff2"),
+  url("safari-web-extension://__MSG_@@extension_id__/assets/fonts/fontawesome-webfont.woff2");
   font-weight: normal;
   font-style: normal;
 }
