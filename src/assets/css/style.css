@@ -522,8 +522,9 @@ footer #version {
   margin-right: 0.25rem;
 }
 
+/* For printed pages, we want to hide anything that we add. */
 @media print {
-  [class^="recap-"], [id^="recap-"] {
+  [class^="recap-"], [id^="recap-"] { /* Any class or ID that starts with `recap-` */
     display: none;
   }
 }
