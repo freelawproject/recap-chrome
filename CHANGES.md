@@ -5,7 +5,7 @@
 The following changes are not yet released, but are code complete:
 
 Features:
- - None yet
+ - Hide recap UI elements from printed pages([#360](https://github.com/freelawproject/recap/issues/360), [#355](https://github.com/freelawproject/recap-chrome/pull/355)).
 
 Changes:
  - None yet
