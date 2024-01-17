@@ -8,7 +8,7 @@ Features:
  - Hide recap UI elements from printed pages([#360](https://github.com/freelawproject/recap/issues/360), [#355](https://github.com/freelawproject/recap-chrome/pull/355)).
 
 Changes:
- - None yet
+ - Shift focus to support: Rename 'Help' tab to 'Donate' and enhance content.([#359](https://github.com/freelawproject/recap/issues/359), [#356](https://github.com/freelawproject/recap-chrome/pull/356)).
 
 Fixes:
  - None yet
