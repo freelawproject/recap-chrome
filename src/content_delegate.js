@@ -482,7 +482,23 @@ ContentDelegate.prototype.handleSingleDocumentPageView = function () {
     return;
   }
 
-  overwriteFormSubmitMethod();
+  if (PACER.hasFilingCookie(document.cookie)) {
+    let table = document.querySelector('form > center');
+    table.style.paddingBottom = '10px';
+
+    // Create a new button for filers accounts and add onclick
+    // event listener to intercept navigation to the PDF document
+    let button = createRecapButtonForFilers('View and RECAP Document');
+    button.addEventListener('click', () => {
+      overwriteFormSubmitMethod();
+    });
+
+    // add the new button inside the form
+    let form = document.querySelector('form');
+    form.append(button);
+  } else {
+    overwriteFormSubmitMethod();
+  }
 
   // When we receive the message from the above submit method, submit the form
   // via XHR so we can get the document before the browser does.
