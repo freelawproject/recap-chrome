@@ -482,7 +482,23 @@ ContentDelegate.prototype.handleSingleDocumentPageView = function () {
     return;
   }
 
-  overwriteFormSubmitMethod();
+  if (PACER.hasFilingCookie(document.cookie)) {
+    let table = document.querySelector('form > center');
+    table.style.paddingBottom = '10px';
+
+    // Create a new button for filers accounts and add onclick
+    // event listener to intercept navigation to the PDF document
+    let button = createRecapButtonForFilers('View and RECAP Document');
+    button.addEventListener('click', () => {
+      overwriteFormSubmitMethod();
+    });
+
+    // add the new button inside the form
+    let form = document.querySelector('form');
+    form.append(button);
+  } else {
+    overwriteFormSubmitMethod();
+  }
 
   // When we receive the message from the above submit method, submit the form
   // via XHR so we can get the document before the browser does.
@@ -663,6 +679,7 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
             document.getElementById('recap-download').click();
           }
           history.pushState({ content: document.body.innerHTML }, '');
+          $('body').css('cursor', 'pointer');
         }
       }
     );
@@ -698,21 +715,35 @@ ContentDelegate.prototype.handleZipFilePageView = function () {
   }
 
   // imperatively manipulate hte dom elements without injecting a script
-  const forms = [...document.querySelectorAll('form')];
-  forms.map((form) => {
-    form.removeAttribute('action');
-    const input = form.querySelector('input');
-    input.removeAttribute('onclick');
-    input.disabled = true;
-    form.hidden = true;
-    const div = document.createElement('div');
-    const button = document.createElement('button');
-    button.textContent = 'Download Documents';
-    button.addEventListener('click', () => window.postMessage({ id: url }));
-    div.appendChild(button);
-    const parentNode = form.parentNode;
-    parentNode.insertBefore(div, form);
-  });
+  if (PACER.hasFilingCookie(document.cookie)) {
+    const inputs = [...document.querySelectorAll("form > input[type='button']")];
+    inputs.map((input) => {
+      let button = createRecapButtonForFilers('Download and RECAP Documents');
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        window.postMessage({ id: url });
+      });
+      // insert new button next to the "Download Documents" button
+      input.after(button);
+    });
+  } else {
+    // imperatively manipulate html dom elements without injecting a script
+    const forms = [...document.querySelectorAll('form')];
+    forms.map((form) => {
+      form.removeAttribute('action');
+      const input = form.querySelector('input');
+      input.removeAttribute('onclick');
+      input.disabled = true;
+      form.hidden = true;
+      const div = document.createElement('div');
+      const button = document.createElement('button');
+      button.textContent = 'Download Documents';
+      button.addEventListener('click', () => window.postMessage({ id: url }));
+      div.appendChild(button);
+      const parentNode = form.parentNode;
+      parentNode.insertBefore(div, form);
+    });
+  }
   // When we receive the message from the above submit method, submit the form
   // via fetch so we can get the document before the browser does.
   window.addEventListener('message', this.onDownloadAllSubmit.bind(this));

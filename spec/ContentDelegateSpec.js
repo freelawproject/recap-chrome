@@ -957,6 +957,7 @@ describe('The ContentDelegate class', function () {
         table.appendChild(table_tr);
         document.body.appendChild(table);
         spyOn(window, 'addEventListener').and.callThrough();
+        spyOnProperty(document, 'cookie').and.returnValue('test_cookie1=false; test_cookie2=true; isFilingAccount=false');
       });
 
       afterEach(function () {

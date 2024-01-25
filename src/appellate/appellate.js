@@ -396,7 +396,20 @@ AppellateDelegate.prototype.handleCombinedPdfPageView = async function () {
 
 // If this page offers a single document, intercept navigation to the document view page.
 AppellateDelegate.prototype.handleSingleDocumentPageView = async function () {
-  overwriteFormSubmitMethod();
+  if (PACER.hasFilingCookie(document.cookie)) {
+    let button = createRecapButtonForFilers('Accept Charges and RECAP Document');
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      let form = event.target.parentNode;
+      form.id = 'form' + new Date().getTime();
+      window.postMessage({ id: form.id }, '*');
+    });
+
+    let form = document.querySelector('form');
+    form.append(button);
+  } else {
+    overwriteFormSubmitMethod();
+  }
 
   this.pacer_case_id = await APPELLATE.getCaseId(this.tabId, this.queryParameters, this.docId);
 

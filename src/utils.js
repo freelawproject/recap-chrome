@@ -459,3 +459,12 @@ async function getPacerCaseIdFromPacerDocId(tabId, pacer_doc_id) {
   console.info(success);
   return caseId;
 }
+
+//Creates an extra button for filer accounts
+function createRecapButtonForFilers(description) {
+  let button = document.createElement('input');
+  button.type = 'submit';
+  button.value = description;
+  button.classList.add('recap-bttn-for-filers', 'btn-primary');
+  return button
+}

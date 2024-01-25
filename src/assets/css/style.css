@@ -522,6 +522,17 @@ footer #version {
   margin-right: 0.25rem;
 }
 
+.recap-bttn-for-filers {
+  margin-left: 5px;
+  border-radius: 3px;
+  border-style: solid;
+  border-width: thin;
+  font-family: helvetica, arial, serif;
+  font-size: 13px;
+  height: 21.5px;
+  border-color: #255885;
+}
+
 /* For printed pages, we want to hide anything that we add. */
 @media print {
   [class^="recap-"], [id^="recap-"] { /* Any class or ID that starts with `recap-` */

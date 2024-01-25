@@ -6,6 +6,7 @@ The following changes are not yet released, but are code complete:
 
 Features:
  - Hide recap UI elements from printed pages([#360](https://github.com/freelawproject/recap/issues/360), [#355](https://github.com/freelawproject/recap-chrome/pull/355)).
+ - Provide two clearly labeled buttons on the RECAP receipt page for accounts with filing permissions: one to RECAP the document and the other to download it normally([#360](https://github.com/freelawproject/recap/issues/357), [#355](https://github.com/freelawproject/recap-chrome/pull/357)).
 
 Changes:
  - Shift focus to support: Rename 'Help' tab to 'Donate' and enhance content.([#359](https://github.com/freelawproject/recap/issues/359), [#356](https://github.com/freelawproject/recap-chrome/pull/356)).
