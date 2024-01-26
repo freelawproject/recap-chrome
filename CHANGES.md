@@ -5,6 +5,20 @@
 The following changes are not yet released, but are code complete:
 
 Features:
+ - None yet
+
+Changes:
+ - None yet
+
+Fixes:
+ - None yet
+ 
+For developers:
+ - Nothing yet
+
+## 2.5.0 (2024-01-26)
+
+Features:
  - Hide recap UI elements from printed pages([#360](https://github.com/freelawproject/recap/issues/360), [#355](https://github.com/freelawproject/recap-chrome/pull/355)).
  - Provide two clearly labeled buttons on the RECAP receipt page for accounts with filing permissions: one to RECAP the document and the other to download it normally([#360](https://github.com/freelawproject/recap/issues/357), [#355](https://github.com/freelawproject/recap-chrome/pull/357)).
 
@@ -12,11 +26,6 @@ Changes:
  - The RECAP [Privacy Policy](https://free.law/recap/privacy-policy/) is updated, simplified, and clarified. The RECAP [homepage](https://free.law/recap/), [FAQs](https://free.law/recap/faq/), and [screenshots](http://free.law/recap/screenshots/) are updated.
  - Shift focus to support: Rename 'Help' tab to 'Donate' and enhance content.([#359](https://github.com/freelawproject/recap/issues/359), [#356](https://github.com/freelawproject/recap-chrome/pull/356)).
 
-Fixes:
- - None yet
- 
-For developers:
- - Nothing yet
 
 ## 2.4.2 (2023-12-15)
 
