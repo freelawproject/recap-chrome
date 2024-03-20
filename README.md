@@ -82,7 +82,7 @@ When a new version is needed, the release process is:
 1. Commit the code.
 1. Tag the code with something like:
 
-        git tag -s '0.8.4' -m "Releases 0.8.4, fixing replaceState and pushState to work in Chrome 43." -u 'mike@freelawproject.org' -f
+        git tag -s '0.8.4' -m "Releases 0.8.4, fixing replaceState and pushState to work in Chrome 43." -u 'mike@free.law' -f
         git push --tags -f
 
 1. Make sure you don't have any working/testing code in your tree that could get zipped up in the next step.
