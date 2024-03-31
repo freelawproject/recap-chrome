@@ -8,7 +8,7 @@ Features:
  - None yet
 
 Changes:
- - None yet
+ - Adds a badge to the extension icon and a banner in the popup to link users to a donate page with information about the pacer class action([#367](https://github.com/freelawproject/recap/issues/367), [#364](https://github.com/freelawproject/recap-chrome/pull/364)).
 
 Fixes:
  - None yet
