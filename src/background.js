@@ -4,6 +4,13 @@
 exportInstance(Notifier);
 exportInstance(Recap);
 
+function chooseVariant(details) {
+  const options = ['A-A', 'A-C', 'B-B', 'B-D'];
+  const randomIndex = Math.floor(Math.random() * options.length);
+  let variant = options[randomIndex];
+  chrome.storage.local.set({ variant: variant });
+}
+
 function saveOptionsAndUpdateToolbar(options) {
   chrome.storage.local.set({ options: options }, function () {
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
@@ -186,6 +193,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
 chrome.runtime.onInstalled.addListener(setDefaultOptions);
 chrome.runtime.onInstalled.addListener(showNotificationTab);
+chrome.runtime.onInstalled.addListener(chooseVariant);
 
 // Watches all the tabs so we can update their toolbar buttons on navigation.
 chrome.tabs.onUpdated.addListener(async function (tabId, details, tab) {
