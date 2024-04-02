@@ -3,32 +3,48 @@
 
 let inputs = document.getElementsByTagName('input');
 
+function removeInfoBanner() {
+  let banner = document.getElementById('header-banner');
+  banner.remove();
+
+  let container = document.getElementById('container');
+  container.classList.add('regular-grid');
+  container.classList.remove('grid-with-banner');
+}
+
 function load_options() {
   chrome.storage.local.get('options', function (items) {
     for (let i = 0; i < inputs.length; i++) {
-      if (inputs[i].type === 'checkbox' ||
-          inputs[i].type === 'radio') {
+      if (inputs[i].type === 'checkbox' || inputs[i].type === 'radio') {
         inputs[i].checked = items.options[inputs[i].id];
       } else if (inputs[i].type === 'text') {
         inputs[i].value = items.options[inputs[i].id] || '';
       }
     }
+    if ('dismiss_class_action_info' in items.options) removeInfoBanner();
   });
 }
 
 function save_options() {
-  let options = {};
-  for (let i = 0; i < inputs.length; i++) {
-    if (inputs[i].type === 'checkbox' ||
-        inputs[i].type === 'radio'){
-      options[inputs[i].id] = inputs[i].checked;
-    } else if (inputs[i].type === 'text') {
-      options[inputs[i].id] = inputs[i].value;
+  chrome.storage.local.get('options', function (items) {
+    let options = items.options;
+    for (let i = 0; i < inputs.length; i++) {
+      if (inputs[i].type === 'checkbox' || inputs[i].type === 'radio') {
+        options[inputs[i].id] = inputs[i].checked;
+      } else if (inputs[i].type === 'text') {
+        options[inputs[i].id] = inputs[i].value;
+      }
     }
-  }
-  chrome.storage.local.set({options: options}, function(){
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-      updateToolbarButton(tabs[0]);
+
+    let banner = document.getElementById('header-banner');
+    if (!banner) {
+      options['dismiss_class_action_info'] = true;
+    }
+
+    chrome.storage.local.set({ options: options }, function () {
+      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        updateToolbarButton(tabs[0]);
+      });
     });
   });
 }
@@ -68,19 +84,19 @@ if (navigator.userAgent.indexOf('Chrome') < 0) {
 }
 
 if (/Firefox/.test(navigator.userAgent) && !/Seamonkey/.test(navigator.userAgent)){
-  // Detect firefox engine 
+  // Detect firefox engine
   let firefox_button = document.getElementById('firefox_store_button')
   firefox_button.classList.remove('hidden')
 }
 
 if (/Safari/.test(navigator.userAgent) && !/Chrome|Chromium/.test(navigator.userAgent)){
-  // Detect Safari engine 
+  // Detect Safari engine
   let safari_button = document.getElementById('safari_store_button')
   safari_button.classList.remove('hidden')
 }
 
 if (/Chrome|Edg./.test(navigator.userAgent) && !/Chromium/.test(navigator.userAgent)){
-  // Detect Chrome engine 
+  // Detect Chrome engine
   let chrome_button = document.getElementById('chrome_store_button')
   chrome_button.classList.remove('hidden')
 }
@@ -115,4 +131,17 @@ function showHideReceiptsWarning (tabs){
 (function () {
   let ver = document.getElementById('version');
   ver.textContent = `(version ${chrome.runtime.getManifest().version})`;
+
+  let dismiss_button = document.querySelector("#dismiss-banner button");
+  if (dismiss_button) {
+    dismiss_button.addEventListener('click', function (e) {
+      removeInfoBanner();
+      save_options()
+    });
+  }
+
+  // Use the messaging APIs to set up a Port between the popup and background
+  // page. We should get a onDisconnect event in the background page when
+  // the popup goes away.
+  chrome.runtime.connect({ name: "popup" });
 })();

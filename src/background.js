@@ -4,6 +4,21 @@
 exportInstance(Notifier);
 exportInstance(Recap);
 
+function chooseVariant(details) {
+  const options = ['A-A', 'A-C', 'B-B', 'B-D'];
+  const randomIndex = Math.floor(Math.random() * options.length);
+  let variant = options[randomIndex];
+  chrome.storage.local.set({ variant: variant });
+}
+
+function saveOptionsAndUpdateToolbar(options) {
+  chrome.storage.local.set({ options: options }, function () {
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      updateToolbarButton(tabs[0]);
+    });
+  });
+}
+
 function setDefaultOptions(details) {
   // Set options to their default values.
   console.debug('RECAP: Setting default options after install/upgrade.');
@@ -22,7 +37,7 @@ function setDefaultOptions(details) {
     };
     if ($.isEmptyObject(items)) {
       console.debug('RECAP: New install. Attempting to set defaults.');
-      chrome.storage.local.set({options: defaults});
+      saveOptionsAndUpdateToolbar(defaults)
       console.debug('RECAP: Set the defaults on new install successfully.');
     } else {
       console.debug('RECAP: Existing install. Attempting to set new ' +
@@ -52,7 +67,7 @@ function setDefaultOptions(details) {
         }
       }
       console.debug('RECAP: Persisting new settings object.');
-      chrome.storage.local.set({options: items.options});
+      saveOptionsAndUpdateToolbar(items.options)
     }
   });
 }
@@ -178,6 +193,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
 chrome.runtime.onInstalled.addListener(setDefaultOptions);
 chrome.runtime.onInstalled.addListener(showNotificationTab);
+chrome.runtime.onInstalled.addListener(chooseVariant);
 
 // Watches all the tabs so we can update their toolbar buttons on navigation.
 chrome.tabs.onUpdated.addListener(async function (tabId, details, tab) {
@@ -186,4 +202,15 @@ chrome.tabs.onUpdated.addListener(async function (tabId, details, tab) {
 });
 chrome.tabs.onActivated.addListener(function(activeInfo){
   getTabById(activeInfo.tabId, updateToolbarButton);
+});
+
+chrome.runtime.onConnect.addListener(function (port) {
+  if (port.name === 'popup') {
+    port.onDisconnect.addListener(function () {
+      chrome.storage.local.get('options', function (items) {
+        items.options['dismiss_bagde'] = true;
+        saveOptionsAndUpdateToolbar(items.options);
+      });
+    });
+  }
 });

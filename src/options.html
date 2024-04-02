@@ -9,29 +9,70 @@
 </head>
 
 <body id="options-body">
-  <div id="container">
+  <div id="container" class="grid-with-banner">
+    <!-- Main Tab Content + Donation plea -->
     <header>
-
-      <!-- Navigation Tabs -->
-      <nav>
-        <div class="nav nav-tabs" id="nav-recap-tab" role="tablist">
-          <a id="nav-recap-tab" class="col-sm text-center nav-item nav-link active" data-toggle="tab" role="tab"
-            href="#nav-recap" aria-controls="nav-recap" aria-selected="true">
-            RECAP Archive
-          </a>
-          <a id="nav-settings-tab" class="col-sm text-center nav-item nav-link" data-toggle="tab" role="tab"
-            href="#nav-settings" aria-controls="nav-settings" aria-selected="false">
-            Settings
-          </a>
-          <a id="nav-donate-tab" class="col-sm text-center nav-item nav-link" data-toggle="tab" role="tab"
-            href="#nav-donate" aria-controls="nav-donate" aria-selected="false">
-            Donate
-          </a>
+      <div class="d-flex flex-column">
+        <div id="header-banner" class="info-banner d-flex flex-column">
+          <div id="message-section" class="d-flex">
+            <div class="flex align-items-center banner-icon-container">
+              <div id="banner-icon">
+                <?xml version="1.0" encoding="UTF-8"?>
+                <svg fill="none" viewBox="0 0 24 25" xmlns="http://www.w3.org/2000/svg">
+                  <g clip-path="url(#a)" clip-rule="evenodd" fill="#000" fill-rule="evenodd">
+                    <path
+                      d="m3 9.5v12.75c0 0.1989 0.07902 0.3897 0.21967 0.5303 0.14065 0.1407 0.33142 0.2197 0.53033 0.2197h16.5c0.1989 0 0.3897-0.079 0.5303-0.2197 0.1407-0.1406 0.2197-0.3314 0.2197-0.5303v-12.75h1.5v12.75c0 0.5967-0.2371 1.169-0.659 1.591-0.422 0.4219-0.9943 0.659-1.591 0.659h-16.5c-0.59674 0-1.169-0.2371-1.591-0.659-0.42196-0.422-0.65901-0.9943-0.65901-1.591v-12.75h1.5zm12-7.5c-0.5967 0-1.169 0.23705-1.591 0.65901-0.4219 0.42196-0.659 0.99425-0.659 1.591 0 0.147 0.0495 0.24 0.18 0.3405 0.1545 0.1215 0.408 0.225 0.735 0.3 0.4188 0.08926 0.8471 0.12605 1.275 0.1095h0.0225l0.0375-0.0015 0.0375 3e-3h0.021c0.1269 0.00578 0.2541 0.00528 0.381-0.0015 0.255-9e-3 0.5805-0.039 0.897-0.1095 0.3255-0.072 0.579-0.177 0.735-0.2985 0.129-0.099 0.1785-0.195 0.1785-0.3405 2e-4 -0.2956-0.0579-0.58834-0.1708-0.8615-0.113-0.27315-0.2787-0.52137-0.4877-0.73046-0.2089-0.20909-0.457-0.37496-0.7301-0.48813-0.2731-0.11316-0.5658-0.17141-0.8614-0.17141zm0 4.5h-9e-3c-0.1629 0.00752-0.3261 0.00752-0.489 0-0.392-0.01404-0.7821-0.06273-1.1655-0.1455-0.4245-0.0945-0.921-0.2625-1.3275-0.5775-0.2378-0.17683-0.4304-0.40729-0.5623-0.67263s-0.1993-0.55807-0.1967-0.85437c0-0.99456 0.3951-1.9484 1.0983-2.6516 0.7033-0.70326 1.6571-1.0984 2.6517-1.0984s1.9484 0.39509 2.6516 1.0984c0.7033 0.70326 1.0984 1.6571 1.0984 2.6516 0 0.681-0.3255 1.1895-0.759 1.5255-0.405 0.315-0.903 0.483-1.3275 0.5775-0.5436 0.11857-1.1 0.16846-1.656 0.1485h-0.0075v-0.0015z" />
+                    <path
+                      d="m9 2c-0.59674 0-1.169 0.23705-1.591 0.65901s-0.65901 0.99425-0.65901 1.591c0 0.147 0.0495 0.24 0.18 0.3405 0.1545 0.1215 0.408 0.225 0.735 0.3 0.41881 0.08926 0.8471 0.12605 1.275 0.1095h0.0225l0.0375-0.0015 0.0375 3e-3h0.021l0.0795 0.0015c0.40237 0.00365 0.80403-0.03455 1.1985-0.114 0.3255-0.072 0.579-0.177 0.735-0.2985 0.129-0.099 0.1785-0.195 0.1785-0.3405 0-0.59674-0.237-1.169-0.659-1.591s-0.99425-0.65901-1.591-0.65901zm0 4.5h-9e-3c-0.16291 0.00752-0.32609 0.00752-0.489 0-0.39203-0.01404-0.78205-0.06273-1.1655-0.1455-0.4245-0.0945-0.921-0.2625-1.3275-0.5775-0.23776-0.17683-0.43042-0.40729-0.56231-0.67263s-0.19928-0.55807-0.19669-0.85437c0-0.99456 0.39509-1.9484 1.0984-2.6516 0.70326-0.70326 1.6571-1.0984 2.6516-1.0984s1.9484 0.39509 2.6517 1.0984c0.7032 0.70326 1.0983 1.6571 1.0983 2.6516 0 0.681-0.3255 1.1895-0.759 1.5255-0.405 0.315-0.903 0.483-1.3275 0.5775-0.5431 0.11843-1.099 0.16832-1.6545 0.1485h-9e-3v-0.0015zm2.25 18v-15h1.5v15h-1.5z" />
+                    <path
+                      d="M22.5 6.5H1.5V8H22.5V6.5ZM1.5 5C1.10218 5 0.720644 5.15804 0.43934 5.43934C0.158035 5.72064 0 6.10218 0 6.5L0 8C0 8.39782 0.158035 8.77936 0.43934 9.06066C0.720644 9.34196 1.10218 9.5 1.5 9.5H22.5C22.8978 9.5 23.2794 9.34196 23.5607 9.06066C23.842 8.77936 24 8.39782 24 8V6.5C24 6.10218 23.842 5.72064 23.5607 5.43934C23.2794 5.15804 22.8978 5 22.5 5H1.5Z" />
+                  </g>
+                  <defs>
+                    <clipPath id="a">
+                      <rect transform="translate(0 .5)" width="24" height="24" fill="#fff" />
+                    </clipPath>
+                  </defs>
+                </svg>
+              </div>
+            </div>
+            <p id="info-banner-message">
+              <b>We helped win the PACER class action lawsuit</b> and we’re just getting started.
+            </p>
+            <div id="dismiss-banner" class="d-flex align-items-start justify-content-end">
+              <button type="button" class="close" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+          </div>
+          <div class="input-group-append d-flex justify-content-center">
+            <a class="btn btn-primary" id="learn-more-button" target="_blank" rel="noopener"
+              href="https://donate.free.law/forms/support-free-pacer">
+              &nbsp;Learn More
+            </a>
+          </div>
         </div>
-      </nav>
+          <div>
+            <nav>
+              <div class="nav nav-tabs" id="nav-recap-tab" role="tablist">
+                <a id="nav-recap-tab" class="col-sm text-center nav-item nav-link active" data-toggle="tab" role="tab"
+                  href="#nav-recap" aria-controls="nav-recap" aria-selected="true">
+                  RECAP Archive
+                </a>
+                <a id="nav-settings-tab" class="col-sm text-center nav-item nav-link" data-toggle="tab" role="tab"
+                  href="#nav-settings" aria-controls="nav-settings" aria-selected="false">
+                  Settings
+                </a>
+                <a id="nav-donate-tab" class="col-sm text-center nav-item nav-link" data-toggle="tab" role="tab" href="#nav-donate"
+                  aria-controls="nav-donate" aria-selected="false">
+                  Donate
+                </a>
+              </div>
+            </nav>
+          </div>
+      </div>
+      <!-- Navigation Tabs -->
     </header>
 
-    <!-- Main Tab Content + Donation plea -->
     <main>
       <div class="tab-content" id="nav-recap-tabContent">
 
