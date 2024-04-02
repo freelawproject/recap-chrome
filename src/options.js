@@ -26,23 +26,25 @@ function load_options() {
 }
 
 function save_options() {
-  let options = {};
-  for (let i = 0; i < inputs.length; i++) {
-    if (inputs[i].type === 'checkbox' || inputs[i].type === 'radio') {
-      options[inputs[i].id] = inputs[i].checked;
-    } else if (inputs[i].type === 'text') {
-      options[inputs[i].id] = inputs[i].value;
+  chrome.storage.local.get('options', function (items) {
+    let options = items.options;
+    for (let i = 0; i < inputs.length; i++) {
+      if (inputs[i].type === 'checkbox' || inputs[i].type === 'radio') {
+        options[inputs[i].id] = inputs[i].checked;
+      } else if (inputs[i].type === 'text') {
+        options[inputs[i].id] = inputs[i].value;
+      }
     }
-  }
 
-  let banner = document.getElementById('header-banner');
-  if (!banner) {
-    options['dismiss_class_action_info'] = true;
-  }
+    let banner = document.getElementById('header-banner');
+    if (!banner) {
+      options['dismiss_class_action_info'] = true;
+    }
 
-  chrome.storage.local.set({ options: options }, function () {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      updateToolbarButton(tabs[0]);
+    chrome.storage.local.set({ options: options }, function () {
+      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+        updateToolbarButton(tabs[0]);
+      });
     });
   });
 }
