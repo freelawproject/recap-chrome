@@ -548,8 +548,26 @@ footer #version {
   margin-bottom: 10px;
 }
 
-.info-banner #message-section p{
-  color: #004085
+#info-banner-message {
+  font-size: 16px;
+  color: #004085;
+}
+
+.banner-icon-container {
+  padding-top: 12.5px;
+  padding-right: 20px;
+  padding-bottom: 12.5px;
+}
+
+#banner-icon {
+  width: 24px;
+}
+
+#dismiss-banner {
+  padding-left: 20px;
+}
+#dismiss-banner button {
+  width: 16px;
 }
 
 /* For printed pages, we want to hide anything that we add. */

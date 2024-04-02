@@ -132,7 +132,7 @@ function showHideReceiptsWarning (tabs){
   let ver = document.getElementById('version');
   ver.textContent = `(version ${chrome.runtime.getManifest().version})`;
 
-  let dismiss_button = document.getElementById('dismiss-info');
+  let dismiss_button = document.querySelector("#dismiss-banner button");
   if (dismiss_button) {
     dismiss_button.addEventListener('click', function (e) {
       removeInfoBanner();
