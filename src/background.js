@@ -4,6 +4,14 @@
 exportInstance(Notifier);
 exportInstance(Recap);
 
+function saveOptionsAndUpdateToolbar(options) {
+  chrome.storage.local.set({ options: options }, function () {
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      updateToolbarButton(tabs[0]);
+    });
+  });
+}
+
 function setDefaultOptions(details) {
   // Set options to their default values.
   console.debug('RECAP: Setting default options after install/upgrade.');
@@ -22,7 +30,7 @@ function setDefaultOptions(details) {
     };
     if ($.isEmptyObject(items)) {
       console.debug('RECAP: New install. Attempting to set defaults.');
-      chrome.storage.local.set({options: defaults});
+      saveOptionsAndUpdateToolbar(defaults)
       console.debug('RECAP: Set the defaults on new install successfully.');
     } else {
       console.debug('RECAP: Existing install. Attempting to set new ' +
@@ -52,7 +60,7 @@ function setDefaultOptions(details) {
         }
       }
       console.debug('RECAP: Persisting new settings object.');
-      chrome.storage.local.set({options: items.options});
+      saveOptionsAndUpdateToolbar(items.options)
     }
   });
 }
