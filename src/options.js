@@ -1,5 +1,15 @@
 // JavaScript for the options page/popup.
 
+const bannerMessages = {
+  A: '',
+  B: '',
+};
+const donateLinks = {
+  A: '',
+  B: '',
+  C: '',
+  D: '',
+};
 
 let inputs = document.getElementsByTagName('input');
 
@@ -12,8 +22,8 @@ function removeInfoBanner() {
   container.classList.remove('grid-with-banner');
 }
 
-function load_options() {
-  chrome.storage.local.get('options', function (items) {
+async function load_options() {
+  await chrome.storage.local.get('options', function (items) {
     for (let i = 0; i < inputs.length; i++) {
       if (inputs[i].type === 'checkbox' || inputs[i].type === 'radio') {
         inputs[i].checked = items.options[inputs[i].id];
@@ -22,6 +32,20 @@ function load_options() {
       }
     }
     if ('dismiss_class_action_info' in items.options) removeInfoBanner();
+  });
+
+  await chrome.storage.local.get('variant', function (items) {
+    let banner = document.getElementById('header-banner');
+    if (!banner) return;
+
+    let bannerVariant, linkVariant;
+    [bannerVariant, linkVariant] = items.variant.split('-');
+
+    let bannerInfo = document.getElementById('info-banner-message');
+    bannerInfo.innerHTML = bannerMessages[bannerVariant];
+
+    let learnMoreButton = document.getElementById('learn-more-button');
+    learnMoreButton.href = donateLinks[linkVariant];
   });
 }
 
