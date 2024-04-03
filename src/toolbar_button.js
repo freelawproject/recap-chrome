@@ -30,7 +30,7 @@ function updateToolbarButton(tab) {
   chrome.storage.local.get('options', function(items){
 
     if ('dismiss_bagde' in items['options'] && items['options']['dismiss_bagde']) {
-      chrome.browserAction.setBadgeText({});
+      chrome.browserAction.setBadgeText({ text: '' });
     } else {
       chrome.browserAction.setBadgeText({ text: '🎁' });
     }
