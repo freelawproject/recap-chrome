@@ -8,15 +8,21 @@ Features:
  - None yet
 
 Changes:
- - Adds a badge to the extension icon and a banner in the popup to link users to a donate page with information about the pacer class action([#367](https://github.com/freelawproject/recap/issues/367), [#364](https://github.com/freelawproject/recap-chrome/pull/364)).
- - Adds logic to display variants of the new banner component([#365](https://github.com/freelawproject/recap-chrome/pull/365))
- - Fix setBadgeText type error([#366](https://github.com/freelawproject/recap-chrome/pull/366)).
+ - None yet
 
 Fixes:
  - None yet
  
 For developers:
  - Nothing yet
+
+## 2.6.0 (2024-04-04)
+
+Changes:
+ - Adds a badge to the extension icon and a banner in the popup to link users to a donate page with information about the pacer class action([#367](https://github.com/freelawproject/recap/issues/367), [#364](https://github.com/freelawproject/recap-chrome/pull/364)).
+ - Adds logic to display variants of the new banner component([#365](https://github.com/freelawproject/recap-chrome/pull/365))
+ - Fix setBadgeText type error([#366](https://github.com/freelawproject/recap-chrome/pull/366)).
+
 
 ## 2.5.0 (2024-01-26)
 
