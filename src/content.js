@@ -47,6 +47,28 @@ async function addRecapInformation(msg) {
       });
     }
 
+    const options = await getItemsFromStorage('options');
+    if ('dismiss_class_action_info' in options && options['dismiss_class_action_info']) {
+      return;
+    }
+
+    const variant = await getItemsFromStorage('variant');
+    const [bannerVariant, linkVariant] = variant.split('-');
+    PACER.addRecapBannerToLoginPage(
+      bannerMessages[bannerVariant], donateLinks[linkVariant]
+    );
+
+    let dismiss_button = document.getElementById('dismiss_recap_info_banner');
+    dismiss_button.addEventListener('click', async () => {
+      // Updates user preferences and remove the information banner
+      let info_banner = document.getElementById('recap_info_banner');
+      info_banner.remove();
+
+      let options = await getItemsFromStorage('options');
+      options['dismiss_class_action_info'] = true;
+      saveItemToStorage({ options: options });
+    });
+
     return;
   }
 
