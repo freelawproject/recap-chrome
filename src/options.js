@@ -1,16 +1,5 @@
 // JavaScript for the options page/popup.
 
-const bannerMessages = {
-  A: 'The PACER fees class action was settled for $125 million. Free Law Project will continue the fight.',
-  B: 'News! The PACER fees class action was settled. Learn more and help us make PACER free forever.',
-};
-const donateLinks = {
-  A: 'https://donate.free.law/forms/pacer-a1',
-  B: 'https://donate.free.law/forms/pacer-a2',
-  C: 'https://donate.free.law/forms/pacer-b1',
-  D: 'https://donate.free.law/forms/pacer-b2',
-};
-
 let inputs = document.getElementsByTagName('input');
 
 function removeInfoBanner() {
