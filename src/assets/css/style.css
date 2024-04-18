@@ -566,10 +566,10 @@ footer #version {
 }
 
 .banner-open-btn {
-  width: 73px;
+  width: 100px;
   height: 36px;
   font-family: helvetica,arial,serif;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 400;
   text-decoration: none;
   color: white;
@@ -600,6 +600,10 @@ footer #version {
 .banner-message-wrapper {
   display: flex;
   flex-direction: column;
+}
+
+.banner-message-wrapper p {
+  font-size: 15px;
 }
 
 /* For printed pages, we want to hide anything that we add. */

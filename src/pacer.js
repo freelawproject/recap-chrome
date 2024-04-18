@@ -757,8 +757,8 @@ let PACER = {
 
     let recap_icon = document.createElement('img');
     recap_icon.src = chrome.extension.getURL('assets/images/icon-48.png');
-    recap_icon.style.width = '48px';
-    recap_icon.style.height = '48px';
+    recap_icon.style.width = '40px';
+    recap_icon.style.height = '40px';
     banner_icon_container.appendChild(recap_icon);
 
     let banner_message_wrapper = document.createElement('div');
@@ -770,10 +770,11 @@ let PACER = {
     banner_message_wrapper.appendChild(banner_text);
 
     let banner_button = document.createElement('a');
+    banner_button.id = 'learn_more_btn';
     banner_button.classList.add('btn');
     banner_button.classList.add('btn-primary');
     banner_button.classList.add('banner-open-btn');
-    banner_button.innerHTML = 'Open';
+    banner_button.innerHTML = 'Learn More';
     banner_button.href = link;
     banner_button.target = '_blank';
     banner_button.rel = 'noopener';
