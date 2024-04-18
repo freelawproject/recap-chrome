@@ -8,13 +8,19 @@ Features:
  - None yet
 
 Changes:
- - Adds a banner to the PACER login page to link users to a donate page with information about the pacer class action([#367](https://github.com/freelawproject/recap/issues/367), [#368](https://github.com/freelawproject/recap-chrome/pull/368)).
+ - None yet
 
 Fixes:
  - None yet
  
 For developers:
  - Nothing yet
+
+## 2.6.1 (2024-04-18)
+
+Changes:
+ - Adds a banner to the PACER login page to link users to a donate page with information about the pacer class action([#367](https://github.com/freelawproject/recap/issues/367), [#368](https://github.com/freelawproject/recap-chrome/pull/368)).
+
 
 ## 2.6.0 (2024-04-04)
 
