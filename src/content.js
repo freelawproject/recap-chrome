@@ -1,4 +1,15 @@
 // Content script to run when DOM finishes loading (run_at: "document_end").
+const bannerMessages = {
+  A: 'The PACER fees class action was settled for $125 million. Free Law Project will continue the fight.',
+  B: 'News! The PACER fees class action was settled. Learn more and help us make PACER free forever.',
+};
+
+const donateLinks = {
+  A: 'https://donate.free.law/forms/pacer-a1',
+  B: 'https://donate.free.law/forms/pacer-a2',
+  C: 'https://donate.free.law/forms/pacer-b1',
+  D: 'https://donate.free.law/forms/pacer-b2',
+};
 
 let url = window.location.href;
 let court = PACER.getCourtFromUrl(url);
@@ -35,6 +46,29 @@ async function addRecapInformation(msg) {
         attributeOldValue: true,
       });
     }
+
+    const options = await getItemsFromStorage('options');
+    if ('dismiss_class_action_info' in options && options['dismiss_class_action_info']) {
+      return;
+    }
+
+    const variant = await getItemsFromStorage('variant');
+    const [bannerVariant, linkVariant] = variant.split('-');
+    PACER.addRecapBannerToLoginPage(
+      bannerMessages[bannerVariant], donateLinks[linkVariant]
+    );
+
+    let dismiss_button = document.getElementById('dismiss_recap_info_banner');
+    dismiss_button.addEventListener('click', async () => {
+      await PACER.removeBannerFromLoginPage();
+      return false;
+    });
+
+    let learn_more_btn = document.getElementById('learn_more_btn');
+    learn_more_btn.addEventListener('click', async () => {
+      await PACER.removeBannerFromLoginPage();
+      return true;
+    });
 
     return;
   }

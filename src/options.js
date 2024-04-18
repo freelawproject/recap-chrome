@@ -1,16 +1,5 @@
 // JavaScript for the options page/popup.
 
-const bannerMessages = {
-  A: 'The PACER fees class action was settled for $125 million. Free Law Project will continue the fight.',
-  B: 'News! The PACER fees class action was settled. Learn more and help us make PACER free forever.',
-};
-const donateLinks = {
-  A: 'https://donate.free.law/forms/pacer-a1',
-  B: 'https://donate.free.law/forms/pacer-a2',
-  C: 'https://donate.free.law/forms/pacer-b1',
-  D: 'https://donate.free.law/forms/pacer-b2',
-};
-
 let inputs = document.getElementsByTagName('input');
 
 function removeInfoBanner() {
@@ -31,21 +20,6 @@ async function load_options() {
         inputs[i].value = items.options[inputs[i].id] || '';
       }
     }
-    if ('dismiss_class_action_info' in items.options) removeInfoBanner();
-  });
-
-  await chrome.storage.local.get('variant', function (items) {
-    let banner = document.getElementById('header-banner');
-    if (!banner) return;
-
-    let bannerVariant, linkVariant;
-    [bannerVariant, linkVariant] = items.variant.split('-');
-
-    let bannerInfo = document.getElementById('info-banner-message');
-    bannerInfo.innerHTML = bannerMessages[bannerVariant];
-
-    let learnMoreButton = document.getElementById('learn-more-button');
-    learnMoreButton.href = donateLinks[linkVariant];
   });
 }
 
@@ -58,11 +32,6 @@ function save_options() {
       } else if (inputs[i].type === 'text') {
         options[inputs[i].id] = inputs[i].value;
       }
-    }
-
-    let banner = document.getElementById('header-banner');
-    if (!banner) {
-      options['dismiss_class_action_info'] = true;
     }
 
     chrome.storage.local.set({ options: options }, function () {
@@ -155,17 +124,4 @@ function showHideReceiptsWarning (tabs){
 (function () {
   let ver = document.getElementById('version');
   ver.textContent = `(version ${chrome.runtime.getManifest().version})`;
-
-  let dismiss_button = document.querySelector("#dismiss-banner button");
-  if (dismiss_button) {
-    dismiss_button.addEventListener('click', function (e) {
-      removeInfoBanner();
-      save_options()
-    });
-  }
-
-  // Use the messaging APIs to set up a Port between the popup and background
-  // page. We should get a onDisconnect event in the background page when
-  // the popup goes away.
-  chrome.runtime.connect({ name: "popup" });
 })();

@@ -744,6 +744,66 @@ let PACER = {
     }
   },
 
+  addRecapBannerToLoginPage: (message, link) => {
+    let headerContainer = document.getElementById('pscHeaderContainer');
+    let banner_div = document.createElement('div');
+
+    let banner_wrapper = document.createElement('div');
+    banner_wrapper.id = 'recap_info_banner';
+    banner_wrapper.classList.add('recap-login-banner');
+
+    let banner_icon_container = document.createElement('div');
+    banner_icon_container.classList.add('banner-icon-container');
+
+    let recap_icon = document.createElement('img');
+    recap_icon.src = chrome.extension.getURL('assets/images/icon-48.png');
+    recap_icon.style.width = '40px';
+    recap_icon.style.height = '40px';
+    banner_icon_container.appendChild(recap_icon);
+
+    let banner_message_wrapper = document.createElement('div');
+    banner_message_wrapper.classList.add('banner-message-wrapper')
+
+    let banner_text = document.createElement('p');
+    banner_text.innerHTML = message;
+
+    banner_message_wrapper.appendChild(banner_text);
+
+    let banner_button = document.createElement('a');
+    banner_button.id = 'learn_more_btn';
+    banner_button.classList.add('btn');
+    banner_button.classList.add('btn-primary');
+    banner_button.classList.add('banner-open-btn');
+    banner_button.innerHTML = 'Learn More';
+    banner_button.href = link;
+    banner_button.target = '_blank';
+    banner_button.rel = 'noopener';
+
+    let dismiss_button = document.createElement('a');
+    dismiss_button.classList.add('banner-close-btn');
+    dismiss_button.id = 'dismiss_recap_info_banner'
+    dismiss_button.href = 'javascript:void(0);';
+    dismiss_button.innerHTML = '<span aria-hidden="true">&times;</span>';
+
+    banner_wrapper.appendChild(banner_icon_container);
+    banner_wrapper.appendChild(banner_message_wrapper);
+    banner_wrapper.appendChild(banner_button);
+    banner_wrapper.appendChild(dismiss_button);
+    banner_div.appendChild(banner_wrapper);
+
+    headerContainer.after(banner_div);
+  },
+  
+  removeBannerFromLoginPage: async () => {
+    // Updates user preferences and remove the information banner
+    let info_banner = document.getElementById('recap_info_banner');
+    info_banner.remove();
+
+    let options = await getItemsFromStorage('options');
+    options['dismiss_class_action_info'] = true;
+    saveItemToStorage({ options: options });
+  },
+
   // These are all the supported PACER court identifiers, together with their
   // West-style court name abbreviations.
   COURT_ABBREVS: {

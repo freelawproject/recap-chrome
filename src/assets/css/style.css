@@ -540,34 +540,70 @@ footer #version {
   border-color: #255885;
 }
 
-.info-banner {
-  background-color: #CCE5FF;
-  border-color: #B8DAFF;
-  border-radius: 4px;
-  padding: 28px 20px;
-  margin-bottom: 10px;
-}
-
-#info-banner-message {
-  font-size: 16px;
-  color: #004085;
+.recap-login-banner {
+  display: flex;
+  position: absolute;
+  width: 534px;
+  height: 75px;
+  align-items: center;
+  background-color: #FFFFFF;
+  border: 1px solid black;
+  gap: 10px;
+  padding: 10px 13px;
+  margin: 0 auto;
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.15);
+  left: 0;
+  right: 0;
 }
 
 .banner-icon-container {
-  padding-top: 12.5px;
-  padding-right: 20px;
-  padding-bottom: 12.5px;
+  width: 56px;
+  height: 55px;
+  display: flex;
+  align-items: center;
+  justify-items: center;
+  order: 0;
 }
 
-#banner-icon {
-  width: 24px;
+.banner-open-btn {
+  width: 100px;
+  height: 36px;
+  font-family: helvetica,arial,serif;
+  font-size: 15px;
+  font-weight: 400;
+  text-decoration: none;
+  color: white;
 }
 
-#dismiss-banner {
-  padding-left: 20px;
+.banner-open-btn:visited,
+.banner-open-btn:link {
+  color: white;
 }
-#dismiss-banner button {
-  width: 16px;
+
+.banner-close-btn {
+  position: absolute;
+  top: 0px;
+  right: 5px;
+  text-decoration: none;
+  opacity: 0.5;
+  color: black;
+}
+
+.banner-close-btn:hover {
+  opacity: 0.9;
+}
+
+.banner-close-btn span {
+  font-size: 17px;
+}
+
+.banner-message-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.banner-message-wrapper p {
+  font-size: 15px;
 }
 
 /* For printed pages, we want to hide anything that we add. */
