@@ -793,6 +793,16 @@ let PACER = {
 
     headerContainer.after(banner_div);
   },
+  
+  removeBannerFromLoginPage: async () => {
+    // Updates user preferences and remove the information banner
+    let info_banner = document.getElementById('recap_info_banner');
+    info_banner.remove();
+
+    let options = await getItemsFromStorage('options');
+    options['dismiss_class_action_info'] = true;
+    saveItemToStorage({ options: options });
+  },
 
   // These are all the supported PACER court identifiers, together with their
   // West-style court name abbreviations.

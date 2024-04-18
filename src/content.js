@@ -60,13 +60,14 @@ async function addRecapInformation(msg) {
 
     let dismiss_button = document.getElementById('dismiss_recap_info_banner');
     dismiss_button.addEventListener('click', async () => {
-      // Updates user preferences and remove the information banner
-      let info_banner = document.getElementById('recap_info_banner');
-      info_banner.remove();
+      await PACER.removeBannerFromLoginPage();
+      return false;
+    });
 
-      let options = await getItemsFromStorage('options');
-      options['dismiss_class_action_info'] = true;
-      saveItemToStorage({ options: options });
+    let learn_more_btn = document.getElementById('learn_more_btn');
+    learn_more_btn.addEventListener('click', async () => {
+      await PACER.removeBannerFromLoginPage();
+      return true;
     });
 
     return;
