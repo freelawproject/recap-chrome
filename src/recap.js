@@ -18,6 +18,48 @@ function Recap() {
       'APPELLATE_CASE_QUERY_RESULT_PAGE': 15,
       'ACMS_DOCKET_JSON': 16,
     };
+
+  function _buildForm(
+    pacer_court,
+    pacer_case_id,
+    file,
+    upload_type,
+  ) {
+    let formData = new FormData();
+    formData.append('court', PACER.convertToCourtListenerCourt(pacer_court));
+    formData.append('upload_type', UPLOAD_TYPES[upload_type]);
+    formData.append('filepath_local', file);
+    formData.append('debug', DEBUG);
+    pacer_case_id && formData.append('pacer_case_id', pacer_case_id);
+    return formData;
+  }
+
+  function _upload(formData, uploadType, cb) {
+    $.ajax({
+      url: `${SERVER_ROOT}recap/`,
+      method: 'POST',
+      processData: false,
+      contentType: false,
+      data: formData,
+      success: function (data, textStatus, xhr) {
+        console.info(
+          `RECAP: Successfully uploaded ${uploadType}: ` +
+            `'${textStatus}' with processing queue id of ` +
+            `${data['id']}`
+        );
+        cb(data || null);
+      },
+      error: function (xhr, textStatus, errorThrown) {
+        console.error(
+          `RECAP: Ajax error uploading ${uploadType}. ` +
+          `Status: ${textStatus}.` +
+          `Error: ${errorThrown}`
+        );
+        cb(false);
+      },
+    });
+  }
+
   return {
 
     // Asks RECAP whether it has a docket page for the specified case.  If it
@@ -90,85 +132,39 @@ function Recap() {
 
     // Uploads an HTML docket or docket history report to the RECAP server
     uploadDocket: function (pacer_court, pacer_case_id, html, upload_type, cb) {
-      let formData = new FormData();
-      formData.append('court', PACER.convertToCourtListenerCourt(pacer_court));
-      pacer_case_id && formData.append('pacer_case_id', pacer_case_id);
-      formData.append('upload_type', UPLOAD_TYPES[upload_type]);
-      formData.append('filepath_local', new Blob([html], { type: 'text/plain' }));
-      formData.append('debug', DEBUG);
-      $.ajax({
-        url: `${SERVER_ROOT}recap/`,
-        method: 'POST',
-        processData: false,
-        contentType: false,
-        data: formData,
-        success: function (data, textStatus, xhr) {
-          console.info(`RECAP: Successfully uploaded docket or docket ` +
-            `history report: '${textStatus}' with processing queue id of ` +
-            `${data['id']}`);
-          cb(data || null);
-        },
-        error: function (xhr, textStatus, errorThrown) {
-          console.error(`RECAP: Ajax error uploading docket. Status: ${textStatus}.` +
-            `Error: ${errorThrown}`);
-        }
-      });
+      let blob = new Blob([html], { type: 'text/plain' });
+      let form = _buildForm(pacer_court, pacer_case_id, blob, upload_type);
+      _upload(form, upload_type, cb);
     },
 
     // Uploads a "Document Selection Menu" page to the RECAP server, calling
     // the callback with a boolean success flag.
-    uploadAttachmentMenu: function (pacer_court, pacer_case_id, html, upload_type, cb) {
-      let formData = new FormData();
-      formData.append('court', PACER.convertToCourtListenerCourt(pacer_court));
-      pacer_case_id && formData.append('pacer_case_id', pacer_case_id);
-      formData.append('upload_type', UPLOAD_TYPES[upload_type]);
-      formData.append('filepath_local', new Blob([html], { type: 'text/html' }));
-      formData.append('debug', DEBUG);
-      $.ajax({
-        url: `${SERVER_ROOT}recap/`,
-        method: 'POST',
-        processData: false,
-        contentType: false,
-        data: formData,
-        success: function (data, textStatus, xhr) {
-          console.info(`RECAP: Successfully uploaded attachment page: '${textStatus}' ` +
-            `with processing queue id of ${data['id']}`);
-          cb(data || null);
-        },
-        error: function (xhr, textStatus, errorThrown) {
-          console.error(`RECAP: Ajax error uploading docket. Status: ${textStatus}.` +
-            `Error: ${errorThrown}`);
-        }
-      });
+    uploadAttachmentMenu: function (
+      pacer_court,
+      pacer_case_id,
+      html,
+      upload_type,
+      cb
+    ) {
+      let blob = new Blob([html], { type: 'text/html' });
+      let form = _buildForm(pacer_court, pacer_case_id, blob, upload_type);
+      _upload(form, upload_type, cb);
     },
 
-    uploadIQueryPage: function(pacer_court, pacer_case_id, html, upload_type, cb){
-      let formData = new FormData();
-      formData.append('court', PACER.convertToCourtListenerCourt(pacer_court));
-      pacer_case_id && formData.append('pacer_case_id', pacer_case_id);
-      formData.append('upload_type', UPLOAD_TYPES[upload_type]);
-      formData.append('filepath_local', new Blob([html], { type: 'text/html' }));
-      formData.append('debug', DEBUG);
-      $.ajax({
-        url: `${SERVER_ROOT}recap/`,
-        method: 'POST',
-        processData: false,
-        contentType: false,
-        data: formData,
-        success: function (data, textStatus, xhr) {
-          console.info(`RECAP: Successfully uploaded iquery page: '${textStatus}' ` +
-            `with processing queue id of ${data['id']}`);
-          cb(data || null);
-        },
-        error: function (xhr, textStatus, errorThrown) {
-          console.error(`RECAP: Ajax error uploading iquery page. Status: ${textStatus}.` +
-            `Error: ${errorThrown}`);
-        }
-      });
+    uploadIQueryPage: function(
+      pacer_court,
+      pacer_case_id,
+      html,
+      upload_type,
+      cb
+    ){
+      let blob = new Blob([html], { type: 'text/html' });
+      let form = _buildForm(pacer_court, pacer_case_id, blob, upload_type);
+      _upload(form, upload_type, cb);
     },
 
-    // Asynchronously uploads a PDF document to the RECAP server, calling the callback with
-    // a boolean success flag.
+    // Asynchronously uploads a PDF document to the RECAP server, calling the
+    // callback with a boolean success flag.
     uploadDocument: (
       pacer_court,
       pacer_case_id,
@@ -191,18 +187,17 @@ function Recap() {
       getItemsFromStorage(cb.tab.id)
         .then(async (tabStorage) => {
           // create form data
-          const blob = await fetch(tabStorage['pdf_blob']).then(res => res.blob());
-          let formData = new FormData();
-          formData.append('court', PACER.convertToCourtListenerCourt(pacer_court));
-          pacer_case_id && formData.append('pacer_case_id', pacer_case_id);
+          const blob = await fetch(
+            tabStorage['pdf_blob']).then(res => res.blob()
+          );
+          let formData = _buildForm(
+            pacer_court, pacer_case_id, blob, 'PDF'
+          );
           pacer_doc_id && formData.append('pacer_doc_id', pacer_doc_id);
           document_number && formData.append('document_number', document_number);
           if (attachment_number && attachment_number !== '0') {
             formData.append('attachment_number', attachment_number);
           }
-          formData.append('filepath_local', blob);
-          formData.append('upload_type', UPLOAD_TYPES['PDF']);
-          formData.append('debug', DEBUG);
           return formData;
         })
         .then(data => fetch(`${SERVER_ROOT}recap/`, {
@@ -237,15 +232,14 @@ function Recap() {
       getItemsFromStorage(cb.tab.id)
         .then(async (tabStorage) => {
           const docId = (tabStorage.docId && tabStorage.docId !== 'undefined') ? tabStorage.docId : null;
-          const blob = await fetch(tabStorage['zip_blob']).then(res => res.blob());
+          const blob = await fetch(
+            tabStorage['zip_blob']).then(res => res.blob()
+          );
           // create the formData
-          const formData = new FormData();
-          formData.append('court', PACER.convertToCourtListenerCourt(pacer_court));
-          pacer_case_id && formData.append('pacer_case_id', pacer_case_id);
+          const formData = _buildForm(
+            pacer_court, pacer_case_id, blob, 'ZIP'
+          );
           docId && formData.append('pacer_doc_id', docId);
-          formData.append('upload_type', UPLOAD_TYPES['ZIP']);
-          formData.append('debug', DEBUG);
-          formData.append('filepath_local', blob);
           return formData;
         })
         .then(data => fetch(`${SERVER_ROOT}recap/`, {
@@ -268,11 +262,9 @@ function Recap() {
 
     uploadClaimsRegister: async function (pacerCourt, pacerCaseId, claimsPageHtml, cb) {
       const html = new Blob([claimsPageHtml], { type: 'text/html' });
-      const formData = new FormData();
-      formData.append('pacer_case_id', pacerCaseId);
-      formData.append('court', PACER.convertToCourtListenerCourt(pacerCourt));
-      formData.append('upload_type', UPLOAD_TYPES['CLAIMS_REGISTER_PAGE']);
-      formData.append('filepath_local', html);
+      const formData = _buildForm(
+        pacerCourt, pacerCaseId, html, 'CLAIMS_REGISTER_PAGE'
+      );
       const fetchOptions = {
         method: 'POST',
         body: formData,
