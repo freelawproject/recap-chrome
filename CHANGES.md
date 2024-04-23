@@ -5,7 +5,7 @@
 The following changes are not yet released, but are code complete:
 
 Features:
- - None yet
+ - Introduces a new upload type for Dockets from ACMS and enhances code maintainability by refactoring common upload logic into reusable functions.([#368](https://github.com/freelawproject/recap-chrome/pull/371))
 
 Changes:
  - None yet
