@@ -15,7 +15,8 @@ function Recap() {
       'IQUERY_PAGE': 12,
       'APPELLATE_CASE_QUERY_PAGE': 13,
       'CASE_QUERY_RESULT_PAGE': 14,
-      'APPELLATE_CASE_QUERY_RESULT_PAGE': 15
+      'APPELLATE_CASE_QUERY_RESULT_PAGE': 15,
+      'ACMS_DOCKET_JSON': 16,
     };
   return {
 
@@ -41,7 +42,7 @@ function Recap() {
       }else{
         requestData.docket_number_core = docket_number_core
       }
-      
+
       $.ajax({
         url: `${SERVER_ROOT}dockets/`,
         data: requestData,
