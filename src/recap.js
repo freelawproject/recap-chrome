@@ -64,39 +64,54 @@ function Recap() {
 
     // Asks RECAP whether it has a docket page for the specified case.  If it
     // is available, the callback will be called with a
-    getAvailabilityForDocket: function (pacer_court, pacer_case_id, docket_number_core ,cb) {
+    getAvailabilityForDocket: function (
+      pacer_court,
+      pacer_case_id,
+      docket_number_core,
+      cb
+    ) {
       if (!pacer_case_id && !docket_number_core) {
-        console.error("RECAP: Cannot get availability of docket without pacer_case_id or docket_number_core.");
+        console.error(
+          'RECAP: Cannot get availability of docket without pacer_case_id ' +
+            'or docket_number_core.'
+        );
         return;
       }
-      console.info(`RECAP: Getting availability of docket ${pacer_case_id || docket_number_core} at ` +
-        `${pacer_court}`);
+      console.info(
+        `RECAP: Getting availability of docket ${
+          pacer_case_id || docket_number_core
+        } at ` + `${pacer_court}`
+      );
 
       let requestData = {
         // Ensure RECAP is a source so we don't get back IDB-only dockets.
         source__in: '1,3,5,7,9,11,13,15',
         court: PACER.convertToCourtListenerCourt(pacer_court),
-        fields: 'absolute_url,date_modified,date_last_filing'
-      }
+        fields: 'absolute_url,date_modified,date_last_filing',
+      };
 
-      if (pacer_case_id){
-        requestData.pacer_case_id = pacer_case_id
-      }else{
-        requestData.docket_number_core = docket_number_core
+      if (pacer_case_id) {
+        requestData.pacer_case_id = pacer_case_id;
+      } else {
+        requestData.docket_number_core = docket_number_core;
       }
 
       $.ajax({
         url: `${SERVER_ROOT}dockets/`,
         data: requestData,
         success: function (data, textStatus, xhr) {
-          console.info(`RECAP: Got successful response from server on docket ` +
-            `query: ${textStatus}`);
+          console.info(
+            'RECAP: Got successful response from server on docket ' +
+              `query: ${textStatus}`
+          );
           cb(data || null);
         },
         error: function (xhr, textStatus, errorThrown) {
-          console.error(`RECAP: Ajax error getting docket availability. Status: ` +
-            `${textStatus}. Error: ${errorThrown}.`);
-        }
+          console.error(
+            'RECAP: Ajax error getting docket availability.' +
+              `Status: ${textStatus}. Error: ${errorThrown}.`
+          );
+        },
       });
     },
 
@@ -104,10 +119,12 @@ function Recap() {
     getAvailabilityForDocuments: function (pacer_doc_ids, pacer_court, cb) {
       // The server API takes just one "court" parameter for all the URLs, so we
       // pick the court based on the first URL and assume the rest are the same.
-      console.info("RECAP: Made it info the getAvailabilityForDocuments function");
+      console.info(
+        'RECAP: Made it info the getAvailabilityForDocuments function'
+      );
 
       let cl_court = PACER.convertToCourtListenerCourt(pacer_court);
-      let pacer_doc_id_csv = pacer_doc_ids.join(",");
+      let pacer_doc_id_csv = pacer_doc_ids.join(',');
       if (cl_court && pacer_doc_id_csv) {
         $.ajax({
           url: `${SERVER_ROOT}recap-query/`,
@@ -116,13 +133,17 @@ function Recap() {
             docket_entry__docket__court: cl_court
           },
           success: function (data, textStatus, xhr) {
-            console.info(`RECAP: Got successful response when looking up document ` +
-              `availability: ${textStatus}`);
+            console.info(
+              'RECAP: Got successful response when looking up document ' +
+                `availability: ${textStatus}`
+            );
             cb(data || null);
           },
           error: function (xhr, textStatus, errorThrown) {
-            console.error(`RECAP: Ajax error getting document availability. ` +
-              `Status: ${textStatus}. Error: ${errorThrown}`);
+            console.error(
+              'RECAP: Ajax error getting document availability. ' +
+                `Status: ${textStatus}. Error: ${errorThrown}`
+            );
           }
         });
       } else {
@@ -174,7 +195,7 @@ function Recap() {
       cb
     ) => {
       console.info([
-        `RECAP: Attempting PDF upload to RECAP Archive with details:`,
+        'RECAP: Attempting PDF upload to RECAP Archive with details:',
         `pacer_court: ${pacer_court}`,
         `pacer_case_id: ${pacer_case_id}`,
         `pacer_doc_id: ${pacer_doc_id}`,
@@ -190,11 +211,10 @@ function Recap() {
           const blob = await fetch(
             tabStorage['pdf_blob']).then(res => res.blob()
           );
-          let formData = _buildForm(
-            pacer_court, pacer_case_id, blob, 'PDF'
-          );
+          let formData = _buildForm(pacer_court, pacer_case_id, blob, 'PDF');
           pacer_doc_id && formData.append('pacer_doc_id', pacer_doc_id);
-          document_number && formData.append('document_number', document_number);
+          document_number &&
+            formData.append('document_number', document_number);
           if (attachment_number && attachment_number !== '0') {
             formData.append('attachment_number', attachment_number);
           }
@@ -207,8 +227,10 @@ function Recap() {
         }))
         .then(res => res.json())
         .then(result => {
-          console.info(`RECAP: Successfully uploaded PDF: 'Success' ` +
-            `with processing queue id of ${result.id}`);
+          console.info(
+            `RECAP: Successfully uploaded PDF: 'Success' ` +
+              `with processing queue id of ${result.id}`
+          );
           cb(result || null);
           updateTabStorage({ [cb.tab.id]: { ['pdf_blob']: null } });
         })
@@ -221,24 +243,27 @@ function Recap() {
       pacer_case_id,
       cb
     ) => {
-      console.info([
-        `RECAP: Attempting Zip upload to RECAP Archive with details:`,
-        `pacer_court: ${pacer_court}`,
-        `pacer_case_id: ${pacer_case_id}`,
-      ].join(' '));
+      console.info(
+        [
+          'RECAP: Attempting Zip upload to RECAP Archive with details:',
+          `pacer_court: ${pacer_court}`,
+          `pacer_case_id: ${pacer_case_id}`,
+        ].join(' ')
+      );
 
       // extract the tabId from the enhanced callback
       // wait for chrome.storage.local to load the tabStorage
       getItemsFromStorage(cb.tab.id)
         .then(async (tabStorage) => {
-          const docId = (tabStorage.docId && tabStorage.docId !== 'undefined') ? tabStorage.docId : null;
-          const blob = await fetch(
-            tabStorage['zip_blob']).then(res => res.blob()
+          const docId =
+            tabStorage.docId && tabStorage.docId !== 'undefined'
+              ? tabStorage.docId
+              : null;
+          const blob = await fetch(tabStorage['zip_blob']).then((res) =>
+            res.blob()
           );
           // create the formData
-          const formData = _buildForm(
-            pacer_court, pacer_case_id, blob, 'ZIP'
-          );
+          let formData = _buildForm(pacer_court, pacer_case_id, blob, 'ZIP');
           docId && formData.append('pacer_doc_id', docId);
           return formData;
         })
@@ -249,8 +274,10 @@ function Recap() {
         }))
         .then(res => res.json())
         .then(result => {
-          console.info(`RECAP: Successfully uploaded Zip: 'Success' ` +
-            `with processing queue id of ${result.id}`);
+          console.info(
+            `RECAP: Successfully uploaded Zip: 'Success' ` +
+              `with processing queue id of ${result.id}`
+          );
           cb(result);
           updateTabStorage({ [cb.tab.id]: { ['zip_blob']: null } });
         })
@@ -260,10 +287,18 @@ function Recap() {
         });
     },
 
-    uploadClaimsRegister: async function (pacerCourt, pacerCaseId, claimsPageHtml, cb) {
+    uploadClaimsRegister: async function (
+      pacerCourt,
+      pacerCaseId,
+      claimsPageHtml,
+      cb
+    ) {
       const html = new Blob([claimsPageHtml], { type: 'text/html' });
       const formData = _buildForm(
-        pacerCourt, pacerCaseId, html, 'CLAIMS_REGISTER_PAGE'
+        pacerCourt,
+        pacerCaseId,
+        html,
+        'CLAIMS_REGISTER_PAGE'
       );
       const fetchOptions = {
         method: 'POST',
@@ -274,12 +309,14 @@ function Recap() {
       };
 
       fetch(`${SERVER_ROOT}recap/`, fetchOptions)
-        .then(res => res.json())
-        .then(result => {
-          console.log("RECAP: Claims Page uploaded successfully");
+        .then((res) => res.json())
+        .then((result) => {
+          console.log('RECAP: Claims Page uploaded successfully');
           cb(result || null);
         })
-        .catch(error => console.log(`RECAP: The following error occurred: ${error}`));
+        .catch((error) =>
+          console.log(`RECAP: The following error occurred: ${error}`)
+        );
     }
   };
 }
