@@ -50,7 +50,9 @@ AppellateDelegate.prototype.regularAppellatePageHandler = function () {
 };
 
 AppellateDelegate.prototype.ACMSPageHandler = function () {
-  //pass
+  if (this.path.match(/^\/[0-9\-]+$/)) {
+    this.handleAcmsDocket();
+  }
 };
 
 // Identify and handle pages from Appellate courts.
@@ -60,6 +62,70 @@ AppellateDelegate.prototype.dispatchPageHandler = function () {
   } else {
     this.regularAppellatePageHandler();
   }
+};
+
+AppellateDelegate.prototype.handleAcmsDocket = async function () {
+  const processDocket = async () => {
+    const caseSummary = JSON.parse(sessionStorage.caseSummary);
+    const caseId = caseSummary.caseDetails.caseId;
+    this.pacer_case_id = caseId;
+
+    if (history.state && history.state.uploaded) {
+      return;
+    }
+
+    const options = await getItemsFromStorage('options');
+    if (!options['recap_enabled']) {
+      console.info('RECAP: Not uploading docket json. RECAP is disabled.');
+      return;
+    }
+
+    this.recap.uploadDocket(
+      this.court,
+      this.pacer_case_id,
+      sessionStorage.caseSummary,
+      'ACMS_DOCKET_JSON',
+      (ok) => {
+        if (ok) {
+          history.replaceState({ uploaded: true }, '');
+          this.notifier.showUpload(
+            'Docket uploaded to the public RECAP Archive.',
+            () => {}
+          );
+        } else {
+          console.log('cb fail');
+        }
+      }
+    );
+  };
+
+  // Since this page uses Vue.js for dynamic data rendering and shows a loader
+  // during API requests, an observer is necessary to monitor DOM changes and
+  // update the component accordingly.
+  const footerObserver = async (mutationList, observer) => {
+    for (const r of mutationList) {
+      // We could restrict this to div#box, but that feels overspecific
+      for (const a of r.addedNodes) {
+        // We use the the footer element as an indicator that the entire page
+        // has finished loading.
+        if (a.localName === 'footer') {
+          if ('caseSummary' in sessionStorage) {
+            processDocket();
+            observer.disconnect();
+          } else {
+            console.log(
+              'We observed a <footer> being added, but no ' +
+                'sessionStorage.caseSummary; this is unexpected.'
+            );
+          }
+        }
+      }
+    }
+  };
+
+  const body = document.querySelector('body');
+  const observer = new MutationObserver(footerObserver);
+  observer.observe(body, { subtree: true, childList: true });
 };
 
 AppellateDelegate.prototype.handleCaseSearchPage = () => {
