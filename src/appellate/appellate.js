@@ -1,8 +1,9 @@
 //  Abstraction of scripts related to Appellate PACER to make them modular and testable.
-let AppellateDelegate = function (tabId, court, url, links) {
+let AppellateDelegate = function (tabId, court, url, path, links) {
   this.tabId = tabId;
   this.court = court;
   this.url = url;
+  this.path = path;
   this.links = links || [];
   this.recap = importInstance(Recap);
   this.notifier = importInstance(Notifier);
@@ -11,10 +12,10 @@ let AppellateDelegate = function (tabId, court, url, links) {
   this.docketNumber = APPELLATE.getDocketNumber(this.queryParameters);
 };
 
-// Identify the current page using the URL and the query string,
-// then dispatch the associated handler
-AppellateDelegate.prototype.dispatchPageHandler = function () {
-  let targetPage = this.queryParameters.get('servlet') || APPELLATE.getServletFromInputs();
+// Identify regular Appellate pages using the URL and the query string,
+AppellateDelegate.prototype.regularAppellatePageHandler = function () {
+  let targetPage =
+    this.queryParameters.get('servlet') || APPELLATE.getServletFromInputs();
   switch (targetPage) {
     case 'CaseSummary.jsp':
       this.handleDocketDisplayPage();
@@ -34,7 +35,7 @@ AppellateDelegate.prototype.dispatchPageHandler = function () {
       break;
     case 'ShowDocMulti':
       this.handleCombinedPdfPageView();
-      break
+      break;
     default:
       if (APPELLATE.isAttachmentPage()) {
         this.handleAttachmentPage();
@@ -46,6 +47,85 @@ AppellateDelegate.prototype.dispatchPageHandler = function () {
       }
       break;
   }
+};
+
+AppellateDelegate.prototype.ACMSPageHandler = function () {
+  if (this.path.match(/^\/[0-9\-]+$/)) {
+    this.handleAcmsDocket();
+  }
+};
+
+// Identify and handle pages from Appellate courts.
+AppellateDelegate.prototype.dispatchPageHandler = function () {
+  if (PACER.isACMSWebsite(this.url)) {
+    this.ACMSPageHandler();
+  } else {
+    this.regularAppellatePageHandler();
+  }
+};
+
+AppellateDelegate.prototype.handleAcmsDocket = async function () {
+  const processDocket = async () => {
+    const caseSummary = JSON.parse(sessionStorage.caseSummary);
+    const caseId = caseSummary.caseDetails.caseId;
+    this.pacer_case_id = caseId;
+
+    if (history.state && history.state.uploaded) {
+      return;
+    }
+
+    const options = await getItemsFromStorage('options');
+    if (!options['recap_enabled']) {
+      console.info('RECAP: Not uploading docket json. RECAP is disabled.');
+      return;
+    }
+
+    this.recap.uploadDocket(
+      this.court,
+      this.pacer_case_id,
+      sessionStorage.caseSummary,
+      'ACMS_DOCKET_JSON',
+      (ok) => {
+        if (ok) {
+          history.replaceState({ uploaded: true }, '');
+          this.notifier.showUpload(
+            'Docket uploaded to the public RECAP Archive.',
+            () => {}
+          );
+        } else {
+          console.log('cb fail');
+        }
+      }
+    );
+  };
+
+  // Since this page uses Vue.js for dynamic data rendering and shows a loader
+  // during API requests, an observer is necessary to monitor DOM changes and
+  // update the component accordingly.
+  const footerObserver = async (mutationList, observer) => {
+    for (const r of mutationList) {
+      // We could restrict this to div#box, but that feels overspecific
+      for (const a of r.addedNodes) {
+        // We use the the footer element as an indicator that the entire page
+        // has finished loading.
+        if (a.localName === 'footer') {
+          if ('caseSummary' in sessionStorage) {
+            processDocket();
+            observer.disconnect();
+          } else {
+            console.log(
+              'We observed a <footer> being added, but no ' +
+                'sessionStorage.caseSummary; this is unexpected.'
+            );
+          }
+        }
+      }
+    }
+  };
+
+  const body = document.querySelector('body');
+  const observer = new MutationObserver(footerObserver);
+  observer.observe(body, { subtree: true, childList: true });
 };
 
 AppellateDelegate.prototype.handleCaseSearchPage = () => {
