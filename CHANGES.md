@@ -6,7 +6,7 @@ The following changes are not yet released, but are code complete:
 
 Features:
  - Introduces a new upload type for Dockets from ACMS and enhances code maintainability by refactoring common upload logic into reusable functions.([#368](https://github.com/freelawproject/recap-chrome/pull/371))
- - Updates the AppellateDelegate class to upload Docket reports from ACMS
+ - Docket reports from ACMS are now uploaded to CourtListener.([#372](https://github.com/freelawproject/recap-chrome/pull/372))
 
 Changes:
  - None yet
