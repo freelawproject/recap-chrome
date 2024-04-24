@@ -74,7 +74,7 @@ async function addRecapInformation(msg) {
   }
 
   if (PACER.isAppellateCourt(court)) {
-    let AppDelegate = new AppellateDelegate(tabId, court, url, links);
+    let AppDelegate = new AppellateDelegate(tabId, court, url, path, links);
 
     AppDelegate.dispatchPageHandler();
   } else {
