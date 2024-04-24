@@ -12,10 +12,10 @@ let AppellateDelegate = function (tabId, court, url, path, links) {
   this.docketNumber = APPELLATE.getDocketNumber(this.queryParameters);
 };
 
-// Identify the current page using the URL and the query string,
-// then dispatch the associated handler
-AppellateDelegate.prototype.dispatchPageHandler = function () {
-  let targetPage = this.queryParameters.get('servlet') || APPELLATE.getServletFromInputs();
+// Identify regular Appellate pages using the URL and the query string,
+AppellateDelegate.prototype.regularAppellatePageHandler = function () {
+  let targetPage =
+    this.queryParameters.get('servlet') || APPELLATE.getServletFromInputs();
   switch (targetPage) {
     case 'CaseSummary.jsp':
       this.handleDocketDisplayPage();
@@ -35,7 +35,7 @@ AppellateDelegate.prototype.dispatchPageHandler = function () {
       break;
     case 'ShowDocMulti':
       this.handleCombinedPdfPageView();
-      break
+      break;
     default:
       if (APPELLATE.isAttachmentPage()) {
         this.handleAttachmentPage();
@@ -46,6 +46,19 @@ AppellateDelegate.prototype.dispatchPageHandler = function () {
         console.info('No identified appellate page found');
       }
       break;
+  }
+};
+
+AppellateDelegate.prototype.ACMSPageHandler = function () {
+  //pass
+};
+
+// Identify and handle pages from Appellate courts.
+AppellateDelegate.prototype.dispatchPageHandler = function () {
+  if (PACER.isACMSWebsite(this.url)) {
+    this.ACMSPageHandler();
+  } else {
+    this.regularAppellatePageHandler();
   }
 };
 
