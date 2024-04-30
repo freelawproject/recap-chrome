@@ -88,6 +88,7 @@
       "toolbar_button.js",
       "pacer.js",
       "recap.js",
+      "appellate/acms_api.js",
       "background.js"
     ]
   },
