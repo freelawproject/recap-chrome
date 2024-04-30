@@ -50,7 +50,9 @@ AppellateDelegate.prototype.regularAppellatePageHandler = function () {
 };
 
 AppellateDelegate.prototype.ACMSPageHandler = function () {
-  if (this.path.match(/^\/[0-9\-]+$/)) {
+  if (this.path.startsWith('/download-confirmation/')) {
+    this.handleAcmsDownloadPage();
+  } else if (this.path.match(/^\/[0-9\-]+$/)) {
     this.handleAcmsDocket();
   }
 };
@@ -126,6 +128,10 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
   const body = document.querySelector('body');
   const observer = new MutationObserver(footerObserver);
   observer.observe(body, { subtree: true, childList: true });
+};
+
+AppellateDelegate.prototype.handleAcmsDownloadPage = async function () {
+  //pass
 };
 
 AppellateDelegate.prototype.handleCaseSearchPage = () => {
