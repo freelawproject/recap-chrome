@@ -134,7 +134,55 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
 AppellateDelegate.prototype.handleAcmsDownloadPage = async function () {
 
   async function startUploadProcess() {
-    //pass
+    let downloadData = JSON.parse(
+      sessionStorage.getItem('recapVueData')
+    );
+    const pdfFileRequestBody =
+      APPELLATE.createAcmsDocumentRequestBody(downloadData);
+
+    // Get the ACMS API URL and token from the sessionStorage object
+    let appConfiguration = JSON.parse(
+      sessionStorage.getItem('recapACMSConfiguration')
+    );
+    let { ApiUrl } = appConfiguration.AppSettings;
+    let { Token } = appConfiguration.AuthToken;
+
+    // Collect relevant document information to upload PDF to CL
+    let title = document.querySelector('p.font-weight-bold').innerHTML.trim();
+    let dataFromTitle = APPELLATE.parseReceiptPageTitle(title);
+    let documentData = {
+      docket_number: downloadData.caseSummary.caseDetails.caseNumber,
+      doc_number: downloadData.docketEntry.entryNumber,
+      att_number:
+        downloadData.docketEntry.documentCount > 1
+          ? dataFromTitle.att_number
+          : 0,
+    };
+
+    // Remove element from the page to show loading message
+    let mainDiv = document.querySelector('.download-confirmation-wrapper');
+    mainDiv.innerHTML = '';
+    loadingTextMessage = APPELLATE.createsLoadingMessage(downloadData);
+    mainDiv.append(loadingTextMessage);
+
+    // Get the pacer_case_id and document GUID from the sessionStorage object
+    this.pacer_case_id = downloadData.caseSummary.caseDetails.caseId;
+    this.acmsDocumentGuid =
+      downloadData.docketEntryDocuments[0].docketDocumentDetailsId;
+
+    let previousPageHtml = document.documentElement.innerHTML;
+    // Use the  to request the PDF doc
+    this.acms.getDocumentURL(ApiUrl, Token, pdfFileRequestBody, (pdf_url) => {
+      httpRequest(
+        pdf_url,
+        null,
+        null,
+        function (type, ab, xhr) {
+          let requestHandler = handleDocFormResponse.bind(this);
+          requestHandler(type, ab, xhr, previousPageHtml, documentData);
+        }.bind(this)
+      );
+    });
   }
 
   const wrapperMutationObserver = (mutationList, observer) => {
