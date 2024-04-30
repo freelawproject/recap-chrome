@@ -188,8 +188,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       options.pacer_doc_id,
       options.document_number,
       options.attachment_number,
+      'acmsDocumentGuid' in options ? options.acmsDocumentGuid : null,
       callback
-    )
+    );
   }
 });
 

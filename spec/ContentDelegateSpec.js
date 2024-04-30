@@ -1102,10 +1102,20 @@ describe('The ContentDelegate class', function () {
           },
         },
       };
-      spyOn(cd.recap, 'uploadDocument').and.callFake((court, caseId, docId, docNumber, attachNumber, callback) => {
-        callback.tab = { id: 1234 };
-        callback(true);
-      });
+      spyOn(cd.recap, 'uploadDocument').and.callFake(
+        (
+          court,
+          caseId,
+          docId,
+          docNumber,
+          attachNumber,
+          acmsDocumentGuid,
+          callback
+        ) => {
+          callback.tab = { id: 1234 };
+          callback(true);
+        }
+      );
       document.getElementById = jasmine.createSpy('getElementById').and.callFake((id) => {
         return document.querySelectorAll(`#${id}`)[0];
       });
