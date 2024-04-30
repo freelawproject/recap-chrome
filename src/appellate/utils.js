@@ -410,4 +410,33 @@ let APPELLATE = {
 
     return recap_div;
   },
+
+  // Adds the vue data attributes to the session storage
+  storeVueDataInSession: () => {
+    var code =
+      '(' +
+      function () {
+        let contentWrapper = document.getElementsByClassName('text-center')[0];
+        let vueMainDiv = contentWrapper.parentElement;
+        let vueDataProperties = vueMainDiv.__vue__._data;
+        sessionStorage.setItem(
+          'recapVueData',
+          JSON.stringify(vueDataProperties)
+        );
+        sessionStorage.setItem(
+          'recapACMSConfiguration',
+          JSON.stringify(window._model)
+        );
+      } +
+      ')();';
+
+    let script = document.createElement('script');
+    script.textContent = code;
+    document.head.appendChild(script);
+
+    // We just need this script once and the inline script that's inserted in
+    // the document is immediately executed. Therefore, it's safe to remove
+    // this tag.
+    script.remove();
+  },
 };
