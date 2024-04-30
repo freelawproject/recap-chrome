@@ -131,7 +131,66 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
 };
 
 AppellateDelegate.prototype.handleAcmsDownloadPage = async function () {
-  //pass
+
+  async function startUploadProcess() {
+    //pass
+  }
+
+  const wrapperMutationObserver = (mutationList, observer) => {
+    for (const r of mutationList) {
+      for (const n of r.addedNodes) {
+        let hasReceipt = n.textContent
+          .toLowerCase()
+          .includes('transaction receipt');
+
+        let hasAcceptChargesButton = n.textContent
+          .toLowerCase()
+          .includes('accept charges and retrieve');
+
+        if (n.localName === 'div' && hasReceipt && hasAcceptChargesButton) {
+          // Insert script to retrieve and store Vue data in the storage
+          APPELLATE.storeVueDataInSession();
+
+          // Get doc_id from the sessionStorage
+          let downloadData = JSON.parse(sessionStorage.getItem('recapVueData'));
+          this.docId = downloadData.docketEntry.docketEntryId;
+
+          // Check if the accept charges button is already created on the page
+          let acceptChargesButton = document.querySelector('button');
+          if (!acceptChargesButton) {
+            return;
+          }
+
+          // Clone the "Accept charges" button to remove the onclick event.
+          // The default event handler retrieves an URL for the PDF and then
+          // navigate to this page, but if we wait until the handler finishes,
+          // we wont be able to use the same link to get the doc as a blob
+          // object because the URL seems to be a one-time-use link and
+          // attempting to access it after the handler has used it will result
+          // in an error message stating that the file retrieval attempt failed.
+          let clonedAcceptChargesButton = acceptChargesButton.cloneNode(true);
+          acceptChargesButton.replaceWith(clonedAcceptChargesButton);
+
+          // Add a custom onclick event to the Accept charges button.
+          // The handler of this new event performs an additional task before
+          // displaying the document. Upon clicking the button, the document
+          // retrieval process will remain unchanged, but the retrieved blob
+          // object will be uploaded to the RECAP archive before the document
+          // is rendered on the page.
+          clonedAcceptChargesButton.addEventListener(
+            'click',
+            startUploadProcess.bind(this)
+          );
+        }
+      };
+    };
+  };
+
+  const wrapper = document.getElementsByClassName(
+    'download-confirmation-wrapper'
+  )[0];
+  const observer = new MutationObserver(wrapperMutationObserver);
+  observer.observe(wrapper, { subtree: true, childList: true });
 };
 
 AppellateDelegate.prototype.handleCaseSearchPage = () => {
