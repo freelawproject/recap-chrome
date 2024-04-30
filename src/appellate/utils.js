@@ -450,4 +450,35 @@ let APPELLATE = {
     // this tag.
     script.remove();
   },
+
+  // Extract data needed to construct the PDF request body
+  createAcmsDocumentRequestBody: function (downloadData) {
+    let queryParameters = new URLSearchParams(window.location.search);
+    let includePageNumbers = !!queryParameters.get('includePageNumbers');
+    let showPDFHeaderInput = document.getElementById('showPdfHeader').checked;
+
+    const pdfItemMapping = (data) => ({
+      acms_docketdocumentdetailsid: data && data.docketDocumentDetailsId,
+      acms_name: data && data.name,
+      acms_documenturl: data && data.documentUrl,
+      acms_casefilingdocumenturl: data && data.caseFilingDocumentUrl,
+      acms_documentpermission: data && data.documentPermission,
+      acms_pagecount: data && data.pageCount,
+      acms_filesize: data && data.fileSize,
+      billablepages: data && data.billablePages,
+      cost: data && data.cost,
+      acms_documentnumber: data && data.documentNumber,
+      searchValue: data && data.searchValue,
+      searchTransaction: data && data.searchTransaction,
+    });
+
+    return {
+      mergeScope: 'External',
+      pagination: includePageNumbers,
+      header: showPDFHeaderInput,
+      docketEntryDocuments: downloadData.docketEntryDocuments.map((data) =>
+        pdfItemMapping(data)
+      ),
+    };
+  }
 };
