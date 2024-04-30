@@ -333,21 +333,32 @@ let APPELLATE = {
 
   // returns data from the title of the Receipt Page as an object
   parseReceiptPageTitle: (title_string) => {
-    // The title in the Download Confirmation page from Appellate pacer shows useful information about the document.
-    // this title has the docket number, document number and the attachment number (if the document belongs to an attachment
-    // page). Here are some examples:
+    // The title in the Download Confirmation page from Appellate pacer shows
+    // useful information about the document. This title has the docket number,
+    // document number and the attachment number (if the document belongs to an
+    // attachment page). Here are some examples:
     //
     //  - Document: PDF Document (Case: 20-15019, Document: 11)
-    //  - Document: PDF Document (Case: 20-15019, Document: 1-1) (document from attachment page)
+    //  - Document: PDF Document (Case: 20-15019, Document: 1-1) (document
+    //    from attachment page)
+    //  - Document: PDF Document (Case: 20-15019, Document: 1.1) (document
+    //    from ACMS)
     //
-    // this method uses regex expressions to match that information from the title and returns an object with the following
-    // attributes:
+    // this method uses regex expressions to match that information from the
+    // title and returns an object with the following attributes:
     //  - docket_number
     //  - doc_number
     //  - att_number
 
-    let dataFromAttachment = /^Document: PDF Document \(Case: ([^']*), Document: (\d+)-(\d+)\)/.exec(title_string);
-    let dataFromSingleDoc = /^Document: PDF Document \(Case: ([^']*), Document: (\d+)\)/.exec(title_string);
+    let dataFromAttachment =
+      /^Document: PDF Document \(Case: ([^']*), Document: (\d+)[-.]+(\d+)\)/.exec(
+        title_string
+      );
+    let dataFromSingleDoc =
+      /^Document: PDF Document \(Case: ([^']*), Document: (\d+)\)/.exec(
+        title_string
+      );
+
     if (!dataFromAttachment && !dataFromSingleDoc) {
       return null;
     }
