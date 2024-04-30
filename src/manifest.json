@@ -92,8 +92,8 @@
     ]
   },
   "content_scripts": [{
-    "matches": ["*://*.uscourts.gov/*"],
-    "include_globs": ["*://ecf.*", "*://ecf-train.*", "*://pacer.*"],
+    "matches": ["*://*.uscourts.gov/*", "*://*.azurewebsites.us/*"],
+    "include_globs": ["*://ecf.*", "*://ecf-train.*", "*://pacer.*", "*://*-showdoc.*"],
     "css": [
       "assets/css/style.css",
       "assets/css/font-awesome.css"
