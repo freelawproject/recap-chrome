@@ -6,6 +6,7 @@ let AppellateDelegate = function (tabId, court, url, path, links) {
   this.path = path;
   this.links = links || [];
   this.recap = importInstance(Recap);
+  this.acms = importInstance(Acms);
   this.notifier = importInstance(Notifier);
   this.queryParameters = APPELLATE.getQueryParameters(this.url);
   this.docId = APPELLATE.getDocIdFromURL(this.queryParameters);
