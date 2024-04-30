@@ -480,5 +480,25 @@ let APPELLATE = {
         pdfItemMapping(data)
       ),
     };
-  }
+  },
+
+  // Creates a div with a spinner and a loading message
+  createsLoadingMessage: (downloadData) => {
+    let loadingTextDiv = document.createElement('div');
+    loadingTextDiv.classList.add('box', 'mt-2');
+
+    let loadingTextElement = document.createElement('h4');
+    loadingTextElement.classList.add('text-center', 'mt-0');
+    let spinner = document.createElement('i');
+    spinner.classList.add('mdi', 'mdi-spin', 'mdi-loading', 'mr-2');
+    let spanText = document.createElement('span');
+    spanText.innerHTML =
+      'Download in progress for case number ' +
+      `${downloadData.caseSummary.caseDetails.caseNumber}`;
+
+    loadingTextElement.appendChild(spinner);
+    loadingTextElement.appendChild(spanText);
+    loadingTextDiv.appendChild(loadingTextElement);
+    return loadingTextDiv;
+  },
 };
