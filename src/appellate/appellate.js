@@ -102,6 +102,38 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
     );
   };
 
+  const insertRecapButton = () => {
+    // Query the first table with case data and insert the RECAP actions button
+    let caseInformationTable = document.querySelector('table.case-information');
+    // Get a reference to the parent node
+    const parentDiv = caseInformationTable.parentNode;
+    const existingActionButton = document.getElementById('recap-action-button');
+    if (!existingActionButton) {
+      let button = recapActionsButton(this.court, this.pacer_case_id, false);
+      parentDiv.insertBefore(button, caseInformationTable);
+    }
+
+    this.recap.getAvailabilityForDocket(
+      this.court,
+      this.pacer_case_id,
+      null,
+      (result) => {
+        if (result.count === 0) {
+          console.warn('RECAP: Zero results found for docket lookup.');
+        } else if (result.count > 1) {
+          console.error(
+            'RECAP: More than one result found for docket lookup. Found' +
+              `${result.count}`
+          );
+        } else {
+          addAlertButtonInRecapAction(this.court, this.pacer_case_id);
+          let cl_id = getClIdFromAbsoluteURL(result.results[0].absolute_url);
+          addSearchDocketInRecapAction(cl_id);
+        }
+      }
+    );
+  };
+
   const attachLinkToDocs = async () => {
     // Get the docket info from the sessionStorage obj
     const caseSummary = JSON.parse(sessionStorage.caseSummary);
@@ -157,6 +189,10 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
         // Insert the RECAP icon next to the docket entry link
         recap_div.insertAfter(anchor);
       }
+      let spinner = document.getElementById('recap-button-spinner');
+      if (spinner) {
+        spinner.classList.add('recap-btn-spinner-hidden');
+      }
     });
   };
 
@@ -173,6 +209,7 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
           if ('caseSummary' in sessionStorage) {
             processDocket();
             attachLinkToDocs();
+            insertRecapButton();
             observer.disconnect();
           } else {
             console.log(
@@ -185,9 +222,19 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
     }
   };
 
-  const body = document.querySelector('body');
-  const observer = new MutationObserver(footerObserver);
-  observer.observe(body, { subtree: true, childList: true });
+  const footer = document.querySelector('footer');
+  // Checks whether the footer is rendered or not, indicating that the page
+  // has fully loaded. Once confirmed, proceed with reloading the RECAP icons.
+  // This check is particularly useful when users click the 'Refresh RECAP
+  // links' option in the RECAP button, because the page is not reloaded and
+  // there are no changes being made to the DOM.
+  if (footer){
+    attachLinkToDocs();
+  } else {
+    const body = document.querySelector('body');
+    const observer = new MutationObserver(footerObserver);
+    observer.observe(body, { subtree: true, childList: true });
+  }
 };
 
 AppellateDelegate.prototype.handleAcmsDownloadPage = async function () {
