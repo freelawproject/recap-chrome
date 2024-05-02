@@ -102,6 +102,64 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
     );
   };
 
+  const attachLinkToDocs = async () => {
+    // Get the docket info from the sessionStorage obj
+    const caseSummary = JSON.parse(sessionStorage.caseSummary);
+    const docketEntries = caseSummary.docketInfo.docketEntries;
+
+    // Get all the entry links on the page. We use the "entry-link"
+    // class as a selector because we observed that all non-restricted
+    // entries consistently use this class.
+    this.links = document.body.querySelectorAll('.entry-link');
+    if (!links.length) {
+      return;
+    }
+
+    // Go through the array of links and collect the doc IDs of
+    // the entries that are not restricted.
+    let docIds = [];
+    for (link of this.links) {
+      const docketEntryText = link.innerHTML.trim();
+      const docketEntryData = docketEntries.find(
+        (entry) => entry.entryNumber == parseInt(docketEntryText)
+      );
+
+      // Embed the pacer_doc_id as a data attribute within the anchor tag
+      // to facilitate subsequent retrieval based on this identifier.
+      link.dataset.pacerDocId = docketEntryData.docketEntryId;
+
+      // add the id to the array of doc ids
+      docIds.push(docketEntryData.docketEntryId);
+    }
+
+    // Ask the server whether any of these documents are available from RECAP.
+    this.recap.getAvailabilityForDocuments(docIds, this.court, (response) => {
+      for (result of response.results) {
+        let doc_id = result.pacer_doc_id;
+        // Query the docket entry link using the data attribute
+        // attached previously
+        let anchor = document.querySelector(`[data-pacer-doc-id="${doc_id}"]`);
+        // Create the RECAP icon
+        let href = `https://storage.courtlistener.com/${result.filepath_local}`;
+        let recap_link = $('<a/>', {
+          title: 'Available for free from the RECAP Archive.',
+          href: href,
+        });
+        recap_link.append(
+          $('<img/>').attr({
+            src: chrome.extension.getURL('assets/images/icon-16.png'),
+          })
+        );
+        let recap_div = $('<div>', {
+          class: 'recap-inline-appellate',
+        });
+        recap_div.append(recap_link);
+        // Insert the RECAP icon next to the docket entry link
+        recap_div.insertAfter(anchor);
+      }
+    });
+  };
+
   // Since this page uses Vue.js for dynamic data rendering and shows a loader
   // during API requests, an observer is necessary to monitor DOM changes and
   // update the component accordingly.
@@ -114,6 +172,7 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
         if (a.localName === 'footer') {
           if ('caseSummary' in sessionStorage) {
             processDocket();
+            attachLinkToDocs();
             observer.disconnect();
           } else {
             console.log(
