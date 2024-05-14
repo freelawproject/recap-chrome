@@ -103,6 +103,13 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
   };
 
   const insertRecapButton = () => {
+    // Injects a "RECAP actions" button near the first table containing data.
+    // It first checks for an existing button with the ID "recap-action-button",
+    // If none exists, it creates a new button using the `recapActionsButton`
+    // function and inserts it before the table. The function then queries the
+    // RECAP service for case data availability using the `this.court` and
+    //`this.pacer_case_id` properties.
+
     // Query the first table with case data and insert the RECAP actions button
     let caseInformationTable = document.querySelector('table.case-information');
     // Get a reference to the parent node
@@ -135,6 +142,41 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
   };
 
   const attachLinkToDocs = async () => {
+    // This function analyzes docket entries on the docket report and adds RECAP
+    // RECAP availability information. It performs the following steps:
+    //
+    // 1. Data Retrieval:
+    //    - Fetches the case summary object from from session storage.
+    //    - Extracts the docket entries array from the case summary.
+    //    - Retrieves all anchor elements with the class "entry-link".
+    //
+    // 2. Processing Docket Entries:
+    //    - Iterates through the retrieved links:
+    //       - Extracts the docket entry number from the link text.
+    //       - Searches the docket entries array to find the corresponding
+    //         entry data (based on entry number).
+    //       - If a match is found, embeds the pacer_doc_id as a data attribute
+    //         within the anchor tag for later retrieval.
+    //       - Extracts the docket entry ID and adds it to an array of doc IDs.
+    //
+    // 3. RECAP Availability Check:
+    //    - Queries the server to check if any of the collected doc IDs are
+    //      available in the RECAP archive.
+    //    - The court information is also included in the request.
+    //
+    // 4. Enriching Links with RECAP Information:
+    //    - Iterates through the response from CL:
+    //       - Extracts the pacer_doc_id from each response object.
+    //       - Finds the corresponding anchor element using the previously
+    //         attached data attribute.
+    //       - Creates a new anchor element with a link to the RECAP archive
+    //         based on the filepath provided in the response and Adds a RECAP
+    //         icon using the extension's image asset.
+    //       - Wraps both the icon and the link within a dedicated container div
+    //         with the class "recap-inline-appellate", this class ensures that
+    //         the icon is hidden when printing the document.
+    //       - Inserts the div container next to the original docket entry link.
+
     // Get the docket info from the sessionStorage obj
     const caseSummary = JSON.parse(sessionStorage.caseSummary);
     const docketEntries = caseSummary.docketInfo.docketEntries;
