@@ -134,6 +134,37 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
 AppellateDelegate.prototype.handleAcmsDownloadPage = async function () {
 
   async function startUploadProcess() {
+    // This function initiates the upload process for a PDF document.
+    // It performs the following steps:
+    //
+    // 1. Prepares data for upload:
+    //    - Parses download data from session storage and creates a request
+    //      body for the PDF URL document.
+    //
+    // 2. Retrieves configuration and tokens:
+    //    - Extracts API URL and token from session storage stored in
+    //      the 'recapACMSConfiguration' key.
+    //
+    // 3. Extracts document information:
+    //    - Extracts title from the element with class 'p.font-weight-bold'.
+    //    - Parses relevant details (att_number) from the title.
+    //    - Builds a documentData object containing docket number, document
+    //      number, and attachment number.
+    //
+    // 4. Adds a loading message:
+    //    - Creates a loading message using APPELLATE.createsLoadingMessage.
+    //
+    // 5. Stores case ID and document GUID (assumed for later use):
+    //    - Saves case ID from download data.
+    //    - Saves document GUID from download data.
+    //
+    // 6. Gets PDF download URL and initiates download:
+    //    - Stores the current page HTML content.
+    //    - Calls acms.getDocumentURL to get the PDF download URL.
+    //    - Once the URL is retrieved, initiates an HTTP request to download
+    //      the PDF.
+    //    - Binds the handleDocFormResponse function to handle the downloaded
+    //      data and document information after download completes.
     let downloadData = JSON.parse(
       sessionStorage.getItem('recapVueData')
     );
