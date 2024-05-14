@@ -424,6 +424,13 @@ let APPELLATE = {
 
   // Adds the vue data attributes to the session storage
   storeVueDataInSession: () => {
+    // The following code draws inspiration from the Vue devtool extension
+    // to identify and inspect Vue components within a web application.
+    // Unlike the devtool extension, which explores the entire DOM, this script
+    // focuses on extracting the data of the main Vue component. By tailoring
+    // the script to the component's HTML structure, we achieve a quick data
+    // retrieval process compared to a full DOM exploration.
+    // The extracted data is then stored in session storage for later use.
     var code =
       '(' +
       function () {
@@ -451,7 +458,26 @@ let APPELLATE = {
     script.remove();
   },
 
-  // Extract data needed to construct the PDF request body
+  // Prepares the body to request a PDF document link
+  // It takes the `downloadData` object as input, which is expected to contain
+  // information about the documents to be included in the link
+  // The function performs the following actions:
+  // 1. Extracts query parameters from the URL to determine if page numbers
+  //    should be included.
+  // 2. Gets the value from the 'showPdfHeader' checkbox to determine if a
+  //    header should be included in the PDF.
+  // 3. Defines a helper function `pdfItemMapping` that extracts relevant data
+  //    from each document in `downloadData.docketEntryDocuments`.
+  // 4. Constructs the request body object with the following properties:
+  //     - `mergeScope`: Set to 'External' as these are external documents.
+  //     - `pagination`: Set to the value of `includePageNumbers` for including
+  //        page numbers.
+  //     - `header`: Set to the value of `showPDFHeaderInput` for including a
+  //        header.
+  //     - `docketEntryDocuments`: An array of objects containing mapped
+  //        document details using `pdfItemMapping`.
+  //
+  // This function returns the constructed request body object.
   createAcmsDocumentRequestBody: function (downloadData) {
     let queryParameters = new URLSearchParams(window.location.search);
     let includePageNumbers = !!queryParameters.get('includePageNumbers');

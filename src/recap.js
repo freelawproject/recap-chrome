@@ -195,6 +195,7 @@ function Recap() {
       document_guid = null,
       cb
     ) => {
+      // Construct a summary message for logging upload data to RECAP Archive
       let uploadDataSummary = [
         'RECAP: Attempting PDF upload to RECAP Archive with details:',
         `pacer_court: ${pacer_court}`,
