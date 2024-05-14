@@ -102,6 +102,142 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
     );
   };
 
+  const insertRecapButton = () => {
+    // Injects a "RECAP actions" button near the first table containing data.
+    // It first checks for an existing button with the ID "recap-action-button",
+    // If none exists, it creates a new button using the `recapActionsButton`
+    // function and inserts it before the table. The function then queries the
+    // RECAP service for case data availability using the `this.court` and
+    //`this.pacer_case_id` properties.
+
+    // Query the first table with case data and insert the RECAP actions button
+    let caseInformationTable = document.querySelector('table.case-information');
+    // Get a reference to the parent node
+    const parentDiv = caseInformationTable.parentNode;
+    const existingActionButton = document.getElementById('recap-action-button');
+    if (!existingActionButton) {
+      let button = recapActionsButton(this.court, this.pacer_case_id, false);
+      parentDiv.insertBefore(button, caseInformationTable);
+    }
+
+    this.recap.getAvailabilityForDocket(
+      this.court,
+      this.pacer_case_id,
+      null,
+      (result) => {
+        if (result.count === 0) {
+          console.warn('RECAP: Zero results found for docket lookup.');
+        } else if (result.count > 1) {
+          console.error(
+            'RECAP: More than one result found for docket lookup. Found' +
+              `${result.count}`
+          );
+        } else {
+          addAlertButtonInRecapAction(this.court, this.pacer_case_id);
+          let cl_id = getClIdFromAbsoluteURL(result.results[0].absolute_url);
+          addSearchDocketInRecapAction(cl_id);
+        }
+      }
+    );
+  };
+
+  const attachLinkToDocs = async () => {
+    // This function analyzes docket entries on the docket report and adds RECAP
+    // RECAP availability information. It performs the following steps:
+    //
+    // 1. Data Retrieval:
+    //    - Fetches the case summary object from from session storage.
+    //    - Extracts the docket entries array from the case summary.
+    //    - Retrieves all anchor elements with the class "entry-link".
+    //
+    // 2. Processing Docket Entries:
+    //    - Iterates through the retrieved links:
+    //       - Extracts the docket entry number from the link text.
+    //       - Searches the docket entries array to find the corresponding
+    //         entry data (based on entry number).
+    //       - If a match is found, embeds the pacer_doc_id as a data attribute
+    //         within the anchor tag for later retrieval.
+    //       - Extracts the docket entry ID and adds it to an array of doc IDs.
+    //
+    // 3. RECAP Availability Check:
+    //    - Queries the server to check if any of the collected doc IDs are
+    //      available in the RECAP archive.
+    //    - The court information is also included in the request.
+    //
+    // 4. Enriching Links with RECAP Information:
+    //    - Iterates through the response from CL:
+    //       - Extracts the pacer_doc_id from each response object.
+    //       - Finds the corresponding anchor element using the previously
+    //         attached data attribute.
+    //       - Creates a new anchor element with a link to the RECAP archive
+    //         based on the filepath provided in the response and Adds a RECAP
+    //         icon using the extension's image asset.
+    //       - Wraps both the icon and the link within a dedicated container div
+    //         with the class "recap-inline-appellate", this class ensures that
+    //         the icon is hidden when printing the document.
+    //       - Inserts the div container next to the original docket entry link.
+
+    // Get the docket info from the sessionStorage obj
+    const caseSummary = JSON.parse(sessionStorage.caseSummary);
+    const docketEntries = caseSummary.docketInfo.docketEntries;
+
+    // Get all the entry links on the page. We use the "entry-link"
+    // class as a selector because we observed that all non-restricted
+    // entries consistently use this class.
+    this.links = document.body.querySelectorAll('.entry-link');
+    if (!links.length) {
+      return;
+    }
+
+    // Go through the array of links and collect the doc IDs of
+    // the entries that are not restricted.
+    let docIds = [];
+    for (link of this.links) {
+      const docketEntryText = link.innerHTML.trim();
+      const docketEntryData = docketEntries.find(
+        (entry) => entry.entryNumber == parseInt(docketEntryText)
+      );
+
+      // Embed the pacer_doc_id as a data attribute within the anchor tag
+      // to facilitate subsequent retrieval based on this identifier.
+      link.dataset.pacerDocId = docketEntryData.docketEntryId;
+
+      // add the id to the array of doc ids
+      docIds.push(docketEntryData.docketEntryId);
+    }
+
+    // Ask the server whether any of these documents are available from RECAP.
+    this.recap.getAvailabilityForDocuments(docIds, this.court, (response) => {
+      for (result of response.results) {
+        let doc_id = result.pacer_doc_id;
+        // Query the docket entry link using the data attribute
+        // attached previously
+        let anchor = document.querySelector(`[data-pacer-doc-id="${doc_id}"]`);
+        // Create the RECAP icon
+        let href = `https://storage.courtlistener.com/${result.filepath_local}`;
+        let recap_link = $('<a/>', {
+          title: 'Available for free from the RECAP Archive.',
+          href: href,
+        });
+        recap_link.append(
+          $('<img/>').attr({
+            src: chrome.extension.getURL('assets/images/icon-16.png'),
+          })
+        );
+        let recap_div = $('<div>', {
+          class: 'recap-inline-appellate',
+        });
+        recap_div.append(recap_link);
+        // Insert the RECAP icon next to the docket entry link
+        recap_div.insertAfter(anchor);
+      }
+      let spinner = document.getElementById('recap-button-spinner');
+      if (spinner) {
+        spinner.classList.add('recap-btn-spinner-hidden');
+      }
+    });
+  };
+
   // Since this page uses Vue.js for dynamic data rendering and shows a loader
   // during API requests, an observer is necessary to monitor DOM changes and
   // update the component accordingly.
@@ -114,6 +250,8 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
         if (a.localName === 'footer') {
           if ('caseSummary' in sessionStorage) {
             processDocket();
+            attachLinkToDocs();
+            insertRecapButton();
             observer.disconnect();
           } else {
             console.log(
@@ -126,9 +264,19 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
     }
   };
 
-  const body = document.querySelector('body');
-  const observer = new MutationObserver(footerObserver);
-  observer.observe(body, { subtree: true, childList: true });
+  const footer = document.querySelector('footer');
+  // Checks whether the footer is rendered or not, indicating that the page
+  // has fully loaded. Once confirmed, proceed with reloading the RECAP icons.
+  // This check is particularly useful when users click the 'Refresh RECAP
+  // links' option in the RECAP button, because the page is not reloaded and
+  // there are no changes being made to the DOM.
+  if (footer){
+    attachLinkToDocs();
+  } else {
+    const body = document.querySelector('body');
+    const observer = new MutationObserver(footerObserver);
+    observer.observe(body, { subtree: true, childList: true });
+  }
 };
 
 AppellateDelegate.prototype.handleAcmsDownloadPage = async function () {
