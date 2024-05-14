@@ -218,7 +218,15 @@ describe('The Recap export module', function () {
       existingFormData = window.FormData;
       window.FormData = FormDataFake;
       spyOn(recap, 'uploadDocument').and.callFake(
-        (court, case_id, doc_id, doc_number, attach_number, cb) => {
+        (
+          court,
+          case_id,
+          doc_id,
+          doc_number,
+          attach_number,
+          acmsDocumentGuid,
+          cb
+        ) => {
           cb(true);
         }
       );
@@ -245,8 +253,14 @@ describe('The Recap export module', function () {
       expected.append('filepath_local', blob);
 
       await recap.uploadDocument(
-        court, pacer_case_id, pacer_doc_id, docnum, attachnum,
-        callback);
+        court,
+        pacer_case_id,
+        pacer_doc_id,
+        docnum,
+        attachnum,
+        null,
+        callback
+      );
       expect(callback).toHaveBeenCalledWith(true);
     });
   });
@@ -288,7 +302,6 @@ describe('The Recap export module', function () {
 
   describe('uploadIQueryPage', function (){
     let existingFormData;
-    
     beforeEach(async () => {
       existingFormData = window.FormData;
       window.FormData = FormDataFake;

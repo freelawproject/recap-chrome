@@ -206,12 +206,23 @@ const showAndUploadPdf = async function (
     // If we have the pacer_case_id, upload the file to RECAP.
     // We can't pass an ArrayBuffer directly to the background
     // page, so we have to convert to a regular array.
-    this.recap.uploadDocument(this.court, pacer_case_id, pacer_doc_id, document_number, attachment_number, (ok) => {
-      // callback
-      if (ok) {
-        this.notifier.showUpload('PDF uploaded to the public RECAP Archive.', () => {});
+    this.recap.uploadDocument(
+      this.court,
+      pacer_case_id,
+      pacer_doc_id,
+      document_number,
+      attachment_number,
+      this.acmsDocumentGuid,
+      (ok) => {
+        // callback
+        if (ok) {
+          this.notifier.showUpload(
+            'PDF uploaded to the public RECAP Archive.',
+            () => {}
+          );
+        }
       }
-    });
+    );
   } else {
     console.info('RECAP: Not uploading PDF. RECAP is disabled.');
   }

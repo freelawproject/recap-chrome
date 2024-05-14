@@ -58,6 +58,35 @@ describe('The Appellate module', function () {
     });
   });
 
+  describe('parseReceiptPageTitle', function () {
+    it('parses title from download page', function () {
+      let titleData = APPELLATE.parseReceiptPageTitle(
+        'Document: PDF Document (Case: 22-11187, Document: 49)'
+      );
+      expect(titleData.docket_number).toBe('22-11187');
+      expect(titleData.doc_number).toBe('49');
+      expect(titleData.att_number).toBe(0);
+    });
+
+    it('parses title with attachment number from download page', function () {
+      let titleData = APPELLATE.parseReceiptPageTitle(
+        'Document: PDF Document (Case: 22-11187, Document: 43-1)'
+      );
+      expect(titleData.docket_number).toBe('22-11187');
+      expect(titleData.doc_number).toBe('43');
+      expect(titleData.att_number).toBe('1');
+    });
+
+    it('parses title from ACMS download page', function () {
+      let titleData = APPELLATE.parseReceiptPageTitle(
+        'Document: PDF Document (Case: 23-2487, Document: 3.1)'
+      );
+      expect(titleData.docket_number).toBe('23-2487');
+      expect(titleData.doc_number).toBe('3');
+      expect(titleData.att_number).toBe('1');
+    });
+  });
+
   describe('getServletFromInputs', function () {
     describe('for pages with matching format', function () {
       beforeEach(function () {

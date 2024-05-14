@@ -192,16 +192,22 @@ function Recap() {
       pacer_doc_id,
       document_number,
       attachment_number,
+      document_guid = null,
       cb
     ) => {
-      console.info([
+      // Construct a summary message for logging upload data to RECAP Archive
+      let uploadDataSummary = [
         'RECAP: Attempting PDF upload to RECAP Archive with details:',
         `pacer_court: ${pacer_court}`,
         `pacer_case_id: ${pacer_case_id}`,
         `pacer_doc_id: ${pacer_doc_id}`,
         `document_number: ${document_number},`,
-        `attachment_number: ${attachment_number}.`
-      ].join(' '));
+        `attachment_number: ${attachment_number},`,
+      ];
+      if (document_guid) {
+        uploadDataSummary.push(`document_guid: ${document_guid}.`);
+      }
+      console.info(uploadDataSummary.join(' '));
 
       // extract the tabId from the enhanced callback
       // wait for chrome.storage.local to load the tabStorage
@@ -217,6 +223,9 @@ function Recap() {
             formData.append('document_number', document_number);
           if (attachment_number && attachment_number !== '0') {
             formData.append('attachment_number', attachment_number);
+          }
+          if (document_guid) {
+            formData.append('acms_document_guid', document_guid);
           }
           return formData;
         })

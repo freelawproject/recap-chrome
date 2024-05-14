@@ -333,21 +333,32 @@ let APPELLATE = {
 
   // returns data from the title of the Receipt Page as an object
   parseReceiptPageTitle: (title_string) => {
-    // The title in the Download Confirmation page from Appellate pacer shows useful information about the document.
-    // this title has the docket number, document number and the attachment number (if the document belongs to an attachment
-    // page). Here are some examples:
+    // The title in the Download Confirmation page from Appellate pacer shows
+    // useful information about the document. This title has the docket number,
+    // document number and the attachment number (if the document belongs to an
+    // attachment page). Here are some examples:
     //
     //  - Document: PDF Document (Case: 20-15019, Document: 11)
-    //  - Document: PDF Document (Case: 20-15019, Document: 1-1) (document from attachment page)
+    //  - Document: PDF Document (Case: 20-15019, Document: 1-1) (document
+    //    from attachment page)
+    //  - Document: PDF Document (Case: 20-15019, Document: 1.1) (document
+    //    from ACMS)
     //
-    // this method uses regex expressions to match that information from the title and returns an object with the following
-    // attributes:
+    // this method uses regex expressions to match that information from the
+    // title and returns an object with the following attributes:
     //  - docket_number
     //  - doc_number
     //  - att_number
 
-    let dataFromAttachment = /^Document: PDF Document \(Case: ([^']*), Document: (\d+)-(\d+)\)/.exec(title_string);
-    let dataFromSingleDoc = /^Document: PDF Document \(Case: ([^']*), Document: (\d+)\)/.exec(title_string);
+    let dataFromAttachment =
+      /^Document: PDF Document \(Case: ([^']*), Document: (\d+)[-.]+(\d+)\)/.exec(
+        title_string
+      );
+    let dataFromSingleDoc =
+      /^Document: PDF Document \(Case: ([^']*), Document: (\d+)\)/.exec(
+        title_string
+      );
+
     if (!dataFromAttachment && !dataFromSingleDoc) {
       return null;
     }
@@ -409,5 +420,111 @@ let APPELLATE = {
     recap_div.append(recap_link);
 
     return recap_div;
+  },
+
+  // Adds the vue data attributes to the session storage
+  storeVueDataInSession: () => {
+    // The following code draws inspiration from the Vue devtool extension
+    // to identify and inspect Vue components within a web application.
+    // Unlike the devtool extension, which explores the entire DOM, this script
+    // focuses on extracting the data of the main Vue component. By tailoring
+    // the script to the component's HTML structure, we achieve a quick data
+    // retrieval process compared to a full DOM exploration.
+    // The extracted data is then stored in session storage for later use.
+    var code =
+      '(' +
+      function () {
+        let contentWrapper = document.getElementsByClassName('text-center')[0];
+        let vueMainDiv = contentWrapper.parentElement;
+        let vueDataProperties = vueMainDiv.__vue__._data;
+        sessionStorage.setItem(
+          'recapVueData',
+          JSON.stringify(vueDataProperties)
+        );
+        sessionStorage.setItem(
+          'recapACMSConfiguration',
+          JSON.stringify(window._model)
+        );
+      } +
+      ')();';
+
+    let script = document.createElement('script');
+    script.textContent = code;
+    document.head.appendChild(script);
+
+    // We just need this script once and the inline script that's inserted in
+    // the document is immediately executed. Therefore, it's safe to remove
+    // this tag.
+    script.remove();
+  },
+
+  // Prepares the body to request a PDF document link
+  // It takes the `downloadData` object as input, which is expected to contain
+  // information about the documents to be included in the link
+  // The function performs the following actions:
+  // 1. Extracts query parameters from the URL to determine if page numbers
+  //    should be included.
+  // 2. Gets the value from the 'showPdfHeader' checkbox to determine if a
+  //    header should be included in the PDF.
+  // 3. Defines a helper function `pdfItemMapping` that extracts relevant data
+  //    from each document in `downloadData.docketEntryDocuments`.
+  // 4. Constructs the request body object with the following properties:
+  //     - `mergeScope`: Set to 'External' as these are external documents.
+  //     - `pagination`: Set to the value of `includePageNumbers` for including
+  //        page numbers.
+  //     - `header`: Set to the value of `showPDFHeaderInput` for including a
+  //        header.
+  //     - `docketEntryDocuments`: An array of objects containing mapped
+  //        document details using `pdfItemMapping`.
+  //
+  // This function returns the constructed request body object.
+  createAcmsDocumentRequestBody: function (downloadData) {
+    let queryParameters = new URLSearchParams(window.location.search);
+    let includePageNumbers = !!queryParameters.get('includePageNumbers');
+    let showPDFHeaderInput = document.getElementById('showPdfHeader').checked;
+
+    const pdfItemMapping = (data) => ({
+      acms_docketdocumentdetailsid: data && data.docketDocumentDetailsId,
+      acms_name: data && data.name,
+      acms_documenturl: data && data.documentUrl,
+      acms_casefilingdocumenturl: data && data.caseFilingDocumentUrl,
+      acms_documentpermission: data && data.documentPermission,
+      acms_pagecount: data && data.pageCount,
+      acms_filesize: data && data.fileSize,
+      billablepages: data && data.billablePages,
+      cost: data && data.cost,
+      acms_documentnumber: data && data.documentNumber,
+      searchValue: data && data.searchValue,
+      searchTransaction: data && data.searchTransaction,
+    });
+
+    return {
+      mergeScope: 'External',
+      pagination: includePageNumbers,
+      header: showPDFHeaderInput,
+      docketEntryDocuments: downloadData.docketEntryDocuments.map((data) =>
+        pdfItemMapping(data)
+      ),
+    };
+  },
+
+  // Creates a div with a spinner and a loading message
+  createsLoadingMessage: (downloadData) => {
+    let loadingTextDiv = document.createElement('div');
+    loadingTextDiv.classList.add('box', 'mt-2');
+
+    let loadingTextElement = document.createElement('h4');
+    loadingTextElement.classList.add('text-center', 'mt-0');
+    let spinner = document.createElement('i');
+    spinner.classList.add('mdi', 'mdi-spin', 'mdi-loading', 'mr-2');
+    let spanText = document.createElement('span');
+    spanText.innerHTML =
+      'Download in progress for case number ' +
+      `${downloadData.caseSummary.caseDetails.caseNumber}`;
+
+    loadingTextElement.appendChild(spinner);
+    loadingTextElement.appendChild(spanText);
+    loadingTextDiv.appendChild(loadingTextElement);
+    return loadingTextDiv;
   },
 };

@@ -6,6 +6,7 @@ let AppellateDelegate = function (tabId, court, url, path, links) {
   this.path = path;
   this.links = links || [];
   this.recap = importInstance(Recap);
+  this.acms = importInstance(Acms);
   this.notifier = importInstance(Notifier);
   this.queryParameters = APPELLATE.getQueryParameters(this.url);
   this.docId = APPELLATE.getDocIdFromURL(this.queryParameters);
@@ -50,7 +51,9 @@ AppellateDelegate.prototype.regularAppellatePageHandler = function () {
 };
 
 AppellateDelegate.prototype.ACMSPageHandler = function () {
-  if (this.path.match(/^\/[0-9\-]+$/)) {
+  if (this.path.startsWith('/download-confirmation/')) {
+    this.handleAcmsDownloadPage();
+  } else if (this.path.match(/^\/[0-9\-]+$/)) {
     this.handleAcmsDocket();
   }
 };
@@ -126,6 +129,169 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
   const body = document.querySelector('body');
   const observer = new MutationObserver(footerObserver);
   observer.observe(body, { subtree: true, childList: true });
+};
+
+AppellateDelegate.prototype.handleAcmsDownloadPage = async function () {
+
+  async function startUploadProcess() {
+    // This function initiates the upload process for a PDF document.
+    // It performs the following steps:
+    //
+    // 1. Prepares data for upload:
+    //    - Parses download data from session storage and creates a request
+    //      body for the PDF URL document.
+    //
+    // 2. Retrieves configuration and tokens:
+    //    - Extracts API URL and token from session storage stored in
+    //      the 'recapACMSConfiguration' key.
+    //
+    // 3. Extracts document information:
+    //    - Extracts title from the element with class 'p.font-weight-bold'.
+    //    - Parses relevant details (att_number) from the title.
+    //    - Builds a documentData object containing docket number, document
+    //      number, and attachment number.
+    //
+    // 4. Adds a loading message:
+    //    - Creates a loading message using APPELLATE.createsLoadingMessage.
+    //
+    // 5. Stores case ID and document GUID (assumed for later use):
+    //    - Saves case ID from download data.
+    //    - Saves document GUID from download data.
+    //
+    // 6. Gets PDF download URL and initiates download:
+    //    - Stores the current page HTML content.
+    //    - Calls acms.getDocumentURL to get the PDF download URL.
+    //    - Once the URL is retrieved, initiates an HTTP request to download
+    //      the PDF.
+    //    - Binds the handleDocFormResponse function to handle the downloaded
+    //      data and document information after download completes.
+    let downloadData = JSON.parse(
+      sessionStorage.getItem('recapVueData')
+    );
+    const pdfFileRequestBody =
+      APPELLATE.createAcmsDocumentRequestBody(downloadData);
+
+    // Get the ACMS API URL and token from the sessionStorage object
+    let appConfiguration = JSON.parse(
+      sessionStorage.getItem('recapACMSConfiguration')
+    );
+    let { ApiUrl } = appConfiguration.AppSettings;
+    let { Token } = appConfiguration.AuthToken;
+
+    // Collect relevant document information to upload PDF to CL
+    let title = document.querySelector('p.font-weight-bold').innerHTML.trim();
+    let dataFromTitle = APPELLATE.parseReceiptPageTitle(title);
+    let documentData = {
+      docket_number: downloadData.caseSummary.caseDetails.caseNumber,
+      doc_number: downloadData.docketEntry.entryNumber,
+      att_number:
+        downloadData.docketEntry.documentCount > 1
+          ? dataFromTitle.att_number
+          : 0,
+    };
+
+    // Remove element from the page to show loading message
+    let mainDiv = document.querySelector('.download-confirmation-wrapper');
+    mainDiv.innerHTML = '';
+    loadingTextMessage = APPELLATE.createsLoadingMessage(downloadData);
+    mainDiv.append(loadingTextMessage);
+
+    // Get the pacer_case_id and document GUID from the sessionStorage object
+    this.pacer_case_id = downloadData.caseSummary.caseDetails.caseId;
+    this.acmsDocumentGuid =
+      downloadData.docketEntryDocuments[0].docketDocumentDetailsId;
+
+    let previousPageHtml = document.documentElement.innerHTML;
+    // Use the  to request the PDF doc
+    this.acms.getDocumentURL(ApiUrl, Token, pdfFileRequestBody, (pdf_url) => {
+      httpRequest(
+        pdf_url,
+        null,
+        null,
+        function (type, ab, xhr) {
+          let requestHandler = handleDocFormResponse.bind(this);
+          requestHandler(type, ab, xhr, previousPageHtml, documentData);
+        }.bind(this)
+      );
+    });
+  }
+
+  const wrapperMutationObserver = (mutationList, observer) => {
+    for (const r of mutationList) {
+      for (const n of r.addedNodes) {
+        let hasReceipt = n.textContent
+          .toLowerCase()
+          .includes('transaction receipt');
+
+        let hasAcceptChargesButton = n.textContent
+          .toLowerCase()
+          .includes('accept charges and retrieve');
+
+        if (n.localName === 'div' && hasReceipt && hasAcceptChargesButton) {
+          // Insert script to retrieve and store Vue data in the storage
+          APPELLATE.storeVueDataInSession();
+
+          // Get doc_id from the sessionStorage
+          let downloadData = JSON.parse(sessionStorage.getItem('recapVueData'));
+          this.docId = downloadData.docketEntry.docketEntryId;
+
+          // Check if the accept charges button is already created on the page
+          let acceptChargesButton = document.querySelector('button');
+          if (!acceptChargesButton) {
+            return;
+          }
+
+          // Clone the "Accept charges" button to remove the onclick event.
+          // The default event handler retrieves an URL for the PDF and then
+          // navigate to this page, but if we wait until the handler finishes,
+          // we wont be able to use the same link to get the doc as a blob
+          // object because the URL seems to be a one-time-use link and
+          // attempting to access it after the handler has used it will result
+          // in an error message stating that the file retrieval attempt failed.
+          let clonedAcceptChargesButton = acceptChargesButton.cloneNode(true);
+          acceptChargesButton.replaceWith(clonedAcceptChargesButton);
+
+          // Add a custom onclick event to the Accept charges button.
+          // The handler of this new event performs an additional task before
+          // displaying the document. Upon clicking the button, the document
+          // retrieval process will remain unchanged, but the retrieved blob
+          // object will be uploaded to the RECAP archive before the document
+          // is rendered on the page.
+          clonedAcceptChargesButton.addEventListener(
+            'click',
+            startUploadProcess.bind(this)
+          );
+
+          // Query the server to check the availability of the document in the
+          // RECAP archive.
+          this.recap.getAvailabilityForDocuments(
+            [this.docId],
+            this.court,
+            (api_results) => {
+              console.info(
+                'RECAP: Got results from API. Running callback on API ' +
+                  'results to insert banner'
+              );
+              let result = api_results.results.filter(
+                (obj) => obj.pacer_doc_id == this.docId,
+                this
+              )[0];
+              if (!result) {
+                return;
+              }
+              insertAvailableDocBanner(result.filepath_local, 'div.box');
+            }
+          );
+        }
+      };
+    };
+  };
+
+  const wrapper = document.getElementsByClassName(
+    'download-confirmation-wrapper'
+  )[0];
+  const observer = new MutationObserver(wrapperMutationObserver);
+  observer.observe(wrapper, { subtree: true, childList: true });
 };
 
 AppellateDelegate.prototype.handleCaseSearchPage = () => {
