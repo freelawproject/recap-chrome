@@ -53,6 +53,8 @@ AppellateDelegate.prototype.regularAppellatePageHandler = function () {
 AppellateDelegate.prototype.ACMSPageHandler = function () {
   if (this.path.startsWith('/download-confirmation/')) {
     this.handleAcmsDownloadPage();
+  } else if (this.path.startsWith('/documents-list/')) {
+    this.handleAcmsAttachmentPage();
   } else if (this.path.match(/^\/[0-9\-]+$/)) {
     this.handleAcmsDocket();
   }
@@ -65,6 +67,153 @@ AppellateDelegate.prototype.dispatchPageHandler = function () {
   } else {
     this.regularAppellatePageHandler();
   }
+};
+
+AppellateDelegate.prototype.handleAcmsAttachmentPage = async function () {
+  const processAttachmentPage = async () => {
+    let caseSummary = JSON.parse(sessionStorage.caseSummary);
+    this.pacer_case_id = caseSummary.caseDetails.caseId;
+
+    const options = await getItemsFromStorage('options');
+    if (options['recap_enabled']) {
+      let vueData = JSON.parse(sessionStorage.recapVueData);
+      let requestBody = {
+        caseDetails: caseSummary.caseDetails,
+        docketEntry: vueData.docketEntry,
+        docketEntryDocuments: vueData.docketEntryDocuments,
+      };
+      this.recap.uploadDocket(
+        this.court,
+        this.pacer_case_id,
+        JSON.stringify(requestBody),
+        'ACMS_ATTACHMENT_PAGE',
+        (ok) => {
+          console.log('in cb');
+          if (ok) {
+            console.log('cb success');
+            history.replaceState({ uploaded: true }, '');
+            this.notifier.showUpload(
+              'Attachment page uploaded to the public RECAP Archive.',
+              () => {}
+            );
+          } else {
+            console.log('cb fail');
+          }
+        }
+      );
+    } else {
+      console.info('RECAP: Not uploading docket json. RECAP is disabled.');
+    }
+  };
+
+  const attachLinkToDocs = async () => {
+    // This function attaches links to available RECAP documents for each entry
+    // on the current page. It performs the following steps:
+    //
+    // 1. Retrieves docket entry and document data from session storage.
+    // 2. Selects all elements with the class "entry-link" on the page.
+    // 3. Loops through each link:
+    //    - Extracts the document number from the previous sibling element.
+    //    - Finds the corresponding document data object using the document
+    //      number.
+    //    - Embeds the document's `docketDocumentDetailsId` as a
+    //      `data-document-guid` attribute in the link.
+    // 4. Queries the server for the availability of these documents from RECAP.
+    // 5. Iterates through the response:
+    //    - Extracts the `acms_document_guid` for each available document.
+    //    - Finds the corresponding link element using the previously attached
+    //     `data-document-guid` attribute.
+    //    - Creates a link element
+    //    - Inserts the RECAP icon element next to the original entry link.
+    const attachmentsData = JSON.parse(sessionStorage.recapVueData);
+    const documentsData = attachmentsData.docketEntryDocuments;
+
+    // Get all the entry links on the page. We use the "entry-link"
+    // class as a selector because all rows on the page
+    // consistently use this class.
+    this.links = document.body.querySelectorAll('.entry-link');
+    if (!links.length) {
+      return;
+    }
+
+    // Go through the array of links and embed the document_guid
+    for (link of this.links) {
+      // The document number and the link are enclosed within the
+      // same span tag and are located adjacent to each other.
+      // Therefore, to retrieve the document number, we need to use
+      //  the previousSibling property.
+      let documentNumberText = link.previousSibling.innerHTML.trim();
+      const docData = documentsData.find(
+        (document) => document.documentNumber == documentNumberText
+      );
+
+      // Embed the document_guid as a data attribute within the anchor tag
+      // to facilitate subsequent retrieval based on this identifier.
+      link.dataset.documentGuid = docData.docketDocumentDetailsId;
+    }
+
+    let docIds = [attachmentsData.docketEntry.docketEntryId];
+
+    // Ask the server whether any of these documents are available from RECAP.
+    this.recap.getAvailabilityForDocuments(docIds, this.court, (response) => {
+      for (result of response.results) {
+        let doc_guid = result.acms_document_guid;
+        // Query the docket entry link using the data attribute
+        // attached previously
+        let anchor = document.querySelector(
+          `[data-document-guid="${doc_guid}"]`
+        );
+        // Create the RECAP icon
+        let href = `https://storage.courtlistener.com/${result.filepath_local}`;
+        let recap_link = $('<a/>', {
+          title: 'Available for free from the RECAP Archive.',
+          href: href,
+        });
+        recap_link.append(
+          $('<img/>').attr({
+            src: chrome.extension.getURL('assets/images/icon-16.png'),
+          })
+        );
+        let recap_div = $('<div>', {
+          class: 'recap-inline-appellate',
+        });
+        recap_div.append(recap_link);
+        // Insert the RECAP icon next to the docket entry link
+        recap_div.insertAfter(anchor);
+      }
+    });
+  };
+
+  // This following logic monitors for specific DOM changes using
+  // MutationObserver. It iterates through mutations and checks for added nodes
+  // that meet two criteria:
+  //   1. The node's text content (lowercase) includes "documents are attached
+  //      to this filing".
+  //   2. The node's parent element is an h4 element.
+  // If both conditions are true, it triggers these actions:
+  //   - Stores relevant Vue data in session storage.
+  //   - Processes the current page as an attachment page.
+  //   - Attaches links to entries on the page.
+  const wrapperMutationObserver = async (mutationList, observer) => {
+    for (const r of mutationList) {
+      for (const n of r.addedNodes) {
+        let isTitle = n.textContent
+          .toLowerCase()
+          .includes('documents are attached to this filing');
+        let isTargetingH4Div = n.parentElement.localName === 'h4';
+        if (isTitle && isTargetingH4Div) {
+          // Insert script to retrieve and store Vue data in the storage
+          APPELLATE.storeVueDataInSession();
+          processAttachmentPage();
+          attachLinkToDocs();
+        }
+      }
+    }
+  };
+
+  const wrapper = document.querySelector('.documents-list-wrapper');
+  const observer = new MutationObserver(wrapperMutationObserver);
+  observer.observe(wrapper, { subtree: true, childList: true });
 };
 
 AppellateDelegate.prototype.handleAcmsDocket = async function () {
