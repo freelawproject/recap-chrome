@@ -424,11 +424,13 @@ const combinedPdfWarning = () => {
   imgDiv.appendChild(img);
 
   let text = document.createElement('p');
-  text.innerHTML = `This document <b>will not be uploaded</b> to the RECAP Archive because the extension has detected that this page may return a combined PDF and consistently splitting these files in a proper manner is not possible for now.`;
+  text.innerHTML = 'This document <b>will not be uploaded</b> to the RECAP'
+    + 'Archive because the extension has detected that this page may return'
+    + 'a combined PDF and consistently splitting these files in a proper manner'
+    + 'is not possible for now.';
 
   let messageDiv = document.createElement('div');
-  messageDiv.style.display = 'flex';
-  messageDiv.style.alignContent = 'center';
+  messageDiv.classList.add('recap-combined-pdf-text');
   messageDiv.appendChild(text);
 
   let innerDiv = document.createElement('div');

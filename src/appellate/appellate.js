@@ -375,7 +375,22 @@ AppellateDelegate.prototype.handleAcmsDownloadPage = async function () {
           .toLowerCase()
           .includes('accept charges and retrieve');
 
-        if (n.localName === 'div' && hasReceipt && hasAcceptChargesButton) {
+        let hasOneDocument = JSON.parse(
+          sessionStorage.selectedDocuments
+        ).length == 1;
+
+        if (
+          n.localName === 'div' &&
+          hasReceipt &&
+          hasAcceptChargesButton
+        ) {
+
+          if (!hasOneDocument){
+            pdfWarning = combinedPdfWarning();
+            n.append(pdfWarning);
+            return;
+          }
+
           // Insert script to retrieve and store Vue data in the storage
           APPELLATE.storeVueDataInSession();
 

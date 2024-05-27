@@ -196,6 +196,12 @@ footer #version {
   font-size: 13px;
 }
 
+.recap-combined-pdf-text {
+  display: flex;
+  align-content: center;
+  text-align: justify;
+}
+
 .recap-banner,
 .recap-popup,
 .recap-email-banner {
