@@ -88,16 +88,18 @@ AppellateDelegate.prototype.handleAcmsAttachmentPage = async function () {
         JSON.stringify(requestBody),
         'ACMS_ATTACHMENT_PAGE',
         (ok) => {
-          console.log('in cb');
           if (ok) {
-            console.log('cb success');
             history.replaceState({ uploaded: true }, '');
             this.notifier.showUpload(
               'Attachment page uploaded to the public RECAP Archive.',
               () => {}
             );
-          } else {
-            console.log('cb fail');
+          }else {
+            this.notifier.showUpload(
+              'Error: The Attachment page was not uploaded to the public' +
+                'RECAP Archive',
+              () => {}
+            );
           }
         }
       );
