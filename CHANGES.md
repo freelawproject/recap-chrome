@@ -10,6 +10,7 @@ Features:
  - Adds logic to upload ACMS PDF documents to CourtListener. ([#373](https://github.com/freelawproject/recap-chrome/pull/373))
  - Inserts the RECAP button and [R] icons to the ACMS Docket report. ([#374](https://github.com/freelawproject/recap-chrome/pull/374))
  - Displays the warning about combined PDFs on the download page.([#376](https://github.com/freelawproject/recap-chrome/pull/376))
+ - Introduces logic to upload ACMS attachment pages to CourtListener([#375](https://github.com/freelawproject/recap-chrome/pull/375))
 
 Changes:
  - None yet
