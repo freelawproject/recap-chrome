@@ -17,6 +17,7 @@ function Recap() {
       'CASE_QUERY_RESULT_PAGE': 14,
       'APPELLATE_CASE_QUERY_RESULT_PAGE': 15,
       'ACMS_DOCKET_JSON': 16,
+      'ACMS_ATTACHMENT_PAGE': 17,
     };
 
   function _buildForm(
