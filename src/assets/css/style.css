@@ -41,13 +41,17 @@
 }
 
 #options-body .btn-primary {
-  background-color: #428bca;
-  border-color: #357ebd;
+  background-color: #3a4c8f;
+  border-color: #303f77;
 }
 
 #options-body .custom-control-input:checked ~ .custom-control-label::before {
-  background-color: #428bca;
-  border-color: #357ebd;
+  background-color: #3a4c8f;
+  border-color: #303f77;
+}
+
+#options-body .form-check-input:before{
+  background-color: #5064ad;
 }
 
 #options-body #container {
