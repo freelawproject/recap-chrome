@@ -335,8 +335,8 @@ footer #version {
 
 .btn-primary {
   color: #fff;
-  background-color: #428bca;
-  border-color: #357ebd;
+  background-color: #5064ad;
+  border-color: #3a4c8f;
 }
 
 .btn-primary:hover,
@@ -345,8 +345,8 @@ footer #version {
 .btn-primary:active,
 .btn-primary.active{
   color: #ffffff;
-  background-color: #3071a9;
-  border-color: #285e8e;
+  background-color: #3a4c8f;
+  border-color: #303f77;
 }
 
 .btn-primary:active,
@@ -364,9 +364,9 @@ footer #version {
   border-top-left-radius: 0;
 }
 
-.btn-group .btn+.btn, 
-.btn-group .btn+.btn-group, 
-.btn-group .btn-group+.btn, 
+.btn-group .btn+.btn,
+.btn-group .btn+.btn-group,
+.btn-group .btn-group+.btn,
 .btn-group .btn-group+.btn-group {
   margin-left: -1px;
 }
@@ -504,11 +504,11 @@ footer #version {
 }
 
 .full-page-iframe{
-  position: absolute; 
-  left: 0; 
-  right: 0; 
-  bottom: 0; 
-  top: 0; 
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
 }
 
 .recap-inline-appellate{
