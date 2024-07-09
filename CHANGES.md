@@ -13,7 +13,7 @@ Features:
  - Introduces logic to upload ACMS attachment pages to CourtListener([#375](https://github.com/freelawproject/recap-chrome/pull/375))
 
 Changes:
- - None yet
+ - Updates style and replace old logos with new ones([#378](https://github.com/freelawproject/recap-chrome/pull/378))
 
 Fixes:
  - None yet
