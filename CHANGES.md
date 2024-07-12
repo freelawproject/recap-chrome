@@ -11,6 +11,7 @@ Features:
  - Inserts the RECAP button and [R] icons to the ACMS Docket report. ([#374](https://github.com/freelawproject/recap-chrome/pull/374))
  - Displays the warning about combined PDFs on the download page.([#376](https://github.com/freelawproject/recap-chrome/pull/376))
  - Introduces logic to upload ACMS attachment pages to CourtListener([#375](https://github.com/freelawproject/recap-chrome/pull/375))
+ - Introduces validation for the cookie used to identify filing account users.([#371](https://github.com/freelawproject/recap/issues/371), [#377](https://github.com/freelawproject/recap-chrome/pull/377)).
 
 Changes:
  - Updates style and replace old logos with new ones([#378](https://github.com/freelawproject/recap-chrome/pull/378))

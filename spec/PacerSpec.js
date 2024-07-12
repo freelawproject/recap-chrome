@@ -581,6 +581,31 @@ describe('The PACER module', function () {
     });
   });
 
+  describe('hasFilingCookie', function () {
+    const filingAccountCookie =
+      'PacerSession=B7yuvmcj2F...9p5nDzEXsHE; ' + 'isFilingAccount=true';
+    const nonFilingAccountCookie =
+      'PacerUser=B7yuvmcj2F...9p5nDzEXsHE; ' + 'PacerPref=receipt=Y';
+    const nonLoggedInCookie = 'PacerSession=unvalidated; PacerPref=receipt=Y';
+    const nonsenseCookie = 'Foo=barbaz; Baz=bazbar; Foobar=Foobar';
+
+    it('returns true for a valid cookie from a filing account', function () {
+      expect(PACER.hasFilingCookie(filingAccountCookie)).toBe(true);
+    });
+
+    it('returns false for cookies from a non-filing account', function () {
+      expect(PACER.hasFilingCookie(nonFilingAccountCookie)).toBe(false);
+    });
+
+    it('returns false for a non-logged in cookie', function () {
+      expect(PACER.hasFilingCookie(nonLoggedInCookie)).toBe(false);
+    });
+
+    it('returns false for nonsense cookie', function () {
+      expect(PACER.hasFilingCookie(nonsenseCookie)).toBe(false);
+    });
+  });
+
   describe('isAppellateCourt', function () {
     it('returns true for an appellate court', function () {
       expect(PACER.isAppellateCourt('ca5')).toBe(true);
