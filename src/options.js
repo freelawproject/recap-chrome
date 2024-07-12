@@ -20,6 +20,7 @@ async function load_options() {
         inputs[i].value = items.options[inputs[i].id] || '';
       }
     }
+    if ('option_dismiss_new_brand_info' in items.options) removeInfoBanner();
   });
 }
 
@@ -32,6 +33,11 @@ function save_options() {
       } else if (inputs[i].type === 'text') {
         options[inputs[i].id] = inputs[i].value;
       }
+    }
+
+    let banner = document.getElementById('header-banner');
+    if (!banner) {
+      options['option_dismiss_new_brand_info'] = true;
     }
 
     chrome.storage.local.set({ options: options }, function () {
@@ -124,4 +130,12 @@ function showHideReceiptsWarning (tabs){
 (function () {
   let ver = document.getElementById('version');
   ver.textContent = `(version ${chrome.runtime.getManifest().version})`;
+
+  let dismiss_button = document.querySelector('#dismiss-banner button');
+  if (dismiss_button) {
+    dismiss_button.addEventListener('click', function (e) {
+      removeInfoBanner();
+      save_options();
+    });
+  }
 })();
