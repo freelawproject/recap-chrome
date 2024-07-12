@@ -28,6 +28,15 @@ function updateToolbarButton(tab) {
   };
 
   chrome.storage.local.get('options', function(items){
+    if (
+      'dismiss_news_badge' in items['options'] &&
+      items['options']['dismiss_news_badge']
+    ) {
+      chrome.browserAction.setBadgeText({ text: '' });
+    } else {
+      chrome.browserAction.setBadgeText({ text: '🔔' });
+    }
+
     if (tab === null || tab === undefined) {
       // There's code in Firefox that can be called before the defaults are set
       // and before the tab is even established. Catch that, and handle it or

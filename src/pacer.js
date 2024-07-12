@@ -794,13 +794,17 @@ let PACER = {
     headerContainer.after(banner_div);
   },
   
-  removeBannerFromLoginPage: async () => {
+  removeBannerFromLoginPage: async (event_from_btn = false) => {
     // Updates user preferences and remove the information banner
     let info_banner = document.getElementById('recap_info_banner');
     info_banner.remove();
 
     let options = await getItemsFromStorage('options');
-    options['dismiss_class_action_info'] = true;
+    if (event_from_btn) {
+      options['option_dismiss_new_brand_info'] = true;
+      options['dismiss_news_badge'] = true;
+    }
+    options['login_dismiss_new_brand_info'] = true;
     saveItemToStorage({ options: options });
   },
 

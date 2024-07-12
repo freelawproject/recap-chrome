@@ -206,3 +206,14 @@ chrome.tabs.onUpdated.addListener(async function (tabId, details, tab) {
 chrome.tabs.onActivated.addListener(function(activeInfo){
   getTabById(activeInfo.tabId, updateToolbarButton);
 });
+
+chrome.runtime.onConnect.addListener(function (port) {
+  if (port.name === 'popup') {
+    port.onDisconnect.addListener(function () {
+      chrome.storage.local.get('options', function (items) {
+        items.options['dismiss_news_badge'] = true;
+        saveOptionsAndUpdateToolbar(items.options);
+      });
+    });
+  }
+});

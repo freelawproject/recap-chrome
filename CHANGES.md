@@ -14,6 +14,7 @@ Features:
 
 Changes:
  - Updates style and replace old logos with new ones([#378](https://github.com/freelawproject/recap-chrome/pull/378))
+ - Adds a badge to the extension icon and a banner in the options menu([#379](https://github.com/freelawproject/recap-chrome/pull/379))
 
 Fixes:
  - None yet
