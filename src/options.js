@@ -138,4 +138,9 @@ function showHideReceiptsWarning (tabs){
       save_options();
     });
   }
+
+  // Use the messaging APIs to set up a Port between the popup and background
+  // page. We should get a onDisconnect event in the background page when
+  // the popup goes away.
+  chrome.runtime.connect({ name: 'popup' });
 })();
