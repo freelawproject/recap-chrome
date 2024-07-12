@@ -34,7 +34,7 @@ function updateToolbarButton(tab) {
     ) {
       chrome.browserAction.setBadgeText({ text: '' });
     } else {
-      chrome.browserAction.setBadgeText({ text: '📣' });
+      chrome.browserAction.setBadgeText({ text: '🔔' });
     }
 
     if (tab === null || tab === undefined) {
