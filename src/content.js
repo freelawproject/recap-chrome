@@ -68,7 +68,7 @@ async function addRecapInformation(msg) {
 
     let learn_more_btn = document.getElementById('learn_more_btn');
     learn_more_btn.addEventListener('click', async () => {
-      await PACER.removeBannerFromLoginPage();
+      await PACER.removeBannerFromLoginPage(event_from_btn = true);
       return true;
     });
 
