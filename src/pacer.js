@@ -71,8 +71,12 @@ let PACER = {
   },
 
   // Returns true if the URL is for the login page
-  isLoginPage: function(url) {
-    return this.getCourtFromUrl(url) === 'login';
+  isLoginPage: function (url) {
+    isPacerLogin = this.getCourtFromUrl(url) === 'login' && url.includes('csologin/login.jsf');
+    // matches the URL for the login page to the Manage My Account interface in PACER. The url is:
+    // https://pacer.psc.uscourts.gov/pscof/login.xhtml
+    isManageAccountLogin = this.getCourtFromUrl(url) === 'psc' && url.includes('pscof/login.xhtml');
+    return isPacerLogin || isManageAccountLogin;
   },
 
   convertToCourtListenerCourt: function(pacer_court_id) {
