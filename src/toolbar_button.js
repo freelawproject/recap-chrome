@@ -39,7 +39,7 @@ function updateToolbarButton(tab) {
         !/Chrome|Chromium/.test(navigator.userAgent)
       ) {
         // Detect Safari engine
-        chrome.browserAction.setBadgeText({ text: '!' });
+        chrome.browserAction.setBadgeText({ text: '1' });
       } else {
         chrome.browserAction.setBadgeText({ text: '🔔' });
         chrome.browserAction.setBadgeBackgroundColor({ color: '#404040' });
