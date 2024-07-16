@@ -172,6 +172,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.message === 'requestTabId') {
     sendResponse({ tabId: sender.tab.id });
   }
+  if (msg.message === 'clearBadge') {
+    chrome.storage.local.get('options', function (items) {
+      items.options['dismiss_news_badge'] = true;
+      saveOptionsAndUpdateToolbar(items.options);
+    });
+  }
   if (msg.message === 'upload'){
     let recap = new Recap();
     let notifier = new Notifier();

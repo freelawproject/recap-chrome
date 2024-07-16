@@ -143,4 +143,7 @@ function showHideReceiptsWarning (tabs){
   // page. We should get a onDisconnect event in the background page when
   // the popup goes away.
   chrome.runtime.connect({ name: 'popup' });
+  window.onblur = function () {
+    chrome.runtime.sendMessage({ message: 'clearBadge' });
+  };
 })();
