@@ -16,6 +16,7 @@ Features:
 Changes:
  - Updates style and replace old logos with new ones([#378](https://github.com/freelawproject/recap-chrome/pull/378))
  - Adds a badge to the extension icon and a banner in the options menu([#379](https://github.com/freelawproject/recap-chrome/pull/379), [#380](https://github.com/freelawproject/recap-chrome/pull/380))
+ - Removes the warning icon on ACMS websites([#382](https://github.com/freelawproject/recap-chrome/pull/382))
 
 Fixes:
  - Enhance isLoginPage to accurately identify login pages([#373](https://github.com/freelawproject/recap/issues/373), [#381](https://github.com/freelawproject/recap-chrome/pull/381)).
