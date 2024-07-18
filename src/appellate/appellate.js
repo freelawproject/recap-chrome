@@ -526,9 +526,15 @@ AppellateDelegate.prototype.handleAcmsDownloadPage = async function () {
           .toLowerCase()
           .includes('accept charges and retrieve');
 
-        let hasOneDocument = JSON.parse(
-          sessionStorage.selectedDocuments
-        ).length == 1;
+        // The `selectedDocuments` key in sessionStorage is only available when
+        // the download page is loaded from an attachment page. It is not
+        // available when loaded from a case summary entry. This check ensures
+        // the extension can handle both scenarios gracefully.
+        let hasOneDocument = true;
+        if (sessionStorage.getItem('selectedDocuments')) {
+          hasOneDocument =
+            JSON.parse(sessionStorage.selectedDocuments).length == 1;
+        }
 
         if (
           n.localName === 'div' &&
