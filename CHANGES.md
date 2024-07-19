@@ -5,6 +5,20 @@
 The following changes are not yet released, but are code complete:
 
 Features:
+ - None yet
+
+Changes:
+ - None yet
+ 
+Fixes:
+ - None yet
+
+For developers:
+ - Nothing yet
+
+## 2.7.0 (2024-07-19)
+
+Features:
  - Introduces a new upload type for Dockets from ACMS and enhances code maintainability by refactoring common upload logic into reusable functions.([#368](https://github.com/freelawproject/recap-chrome/pull/371))
  - Docket reports from ACMS are now uploaded to CourtListener.([#372](https://github.com/freelawproject/recap-chrome/pull/372))
  - Adds logic to upload ACMS PDF documents to CourtListener. ([#373](https://github.com/freelawproject/recap-chrome/pull/373))
@@ -20,9 +34,7 @@ Changes:
 
 Fixes:
  - Enhance isLoginPage to accurately identify login pages([#373](https://github.com/freelawproject/recap/issues/373), [#381](https://github.com/freelawproject/recap-chrome/pull/381)).
- 
-For developers:
- - Nothing yet
+
 
 ## 2.6.1 (2024-04-18)
 
