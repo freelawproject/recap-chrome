@@ -11,10 +11,21 @@ Changes:
  - None yet
  
 Fixes:
- - Refines content_scripts permissions on azure websites([#374](https://github.com/freelawproject/recap/issues/374), [#385](https://github.com/freelawproject/recap-chrome/pull/385))
+ - None yet
 
 For developers:
  - Nothing yet
+
+## 2.7.2 (2024-07-21)
+
+ Fixes:
+ - Refines content_scripts permissions on azure websites([#374](https://github.com/freelawproject/recap/issues/374), [#385](https://github.com/freelawproject/recap-chrome/pull/385))
+
+
+## 2.7.1 (2024-07-21)
+
+- Rolled back from Version 2.7.0 to Version 2.6.1 
+
 
 ## 2.7.0 (2024-07-19)
 
