@@ -11,7 +11,7 @@ Changes:
  - None yet
  
 Fixes:
- - None yet
+ - Refines content_scripts permissions on azure websites([#374](https://github.com/freelawproject/recap/issues/374), [#385](https://github.com/freelawproject/recap-chrome/pull/385))
 
 For developers:
  - Nothing yet
