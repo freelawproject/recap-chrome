@@ -83,16 +83,7 @@
     "*://cadc.fedcourts.us/"
   ],
   "background": {
-    "scripts": [
-      "assets/js/jquery.js",
-      "utils.js",
-      "notifier.js",
-      "toolbar_button.js",
-      "pacer.js",
-      "recap.js",
-      "appellate/acms_api.js",
-      "background.js"
-    ]
+    "service_worker": "background.js"
   },
   "content_scripts": [
     {
@@ -181,7 +172,7 @@
       "run_at": "document_idle"
     }
   ],
-  "browser_action": {
+  "action": {
     "default_icon": {
       "19": "assets/images/grey-19.png",
       "38": "assets/images/grey-38.png"
