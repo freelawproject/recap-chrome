@@ -1,5 +1,5 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "RECAP",
   "author": "Free Law Project and the Center for Information Technology and Policy at Princeton",
   "description": "RECAP improves the experience of using PACER, the online public access system for the U.S. federal courts.",
