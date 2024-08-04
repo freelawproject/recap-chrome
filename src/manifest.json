@@ -20,6 +20,14 @@
     }
   },
   "permissions": [
+    "notifications",
+    "storage",
+    "unlimitedStorage",
+    "activeTab",
+    "tabs",
+    "cookies"
+  ],
+  "host_permissions": [
     "*://*.uscourts.gov/",
     "*://ca1-showdoc.azurewebsites.us/",
     "*://ca2-showdoc.azurewebsites.us/",
@@ -72,13 +80,7 @@
     "*://ca10.fedcourts.us/",
     "*://ca11.fedcourts.us/",
     "*://cafc.fedcourts.us/",
-    "*://cadc.fedcourts.us/",
-    "notifications",
-    "storage",
-    "unlimitedStorage",
-    "activeTab",
-    "tabs",
-    "cookies"
+    "*://cadc.fedcourts.us/"
   ],
   "background": {
     "scripts": [
