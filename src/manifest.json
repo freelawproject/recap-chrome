@@ -25,7 +25,8 @@
     "unlimitedStorage",
     "activeTab",
     "tabs",
-    "cookies"
+    "cookies",
+    "scripting"
   ],
   "host_permissions": [
     "*://*.uscourts.gov/",
