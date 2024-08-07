@@ -1,5 +1,5 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "RECAP",
   "author": "Free Law Project and the Center for Information Technology and Policy at Princeton",
   "description": "RECAP improves the experience of using PACER, the online public access system for the U.S. federal courts.",
@@ -16,10 +16,19 @@
   "applications": {
     "gecko": {
       "id": "info@recapthelaw.org",
-      "strict_min_version": "57.0"
+      "strict_min_version": "58.0"
     }
   },
   "permissions": [
+    "notifications",
+    "storage",
+    "unlimitedStorage",
+    "activeTab",
+    "tabs",
+    "cookies",
+    "scripting"
+  ],
+  "host_permissions": [
     "*://*.uscourts.gov/",
     "*://ca1-showdoc.azurewebsites.us/",
     "*://ca2-showdoc.azurewebsites.us/",
@@ -72,25 +81,11 @@
     "*://ca10.fedcourts.us/",
     "*://ca11.fedcourts.us/",
     "*://cafc.fedcourts.us/",
-    "*://cadc.fedcourts.us/",
-    "notifications",
-    "storage",
-    "unlimitedStorage",
-    "activeTab",
-    "tabs",
-    "cookies"
+    "*://cadc.fedcourts.us/"
   ],
   "background": {
-    "scripts": [
-      "assets/js/jquery.js",
-      "utils.js",
-      "notifier.js",
-      "toolbar_button.js",
-      "pacer.js",
-      "recap.js",
-      "appellate/acms_api.js",
-      "background.js"
-    ]
+    "service_worker": "background.js",
+    "type": "module"
   },
   "content_scripts": [
     {
@@ -179,7 +174,7 @@
       "run_at": "document_idle"
     }
   ],
-  "browser_action": {
+  "action": {
     "default_icon": {
       "19": "assets/images/grey-19.png",
       "38": "assets/images/grey-38.png"
@@ -198,8 +193,15 @@
     }
   },
   "web_accessible_resources": [
-    "assets/images/*.png",
-    "assets/fonts/fontawesome-webfont.woff",
-    "assets/fonts/fontawesome-webfont.woff2"
+    {
+      "resources": [
+        "assets/images/*.png",
+        "assets/fonts/fontawesome-webfont.woff",
+        "assets/fonts/fontawesome-webfont.woff2"
+      ],
+      "matches": [
+        "*://*/*"
+      ]
+    }
   ]
 }
