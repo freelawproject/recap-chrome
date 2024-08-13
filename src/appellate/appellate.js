@@ -1,13 +1,12 @@
-//  Abstraction of scripts related to Appellate PACER to make them modular and testable.
+//  Abstraction of scripts related to Appellate PACER to make them modular and
+// testable.
 let AppellateDelegate = function (tabId, court, url, path, links) {
   this.tabId = tabId;
   this.court = court;
   this.url = url;
   this.path = path;
   this.links = links || [];
-  this.recap = importInstance(Recap);
   this.acms = importInstance(Acms);
-  this.notifier = importInstance(Notifier);
   this.queryParameters = APPELLATE.getQueryParameters(this.url);
   this.docId = APPELLATE.getDocIdFromURL(this.queryParameters);
   this.docketNumber = APPELLATE.getDocketNumber(this.queryParameters);
