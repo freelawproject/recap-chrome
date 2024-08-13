@@ -867,11 +867,14 @@ AppellateDelegate.prototype.attachRecapLinksToEligibleDocs = async function () {
 };
 
 AppellateDelegate.prototype.handleDocketDisplayPage = async function () {
-  this.pacer_case_id = await APPELLATE.getCaseId(this.tabId, this.queryParameters, this.docId, this.docketNumber);
+  this.pacer_case_id = await APPELLATE.getCaseId(
+    this.tabId,
+    this.queryParameters,
+    this.docId,
+    this.docketNumber
+  );
 
-  if (!this.pacer_case_id) {
-    return;
-  }
+  if (!this.pacer_case_id) return;
 
   // Query the first table with case data and insert the RECAP actions button
   let table = document.querySelectorAll('table')[3];
@@ -881,44 +884,55 @@ AppellateDelegate.prototype.handleDocketDisplayPage = async function () {
     table.after(button);
   }
 
-  this.recap.getAvailabilityForDocket(this.court, this.pacer_case_id, null, (result) => {
-    if (result.count === 0) {
-      console.warn('RECAP: Zero results found for docket lookup.');
-    } else if (result.count > 1) {
-      console.error(`RECAP: More than one result found for docket lookup. Found ${result.count}`);
-    } else {
-      addAlertButtonInRecapAction(this.court, this.pacer_case_id);
-      let cl_id = getClIdFromAbsoluteURL(result.results[0].absolute_url);
-      addSearchDocketInRecapAction(cl_id);
-    }
+  let docketData = await dispatchBackgroundFetch({
+    action: 'getAvailabilityForDocket',
+    data: {
+      court: PACER.convertToCourtListenerCourt(this.court),
+      pacer_case_id: this.pacer_case_id,
+    },
   });
 
-  // if you've already uploaded the page, return
-  if (history.state && history.state.uploaded) {
-    return;
+  if (docketData.count === 0) {
+    console.warn('RECAP: Zero results found for docket lookup.');
+  } else if (docketData.count > 1) {
+    console.error(
+      'RECAP: More than one result found for docket lookup. ' +
+        `Found ${result.count}`
+    );
+  } else {
+    addAlertButtonInRecapAction(this.court, this.pacer_case_id);
+    let cl_id = getClIdFromAbsoluteURL(docketData.results[0].absolute_url);
+    addSearchDocketInRecapAction(cl_id);
   }
+
+  // if you've already uploaded the page, return
+  if (history.state && history.state.uploaded) return;
 
   const options = await getItemsFromStorage('options');
 
-  if (options['recap_enabled']) {
-    let callback = (ok) => {
-      if (ok) {
-        addAlertButtonInRecapAction(this.court, this.pacer_case_id);
-        history.replaceState({ uploaded: true }, '');
-        this.notifier.showUpload('Docket uploaded to the public RECAP Archive.', function () {});
-      }
-    };
-
-    this.recap.uploadDocket(
-      this.court,
-      this.pacer_case_id,
-      document.documentElement.innerHTML,
-      'APPELLATE_DOCKET',
-      (ok) => callback(ok)
-    );
-  } else {
-    console.info(`RECAP: Not uploading docket. RECAP is disabled.`);
+  if (!options['recap_enabled']) {
+    console.info('RECAP: Not uploading docket. RECAP is disabled.');
+    return;
   }
+
+  const upload = await dispatchBackgroundFetch({
+    action: 'uploadPage',
+    data: {
+      court: PACER.convertToCourtListenerCourt(this.court),
+      pacer_case_id: this.pacer_case_id,
+      upload_type: 'APPELLATE_DOCKET',
+      html: document.documentElement.innerHTML,
+    },
+  });
+  if (upload.error) return;
+
+  addAlertButtonInRecapAction(this.court, this.pacer_case_id);
+  await dispatchBackgroundNotifier({
+    action: 'showUpload',
+    title: 'Page Successfully Uploaded',
+    message: 'Docket page uploaded to the public RECAP Archive',
+  });
+  history.replaceState({ uploaded: true }, '');
 };
 
 AppellateDelegate.prototype.handleAttachmentPage = async function () {
