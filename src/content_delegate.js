@@ -13,8 +13,15 @@
 //  attachRecapLinkToEligibleDocs
 //  onDownloadAllSubmit
 //  handleZipFilePageView
-
-let ContentDelegate = function (tabId, url, path, court, pacer_case_id, pacer_doc_id, links) {
+let ContentDelegate = function (
+  tabId,
+  url,
+  path,
+  court,
+  pacer_case_id,
+  pacer_doc_id,
+  links
+) {
   this.tabId = tabId;
   this.url = url;
   this.path = path;
@@ -27,9 +34,6 @@ let ContentDelegate = function (tabId, url, path, court, pacer_case_id, pacer_do
     this.pacer_doc_ids = [];
   }
   this.links = links || [];
-
-  this.notifier = importInstance(Notifier);
-  this.recap = importInstance(Recap);
 
   this.restricted = this.checkRestrictions();
 };
