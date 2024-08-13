@@ -52,13 +52,13 @@ export async function injectContentScript(tabId, status, url) {
             { file: 'action_button.js' },
             { file: 'pdf_upload.js' },
             { file: 'utils.js' },
-            { file: 'notifier.js' },
             { file: 'pacer.js' },
-            { file: 'recap.js' },
             { file: 'content_delegate.js' },
             { file: 'appellate/utils.js' },
             { file: 'appellate/appellate.js' },
             { file: 'appellate/acms_api.js' },
+            { file: 'utils/fetch.js' },
+            { file: 'utils/notifier.js' },
             { file: 'content.js' },
           ]);
         }
