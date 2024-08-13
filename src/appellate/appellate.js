@@ -614,9 +614,7 @@ AppellateDelegate.prototype.handleAcmsDownloadPage = async function () {
 };
 
 AppellateDelegate.prototype.handleCaseSearchPage = () => {
-  if (!PACER.hasFilingCookie(document.cookie)) {
-    return;
-  }
+  if (!PACER.hasFilingCookie(document.cookie)) return;
 
   form = document.querySelector('form');
   if (!document.querySelector('.recap-email-banner-full')) {
@@ -624,25 +622,30 @@ AppellateDelegate.prototype.handleCaseSearchPage = () => {
   }
 };
 
-AppellateDelegate.prototype.handleDocketReportFilter = function () {
-  if (!this.docketNumber) {
-    return;
-  }
+AppellateDelegate.prototype.handleDocketReportFilter = async function () {
+  if (!this.docketNumber) return;
   let docketNumberCore = PACER.makeDocketNumberCore(this.docketNumber);
 
-  this.recap.getAvailabilityForDocket(this.court, null, docketNumberCore, (result) => {
-    if (result.count === 1 && result.results) {
-      let form = document.getElementsByTagName('form')[0];
-      let banner = recapBanner(result.results[0]);
-      let recapAlert = document.createElement('div');
-      recapAlert.classList.add('recap-banner');
-      recapAlert.appendChild(recapAlertButton(this.court, this.pacer_case_id, true));
-      form.after(recapAlert);
-      form.after(banner);
-    } else {
-      PACER.handleDocketAvailabilityMessages(result);
-    }
+  let docketData = await dispatchBackgroundFetch({
+    action: 'getAvailabilityForDocket',
+    data: {
+      court: PACER.convertToCourtListenerCourt(this.court),
+      docket_number_core: docketNumberCore,
+    },
   });
+  if (docketData.count === 1 && docketData.results) {
+    let form = document.getElementsByTagName('form')[0];
+    let banner = recapBanner(docketData.results[0]);
+    let recapAlert = document.createElement('div');
+    recapAlert.classList.add('recap-banner');
+    recapAlert.appendChild(
+      recapAlertButton(this.court, this.pacer_case_id, true)
+    );
+    form.after(recapAlert);
+    form.after(banner);
+  } else {
+    PACER.handleDocketAvailabilityMessages(docketData);
+  }
 };
 
 AppellateDelegate.prototype.handleCaseSelectionPage = async function () {
