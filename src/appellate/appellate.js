@@ -650,14 +650,14 @@ AppellateDelegate.prototype.handleDocketReportFilter = async function () {
 
 AppellateDelegate.prototype.handleCaseSelectionPage = async function () {
   if (document.querySelectorAll('input:not([type=hidden])').length) {
-    // When the users go back to the Case Selection Page from the Docket Report using the back button
-    // Appellate PACER loads the Case Search Page instead but in the HTML body has the servlet hidden input
-    // and shows 'CaseSelectionTable.jsp' as its value.
+    // When the users go back to the Case Selection Page from the Docket Report
+    // using the back button Appellate PACER loads the Case Search Page instead
+    // but in the HTML body has the servlet hidden input and shows
+    // 'CaseSelectionTable.jsp' as its value.
     //
-    // This check avoids sending pages like the one previously described to the API.
-    if (!PACER.hasFilingCookie(document.cookie)) {
-      return;
-    }
+    // This check avoids sending pages like the one previously described to the
+    // API.
+    if (!PACER.hasFilingCookie(document.cookie)) return;
 
     form = document.querySelector('form');
     if (!document.querySelector('.recap-email-banner-full')) {
@@ -683,40 +683,51 @@ AppellateDelegate.prototype.handleCaseSelectionPage = async function () {
       },
     });
 
-    this.recap.getAvailabilityForDocket(this.court, this.pacer_case_id, null, (result) => {
-      if (result.count === 1 && result.results) {
-        PACER.removeBanners();
-
-        const footer = document.querySelector('div.noprint:last-of-type');
-        const div = document.createElement('div');
-        div.classList.add('recap-banner');
-        div.appendChild(recapAlertButton(this.court, this.pacer_case_id, true));
-        footer.before(div);
-
-        const rIcon = APPELLATE.makeRButtonForCases(result.results[0].absolute_url);
-        const appellateLink = anchors[0];
-        rIcon.insertAfter(appellateLink);
-      } else {
-        PACER.handleDocketAvailabilityMessages(result);
-      }
+    let appellateData = await dispatchBackgroundFetch({
+      action: 'getAvailabilityForDocket',
+      data: {
+        court: PACER.convertToCourtListenerCourt(this.court),
+        pacer_case_id: this.pacer_case_id,
+      },
     });
+    if (appellateData.count === 1 && appellateData.results) {
+      PACER.removeBanners();
+
+      const footer = document.querySelector('div.noprint:last-of-type');
+      const div = document.createElement('div');
+      div.classList.add('recap-banner');
+      div.appendChild(recapAlertButton(this.court, this.pacer_case_id, true));
+      footer.before(div);
+
+      const rIcon = APPELLATE.makeRButtonForCases(
+        appellateData.results[0].absolute_url
+      );
+      const appellateLink = anchors[0];
+      rIcon.insertAfter(appellateLink);
+    } else {
+      PACER.handleDocketAvailabilityMessages(appellateData);
+    }
 
     if (anchors.length == 3) {
       let districtLink = anchors[anchors.length - 1];
-      let districtLinkData = APPELLATE.getDatafromDistrictLinkUrl(districtLink.href);
-      this.recap.getAvailabilityForDocket(
-        districtLinkData.court,
-        null,
-        districtLinkData.docket_number_core,
-        (result) => {
-          if (result.count === 1 && result.results) {
-            const rIcon = APPELLATE.makeRButtonForCases(result.results[0].absolute_url);
-            rIcon.insertAfter(districtLink);
-          } else {
-            PACER.handleDocketAvailabilityMessages(result);
-          }
-        }
+      let districtLinkData = APPELLATE.getDatafromDistrictLinkUrl(
+        districtLink.href
       );
+      let districtData = await dispatchBackgroundFetch({
+        action: 'getAvailabilityForDocket',
+        data: {
+          court: PACER.convertToCourtListenerCourt(districtLinkData.court),
+          docket_number_core: districtLinkData.docket_number_core,
+        },
+      });
+      if (districtData.count === 1 && districtData.results) {
+        const rIcon = APPELLATE.makeRButtonForCases(
+          districtData.results[0].absolute_url
+        );
+        rIcon.insertAfter(districtLink);
+      } else {
+        PACER.handleDocketAvailabilityMessages(districtData);
+      }
     }
   } else {
     // Add the pacer_case_id to each docket link to use it in the docket report
@@ -726,24 +737,29 @@ AppellateDelegate.prototype.handleCaseSelectionPage = async function () {
   const options = await getItemsFromStorage('options');
 
   if (!options['recap_enabled']) {
-    console.info('RECAP: Not uploading case selection page. RECAP is disabled.');
+    console.info(
+      'RECAP: Not uploading case selection page. RECAP is disabled.'
+    );
     return;
   }
 
-  let callback = (ok) => {
-    if (ok) {
-      history.replaceState({ uploaded: true }, '');
-      this.notifier.showUpload('Case selection page uploaded to the public RECAP Archive.', function () {});
-    }
-  };
+  const upload = await dispatchBackgroundFetch({
+    action: 'uploadPage',
+    data: {
+      court: PACER.convertToCourtListenerCourt(this.court),
+      pacer_case_id: this.pacer_case_id,
+      upload_type: 'APPELLATE_CASE_QUERY_RESULT_PAGE',
+      html: document.documentElement.innerHTML,
+    },
+  });
+  if (upload.error) return;
 
-  this.recap.uploadIQueryPage(
-    this.court,
-    this.pacer_case_id,
-    document.documentElement.innerHTML,
-    'APPELLATE_CASE_QUERY_RESULT_PAGE',
-    callback
-  );
+  history.replaceState({ uploaded: true }, '');
+  await dispatchBackgroundNotifier({
+    action: 'showUpload',
+    title: 'Page Successfully Uploaded',
+    message: 'Case selection page uploaded to the public RECAP Archive.',
+  });
 };
 
 // Upload the case query page to RECAP
