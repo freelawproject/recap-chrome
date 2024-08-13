@@ -969,41 +969,43 @@ AppellateDelegate.prototype.handleDocketDisplayPage = async function () {
 };
 
 AppellateDelegate.prototype.handleAttachmentPage = async function () {
-  this.pacer_case_id = await APPELLATE.getCaseId(this.tabId, this.queryParameters, this.docId);
+  this.pacer_case_id = await APPELLATE.getCaseId(
+    this.tabId,
+    this.queryParameters,
+    this.docId
+  );
 
-  if (!this.pacer_case_id) {
-    return;
-  }
+  if (!this.pacer_case_id) return;
 
-  if (history.state && history.state.uploaded) {
-    return;
-  }
+  if (history.state && history.state.uploaded) return;
 
   const options = await getItemsFromStorage('options');
   if (!options['recap_enabled']) {
-    console.info(`RECAP: Not uploading attachment page. RECAP is disabled.`);
+    console.info('RECAP: Not uploading attachment page. RECAP is disabled.');
     return;
   }
 
-  let callback = (ok) => {
-    if (ok) {
-      history.replaceState({ uploaded: true }, '');
-      this.notifier.showUpload('Attachment menu page uploaded to the public RECAP Archive.', function () {});
-    }
-  };
-
-  this.recap.uploadAttachmentMenu(
-    this.court,
-    this.pacer_case_id,
-    document.documentElement.innerHTML,
-    'APPELLATE_ATTACHMENT_PAGE',
-    (ok) => callback(ok)
-  );
+  const upload = await dispatchBackgroundFetch({
+    action: 'uploadPage',
+    data: {
+      court: PACER.convertToCourtListenerCourt(this.court),
+      pacer_case_id: this.pacer_case_id,
+      upload_type: 'APPELLATE_ATTACHMENT_PAGE',
+      html: document.documentElement.innerHTML,
+    },
+  });
+  if (upload.error) return;
+  await dispatchBackgroundNotifier({
+    action: 'showUpload',
+    title: 'Page Successfully Uploaded',
+    message: 'Attachment menu page uploaded to the public RECAP Archive.',
+  });
+  history.replaceState({ uploaded: true }, '');
 };
 
 AppellateDelegate.prototype.handleCombinedPdfPageView = async function () {
-  let warning = combinedPdfWarning()
-  document.body.appendChild(warning)
+  let warning = combinedPdfWarning();
+  document.body.appendChild(warning);
 };
 
 // If this page offers a single document, intercept navigation to the document view page.
