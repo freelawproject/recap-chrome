@@ -223,9 +223,7 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
     const caseId = caseSummary.caseDetails.caseId;
     this.pacer_case_id = caseId;
 
-    if (history.state && history.state.uploaded) {
-      return;
-    }
+    if (history.state && history.state.uploaded) return;
 
     const options = await getItemsFromStorage('options');
     if (!options['recap_enabled']) {
@@ -233,26 +231,25 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
       return;
     }
 
-    this.recap.uploadDocket(
-      this.court,
-      this.pacer_case_id,
-      sessionStorage.caseSummary,
-      'ACMS_DOCKET_JSON',
-      (ok) => {
-        if (ok) {
-          history.replaceState({ uploaded: true }, '');
-          this.notifier.showUpload(
-            'Docket uploaded to the public RECAP Archive.',
-            () => {}
-          );
-        } else {
-          console.log('cb fail');
-        }
-      }
-    );
+    const upload = await dispatchBackgroundFetch({
+      action: 'uploadPage',
+      data: {
+        court: PACER.convertToCourtListenerCourt(this.court),
+        pacer_case_id: this.pacer_case_id,
+        upload_type: 'ACMS_DOCKET_JSON',
+        html: sessionStorage.caseSummary,
+      },
+    });
+    if (upload.error) return;
+    history.replaceState({ uploaded: true }, '');
+    await dispatchBackgroundNotifier({
+      action: 'showUpload',
+      title: 'Page Successfully Uploaded',
+      message: 'Docket uploaded to the public RECAP Archive.',
+    });
   };
 
-  const insertRecapButton = () => {
+  const insertRecapButton = async () => {
     // Injects a "RECAP actions" button near the first table containing data.
     // It first checks for an existing button with the ID "recap-action-button",
     // If none exists, it creates a new button using the `recapActionsButton`
@@ -269,26 +266,26 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
       let button = recapActionsButton(this.court, this.pacer_case_id, false);
       parentDiv.insertBefore(button, caseInformationTable);
     }
+    let docketData = await dispatchBackgroundFetch({
+      action: 'getAvailabilityForDocket',
+      data: {
+        court: PACER.convertToCourtListenerCourt(this.court),
+        pacer_case_id: this.pacer_case_id,
+      },
+    });
 
-    this.recap.getAvailabilityForDocket(
-      this.court,
-      this.pacer_case_id,
-      null,
-      (result) => {
-        if (result.count === 0) {
-          console.warn('RECAP: Zero results found for docket lookup.');
-        } else if (result.count > 1) {
-          console.error(
-            'RECAP: More than one result found for docket lookup. Found' +
-              `${result.count}`
-          );
-        } else {
-          addAlertButtonInRecapAction(this.court, this.pacer_case_id);
-          let cl_id = getClIdFromAbsoluteURL(result.results[0].absolute_url);
-          addSearchDocketInRecapAction(cl_id);
-        }
-      }
-    );
+    if (docketData.count === 0) {
+      console.warn('RECAP: Zero results found for docket lookup.');
+    } else if (docketData.count > 1) {
+      console.error(
+        'RECAP: More than one result found for docket lookup. Found' +
+          `${result.count}`
+      );
+    } else {
+      addAlertButtonInRecapAction(this.court, this.pacer_case_id);
+      let cl_id = getClIdFromAbsoluteURL(docketData.results[0].absolute_url);
+      addSearchDocketInRecapAction(cl_id);
+    }
   };
 
   const attachLinkToDocs = async () => {
@@ -335,9 +332,7 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
     // class as a selector because we observed that all non-restricted
     // entries consistently use this class.
     this.links = document.body.querySelectorAll('.entry-link');
-    if (!links.length) {
-      return;
-    }
+    if (!links.length) return;
 
     // Go through the array of links and collect the doc IDs of
     // the entries that are not restricted.
@@ -356,36 +351,41 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
       docIds.push(docketEntryData.docketEntryId);
     }
 
-    // Ask the server whether any of these documents are available from RECAP.
-    this.recap.getAvailabilityForDocuments(docIds, this.court, (response) => {
-      for (result of response.results) {
-        let doc_id = result.pacer_doc_id;
-        // Query the docket entry link using the data attribute
-        // attached previously
-        let anchor = document.querySelector(`[data-pacer-doc-id="${doc_id}"]`);
-        // Create the RECAP icon
-        let href = `https://storage.courtlistener.com/${result.filepath_local}`;
-        let recap_link = $('<a/>', {
-          title: 'Available for free from the RECAP Archive.',
-          href: href,
-        });
-        recap_link.append(
-          $('<img/>').attr({
-            src: chrome.extension.getURL('assets/images/icon-16.png'),
-          })
-        );
-        let recap_div = $('<div>', {
-          class: 'recap-inline-appellate',
-        });
-        recap_div.append(recap_link);
-        // Insert the RECAP icon next to the docket entry link
-        recap_div.insertAfter(anchor);
-      }
-      let spinner = document.getElementById('recap-button-spinner');
-      if (spinner) {
-        spinner.classList.add('recap-btn-spinner-hidden');
-      }
+    let clCourt = PACER.convertToCourtListenerCourt(this.court);
+    // submit fetch request through background worker
+    const recapLinks = await dispatchBackgroundFetch({
+      action: 'getAvailabilityForDocuments',
+      data: {
+        docket_entry__docket__court: clCourt,
+        pacer_doc_id__in: docIds.join(','),
+      },
     });
+
+    for (result of recapLinks.results) {
+      let doc_id = result.pacer_doc_id;
+      // Query the docket entry link using the data attribute
+      // attached previously
+      let anchor = document.querySelector(`[data-pacer-doc-id="${doc_id}"]`);
+      // Create the RECAP icon
+      let href = `https://storage.courtlistener.com/${result.filepath_local}`;
+      let recap_link = $('<a/>', {
+        title: 'Available for free from the RECAP Archive.',
+        href: href,
+      });
+      recap_link.append(
+        $('<img/>').attr({
+          src: chrome.runtime.getURL('assets/images/icon-16.png'),
+        })
+      );
+      let recap_div = $('<div>', {
+        class: 'recap-inline-appellate',
+      });
+      recap_div.append(recap_link);
+      // Insert the RECAP icon next to the docket entry link
+      recap_div.insertAfter(anchor);
+    }
+    let spinner = document.getElementById('recap-button-spinner');
+    if (spinner) spinner.classList.add('recap-btn-spinner-hidden');
   };
 
   // Since this page uses Vue.js for dynamic data rendering and shows a loader
@@ -1076,7 +1076,7 @@ AppellateDelegate.prototype.handleSingleDocumentPageView = async function () {
   insertAvailableDocBanner(result.filepath_local, 'body');
 };
 
-AppellateDelegate.prototype.onDocumentViewSubmit = function (event) {
+AppellateDelegate.prototype.onDocumentViewSubmit = async function (event) {
   // Security check to ensure message is from a PACER website.
   if (!PACER.getCourtFromUrl(event.origin)) {
     console.warn(
@@ -1092,7 +1092,10 @@ AppellateDelegate.prototype.onDocumentViewSubmit = function (event) {
   let title = document.querySelectorAll('strong')[1].innerHTML;
   let dataFromTitle = APPELLATE.parseReceiptPageTitle(title);
 
-  if (dataFromTitle.att_number == 0 && this.queryParameters.get('recapAttNum')) {
+  if (
+    dataFromTitle.att_number == 0 &&
+    this.queryParameters.get('recapAttNum')
+  ) {
     dataFromTitle.att_number = this.queryParameters.get('recapAttNum');
   }
 
@@ -1108,14 +1111,19 @@ AppellateDelegate.prototype.onDocumentViewSubmit = function (event) {
   }
   $('body').css('cursor', 'wait');
   let query_string = new URLSearchParams(new FormData(form)).toString();
-  httpRequest(
-    form.action,
-    query_string,
-    'application/x-www-form-urlencoded',
-    function (type, ab, xhr) {
-      let requestHandler = handleDocFormResponse.bind(this);
-      requestHandler(type, ab, xhr, previousPageHtml, dataFromTitle);
-    }.bind(this)
+  const resp = await window.fetch(query_string, {
+    method: form.action,
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+  });
+
+  handleDocFormResponse(
+    resp.headers.get('Content-Type'),
+    resp.blob(),
+    null,
+    previousPageHtml,
+    dataFromTitle
   );
 };
 
@@ -1130,5 +1138,12 @@ AppellateDelegate.prototype.showPdfPage = async function (
   docket_number
 ) {
   let helperMethod = showAndUploadPdf.bind(this);
-  await helperMethod(html, previousPageHtml, document_number, attachment_number, docket_number, this.docId);
+  await helperMethod(
+    html,
+    previousPageHtml,
+    document_number,
+    attachment_number,
+    docket_number,
+    this.docId
+  );
 };
