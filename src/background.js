@@ -10,6 +10,7 @@ import {
   showNotificationTab,
 } from './utils/background.js';
 import { handleBackgroundFetch } from './utils/background_fetch.js';
+import { handleBackgroundNotification } from './utils/background_notifier.js';
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.message === 'requestTabId') {
@@ -23,6 +24,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
   if (msg.message === 'backgroundFetch') {
     handleBackgroundFetch(msg, sender, sendResponse);
+    return true;
+  }
+  if (msg.message === 'backgroundNotifier') {
+    handleBackgroundNotification(msg, sender, sendResponse);
     return true;
   }
   if (msg.message === 'upload') {
