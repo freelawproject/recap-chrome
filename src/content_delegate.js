@@ -389,47 +389,49 @@ ContentDelegate.prototype.handleAttachmentMenuPage = async function () {
 //if this a iquery page with case information, upload it to RECAP
 ContentDelegate.prototype.handleiQuerySummaryPage = async function () {
   // avoid uploading the same page multiple times
-  if (history.state && history.state.uploaded) {
-    return;
-  }
+  if (history.state && history.state.uploaded) return;
 
-  if (!PACER.isIQuerySummaryURL(this.url)) {
-    return;
-  }
+  if (!PACER.isIQuerySummaryURL(this.url)) return;
 
   if (PACER.isSelectAPersonPage()) {
-    // This if statement will end this function early if the user reaches this page.
+    // This if statement will end this function early if the user reaches
+    // this page.
     return;
   }
 
   if (!this.pacer_case_id && !PACER.isCaseQueryAdvance()) {
     let caseId = PACER.getCaseIdFromIQuerySummary();
     // End this function early if we're not able to find a case id
-    if (!caseId) {
-      return;
-    }
+    if (!caseId) return;
     this.pacer_case_id = caseId;
   }
 
   const options = await getItemsFromStorage('options');
-  if (options['recap_enabled']) {
-    let callback = $.proxy(function (ok) {
-      if (ok) {
-        history.replaceState({ uploaded: true }, '');
-        this.notifier.showUpload('iQuery page uploaded to the public RECAP Archive.', function () {});
-      }
-    }, this);
-    let upload_type = PACER.isCaseQueryAdvance() ? 'CASE_QUERY_RESULT_PAGE' : 'IQUERY_PAGE';
-    this.recap.uploadIQueryPage(
-      this.court,
-      this.pacer_case_id,
-      document.documentElement.innerHTML,
-      upload_type,
-      callback
-    );
-  } else {
+  if (!options['recap_enabled']) {
     console.info('RECAP: Not uploading iquery page. RECAP is disabled.');
+    return;
   }
+
+  let upload_type = PACER.isCaseQueryAdvance()
+    ? 'CASE_QUERY_RESULT_PAGE'
+    : 'IQUERY_PAGE';
+  const upload = await dispatchBackgroundFetch({
+    action: 'uploadPage',
+    data: {
+      court: PACER.convertToCourtListenerCourt(this.court),
+      pacer_case_id: this.pacer_case_id,
+      upload_type: upload_type,
+      html: document.documentElement.innerHTML,
+    },
+  });
+  if (upload.error) return;
+
+  history.replaceState({ uploaded: true }, '');
+  await dispatchBackgroundNotifier({
+    action: 'showUpload',
+    title: 'Page Successfully Uploaded',
+    message: 'iQuery page uploaded to the public RECAP Archive.',
+  });
 };
 
 // If this page offers a single document, ask RECAP whether it has the document.
