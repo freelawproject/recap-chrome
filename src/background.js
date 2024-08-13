@@ -9,6 +9,7 @@ import {
   injectContentScript,
   showNotificationTab,
 } from './utils/background.js';
+import { handleBackgroundFetch } from './utils/background_fetch.js';
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.message === 'requestTabId') {
@@ -19,6 +20,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       items.options['dismiss_news_badge'] = true;
       saveOptionsAndUpdateToolbar(items.options);
     });
+  }
+  if (msg.message === 'backgroundFetch') {
+    handleBackgroundFetch(msg, sender, sendResponse);
+    return true;
   }
   if (msg.message === 'upload') {
     let recap = new Recap();
