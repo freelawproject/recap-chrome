@@ -744,9 +744,7 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
 // Same as handleSingleDocumentPageView, but for zip files
 ContentDelegate.prototype.handleZipFilePageView = function () {
   // return if not the download all page
-  if (!PACER.isDownloadAllDocumentsPage(this.url, document)) {
-    return;
-  }
+  if (!PACER.isDownloadAllDocumentsPage(this.url, document)) return;
 
   // return if on the appellate courts
   if (PACER.isAppellateCourt(this.court)) {
@@ -757,7 +755,9 @@ ContentDelegate.prototype.handleZipFilePageView = function () {
   // extract the url from the onclick attribute from one of the two
   // "Download Documents" buttons
   const inputs = [...document.getElementsByTagName('input')];
-  const targetInputs = inputs.filter((input) => input.type === 'button' && input.value === 'Download Documents');
+  const targetInputs = inputs.filter(
+    (input) => input.type === 'button' && input.value === 'Download Documents'
+  );
   const url = targetInputs[0]
     .getAttribute('onclick')
     .replace(/p.*\//, '') // remove parent.location='/cgi-bin/
@@ -771,7 +771,9 @@ ContentDelegate.prototype.handleZipFilePageView = function () {
 
   // imperatively manipulate hte dom elements without injecting a script
   if (PACER.hasFilingCookie(document.cookie)) {
-    const inputs = [...document.querySelectorAll("form > input[type='button']")];
+    const inputs = [
+      ...document.querySelectorAll("form > input[type='button']"),
+    ];
     inputs.map((input) => {
       let button = createRecapButtonForFilers('Download and RECAP Documents');
       button.addEventListener('click', (event) => {
@@ -807,31 +809,39 @@ ContentDelegate.prototype.handleZipFilePageView = function () {
 // If the page offers a combined document, inserts a warning to let
 // the user know this document won't be uploaded.
 ContentDelegate.prototype.handleCombinedPDFView = function () {
-  if (!PACER.isCombinedPdfPage(this.url, document)) {
-    return false;
-  }
+  if (!PACER.isCombinedPdfPage(this.url, document)) return false;
+
   // query the main div of the page
-  let mainDiv = document.getElementById(id='cmecfMainContent')
-  pdfWarning = combinedPdfWarning()
-  mainDiv.append(pdfWarning)
+  let mainDiv = document.getElementById((id = 'cmecfMainContent'));
+  pdfWarning = combinedPdfWarning();
+  mainDiv.append(pdfWarning);
 };
 
-ContentDelegate.prototype.handleClaimsPageView = function () {
+ContentDelegate.prototype.handleClaimsPageView = async function () {
   // return if not a claims register page
-  if (!PACER.isClaimsRegisterPage(this.url, document)) {
-    return;
-  }
+  if (!PACER.isClaimsRegisterPage(this.url, document)) return;
 
-  const pacerCaseId = this.pacer_case_id ? this.pacer_case_id : PACER.getCaseIdFromClaimsPage(document);
+  const pacerCaseId = this.pacer_case_id
+    ? this.pacer_case_id
+    : PACER.getCaseIdFromClaimsPage(document);
 
   // render the page as a string and upload it to recap
-  const claimsPageHtml = document.documentElement.outerHTML;
-  this.recap.uploadClaimsRegister(this.court, pacerCaseId, claimsPageHtml, (ok) => {
-    // callback - dispatch the notifier if upload is ok
-    if (ok) {
-      this.notifier.showUpload('Claims page uploaded to the public RECAP Archive', () => {});
-    } else {
-      console.error('Page not uploaded to the public RECAP archive.');
-    }
+  const upload = await dispatchBackgroundFetch({
+    action: 'uploadPage',
+    data: {
+      court: PACER.convertToCourtListenerCourt(this.court),
+      pacer_case_id: pacerCaseId,
+      upload_type: 'CLAIMS_REGISTER_PAGE',
+      html: document.documentElement.innerHTML,
+    },
+  });
+  if (upload.error){
+    console.error('Page not uploaded to the public RECAP archive.');
+    return;
+  }
+  await dispatchBackgroundNotifier({
+    action: 'showUpload',
+    title: 'Page Successfully Uploaded',
+    message: 'Claims page uploaded to the public RECAP Archive',
   });
 };
