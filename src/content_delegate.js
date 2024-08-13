@@ -137,7 +137,11 @@ ContentDelegate.prototype.findAndStorePacerDocIds = async function () {
   let docsToCases = {};
 
   // Try getting a mapping from a pacer_doc_id in the URL to a
-  if (this.pacer_doc_id && page_pacer_case_id && typeof page_pacer_case_id === 'string') {
+  if (
+    this.pacer_doc_id &&
+    page_pacer_case_id &&
+    typeof page_pacer_case_id === 'string'
+  ) {
     debug(3, `Z doc ${this.pacer_doc_id} to ${page_pacer_case_id}`);
     docsToCases[this.pacer_doc_id] = page_pacer_case_id;
   }
@@ -179,7 +183,12 @@ ContentDelegate.prototype.findAndStorePacerDocIds = async function () {
 
 // If this is a docket query page, add RECAP email advertisement.
 ContentDelegate.prototype.addRecapEmailAdvertisement = async function () {
-  if (!(PACER.isBlankQueryReportUrl(this.url) || PACER.isManageAccountPage(this.url))) {
+  if (
+    !(
+      PACER.isBlankQueryReportUrl(this.url) ||
+      PACER.isManageAccountPage(this.url)
+    )
+  ) {
     return;
   }
   let form;
@@ -202,32 +211,42 @@ ContentDelegate.prototype.addRecapEmailAdvertisement = async function () {
 };
 
 // If this is a docket query page, ask RECAP whether it has the docket page.
-ContentDelegate.prototype.handleDocketQueryUrl = function () {
+ContentDelegate.prototype.handleDocketQueryUrl = async function () {
   if (!PACER.isDocketQueryUrl(this.url)) {
     return;
   }
 
-  this.recap.getAvailabilityForDocket(this.court, this.pacer_case_id, null, (result) => {
-    if (result.count === 0) {
-      console.warn('RECAP: Zero results found for docket lookup.');
-    } else if (result.count > 1) {
-      console.error(`RECAP: More than one result found for docket lookup. Found ${result.count}`);
-    } else {
-      if (result.results) {
-        PACER.removeBanners();
-        const dateToInput = document.querySelector('input[name=date_to]');
-        const form = document.querySelector('form');
-        const div = document.createElement('div');
-
-        div.classList.add('recap-banner');
-        div.appendChild(recapAlertButton(this.court, this.pacer_case_id, true));
-        form.appendChild(recapBanner(result.results[0]));
-        form.appendChild(div);
-
-        if (result.results[0].date_last_filing) dateToInput.after(recapAddLatestFilingButton(result.results[0]));
-      }
-    }
+  let docketData = await dispatchBackgroundFetch({
+    action: 'getAvailabilityForDocket',
+    data: {
+      court: PACER.convertToCourtListenerCourt(this.court),
+      pacer_case_id: this.pacer_case_id,
+    },
   });
+
+  if (docketData.count === 0) {
+    console.warn('RECAP: Zero results found for docket lookup.');
+  } else if (docketData.count > 1) {
+    console.error(
+      'RECAP: More than one result found for docket lookup. Found ' +
+        `${result.count}`
+    );
+  } else {
+    if (docketData.results) {
+      PACER.removeBanners();
+      const dateToInput = document.querySelector('input[name=date_to]');
+      const form = document.querySelector('form');
+      const div = document.createElement('div');
+
+      div.classList.add('recap-banner');
+      div.appendChild(recapAlertButton(this.court, this.pacer_case_id, true));
+      form.appendChild(recapBanner(docketData.results[0]));
+      form.appendChild(div);
+
+      if (docketData.results[0].date_last_filing)
+        dateToInput.after(recapAddLatestFilingButton(docketData.results[0]));
+    }
+  };
 };
 
 // If this is a docket page, upload it to RECAP.
