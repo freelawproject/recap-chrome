@@ -355,32 +355,35 @@ ContentDelegate.prototype.handleDocketDisplayPage = async function () {
 
 // If this is a document's menu of attachments (subdocuments), upload it to
 // RECAP.
-ContentDelegate.prototype.handleAttachmentMenuPage = function () {
-  if (history.state && history.state.uploaded) {
+ContentDelegate.prototype.handleAttachmentMenuPage = async function () {
+  if (history.state && history.state.uploaded) return;
+
+  if (!PACER.isAttachmentMenuPage(this.url, document)) return;
+
+  const options = await getItemsFromStorage('options');
+
+  if (!options['recap_enabled']) {
+    console.info('RECAP: Not uploading attachment menu. RECAP is disabled.');
     return;
   }
 
-  if (!PACER.isAttachmentMenuPage(this.url, document)) {
-    return;
-  }
+  const upload = await dispatchBackgroundFetch({
+    action: 'uploadPage',
+    data: {
+      court: PACER.convertToCourtListenerCourt(this.court),
+      pacer_case_id: this.pacer_case_id,
+      upload_type: 'ATTACHMENT_PAGE',
+      html: document.documentElement.innerHTML,
+    },
+  });
+  if (upload.error) return;
 
-  chrome.storage.local.get(
-    'options',
-    function (items) {
-      if (items['options']['recap_enabled']) {
-        let callback = $.proxy(function (ok) {
-          if (ok) {
-            history.replaceState({ uploaded: true }, '');
-            this.notifier.showUpload('Menu page uploaded to the public RECAP Archive.', function () {});
-          }
-        }, this);
-
-      this.recap.uploadAttachmentMenu(this.court, this.pacer_case_id,
-        document.documentElement.innerHTML, 'ATTACHMENT_PAGE', callback);
-    } else {
-      console.info("RECAP: Not uploading attachment menu. RECAP is disabled.");
-    }
-  }.bind(this));
+  history.replaceState({ uploaded: true }, '');
+  await dispatchBackgroundNotifier({
+    action: 'showUpload',
+    title: 'Page Successfully Uploaded',
+    message: 'Menu page uploaded to the public RECAP Archive.',
+  });
 };
 
 //if this a iquery page with case information, upload it to RECAP
