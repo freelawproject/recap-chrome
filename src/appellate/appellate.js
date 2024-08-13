@@ -1008,10 +1008,13 @@ AppellateDelegate.prototype.handleCombinedPdfPageView = async function () {
   document.body.appendChild(warning);
 };
 
-// If this page offers a single document, intercept navigation to the document view page.
+// If this page offers a single document, intercept navigation to the document
+// view page.
 AppellateDelegate.prototype.handleSingleDocumentPageView = async function () {
   if (PACER.hasFilingCookie(document.cookie)) {
-    let button = createRecapButtonForFilers('Accept Charges and RECAP Document');
+    let button = createRecapButtonForFilers(
+      'Accept Charges and RECAP Document'
+    );
     button.addEventListener('click', (event) => {
       event.preventDefault();
       let form = event.target.parentNode;
@@ -1025,7 +1028,11 @@ AppellateDelegate.prototype.handleSingleDocumentPageView = async function () {
     overwriteFormSubmitMethod();
   }
 
-  this.pacer_case_id = await APPELLATE.getCaseId(this.tabId, this.queryParameters, this.docId);
+  this.pacer_case_id = await APPELLATE.getCaseId(
+    this.tabId,
+    this.queryParameters,
+    this.docId
+  );
 
   let title = document.querySelectorAll('strong')[1].innerHTML;
   let dataFromTitle = APPELLATE.parseReceiptPageTitle(title);
@@ -1040,20 +1047,33 @@ AppellateDelegate.prototype.handleSingleDocumentPageView = async function () {
 
   // When we receive the message from the above submit method, submit the form
   // via XHR so we can get the document before the browser does.
-  window.addEventListener('message', this.onDocumentViewSubmit.bind(this), false);
+  window.addEventListener(
+    'message',
+    this.onDocumentViewSubmit.bind(this),
+    false
+  );
 
-  let callback = $.proxy(function (api_results) {
-    console.info(`RECAP: Got results from API. Running callback on API results to ` + `insert banner`);
-    let result = api_results.results.filter((obj) => obj.pacer_doc_id == this.docId, this)[0];
+  let clCourt = PACER.convertToCourtListenerCourt(this.court);
+  // submit fetch request through background worker
+  const docData = await dispatchBackgroundFetch({
+    action: 'getAvailabilityForDocuments',
+    data: {
+      docket_entry__docket__court: clCourt,
+      pacer_doc_id__in: this.docId,
+    },
+  });
+  if (docData.Error) return;
 
-    if (!result) {
-      return;
-    }
+  console.info(
+    'RECAP: Got results from API. Running callback on API results to ' +
+      'insert banner'
+  );
+  let result = docData.results.filter(
+    (obj) => obj.pacer_doc_id == this.docId
+  )[0];
+  if (!result) return;
 
-    insertAvailableDocBanner(result.filepath_local, 'body');
-  }, this);
-
-  this.recap.getAvailabilityForDocuments([this.docId], this.court, callback);
+  insertAvailableDocBanner(result.filepath_local, 'body');
 };
 
 AppellateDelegate.prototype.onDocumentViewSubmit = function (event) {
