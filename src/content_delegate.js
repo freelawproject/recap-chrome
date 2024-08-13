@@ -435,25 +435,30 @@ ContentDelegate.prototype.handleiQuerySummaryPage = async function () {
 };
 
 // If this page offers a single document, ask RECAP whether it has the document.
-ContentDelegate.prototype.handleSingleDocumentPageCheck = function () {
-  if (!PACER.isSingleDocumentPage(this.url, document)) {
-    return;
-  }
+ContentDelegate.prototype.handleSingleDocumentPageCheck = async function () {
+  if (!PACER.isSingleDocumentPage(this.url, document)) return;
 
-  let callback = $.proxy(function (api_results) {
-    console.info(`RECAP: Got results from API. Running callback on API results to ` + `insert link`);
-    let result = api_results.results.filter(function (obj) {
-      return obj.pacer_doc_id === pacer_doc_id;
-    })[0];
-    if (!result) {
-      return;
-    }
+  let clCourt = PACER.convertToCourtListenerCourt(this.court);
+  const recapLinks = await dispatchBackgroundFetch({
+    action: 'getAvailabilityForDocuments',
+    data: {
+      docket_entry__docket__court: clCourt,
+      pacer_doc_id__in: this.pacer_doc_id,
+    },
+  });
 
-    insertAvailableDocBanner(result.filepath_local, 'form');
-  }, this);
+  if (!recapLinks.count) return;
+  console.info(
+    'RECAP: Got results from API. Running callback on API results to ' +
+      'insert link'
+  );
+  let result = recapLinks.results.filter(
+    (doc) => doc.pacer_doc_id === this.pacer_doc_id,
+    this
+  );
+  if (!result.length) return;
 
-  let cl_court = PACER.convertToCourtListenerCourt(this.court);
-  this.recap.getAvailabilityForDocuments([this.pacer_doc_id], cl_court, callback);
+  insertAvailableDocBanner(result[0].filepath_local, 'form');
 };
 
 ContentDelegate.prototype.onDocumentViewSubmit = function (event) {
