@@ -74,37 +74,44 @@ AppellateDelegate.prototype.handleAcmsAttachmentPage = async function () {
     this.pacer_case_id = caseSummary.caseDetails.caseId;
 
     const options = await getItemsFromStorage('options');
-    if (options['recap_enabled']) {
-      let vueData = JSON.parse(sessionStorage.recapVueData);
-      let requestBody = {
-        caseDetails: caseSummary.caseDetails,
-        docketEntry: vueData.docketEntry,
-        docketEntryDocuments: vueData.docketEntryDocuments,
-      };
-      this.recap.uploadDocket(
-        this.court,
-        this.pacer_case_id,
-        JSON.stringify(requestBody),
-        'ACMS_ATTACHMENT_PAGE',
-        (ok) => {
-          if (ok) {
-            history.replaceState({ uploaded: true }, '');
-            this.notifier.showUpload(
-              'Attachment page uploaded to the public RECAP Archive.',
-              () => {}
-            );
-          }else {
-            this.notifier.showUpload(
-              'Error: The Attachment page was not uploaded to the public' +
-                'RECAP Archive',
-              () => {}
-            );
-          }
-        }
+    if (!options['recap_enabled']) {
+      return console.info(
+        'RECAP: Not uploading docket json. RECAP is disabled.'
       );
-    } else {
-      console.info('RECAP: Not uploading docket json. RECAP is disabled.');
     }
+
+    let vueData = JSON.parse(sessionStorage.recapVueData);
+    let requestBody = {
+      caseDetails: caseSummary.caseDetails,
+      docketEntry: vueData.docketEntry,
+      docketEntryDocuments: vueData.docketEntryDocuments,
+    };
+
+    const upload = await dispatchBackgroundFetch({
+      action: 'uploadPage',
+      data: {
+        court: PACER.convertToCourtListenerCourt(this.court),
+        pacer_case_id: this.pacer_case_id,
+        upload_type: 'ACMS_ATTACHMENT_PAGE',
+        html: JSON.stringify(requestBody),
+      },
+    });
+    if (upload.error) {
+      await dispatchBackgroundNotifier({
+        action: 'showUpload',
+        title: 'Page Upload Failed',
+        message: 'Error: The Attachment page was not uploaded to the public' +
+          'RECAP Archive',
+      });
+    }else{
+      history.replaceState({ uploaded: true }, '');
+      await dispatchBackgroundNotifier({
+        action: 'showUpload',
+        title: 'Page Successfully Uploaded',
+        message: 'Attachment page uploaded to the public RECAP Archive.',
+      });
+    }
+
   };
 
   const attachLinkToDocs = async () => {
@@ -133,9 +140,7 @@ AppellateDelegate.prototype.handleAcmsAttachmentPage = async function () {
     // class as a selector because all rows on the page
     // consistently use this class.
     this.links = document.body.querySelectorAll('.entry-link');
-    if (!links.length) {
-      return;
-    }
+    if (!links.length) return;
 
     // Go through the array of links and embed the document_guid
     for (link of this.links) {
@@ -154,35 +159,40 @@ AppellateDelegate.prototype.handleAcmsAttachmentPage = async function () {
     }
 
     let docIds = [attachmentsData.docketEntry.docketEntryId];
-
+    let clCourt = PACER.convertToCourtListenerCourt(this.court);
     // Ask the server whether any of these documents are available from RECAP.
-    this.recap.getAvailabilityForDocuments(docIds, this.court, (response) => {
-      for (result of response.results) {
-        let doc_guid = result.acms_document_guid;
-        // Query the docket entry link using the data attribute
-        // attached previously
-        let anchor = document.querySelector(
-          `[data-document-guid="${doc_guid}"]`
-        );
-        // Create the RECAP icon
-        let href = `https://storage.courtlistener.com/${result.filepath_local}`;
-        let recap_link = $('<a/>', {
-          title: 'Available for free from the RECAP Archive.',
-          href: href,
-        });
-        recap_link.append(
-          $('<img/>').attr({
-            src: chrome.extension.getURL('assets/images/icon-16.png'),
-          })
-        );
-        let recap_div = $('<div>', {
-          class: 'recap-inline-appellate',
-        });
-        recap_div.append(recap_link);
-        // Insert the RECAP icon next to the docket entry link
-        recap_div.insertAfter(anchor);
-      }
+    const recapLinks = await dispatchBackgroundFetch({
+      action: 'getAvailabilityForDocuments',
+      data: {
+        docket_entry__docket__court: clCourt,
+        pacer_doc_id__in: docIds.join(','),
+      },
     });
+    for (result of recapLinks.results) {
+      let doc_guid = result.acms_document_guid;
+      // Query the docket entry link using the data attribute
+      // attached previously
+      let anchor = document.querySelector(
+        `[data-document-guid="${doc_guid}"]`
+      );
+      // Create the RECAP icon
+      let href = `https://storage.courtlistener.com/${result.filepath_local}`;
+      let recap_link = $('<a/>', {
+        title: 'Available for free from the RECAP Archive.',
+        href: href,
+      });
+      recap_link.append(
+        $('<img/>').attr({
+          src: chrome.runtime.getURL('assets/images/icon-16.png'),
+        })
+      );
+      let recap_div = $('<div>', {
+        class: 'recap-inline-appellate',
+      });
+      recap_div.append(recap_link);
+      // Insert the RECAP icon next to the docket entry link
+      recap_div.insertAfter(anchor);
+    }
   };
 
   // This following logic monitors for specific DOM changes using
@@ -204,7 +214,7 @@ AppellateDelegate.prototype.handleAcmsAttachmentPage = async function () {
         let isTargetingH4Div = n.parentElement.localName === 'h4';
         if (isTitle && isTargetingH4Div) {
           // Insert script to retrieve and store Vue data in the storage
-          APPELLATE.storeVueDataInSession();
+          await APPELLATE.storeVueDataInSession();
           processAttachmentPage();
           attachLinkToDocs();
         }
