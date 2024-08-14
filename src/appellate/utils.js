@@ -211,7 +211,7 @@ let APPELLATE = {
     return caseId;
   },
 
-  onClickEventHandlerForDocLinks: function (e) {
+  onClickEventHandlerForDocLinks: async function (e) {
     let target = e.currentTarget || e.srcElement;
     let params = {
       dls_id: target.dataset.pacerDlsId,
@@ -220,15 +220,15 @@ let APPELLATE = {
       dktType: 'dktPublic',
     };
     let query_string = new URLSearchParams(params).toString();
-    httpRequest(
-      'TransportRoom',
-      query_string,
-      'application/x-www-form-urlencoded',
-      function (type, ab, xhr) {
-        let requestHandler = handleFreeDocResponse.bind(this);
-        requestHandler(type, ab, xhr);
-      }.bind(target)
-    );
+    const resp = await window.fetch('TransportRoom', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: query_string
+    });
+    let requestHandler = handleFreeDocResponse.bind(target);
+    requestHandler(resp.headers.get('Content-Type'), await resp.blob(), null);
   },
 
   // Create a list of doc_ids from the list of all links available on the page
