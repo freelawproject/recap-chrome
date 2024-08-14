@@ -88,7 +88,7 @@ AppellateDelegate.prototype.handleAcmsAttachmentPage = async function () {
     };
 
     const upload = await dispatchBackgroundFetch({
-      action: 'uploadPage',
+      action: 'upload',
       data: {
         court: PACER.convertToCourtListenerCourt(this.court),
         pacer_case_id: this.pacer_case_id,
@@ -242,7 +242,7 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
     }
 
     const upload = await dispatchBackgroundFetch({
-      action: 'uploadPage',
+      action: 'upload',
       data: {
         court: PACER.convertToCourtListenerCourt(this.court),
         pacer_case_id: this.pacer_case_id,
@@ -754,7 +754,7 @@ AppellateDelegate.prototype.handleCaseSelectionPage = async function () {
   }
 
   const upload = await dispatchBackgroundFetch({
-    action: 'uploadPage',
+    action: 'upload',
     data: {
       court: PACER.convertToCourtListenerCourt(this.court),
       pacer_case_id: this.pacer_case_id,
@@ -795,7 +795,7 @@ AppellateDelegate.prototype.handleCaseQueryPage = async function () {
   if (!options['recap_enabled']) return;
 
   const upload = await dispatchBackgroundFetch({
-    action: 'uploadPage',
+    action: 'upload',
     data: {
       court: PACER.convertToCourtListenerCourt(this.court),
       pacer_case_id: this.pacer_case_id,
@@ -959,7 +959,7 @@ AppellateDelegate.prototype.handleDocketDisplayPage = async function () {
   }
 
   const upload = await dispatchBackgroundFetch({
-    action: 'uploadPage',
+    action: 'upload',
     data: {
       court: PACER.convertToCourtListenerCourt(this.court),
       pacer_case_id: this.pacer_case_id,
@@ -996,7 +996,7 @@ AppellateDelegate.prototype.handleAttachmentPage = async function () {
   }
 
   const upload = await dispatchBackgroundFetch({
-    action: 'uploadPage',
+    action: 'upload',
     data: {
       court: PACER.convertToCourtListenerCourt(this.court),
       pacer_case_id: this.pacer_case_id,
@@ -1121,16 +1121,17 @@ AppellateDelegate.prototype.onDocumentViewSubmit = async function (event) {
   }
   $('body').css('cursor', 'wait');
   let query_string = new URLSearchParams(new FormData(form)).toString();
-  const resp = await window.fetch(query_string, {
-    method: form.action,
+  const resp = await window.fetch(form.action, {
+    method: form.method,
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
+    body: query_string
   });
-
-  handleDocFormResponse(
+  let helperMethod = handleDocFormResponse.bind(this);
+  helperMethod(
     resp.headers.get('Content-Type'),
-    resp.blob(),
+    await resp.blob(),
     null,
     previousPageHtml,
     dataFromTitle
