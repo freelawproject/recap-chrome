@@ -35,29 +35,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     getAndStoreVueData(msg, sender, sendResponse);
     return true;
   }
-  if (msg.message === 'upload') {
-    let recap = new Recap();
-    let notifier = new Notifier();
-    let callback = function (ok) {
-      if (ok) {
-        notifier.showUpload(
-          'Free PDF uploaded to the public RECAP Archive.',
-          () => {}
-        );
-      }
-    };
-    callback.tab = sender.tab;
-    let options = msg.options;
-    recap.uploadDocument(
-      options.court,
-      options.pacer_case_id,
-      options.pacer_doc_id,
-      options.document_number,
-      options.attachment_number,
-      'acmsDocumentGuid' in options ? options.acmsDocumentGuid : null,
-      callback
-    );
-  }
 });
 
 chrome.runtime.onInstalled.addListener(setDefaultOptions);
