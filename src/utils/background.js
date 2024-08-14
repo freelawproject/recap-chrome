@@ -100,3 +100,31 @@ export function showNotificationTab(details) {
     });
   }
 }
+
+export function getAndStoreVueData(req, sender, sendResponse) {
+  const getVueDiv = () => {
+    // The following code draws inspiration from the Vue devtool extension
+    // to identify and inspect Vue components within a web application.
+    // Unlike the devtool extension, which explores the entire DOM, this script
+    // focuses on extracting the data of the main Vue component. By tailoring
+    // the script to the component's HTML structure, we achieve a quick data
+    // retrieval process compared to a full DOM exploration.
+    // The extracted data is then stored in session storage for later use.
+    let contentWrapper = document.getElementsByClassName('text-center')[0];
+    let vueMainDiv = contentWrapper.parentElement;
+    let vueDataProperties = vueMainDiv.__vue__._data;
+    sessionStorage.setItem('recapVueData', JSON.stringify(vueDataProperties));
+    sessionStorage.setItem(
+      'recapACMSConfiguration',
+      JSON.stringify(window._model)
+    );
+    return true;
+  };
+  chrome.scripting
+    .executeScript({
+      target: { tabId: sender.tab.id },
+      func: getVueDiv,
+      world: 'MAIN',
+    })
+    .then((injectionResults) => sendResponse(injectionResults));
+}
