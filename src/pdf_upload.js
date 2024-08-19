@@ -1,16 +1,13 @@
-const overwriteFormSubmitMethod = () => {
+function overwriteFormSubmitMethod() {
   // Monkey-patch the <form> prototype so its submit() method sends a message
-  // instead of submitting the form.  To do this in the page context instead
-  // of this script's, we inject a <script> element.
-  let script = document.createElement('script');
-  script.innerText =
-    'document.createElement("form").__proto__.submit = function () {' +
-    '  this.id = "form" + new Date().getTime();' +
-    '  window.postMessage({id: this.id}, "*");' +
-    '};';
-
-  document.body.appendChild(script);
-};
+  // instead of submitting the form.
+  return new Promise((resolve, reject) =>
+    chrome.runtime.sendMessage({ message: 'overwriteSubmit' }, (res) => {
+      if (res == null) reject('Response cannot be null');
+      resolve(res);
+    })
+  );
+}
 
 const copyPDFDocumentPage = () => {
   // Save a copy of the page, altered so that the "View Document"
@@ -146,7 +143,7 @@ const handleDocFormResponse = function (
         dataFromReceipt.docket_number
       );
     }.bind(this);
-    reader.readAsText(blob); // convert blob to HTML text
+    reader.readAsText(ab); // convert blob to HTML text
   }
 };
 
@@ -196,7 +193,6 @@ const showAndUploadPdf = async function (
     document.documentElement.innerHTML = html_elements;
     return;
   }
-
   const options = await getItemsFromStorage('options');
 
   showWaitingMessage(match);

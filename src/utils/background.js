@@ -128,3 +128,34 @@ export function getAndStoreVueData(req, sender, sendResponse) {
     })
     .then((injectionResults) => sendResponse(injectionResults));
 }
+
+
+export function overwriteSubmitMethod(req, sender, sendResponse){
+  const _overwriteScript = () => {
+    document.createElement('form').__proto__.submit = function () {
+      this.id = 'form' + new Date().getTime();
+      // Gets a reference to the custom button for users with
+      // filing permissions.
+      let filerButton = document.getElementsByClassName(
+        'recap-bttn-for-filers'
+      );
+      // Check if there are any buttons found and if the button hasn't been
+      // clicked yet (doesn't have the 'clicked' attribute).
+      if (filerButton.length && !fillerButton[0].hasAttribute('clicked')) {
+        // If the button exists but wasn't clicked, set a data attribute on the
+        // form to prevent uploading the PDF document.
+        this.dataset.stopUpload = true;
+      }
+      window.postMessage({ id: this.id }, '*');
+    };
+    return true;
+  };
+
+  chrome.scripting
+    .executeScript({
+      target: { tabId: sender.tab.id },
+      func: _overwriteScript,
+      world: 'MAIN',
+    })
+    .then((injectionResults) => sendResponse(injectionResults));
+}

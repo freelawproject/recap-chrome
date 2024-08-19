@@ -1035,7 +1035,7 @@ AppellateDelegate.prototype.handleSingleDocumentPageView = async function () {
     let form = document.querySelector('form');
     form.append(button);
   } else {
-    overwriteFormSubmitMethod();
+    await overwriteFormSubmitMethod();
   }
 
   this.pacer_case_id = await APPELLATE.getCaseId(
