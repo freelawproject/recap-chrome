@@ -84,6 +84,7 @@
     "*://cadc.fedcourts.us/"
   ],
   "background": {
+    "scripts": ["background.js"],
     "service_worker": "background.js",
     "type": "module"
   },
@@ -181,16 +182,6 @@
     },
     "default_title": "RECAP: Not at a PACER site",
     "default_popup": "options.html"
-  },
-  "chrome_settings_overrides": {
-    "search_provider": {
-      "name": "RECAP Archive",
-      "search_url": "https://www.courtlistener.com/?type=r&q={searchTerms}&order_by=score+desc",
-      "keyword": "recap",
-      "favicon_url": "https://www.courtlistener.com/static/ico/favicon.ico",
-      "encoding": "UTF-8",
-      "is_default": false
-    }
   },
   "web_accessible_resources": [
     {
