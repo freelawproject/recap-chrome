@@ -56,7 +56,6 @@ export async function injectContentScript(tabId, status, url) {
             { file: 'content_delegate.js' },
             { file: 'appellate/utils.js' },
             { file: 'appellate/appellate.js' },
-            { file: 'appellate/acms_api.js' },
             { file: 'utils/fetch.js' },
             { file: 'utils/notifier.js' },
             { file: 'content.js' },

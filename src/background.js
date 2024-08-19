@@ -13,6 +13,7 @@ import {
 } from './utils/background.js';
 import { handleBackgroundFetch } from './utils/background_fetch.js';
 import { handleBackgroundNotification } from './utils/background_notifier.js';
+import { getDocumentURL } from './utils/acms_api.js';
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.message === 'requestTabId') {
@@ -38,6 +39,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
   if (msg.message === 'overwriteSubmit') {
     overwriteSubmitMethod(msg, sender, sendResponse);
+    return true;
+  }
+  if (msg.message === 'fetchAcmsDocumentUrl'){
+    getDocumentURL(msg, sender, sendResponse);
     return true;
   }
 });

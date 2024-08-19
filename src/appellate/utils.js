@@ -422,6 +422,18 @@ let APPELLATE = {
     return recap_div;
   },
 
+  fetchAcmsDocumentUrl: function (data) {
+    return new Promise((resolve, reject) =>
+      chrome.runtime.sendMessage(
+        { message: 'fetchAcmsDocumentUrl', data: data },
+        (res) => {
+          if (res == null) reject('Response cannot be null');
+          resolve(res);
+        }
+      )
+    );
+  },
+
   // Adds the vue data attributes to the session storage
   storeVueDataInSession: () => {
     return new Promise((resolve, reject) =>
