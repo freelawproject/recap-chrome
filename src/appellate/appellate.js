@@ -6,7 +6,6 @@ let AppellateDelegate = function (tabId, court, url, path, links) {
   this.url = url;
   this.path = path;
   this.links = links || [];
-  this.acms = importInstance(Acms);
   this.queryParameters = APPELLATE.getQueryParameters(this.url);
   this.docId = APPELLATE.getDocIdFromURL(this.queryParameters);
   this.docketNumber = APPELLATE.getDocketNumber(this.queryParameters);
@@ -510,21 +509,23 @@ AppellateDelegate.prototype.handleAcmsDownloadPage = async function () {
       downloadData.docketEntryDocuments[0].docketDocumentDetailsId;
 
     let previousPageHtml = document.documentElement.innerHTML;
-    // Use the  to request the PDF doc
-    this.acms.getDocumentURL(ApiUrl, Token, pdfFileRequestBody, (pdf_url) => {
-      httpRequest(
-        pdf_url,
-        null,
-        null,
-        function (type, ab, xhr) {
-          let requestHandler = handleDocFormResponse.bind(this);
-          requestHandler(type, ab, xhr, previousPageHtml, documentData);
-        }.bind(this)
-      );
+    let pdf_url = await APPELLATE.fetchAcmsDocumentUrl({
+      apiUrl: ApiUrl,
+      token: Token,
+      mergePdfFilesRequest: pdfFileRequestBody,
     });
+    const resp = await window.fetch(pdf_url, { method: 'GET' });
+    let requestHandler = handleDocFormResponse.bind(this);
+    requestHandler(
+      resp.headers.get('Content-Type'),
+      await resp.blob(),
+      null,
+      previousPageHtml,
+      documentData
+    );
   }
 
-  const wrapperMutationObserver = (mutationList, observer) => {
+  const wrapperMutationObserver = async (mutationList, observer) => {
     for (const r of mutationList) {
       for (const n of r.addedNodes) {
         let hasReceipt = n.textContent
@@ -550,15 +551,14 @@ AppellateDelegate.prototype.handleAcmsDownloadPage = async function () {
           hasReceipt &&
           hasAcceptChargesButton
         ) {
-
-          if (!hasOneDocument){
+          if (!hasOneDocument) {
             pdfWarning = combinedPdfWarning();
             n.append(pdfWarning);
             return;
           }
 
           // Insert script to retrieve and store Vue data in the storage
-          APPELLATE.storeVueDataInSession();
+          await APPELLATE.storeVueDataInSession();
 
           // Get doc_id from the sessionStorage
           let downloadData = JSON.parse(sessionStorage.getItem('recapVueData'));
@@ -593,24 +593,30 @@ AppellateDelegate.prototype.handleAcmsDownloadPage = async function () {
 
           // Query the server to check the availability of the document in the
           // RECAP archive.
-          this.recap.getAvailabilityForDocuments(
-            [this.docId],
-            this.court,
-            (api_results) => {
-              console.info(
-                'RECAP: Got results from API. Running callback on API ' +
-                  'results to insert banner'
-              );
-              let result = api_results.results.filter(
-                (obj) => obj.pacer_doc_id == this.docId,
-                this
-              )[0];
-              if (!result) {
-                return;
-              }
-              insertAvailableDocBanner(result.filepath_local, 'div.box');
-            }
+          let clCourt = PACER.convertToCourtListenerCourt(this.court);
+          const recapLinks = await dispatchBackgroundFetch({
+            action: 'getAvailabilityForDocuments',
+            data: {
+              docket_entry__docket__court: clCourt,
+              pacer_doc_id__in: this.docId,
+            },
+          });
+          // return if there are no results
+          if (!recapLinks)
+            return console.error(
+              'RECAP: Failed getting availability for dockets.'
+            );
+
+          console.info(
+            'RECAP: Got results from API. Running callback on API ' +
+              'results to insert banner'
           );
+          let result = recapLinks.results.filter(
+            (obj) => obj.pacer_doc_id == this.docId,
+            this
+          )[0];
+          if (!result) return;
+          insertAvailableDocBanner(result.filepath_local, 'div.box');
         }
       };
     };
