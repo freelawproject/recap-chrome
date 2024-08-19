@@ -34,6 +34,10 @@ module.exports = {
           {
             'code': 80,
           }
+        ],
+        'multiline-ternary': [
+          "error",
+          "always-multiline"
         ]
     }
 };
