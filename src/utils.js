@@ -127,7 +127,7 @@ const makeMessageForBanners = (text) => {
   innerDiv.classList.add('banner-message');
 
   const img = document.createElement('img');
-  img.src = chrome.extension.getURL('assets/images/icon-16.png');
+  img.src = chrome.runtime.getURL('assets/images/icon-16.png');
 
   const p = document.createElement('p');
   p.innerHTML = text;
@@ -159,7 +159,7 @@ const recapAlertButton = (court, pacerCaseId, isActive) => {
   anchor.href = url.toString();
 
   const img = document.createElement('img');
-  img.src = chrome.extension.getURL(`assets/images/${icon}-16.png`);
+  img.src = chrome.runtime.getURL(`assets/images/${icon}-16.png`);
 
   let innerDiv = makeMessageForBanners(text);
 
@@ -182,7 +182,7 @@ const recapAddLatestFilingButton = (result) => {
   anchor.href = '#';
 
   const img = document.createElement('img');
-  img.src = chrome.extension.getURL('assets/images/icon-16.png');
+  img.src = chrome.runtime.getURL('assets/images/icon-16.png');
 
   anchor.appendChild(img);
 
@@ -267,7 +267,7 @@ const insertAvailableDocBanner = (doc_url, html_element) => {
       })
         .append(
           $('<img/>', {
-            src: chrome.extension.getURL('assets/images/icon-16.png'),
+            src: chrome.runtime.getURL('assets/images/icon-16.png'),
           })
         )
         .append(' Get this document for free from the RECAP Archive.')
@@ -278,7 +278,7 @@ const insertAvailableDocBanner = (doc_url, html_element) => {
 // Creates a div element to let user know they're trying to buy a combined PDF
 const combinedPdfWarning = () => {
   let img = document.createElement('img');
-  img.src = chrome.extension.getURL('assets/images/disabled-38.png');
+  img.src = chrome.runtime.getURL('assets/images/disabled-38.png');
   img.style.width = 'auto';
   img.style.height = 'auto';
   img.style.maxWidth = '38px';
