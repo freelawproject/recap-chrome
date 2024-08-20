@@ -1,12 +1,15 @@
-
 describe('The ContentDelegate class', () => {
   const tabId = 1234;
   const districtCourtURI = 'https://ecf.dcd.uscourts.gov';
-  const zipPreDownloadPath = "/cgi-bin/show_multidocs.pl?caseid=178502&arr_de_seq_nums=5&magic_num=&pdf_header=&hdr=&pdf_toggle_possible=&zipit=1"
+  const zipPreDownloadPath =
+    '/cgi-bin/show_multidocs.pl?caseid=178502&arr_de_seq_nums=5&magic_num=&pdf_header=&hdr=&pdf_toggle_possible=&zipit=1';
   const zipPreDownloadUrl = districtCourtURI.concat(zipPreDownloadPath);
-  const expectedOnclick = "parent.location='/cgi-bin/show_multidocs.pl?caseid=178502&arr_de_seq_nums=5&magic_num=&pdf_header=&hdr=&pdf_toggle_possible=&zipit=1&caseid=178502&zipit=1&magic_num=&arr_de_seq_nums=5&got_warning=&create_roa=&create_appendix=&bates_format=&dkt=&got_receipt=1'"
-  const appendixOnClickUrl = "parent.location='/cgi-bin/show_multidocs.pl?caseid=44812&pdf_header=1&pdf_toggle_possible=1&caseid=44812&zipit=2&magic_num=&arr_de_seq_nums=13&got_warning=&create_roa=1&create_appendix=1&bates_format=_lt_pagenum_gt_&restricted_entries=on&sealed_entries=on&dkt=a3771446998&got_receipt=1'"
-  const eventUrl = '/cgi-bin/show_multidocs.pl?caseid=178502&arr_de_seq_nums=5&magic_num=&pdf_header=&hdr=&pdf_toggle_possible=&zipit=1&caseid=178502&zipit=1&magic_num=&arr_de_seq_nums=5&got_warning=&create_roa=&create_appendix=&bates_format=&dkt=&got_receipt=1'
+  const expectedOnclick =
+    "parent.location='/cgi-bin/show_multidocs.pl?caseid=178502&arr_de_seq_nums=5&magic_num=&pdf_header=&hdr=&pdf_toggle_possible=&zipit=1&caseid=178502&zipit=1&magic_num=&arr_de_seq_nums=5&got_warning=&create_roa=&create_appendix=&bates_format=&dkt=&got_receipt=1'";
+  const appendixOnClickUrl =
+    "parent.location='/cgi-bin/show_multidocs.pl?caseid=44812&pdf_header=1&pdf_toggle_possible=1&caseid=44812&zipit=2&magic_num=&arr_de_seq_nums=13&got_warning=&create_roa=1&create_appendix=1&bates_format=_lt_pagenum_gt_&restricted_entries=on&sealed_entries=on&dkt=a3771446998&got_receipt=1'";
+  const eventUrl =
+    '/cgi-bin/show_multidocs.pl?caseid=178502&arr_de_seq_nums=5&magic_num=&pdf_header=&hdr=&pdf_toggle_possible=&zipit=1&caseid=178502&zipit=1&magic_num=&arr_de_seq_nums=5&got_warning=&create_roa=&create_appendix=&bates_format=&dkt=&got_receipt=1';
 
   const blob = new Blob([new ArrayBuffer(1000)], { type: 'application/zip' });
 
@@ -20,20 +23,19 @@ describe('The ContentDelegate class', () => {
     [] // links
   );
 
-  const pageWithZipUrl = () => {
-    const html = document.createElement('html');
-    const body = document.createElement('body');
-    const iframe = document.createElement('iframe');
-    iframe.setAttribute('src', 'https://dummyplace.com');
-    body.appendChild(iframe);
-    html.appendChild(body);
-    return html;
+  let fakeBackgroundFetch = ({ action, data }) => {
+    switch (action) {
+      case 'upload':
+        return new Promise((resolve, reject) => resolve({}));
+    }
   };
 
   describe('attempts to download a zip file', () => {
     let nativeFetch;
     beforeEach(async () => {
-      const dataUrl = await blobToDataURL(new Blob([new ArrayBuffer(1000), { type: 'application/zip' }]));
+      const dataUrl = await blobToDataURL(
+        new Blob([new ArrayBuffer(1000), { type: 'application/zip' }])
+      );
       window.chrome = {
         storage: {
           local: {
@@ -43,31 +45,43 @@ describe('The ContentDelegate class', () => {
                   recap_enabled: true,
                   ['ia_style_filenames']: true,
                   ['lawyer_style_filenames']: false,
-                  ['external_pdf']: true
+                  ['external_pdf']: true,
                 },
                 [tabId]: {
                   ['zip_blob']: dataUrl,
-                  docsToCases: { ['034031424909']: '531591' }
-                }
+                  docsToCases: { ['034031424909']: '531591' },
+                },
               });
             }),
-            remove: jasmine.createSpy('remove').and.callFake(() => { }),
-            set: jasmine.createSpy('set').and.callFake(function () { })
-          }
-        }
+            remove: jasmine.createSpy('remove').and.callFake(() => {}),
+            set: jasmine.createSpy('set').and.callFake(function () {}),
+          },
+        },
       };
       nativeFetch = window.fetch;
       spyOn(window, 'fetch').and.callFake((url, options) => {
         const res = {};
-        res.status = jasmine.createSpy().and.callFake(() => Promise.resolve('200'));
-        res.text = jasmine.createSpy().and.callFake(() => Promise.resolve(`<html><iframe src="http://dummylink.com"></iframe></html>`));
-        res.json = jasmine.createSpy().and.callFake(() => Promise.resolve({ result: true }));
-        res.blob = jasmine.createSpy().and.callFake(() => Promise.resolve(blob));
+        res.status = jasmine
+          .createSpy()
+          .and.callFake(() => Promise.resolve('200'));
+        res.text = jasmine
+          .createSpy()
+          .and.callFake(() =>
+            Promise.resolve(
+              `<html><iframe src="http://dummylink.com"></iframe></html>`
+            )
+          );
+        res.json = jasmine
+          .createSpy()
+          .and.callFake(() => Promise.resolve({ result: true }));
+        res.blob = jasmine
+          .createSpy()
+          .and.callFake(() => Promise.resolve(blob));
         return Promise.resolve(res);
-      });;
-      window.saveAs = jasmine.createSpy('saveAs').and.callFake(
-        (blob, filename) => Promise.resolve(true)
-      );
+      });
+      window.saveAs = jasmine
+        .createSpy('saveAs')
+        .and.callFake((blob, filename) => Promise.resolve(true));
       spyOn(window, 'addEventListener').and.callThrough();
     });
 
@@ -77,8 +91,17 @@ describe('The ContentDelegate class', () => {
     });
 
     describe('handleZipFilePageView', () => {
-
       cd = zipFileContentDelegate;
+
+      beforeEach(() => {
+        document.querySelector = jasmine
+          .createSpy('querySelector')
+          .and.callFake((id) =>
+            document.querySelectorAll(id).length
+              ? document.querySelectorAll(id)[0]
+              : null
+          );
+      });
 
       describe('it is not a downloadAllDocumentsPage', () => {
         it('should do nothing', () => {
@@ -99,13 +122,16 @@ describe('The ContentDelegate class', () => {
           form.appendChild(input1);
           document.body.appendChild(form);
         });
+
         afterEach(() => {
           const form = document.querySelector('form');
           if (form) {
             form.remove();
           }
           const scripts = [...document.getElementsByTagName('script')];
-          const script = scripts.find(script => (script.innerText.match(/^let\sforms/)));
+          const script = scripts.find((script) =>
+            script.innerText.match(/^let\sforms/)
+          );
           if (script) {
             script.remove();
           }
@@ -115,11 +141,9 @@ describe('The ContentDelegate class', () => {
           cd.handleZipFilePageView();
           expect(window.addEventListener).not.toHaveBeenCalled();
         });
-
       });
 
       describe('it is a downloadAllDocumentPage', () => {
-
         beforeEach(() => {
           const form = document.createElement('form');
           form.setAttribute('action', 'jackson');
@@ -137,26 +161,34 @@ describe('The ContentDelegate class', () => {
             form.remove();
           }
           const scripts = [...document.getElementsByTagName('script')];
-          const script = scripts.find(script => (script.innerText.match(/^let\sforms/)));
+          const script = scripts.find((script) =>
+            script.innerText.match(/^let\sforms/)
+          );
           if (script) {
             script.remove();
           }
         });
 
         it('should contain a Download Documents Button', () => {
-          const button = document.querySelector('input[value="Download Documents"]');
+          const button = document.querySelector(
+            'input[value="Download Documents"]'
+          );
           expect(button).toBeTruthy();
         });
 
         it('the Download Documents button should have an onclick attribute', () => {
-          const button = document.querySelector('input[value="Download Documents"]');
+          const button = document.querySelector(
+            'input[value="Download Documents"]'
+          );
           const onclick = button.getAttribute('onclick');
           expect(onclick).toEqual(expectedOnclick);
         });
 
         it('should remove the onclick attribute from the form and input', () => {
           cd.handleZipFilePageView();
-          const input = document.querySelector('input[value="Download Documents"]');
+          const input = document.querySelector(
+            'input[value="Download Documents"]'
+          );
           expect(input.onclick).not.toBeTruthy();
         });
 
@@ -168,15 +200,20 @@ describe('The ContentDelegate class', () => {
     });
 
     describe('onDownloadAllSubmit', function () {
-
       beforeEach(async () => {
-        spyOn(cd.recap, 'uploadZipFile').and.callFake((court, pacerCaseId, callback) => {
-          callback(true);
-        });
-        spyOn(history, 'pushState').and.callFake((...args) => { });
-        spyOn(cd.notifier, 'showUpload').and.callFake((message, callback) => {
-          callback(true);
-        });
+        dispatchBackgroundFetch = jasmine
+          .createSpy()
+          .and.callFake(fakeBackgroundFetch);
+        dispatchBackgroundNotifier = jasmine.createSpy();
+        spyOn(history, 'pushState').and.callFake((...args) => {});
+        document.getElementById = jasmine
+          .createSpy('getElementById')
+          .and.callFake((id) => document.querySelectorAll(`#${id}`)[0]);
+
+        mainContainer = document.createElement('div');
+        mainContainer.id = 'cmecfMainContent';
+        document.body.appendChild(mainContainer);
+
         await cd.onDownloadAllSubmit({ data: { id: eventUrl } });
       });
 
@@ -193,7 +230,7 @@ describe('The ContentDelegate class', () => {
       });
 
       it('uploads the Zip file to RECAP', function () {
-        expect(cd.recap.uploadZipFile).toHaveBeenCalled();
+        expect(dispatchBackgroundFetch).toHaveBeenCalled();
       });
 
       it('redirects the user to the download page and forwards the zip file', function () {
@@ -201,7 +238,7 @@ describe('The ContentDelegate class', () => {
       });
 
       it('calls the notifier once the upload finishes', function () {
-        expect(cd.notifier.showUpload).toHaveBeenCalled();
+        expect(dispatchBackgroundNotifier).toHaveBeenCalled();
       });
     });
   });

@@ -26,9 +26,9 @@ module.exports = function(config) {
     files: [
       { pattern: 'node_modules/whatwg-fetch/fetch.js', type: 'module' },
       'src/assets/js/FileSaver.js',
-      'src/notifier.js',
+      'src/utils/fetch.js',
+      'src/utils/notifier.js',
       'src/pacer.js',
-      'src/recap.js',
       'src/toolbar_button.js',
       'src/utils.js',
       'src/action_button.js',
@@ -42,9 +42,7 @@ module.exports = function(config) {
 
 
     // list of files / patterns to exclude
-    exclude: [
-      'spec/*ZipSpec.js',
-    ],
+    exclude: [],
 
 
     // preprocess matching files before serving them to the browser
@@ -79,7 +77,7 @@ module.exports = function(config) {
     browsers: ['ChromeHeadless'],
 
     // set these options to view logs in development
-    // see https://github.com/karma-runner/karma/issues/2582#issuecomment-413660796 
+    // see https://github.com/karma-runner/karma/issues/2582#issuecomment-413660796
     // browserConsoleLogOptions: {
     //   level: 'log',
     //   format: '%b %T: %m',
@@ -91,7 +89,7 @@ module.exports = function(config) {
     client: {
       captureConsole: true,
     },
-    
+
     customLaunchers: {
       CustomChromeHeadless: {
         base: 'ChromeHeadless',
