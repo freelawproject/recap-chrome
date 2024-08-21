@@ -608,8 +608,7 @@ AppellateDelegate.prototype.handleAcmsDownloadPage = async function () {
             );
 
           console.info(
-            'RECAP: Got results from API. Running callback on API ' +
-              'results to insert banner'
+            'RECAP: Got results from API. Processing results to insert banner'
           );
           let result = recapLinks.results.filter(
             (obj) => obj.pacer_doc_id == this.docId,
@@ -883,8 +882,8 @@ AppellateDelegate.prototype.attachRecapLinksToEligibleDocs = async function () {
     return console.error('RECAP: Failed getting availability for dockets.');
 
   console.info(
-    'RECAP: Got results from API. Running callback on API results to ' +
-      'attach links and icons where appropriate.'
+    'RECAP: Got results from API. Processing results to attach links and ' +
+      'icons where appropriate.'
   );
   for (let i = 0; i < this.links.length; i++) {
     let pacer_doc_id = this.links[i].dataset.pacerDocId;
@@ -1081,8 +1080,7 @@ AppellateDelegate.prototype.handleSingleDocumentPageView = async function () {
   if (docData.Error) return;
 
   console.info(
-    'RECAP: Got results from API. Running callback on API results to ' +
-      'insert banner'
+    'RECAP: Got results from API. Processing results to insert banner'
   );
   let result = docData.results.filter(
     (obj) => obj.pacer_doc_id == this.docId

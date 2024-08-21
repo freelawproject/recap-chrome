@@ -449,8 +449,7 @@ ContentDelegate.prototype.handleSingleDocumentPageCheck = async function () {
 
   if (!recapLinks.count) return;
   console.info(
-    'RECAP: Got results from API. Running callback on API results to ' +
-      'insert link'
+    'RECAP: Got results from API. Processing results to insert link'
   );
   let result = recapLinks.results.filter(
     (doc) => doc.pacer_doc_id === this.pacer_doc_id,
@@ -587,8 +586,8 @@ ContentDelegate.prototype.attachRecapLinkToEligibleDocs = async function () {
   if (!recapLinks) return;
 
   console.info(
-    'RECAP: Got results from API. Running callback on API results to ' +
-      'attach links and icons where appropriate.'
+    'RECAP: Got results from API. Processing results to attach links and ' +
+      'icons where appropriate.'
   );
   for (let i = 0; i < this.links.length; i++) {
     let pacer_doc_id = $(this.links[i]).data('pacer_doc_id');
