@@ -84,8 +84,8 @@
     "*://cadc.fedcourts.us/"
   ],
   "background": {
-    "scripts": ["background.js"],
-    "service_worker": "background.js",
+    "scripts": ["service_worker.js"],
+    "service_worker": "service_worker.js",
     "type": "module"
   },
   "content_scripts": [
