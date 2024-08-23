@@ -221,7 +221,7 @@ const recapBanner = (result) => {
   time.innerHTML = result.date_modified;
 
   let message =
-    'View and Search this docket as of' +
+    'View and Search this docket as of ' +
     `${time.outerHTML} for free from RECAP`;
   let innerDiv = makeMessageForBanners(message);
 
@@ -292,10 +292,10 @@ const combinedPdfWarning = () => {
 
   let text = document.createElement('p');
   text.innerHTML =
-    'This document <b>will not be uploaded</b> to the RECAP' +
-    'Archive because the extension has detected that this page may return' +
-    'a combined PDF and consistently splitting these files in a proper manner' +
-    'is not possible for now.';
+    'This document <b>will not be uploaded</b> to the RECAP ' +
+    'Archive because the extension has detected that this page may return ' +
+    'a combined PDF and consistently splitting these files in a proper ' +
+    'manner is not possible for now.';
 
   let messageDiv = document.createElement('div');
   messageDiv.classList.add('recap-combined-pdf-text');
