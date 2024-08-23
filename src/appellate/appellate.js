@@ -640,6 +640,12 @@ AppellateDelegate.prototype.handleCaseSearchPage = () => {
 AppellateDelegate.prototype.handleDocketReportFilter = async function () {
   if (!this.docketNumber) return;
   let docketNumberCore = PACER.makeDocketNumberCore(this.docketNumber);
+  this.pacer_case_id = await APPELLATE.getCaseId(
+    this.tabId,
+    this.queryParameters,
+    this.docId,
+    this.docketNumber
+  );
 
   let docketData = await dispatchBackgroundFetch({
     action: 'getAvailabilityForDocket',
@@ -651,13 +657,15 @@ AppellateDelegate.prototype.handleDocketReportFilter = async function () {
   if (docketData.count === 1 && docketData.results) {
     let form = document.getElementsByTagName('form')[0];
     let banner = recapBanner(docketData.results[0]);
+    form.after(banner);
+
+    if (!this.pacer_case_id) return;
     let recapAlert = document.createElement('div');
     recapAlert.classList.add('recap-banner');
     recapAlert.appendChild(
       recapAlertButton(this.court, this.pacer_case_id, true)
     );
     form.after(recapAlert);
-    form.after(banner);
   } else {
     PACER.handleDocketAvailabilityMessages(docketData);
   }
