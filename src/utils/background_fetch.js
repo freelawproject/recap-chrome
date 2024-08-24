@@ -1,4 +1,4 @@
-import { buildFormData, authHeader, jsonHeader } from './recap.js';
+import { buildFormData, sources, authHeader, jsonHeader } from './recap.js';
 
 // Builds a CourtListener API URL
 //
@@ -99,7 +99,7 @@ export const handleBackgroundFetch = (req, sender, sendResponse) => {
         base: courtListenerURL('dockets'),
         params: {
           ...data,
-          source__in: '1,3,5,7,9,11,13,15',
+          source__in: sources,
           fields: 'absolute_url,date_modified,date_last_filing',
         },
       });
