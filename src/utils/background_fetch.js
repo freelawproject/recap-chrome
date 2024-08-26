@@ -33,11 +33,29 @@ const searchParamsURL = ({ base, params }) => {
   return url.toString();
 };
 
-function triggerFetchRequest(url, options, sender, sendResponse) {
+// Asynchronously waits for a given promise to resolve while preventing the
+// service worker from terminating prematurely.
+//
+// This function is essential for long-running service worker operations that
+// might otherwise be interrupted due to inactivity timeouts. It periodically
+// calls `chrome.runtime.getPlatformInfo` to reset the service worker's timeout
+// counter, ensuring it remains active until the promise completes.
+async function waitUntil(promise) {
+  const keepAlive = setInterval(chrome.runtime.getPlatformInfo, 25 * 1000);
+  try {
+    console.log(true);
+    await promise;
+  } finally {
+    console.log('here clearing the interval');
+    clearInterval(keepAlive);
+  }
+}
+
+async function triggerFetchRequest(url, options, sender, sendResponse) {
   // Callback for Dispatching Background Fetch
   // This internal function handles setting headers, logging information,
   // dispatching the fetch request, and sending the response back
-  const dispatchCallback = (_url, _options) => {
+  const dispatchCallback = async (_url, _options) => {
     console.debug(_url, _options);
     _options['headers'] = { ...authHeader };
     if (_options.method == 'GET') {
@@ -45,14 +63,14 @@ function triggerFetchRequest(url, options, sender, sendResponse) {
     }
     console.info(`RECAP: Dispatching ${_options.method} for ${_url}`);
     // dispatch fetch and return the response
-    fetch(_url, _options)
+    await fetch(_url, _options)
       .then((res) => res.json())
       .then((json) => sendResponse(json))
       .catch((err) => sendResponse({ error: err.message }));
   };
   // Check for existing body data and handle accordingly
   if (!options.body) {
-    dispatchCallback(url, options);
+    await waitUntil(dispatchCallback(url, options));
     return true;
   }
 
@@ -66,7 +84,7 @@ function triggerFetchRequest(url, options, sender, sendResponse) {
   // Handle body without document
   if (!options.body.document) {
     const body = buildFormData({ ...options.body });
-    dispatchCallback(url, { ...options, body });
+    await waitUntil(dispatchCallback(url, { ...options, body }));
     return true;
   }
 
@@ -77,11 +95,9 @@ function triggerFetchRequest(url, options, sender, sendResponse) {
     // get the dataUrl for the file in storage
     let storeKey = sender.tab.id.toString();
     let file = store[storeKey]['pdf_blob'] || store[storeKey]['zip_blob'];
-    const blob = await fetch(file).then(
-      (res) => res.blob()
-    );
+    const blob = await fetch(file).then((res) => res.blob());
     const body = buildFormData({ ...options.body, filepath_local: blob });
-    dispatchCallback(url, { ...options, body });
+    await waitUntil(dispatchCallback(url, { ...options, body }));
   });
   // return true to allow for the async function to complete
   return true;
@@ -90,7 +106,7 @@ function triggerFetchRequest(url, options, sender, sendResponse) {
 // This function dispatches fetch requests based on the received action and
 // data. It constructs the appropriate URL and options for each action, and
 // then triggers the fetch request using the `triggerFetchRequest` function.
-export const handleBackgroundFetch = (req, sender, sendResponse) => {
+export const handleBackgroundFetch = async (req, sender, sendResponse) => {
   const { action, data } = req.fetch;
   let url, options;
   switch (action) {
@@ -122,5 +138,5 @@ export const handleBackgroundFetch = (req, sender, sendResponse) => {
     default:
       return;
   }
-  triggerFetchRequest(url, options, sender, sendResponse);
+  await triggerFetchRequest(url, options, sender, sendResponse);
 };
