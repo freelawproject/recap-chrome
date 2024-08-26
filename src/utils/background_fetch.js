@@ -40,6 +40,10 @@ const searchParamsURL = ({ base, params }) => {
 // might otherwise be interrupted due to inactivity timeouts. It periodically
 // calls `chrome.runtime.getPlatformInfo` to reset the service worker's timeout
 // counter, ensuring it remains active until the promise completes.
+//
+// For detailed information on keeping service workers alive during long-running
+// tasks, refer to the official Chrome extension documentation:
+// https://developer.chrome.com/docs/extensions/develop/migrate/to-service-workers#keep-sw-alive
 async function waitUntil(promise) {
   const keepAlive = setInterval(chrome.runtime.getPlatformInfo, 25 * 1000);
   try {
