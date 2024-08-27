@@ -53,6 +53,5 @@ fi
 mv $zipName ../build/release
 
 # 9. Remove Browser-Specific Manifest File
-rm manifest.json
 # Rename base manifest back to main manifest
 mv manifest.base.json manifest.json
