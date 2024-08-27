@@ -14,7 +14,7 @@ Fixes:
  - None yet
 
 For developers:
- - Nothing yet
+ - Adds script to automate release package creation ([388](https://github.com/freelawproject/recap-chrome/pull/388))
 
 ## 2.7.2 (2024-07-21)
 
