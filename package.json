@@ -8,7 +8,9 @@
   },
   "scripts": {
     "test": "./node_modules/.bin/karma start --single-run",
-    "postinstall": "vendor-copy"
+    "postinstall": "vendor-copy",
+    "release-chrome": "./scripts/build.sh chrome",
+    "release-firefox": "./scripts/build.sh firefox"
   },
   "repository": {
     "type": "git",
