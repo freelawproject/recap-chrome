@@ -14,13 +14,7 @@ browserType=$1
 # 2. Construct release zip filename
 zipName=$browserType-release.zip
 
-# 3. Ensure release directory exists (create if needed)
-mkdir -p build/release/
-
-# 4. Clean up any existing release zip
-rm build/release/$browserType-release.zip
-
-# 5. Rename base manifest file
+# 3. Rename base manifest file
 cd src/ && mv manifest.json manifest.base.json
 if [[ "$browserType" == "firefox" ]]; then
     faviconUrl='assets/images/favicon.icon'
@@ -32,7 +26,7 @@ else
     jq 'del(.background.scripts, .applications)' manifest.base.json >manifest.json
 fi
 
-# 6. Add search provider configuration to manifest
+# 4. Add search provider configuration to manifest
 jq --arg favicon "$faviconUrl" '.chrome_settings_overrides.search_provider += {
   "name": "RECAP Archive",
   "search_url": "https://www.courtlistener.com/?type=r&q={searchTerms}&order_by=score+desc",
@@ -42,9 +36,15 @@ jq --arg favicon "$faviconUrl" '.chrome_settings_overrides.search_provider += {
   "is_default": false
 }' manifest.json >manifest.tmp && mv manifest.tmp manifest.json
 
-# 7. Create release package
+# 5. Create release package
 # - Include all files except the base manifest
 zip -rq $zipName * -x "*.base.json"
+
+# 6. Ensure release directory exists (create if needed)
+mkdir -p ../build/release/
+
+# 7. Clean up any existing release zip
+rm -f ../build/release/$browserType-release.zip
 
 # 8. Move package to release directory
 mv $zipName ../build/release
