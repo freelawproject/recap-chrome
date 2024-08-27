@@ -44,7 +44,10 @@ zip -rq $zipName * -x "*.base.json"
 mkdir -p ../build/release/
 
 # 7. Clean up any existing release zip
-rm -f ../build/release/$browserType-release.zip
+file="../build/release/$browserType-release.zip"
+if [ -f "$file" ] ; then
+    rm "$file"
+fi
 
 # 8. Move package to release directory
 mv $zipName ../build/release
