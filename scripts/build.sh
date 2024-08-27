@@ -1,4 +1,12 @@
+#!/bin/bash
 # Create a browser extension release package
+set -e
+
+# Checks if jq is installed
+if ! command -v jq >/dev/null 2>&1; then
+  echo "jq is not installed. Please install jq before continuing."
+  exit 1
+fi
 
 # 1. Capture browser type from argument
 browserType=$1
@@ -10,7 +18,7 @@ zipName=$browserType-release.zip
 mkdir -p build/release/
 
 # 4. Clean up any existing release zip
-rm -f build/release/$browserType-release.zip
+rm build/release/$browserType-release.zip
 
 # 5. Rename base manifest file
 cd src/ && mv manifest.json manifest.base.json
