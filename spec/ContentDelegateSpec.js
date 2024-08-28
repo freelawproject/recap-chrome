@@ -1045,6 +1045,7 @@ describe('The ContentDelegate class', function () {
 
       afterEach(function () {
         table.remove();
+        form.remove();
         const scripts = [...document.querySelectorAll('script')];
         const lastScript = scripts.find((script) =>
           script.innerText.match(/^document\.createElement/)
