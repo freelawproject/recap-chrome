@@ -47,10 +47,8 @@ const searchParamsURL = ({ base, params }) => {
 async function waitUntil(promise) {
   const keepAlive = setInterval(chrome.runtime.getPlatformInfo, 25 * 1000);
   try {
-    console.log(true);
     await promise;
   } finally {
-    console.log('here clearing the interval');
     clearInterval(keepAlive);
   }
 }
