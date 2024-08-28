@@ -19,11 +19,11 @@ cd src/ && mv manifest.json manifest.base.json
 if [[ "$browserType" == "firefox" ]]; then
     faviconUrl='assets/images/favicon.icon'
     # Remove unnecessary properties for Firefox manifest
-    jq 'del(.background.service_worker, .background.type)' manifest.base.json >manifest.json
+    jq 'del(.background.service_worker)' manifest.base.json >manifest.json
 else
     faviconUrl='https://www.courtlistener.com/static/ico/favicon.ico'
     # Remove unnecessary property for Chrome/Chromium manifest
-    jq 'del(.background.scripts, .applications)' manifest.base.json >manifest.json
+    jq 'del(.background.scripts, .browser_specific_settings)' manifest.base.json >manifest.json
 fi
 
 # 4. Add search provider configuration to manifest
