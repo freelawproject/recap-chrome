@@ -678,7 +678,12 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
   // tell the user to wait
   $('body').css('cursor', 'wait');
 
-  const browserSpecificFetch = window.fetch;
+  const browserSpecificFetch =
+    navigator.userAgent.indexOf('Safari') +
+      navigator.userAgent.indexOf('Chrome') <
+    0
+      ? content.fetch
+      : window.fetch;
   const options = await getItemsFromStorage('options');
   const pacerCaseId = event.data.id.match(/caseid=(\d*)/)[1];
   const filename = generateFileName(options, pacerCaseId);
@@ -728,7 +733,7 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
       court: PACER.convertToCourtListenerCourt(this.court),
       pacer_case_id: pacerCaseId,
       upload_type: 'ZIP',
-      document: true
+      document: true,
     },
   });
   if (upload.error) return;

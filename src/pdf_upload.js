@@ -21,9 +21,14 @@ const copyPDFDocumentPage = () => {
   return previousPageHtml;
 };
 
-const downloadDataFromIframe = async (match, tabId) => {
+const downloadDataFromIframe = async(match, tabId) => {
   // Download the file from the <iframe> URL.
-  const browserSpecificFetch = window.fetch;
+  const browserSpecificFetch =
+    navigator.userAgent.indexOf('Safari') +
+      navigator.userAgent.indexOf('Chrome') <
+    0
+      ? fetch
+      : window.fetch;
   const blob = await browserSpecificFetch(match[2]).then((res) => res.blob());
   const dataUrl = await blobToDataURL(blob);
   // store the blob in chrome storage for the background worker
