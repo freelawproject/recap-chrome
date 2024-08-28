@@ -14,7 +14,16 @@ Fixes:
  - None yet
 
 For developers:
+ - Nothing yet
+
+## 2.8.0 (2024-08-27)
+
+Features:
+ - Upgrade to manifest v3([333](https://github.com/freelawproject/recap/issues/333), [387](https://github.com/freelawproject/recap-chrome/pull/387))
+
+For developers:
  - Adds script to automate release package creation ([388](https://github.com/freelawproject/recap-chrome/pull/388))
+
 
 ## 2.7.2 (2024-07-21)
 
