@@ -77,7 +77,6 @@ When a new version is needed, the release process is:
 
 1. Do the [manual QA tests][qa]
 1. Update `package.json` and `manifest.json` with a new release version.
-1. Run `web-ext lint` to ensure no regressions. 
 1. Update CHANGES.md
 1. Commit the code.
 1. Tag the code with something like:
@@ -86,13 +85,16 @@ When a new version is needed, the release process is:
         git push --tags -f
 
 1. Make sure you don't have any working/testing code in your tree that could get zipped up in the next step.
-1. Zip up the archive with the rather archaic:
+1. Run the following commands in your terminal from the project root directory to create release packages for Chrome and Firefox in the `build` folder:
 
-        cd src && zip -FSr recap.zip *
+        npm run release-chrome
+        npm run release-firefox 
 
-1. Make a new release on [Github announcing the release][ghtags] that includes the .zip file.
-1. Upload that to the [Chrome Market][market].
-1. Upload that to addons.mozilla.org
+   The `build.sh` script relies on the [jq][jq] command-line JSON processor. Make sure you have it installed before proceeding.
+
+1. Make a new release on [Github announcing the release][ghtags] that includes the .zip files in the release assets.
+1. Upload the `chrome-release.zip` file to the [Chrome Web Store.][market].
+1. Upload the `firefox-release.zip` file to addons.mozilla.org.
 
 
 Copyright
@@ -131,3 +133,4 @@ RECAP for Chrome.  If not, see: http://www.gnu.org/licenses/
 [recap-issues]: https://github.com/freelawproject/recap/issues
 [commits]: https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines
 [qa]: https://github.com/freelawproject/recap/wiki/QA-Testing
+[jq]: https://jqlang.github.io/jq/

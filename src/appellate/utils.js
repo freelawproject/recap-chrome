@@ -211,7 +211,7 @@ let APPELLATE = {
     return caseId;
   },
 
-  onClickEventHandlerForDocLinks: function (e) {
+  onClickEventHandlerForDocLinks: async function (e) {
     let target = e.currentTarget || e.srcElement;
     let params = {
       dls_id: target.dataset.pacerDlsId,
@@ -220,15 +220,15 @@ let APPELLATE = {
       dktType: 'dktPublic',
     };
     let query_string = new URLSearchParams(params).toString();
-    httpRequest(
-      'TransportRoom',
-      query_string,
-      'application/x-www-form-urlencoded',
-      function (type, ab, xhr) {
-        let requestHandler = handleFreeDocResponse.bind(this);
-        requestHandler(type, ab, xhr);
-      }.bind(target)
-    );
+    const resp = await window.fetch('TransportRoom', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: query_string
+    });
+    let requestHandler = handleFreeDocResponse.bind(target);
+    requestHandler(resp.headers.get('Content-Type'), await resp.blob(), null);
   },
 
   // Create a list of doc_ids from the list of all links available on the page
@@ -411,7 +411,7 @@ let APPELLATE = {
     });
     recap_link.append(
       $('<img/>').attr({
-        src: chrome.extension.getURL('assets/images/icon-16.png'),
+        src: chrome.runtime.getURL('assets/images/icon-16.png'),
       })
     );
     let recap_div = $('<div>', {
@@ -422,40 +422,26 @@ let APPELLATE = {
     return recap_div;
   },
 
+  fetchAcmsDocumentUrl: function (data) {
+    return new Promise((resolve, reject) =>
+      chrome.runtime.sendMessage(
+        { message: 'fetchAcmsDocumentUrl', data: data },
+        (res) => {
+          if (res == null) reject('Response cannot be null');
+          resolve(res);
+        }
+      )
+    );
+  },
+
   // Adds the vue data attributes to the session storage
   storeVueDataInSession: () => {
-    // The following code draws inspiration from the Vue devtool extension
-    // to identify and inspect Vue components within a web application.
-    // Unlike the devtool extension, which explores the entire DOM, this script
-    // focuses on extracting the data of the main Vue component. By tailoring
-    // the script to the component's HTML structure, we achieve a quick data
-    // retrieval process compared to a full DOM exploration.
-    // The extracted data is then stored in session storage for later use.
-    var code =
-      '(' +
-      function () {
-        let contentWrapper = document.getElementsByClassName('text-center')[0];
-        let vueMainDiv = contentWrapper.parentElement;
-        let vueDataProperties = vueMainDiv.__vue__._data;
-        sessionStorage.setItem(
-          'recapVueData',
-          JSON.stringify(vueDataProperties)
-        );
-        sessionStorage.setItem(
-          'recapACMSConfiguration',
-          JSON.stringify(window._model)
-        );
-      } +
-      ')();';
-
-    let script = document.createElement('script');
-    script.textContent = code;
-    document.head.appendChild(script);
-
-    // We just need this script once and the inline script that's inserted in
-    // the document is immediately executed. Therefore, it's safe to remove
-    // this tag.
-    script.remove();
+    return new Promise((resolve, reject) =>
+      chrome.runtime.sendMessage({ message: 'getVueData' }, (res) => {
+        if (res == null) reject('Response cannot be null');
+        resolve(res);
+      })
+    );
   },
 
   // Prepares the body to request a PDF document link

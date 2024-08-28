@@ -1,13 +1,11 @@
-//  Abstraction of scripts related to Appellate PACER to make them modular and testable.
+//  Abstraction of scripts related to Appellate PACER to make them modular and
+// testable.
 let AppellateDelegate = function (tabId, court, url, path, links) {
   this.tabId = tabId;
   this.court = court;
   this.url = url;
   this.path = path;
   this.links = links || [];
-  this.recap = importInstance(Recap);
-  this.acms = importInstance(Acms);
-  this.notifier = importInstance(Notifier);
   this.queryParameters = APPELLATE.getQueryParameters(this.url);
   this.docId = APPELLATE.getDocIdFromURL(this.queryParameters);
   this.docketNumber = APPELLATE.getDocketNumber(this.queryParameters);
@@ -75,37 +73,44 @@ AppellateDelegate.prototype.handleAcmsAttachmentPage = async function () {
     this.pacer_case_id = caseSummary.caseDetails.caseId;
 
     const options = await getItemsFromStorage('options');
-    if (options['recap_enabled']) {
-      let vueData = JSON.parse(sessionStorage.recapVueData);
-      let requestBody = {
-        caseDetails: caseSummary.caseDetails,
-        docketEntry: vueData.docketEntry,
-        docketEntryDocuments: vueData.docketEntryDocuments,
-      };
-      this.recap.uploadDocket(
-        this.court,
-        this.pacer_case_id,
-        JSON.stringify(requestBody),
-        'ACMS_ATTACHMENT_PAGE',
-        (ok) => {
-          if (ok) {
-            history.replaceState({ uploaded: true }, '');
-            this.notifier.showUpload(
-              'Attachment page uploaded to the public RECAP Archive.',
-              () => {}
-            );
-          }else {
-            this.notifier.showUpload(
-              'Error: The Attachment page was not uploaded to the public' +
-                'RECAP Archive',
-              () => {}
-            );
-          }
-        }
+    if (!options['recap_enabled']) {
+      return console.info(
+        'RECAP: Not uploading docket json. RECAP is disabled.'
       );
-    } else {
-      console.info('RECAP: Not uploading docket json. RECAP is disabled.');
     }
+
+    let vueData = JSON.parse(sessionStorage.recapVueData);
+    let requestBody = {
+      caseDetails: caseSummary.caseDetails,
+      docketEntry: vueData.docketEntry,
+      docketEntryDocuments: vueData.docketEntryDocuments,
+    };
+
+    const upload = await dispatchBackgroundFetch({
+      action: 'upload',
+      data: {
+        court: PACER.convertToCourtListenerCourt(this.court),
+        pacer_case_id: this.pacer_case_id,
+        upload_type: 'ACMS_ATTACHMENT_PAGE',
+        html: JSON.stringify(requestBody),
+      },
+    });
+    if (upload.error) {
+      await dispatchBackgroundNotifier({
+        action: 'showUpload',
+        title: 'Page Upload Failed',
+        message: 'Error: The Attachment page was not uploaded to the public' +
+          'RECAP Archive',
+      });
+    }else{
+      history.replaceState({ uploaded: true }, '');
+      await dispatchBackgroundNotifier({
+        action: 'showUpload',
+        title: 'Page Successfully Uploaded',
+        message: 'Attachment page uploaded to the public RECAP Archive.',
+      });
+    }
+
   };
 
   const attachLinkToDocs = async () => {
@@ -134,9 +139,7 @@ AppellateDelegate.prototype.handleAcmsAttachmentPage = async function () {
     // class as a selector because all rows on the page
     // consistently use this class.
     this.links = document.body.querySelectorAll('.entry-link');
-    if (!links.length) {
-      return;
-    }
+    if (!links.length) return;
 
     // Go through the array of links and embed the document_guid
     for (link of this.links) {
@@ -155,35 +158,40 @@ AppellateDelegate.prototype.handleAcmsAttachmentPage = async function () {
     }
 
     let docIds = [attachmentsData.docketEntry.docketEntryId];
-
+    let clCourt = PACER.convertToCourtListenerCourt(this.court);
     // Ask the server whether any of these documents are available from RECAP.
-    this.recap.getAvailabilityForDocuments(docIds, this.court, (response) => {
-      for (result of response.results) {
-        let doc_guid = result.acms_document_guid;
-        // Query the docket entry link using the data attribute
-        // attached previously
-        let anchor = document.querySelector(
-          `[data-document-guid="${doc_guid}"]`
-        );
-        // Create the RECAP icon
-        let href = `https://storage.courtlistener.com/${result.filepath_local}`;
-        let recap_link = $('<a/>', {
-          title: 'Available for free from the RECAP Archive.',
-          href: href,
-        });
-        recap_link.append(
-          $('<img/>').attr({
-            src: chrome.extension.getURL('assets/images/icon-16.png'),
-          })
-        );
-        let recap_div = $('<div>', {
-          class: 'recap-inline-appellate',
-        });
-        recap_div.append(recap_link);
-        // Insert the RECAP icon next to the docket entry link
-        recap_div.insertAfter(anchor);
-      }
+    const recapLinks = await dispatchBackgroundFetch({
+      action: 'getAvailabilityForDocuments',
+      data: {
+        docket_entry__docket__court: clCourt,
+        pacer_doc_id__in: docIds.join(','),
+      },
     });
+    for (result of recapLinks.results) {
+      let doc_guid = result.acms_document_guid;
+      // Query the docket entry link using the data attribute
+      // attached previously
+      let anchor = document.querySelector(
+        `[data-document-guid="${doc_guid}"]`
+      );
+      // Create the RECAP icon
+      let href = `https://storage.courtlistener.com/${result.filepath_local}`;
+      let recap_link = $('<a/>', {
+        title: 'Available for free from the RECAP Archive.',
+        href: href,
+      });
+      recap_link.append(
+        $('<img/>').attr({
+          src: chrome.runtime.getURL('assets/images/icon-16.png'),
+        })
+      );
+      let recap_div = $('<div>', {
+        class: 'recap-inline-appellate',
+      });
+      recap_div.append(recap_link);
+      // Insert the RECAP icon next to the docket entry link
+      recap_div.insertAfter(anchor);
+    }
   };
 
   // This following logic monitors for specific DOM changes using
@@ -205,7 +213,7 @@ AppellateDelegate.prototype.handleAcmsAttachmentPage = async function () {
         let isTargetingH4Div = n.parentElement.localName === 'h4';
         if (isTitle && isTargetingH4Div) {
           // Insert script to retrieve and store Vue data in the storage
-          APPELLATE.storeVueDataInSession();
+          await APPELLATE.storeVueDataInSession();
           processAttachmentPage();
           attachLinkToDocs();
         }
@@ -224,9 +232,7 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
     const caseId = caseSummary.caseDetails.caseId;
     this.pacer_case_id = caseId;
 
-    if (history.state && history.state.uploaded) {
-      return;
-    }
+    if (history.state && history.state.uploaded) return;
 
     const options = await getItemsFromStorage('options');
     if (!options['recap_enabled']) {
@@ -234,26 +240,25 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
       return;
     }
 
-    this.recap.uploadDocket(
-      this.court,
-      this.pacer_case_id,
-      sessionStorage.caseSummary,
-      'ACMS_DOCKET_JSON',
-      (ok) => {
-        if (ok) {
-          history.replaceState({ uploaded: true }, '');
-          this.notifier.showUpload(
-            'Docket uploaded to the public RECAP Archive.',
-            () => {}
-          );
-        } else {
-          console.log('cb fail');
-        }
-      }
-    );
+    const upload = await dispatchBackgroundFetch({
+      action: 'upload',
+      data: {
+        court: PACER.convertToCourtListenerCourt(this.court),
+        pacer_case_id: this.pacer_case_id,
+        upload_type: 'ACMS_DOCKET_JSON',
+        html: sessionStorage.caseSummary,
+      },
+    });
+    if (upload.error) return;
+    history.replaceState({ uploaded: true }, '');
+    await dispatchBackgroundNotifier({
+      action: 'showUpload',
+      title: 'Page Successfully Uploaded',
+      message: 'Docket uploaded to the public RECAP Archive.',
+    });
   };
 
-  const insertRecapButton = () => {
+  const insertRecapButton = async () => {
     // Injects a "RECAP actions" button near the first table containing data.
     // It first checks for an existing button with the ID "recap-action-button",
     // If none exists, it creates a new button using the `recapActionsButton`
@@ -270,26 +275,26 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
       let button = recapActionsButton(this.court, this.pacer_case_id, false);
       parentDiv.insertBefore(button, caseInformationTable);
     }
+    let docketData = await dispatchBackgroundFetch({
+      action: 'getAvailabilityForDocket',
+      data: {
+        court: PACER.convertToCourtListenerCourt(this.court),
+        pacer_case_id: this.pacer_case_id,
+      },
+    });
 
-    this.recap.getAvailabilityForDocket(
-      this.court,
-      this.pacer_case_id,
-      null,
-      (result) => {
-        if (result.count === 0) {
-          console.warn('RECAP: Zero results found for docket lookup.');
-        } else if (result.count > 1) {
-          console.error(
-            'RECAP: More than one result found for docket lookup. Found' +
-              `${result.count}`
-          );
-        } else {
-          addAlertButtonInRecapAction(this.court, this.pacer_case_id);
-          let cl_id = getClIdFromAbsoluteURL(result.results[0].absolute_url);
-          addSearchDocketInRecapAction(cl_id);
-        }
-      }
-    );
+    if (docketData.count === 0) {
+      console.warn('RECAP: Zero results found for docket lookup.');
+    } else if (docketData.count > 1) {
+      console.error(
+        'RECAP: More than one result found for docket lookup. Found' +
+          `${result.count}`
+      );
+    } else {
+      addAlertButtonInRecapAction(this.court, this.pacer_case_id);
+      let cl_id = getClIdFromAbsoluteURL(docketData.results[0].absolute_url);
+      addSearchDocketInRecapAction(cl_id);
+    }
   };
 
   const attachLinkToDocs = async () => {
@@ -336,9 +341,7 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
     // class as a selector because we observed that all non-restricted
     // entries consistently use this class.
     this.links = document.body.querySelectorAll('.entry-link');
-    if (!links.length) {
-      return;
-    }
+    if (!links.length) return;
 
     // Go through the array of links and collect the doc IDs of
     // the entries that are not restricted.
@@ -357,36 +360,41 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
       docIds.push(docketEntryData.docketEntryId);
     }
 
-    // Ask the server whether any of these documents are available from RECAP.
-    this.recap.getAvailabilityForDocuments(docIds, this.court, (response) => {
-      for (result of response.results) {
-        let doc_id = result.pacer_doc_id;
-        // Query the docket entry link using the data attribute
-        // attached previously
-        let anchor = document.querySelector(`[data-pacer-doc-id="${doc_id}"]`);
-        // Create the RECAP icon
-        let href = `https://storage.courtlistener.com/${result.filepath_local}`;
-        let recap_link = $('<a/>', {
-          title: 'Available for free from the RECAP Archive.',
-          href: href,
-        });
-        recap_link.append(
-          $('<img/>').attr({
-            src: chrome.extension.getURL('assets/images/icon-16.png'),
-          })
-        );
-        let recap_div = $('<div>', {
-          class: 'recap-inline-appellate',
-        });
-        recap_div.append(recap_link);
-        // Insert the RECAP icon next to the docket entry link
-        recap_div.insertAfter(anchor);
-      }
-      let spinner = document.getElementById('recap-button-spinner');
-      if (spinner) {
-        spinner.classList.add('recap-btn-spinner-hidden');
-      }
+    let clCourt = PACER.convertToCourtListenerCourt(this.court);
+    // submit fetch request through background worker
+    const recapLinks = await dispatchBackgroundFetch({
+      action: 'getAvailabilityForDocuments',
+      data: {
+        docket_entry__docket__court: clCourt,
+        pacer_doc_id__in: docIds.join(','),
+      },
     });
+
+    for (result of recapLinks.results) {
+      let doc_id = result.pacer_doc_id;
+      // Query the docket entry link using the data attribute
+      // attached previously
+      let anchor = document.querySelector(`[data-pacer-doc-id="${doc_id}"]`);
+      // Create the RECAP icon
+      let href = `https://storage.courtlistener.com/${result.filepath_local}`;
+      let recap_link = $('<a/>', {
+        title: 'Available for free from the RECAP Archive.',
+        href: href,
+      });
+      recap_link.append(
+        $('<img/>').attr({
+          src: chrome.runtime.getURL('assets/images/icon-16.png'),
+        })
+      );
+      let recap_div = $('<div>', {
+        class: 'recap-inline-appellate',
+      });
+      recap_div.append(recap_link);
+      // Insert the RECAP icon next to the docket entry link
+      recap_div.insertAfter(anchor);
+    }
+    let spinner = document.getElementById('recap-button-spinner');
+    if (spinner) spinner.classList.add('recap-btn-spinner-hidden');
   };
 
   // Since this page uses Vue.js for dynamic data rendering and shows a loader
@@ -501,21 +509,23 @@ AppellateDelegate.prototype.handleAcmsDownloadPage = async function () {
       downloadData.docketEntryDocuments[0].docketDocumentDetailsId;
 
     let previousPageHtml = document.documentElement.innerHTML;
-    // Use the  to request the PDF doc
-    this.acms.getDocumentURL(ApiUrl, Token, pdfFileRequestBody, (pdf_url) => {
-      httpRequest(
-        pdf_url,
-        null,
-        null,
-        function (type, ab, xhr) {
-          let requestHandler = handleDocFormResponse.bind(this);
-          requestHandler(type, ab, xhr, previousPageHtml, documentData);
-        }.bind(this)
-      );
+    let pdf_url = await APPELLATE.fetchAcmsDocumentUrl({
+      apiUrl: ApiUrl,
+      token: Token,
+      mergePdfFilesRequest: pdfFileRequestBody,
     });
+    const resp = await window.fetch(pdf_url, { method: 'GET' });
+    let requestHandler = handleDocFormResponse.bind(this);
+    requestHandler(
+      resp.headers.get('Content-Type'),
+      await resp.blob(),
+      null,
+      previousPageHtml,
+      documentData
+    );
   }
 
-  const wrapperMutationObserver = (mutationList, observer) => {
+  const wrapperMutationObserver = async (mutationList, observer) => {
     for (const r of mutationList) {
       for (const n of r.addedNodes) {
         let hasReceipt = n.textContent
@@ -541,15 +551,14 @@ AppellateDelegate.prototype.handleAcmsDownloadPage = async function () {
           hasReceipt &&
           hasAcceptChargesButton
         ) {
-
-          if (!hasOneDocument){
+          if (!hasOneDocument) {
             pdfWarning = combinedPdfWarning();
             n.append(pdfWarning);
             return;
           }
 
           // Insert script to retrieve and store Vue data in the storage
-          APPELLATE.storeVueDataInSession();
+          await APPELLATE.storeVueDataInSession();
 
           // Get doc_id from the sessionStorage
           let downloadData = JSON.parse(sessionStorage.getItem('recapVueData'));
@@ -584,24 +593,29 @@ AppellateDelegate.prototype.handleAcmsDownloadPage = async function () {
 
           // Query the server to check the availability of the document in the
           // RECAP archive.
-          this.recap.getAvailabilityForDocuments(
-            [this.docId],
-            this.court,
-            (api_results) => {
-              console.info(
-                'RECAP: Got results from API. Running callback on API ' +
-                  'results to insert banner'
-              );
-              let result = api_results.results.filter(
-                (obj) => obj.pacer_doc_id == this.docId,
-                this
-              )[0];
-              if (!result) {
-                return;
-              }
-              insertAvailableDocBanner(result.filepath_local, 'div.box');
-            }
+          let clCourt = PACER.convertToCourtListenerCourt(this.court);
+          const recapLinks = await dispatchBackgroundFetch({
+            action: 'getAvailabilityForDocuments',
+            data: {
+              docket_entry__docket__court: clCourt,
+              pacer_doc_id__in: this.docId,
+            },
+          });
+          // return if there are no results
+          if (!recapLinks)
+            return console.error(
+              'RECAP: Failed getting availability for dockets.'
+            );
+
+          console.info(
+            'RECAP: Got results from API. Processing results to insert banner'
           );
+          let result = recapLinks.results.filter(
+            (obj) => obj.pacer_doc_id == this.docId,
+            this
+          )[0];
+          if (!result) return;
+          insertAvailableDocBanner(result.filepath_local, 'div.box');
         }
       };
     };
@@ -615,9 +629,7 @@ AppellateDelegate.prototype.handleAcmsDownloadPage = async function () {
 };
 
 AppellateDelegate.prototype.handleCaseSearchPage = () => {
-  if (!PACER.hasFilingCookie(document.cookie)) {
-    return;
-  }
+  if (!PACER.hasFilingCookie(document.cookie)) return;
 
   form = document.querySelector('form');
   if (!document.querySelector('.recap-email-banner-full')) {
@@ -625,37 +637,50 @@ AppellateDelegate.prototype.handleCaseSearchPage = () => {
   }
 };
 
-AppellateDelegate.prototype.handleDocketReportFilter = function () {
-  if (!this.docketNumber) {
-    return;
-  }
+AppellateDelegate.prototype.handleDocketReportFilter = async function () {
+  if (!this.docketNumber) return;
   let docketNumberCore = PACER.makeDocketNumberCore(this.docketNumber);
+  this.pacer_case_id = await APPELLATE.getCaseId(
+    this.tabId,
+    this.queryParameters,
+    this.docId,
+    this.docketNumber
+  );
 
-  this.recap.getAvailabilityForDocket(this.court, null, docketNumberCore, (result) => {
-    if (result.count === 1 && result.results) {
-      let form = document.getElementsByTagName('form')[0];
-      let banner = recapBanner(result.results[0]);
-      let recapAlert = document.createElement('div');
-      recapAlert.classList.add('recap-banner');
-      recapAlert.appendChild(recapAlertButton(this.court, this.pacer_case_id, true));
-      form.after(recapAlert);
-      form.after(banner);
-    } else {
-      PACER.handleDocketAvailabilityMessages(result);
-    }
+  let docketData = await dispatchBackgroundFetch({
+    action: 'getAvailabilityForDocket',
+    data: {
+      court: PACER.convertToCourtListenerCourt(this.court),
+      docket_number_core: docketNumberCore,
+    },
   });
+  if (docketData.count === 1 && docketData.results) {
+    let form = document.getElementsByTagName('form')[0];
+    let banner = recapBanner(docketData.results[0]);
+    form.after(banner);
+
+    if (!this.pacer_case_id) return;
+    let recapAlert = document.createElement('div');
+    recapAlert.classList.add('recap-banner');
+    recapAlert.appendChild(
+      recapAlertButton(this.court, this.pacer_case_id, true)
+    );
+    form.after(recapAlert);
+  } else {
+    PACER.handleDocketAvailabilityMessages(docketData);
+  }
 };
 
 AppellateDelegate.prototype.handleCaseSelectionPage = async function () {
   if (document.querySelectorAll('input:not([type=hidden])').length) {
-    // When the users go back to the Case Selection Page from the Docket Report using the back button
-    // Appellate PACER loads the Case Search Page instead but in the HTML body has the servlet hidden input
-    // and shows 'CaseSelectionTable.jsp' as its value.
+    // When the users go back to the Case Selection Page from the Docket Report
+    // using the back button Appellate PACER loads the Case Search Page instead
+    // but in the HTML body has the servlet hidden input and shows
+    // 'CaseSelectionTable.jsp' as its value.
     //
-    // This check avoids sending pages like the one previously described to the API.
-    if (!PACER.hasFilingCookie(document.cookie)) {
-      return;
-    }
+    // This check avoids sending pages like the one previously described to the
+    // API.
+    if (!PACER.hasFilingCookie(document.cookie)) return;
 
     form = document.querySelector('form');
     if (!document.querySelector('.recap-email-banner-full')) {
@@ -681,40 +706,51 @@ AppellateDelegate.prototype.handleCaseSelectionPage = async function () {
       },
     });
 
-    this.recap.getAvailabilityForDocket(this.court, this.pacer_case_id, null, (result) => {
-      if (result.count === 1 && result.results) {
-        PACER.removeBanners();
-
-        const footer = document.querySelector('div.noprint:last-of-type');
-        const div = document.createElement('div');
-        div.classList.add('recap-banner');
-        div.appendChild(recapAlertButton(this.court, this.pacer_case_id, true));
-        footer.before(div);
-
-        const rIcon = APPELLATE.makeRButtonForCases(result.results[0].absolute_url);
-        const appellateLink = anchors[0];
-        rIcon.insertAfter(appellateLink);
-      } else {
-        PACER.handleDocketAvailabilityMessages(result);
-      }
+    let appellateData = await dispatchBackgroundFetch({
+      action: 'getAvailabilityForDocket',
+      data: {
+        court: PACER.convertToCourtListenerCourt(this.court),
+        pacer_case_id: this.pacer_case_id,
+      },
     });
+    if (appellateData.count === 1 && appellateData.results) {
+      PACER.removeBanners();
+
+      const footer = document.querySelector('div.noprint:last-of-type');
+      const div = document.createElement('div');
+      div.classList.add('recap-banner');
+      div.appendChild(recapAlertButton(this.court, this.pacer_case_id, true));
+      footer.before(div);
+
+      const rIcon = APPELLATE.makeRButtonForCases(
+        appellateData.results[0].absolute_url
+      );
+      const appellateLink = anchors[0];
+      rIcon.insertAfter(appellateLink);
+    } else {
+      PACER.handleDocketAvailabilityMessages(appellateData);
+    }
 
     if (anchors.length == 3) {
       let districtLink = anchors[anchors.length - 1];
-      let districtLinkData = APPELLATE.getDatafromDistrictLinkUrl(districtLink.href);
-      this.recap.getAvailabilityForDocket(
-        districtLinkData.court,
-        null,
-        districtLinkData.docket_number_core,
-        (result) => {
-          if (result.count === 1 && result.results) {
-            const rIcon = APPELLATE.makeRButtonForCases(result.results[0].absolute_url);
-            rIcon.insertAfter(districtLink);
-          } else {
-            PACER.handleDocketAvailabilityMessages(result);
-          }
-        }
+      let districtLinkData = APPELLATE.getDatafromDistrictLinkUrl(
+        districtLink.href
       );
+      let districtData = await dispatchBackgroundFetch({
+        action: 'getAvailabilityForDocket',
+        data: {
+          court: PACER.convertToCourtListenerCourt(districtLinkData.court),
+          docket_number_core: districtLinkData.docket_number_core,
+        },
+      });
+      if (districtData.count === 1 && districtData.results) {
+        const rIcon = APPELLATE.makeRButtonForCases(
+          districtData.results[0].absolute_url
+        );
+        rIcon.insertAfter(districtLink);
+      } else {
+        PACER.handleDocketAvailabilityMessages(districtData);
+      }
     }
   } else {
     // Add the pacer_case_id to each docket link to use it in the docket report
@@ -724,29 +760,38 @@ AppellateDelegate.prototype.handleCaseSelectionPage = async function () {
   const options = await getItemsFromStorage('options');
 
   if (!options['recap_enabled']) {
-    console.info('RECAP: Not uploading case selection page. RECAP is disabled.');
+    console.info(
+      'RECAP: Not uploading case selection page. RECAP is disabled.'
+    );
     return;
   }
 
-  let callback = (ok) => {
-    if (ok) {
-      history.replaceState({ uploaded: true }, '');
-      this.notifier.showUpload('Case selection page uploaded to the public RECAP Archive.', function () {});
-    }
-  };
+  const upload = await dispatchBackgroundFetch({
+    action: 'upload',
+    data: {
+      court: PACER.convertToCourtListenerCourt(this.court),
+      pacer_case_id: this.pacer_case_id,
+      upload_type: 'APPELLATE_CASE_QUERY_RESULT_PAGE',
+      html: document.documentElement.innerHTML,
+    },
+  });
+  if (upload.error) return;
 
-  this.recap.uploadIQueryPage(
-    this.court,
-    this.pacer_case_id,
-    document.documentElement.innerHTML,
-    'APPELLATE_CASE_QUERY_RESULT_PAGE',
-    callback
-  );
+  history.replaceState({ uploaded: true }, '');
+  await dispatchBackgroundNotifier({
+    action: 'showUpload',
+    title: 'Page Successfully Uploaded',
+    message: 'Case selection page uploaded to the public RECAP Archive.',
+  });
 };
 
 // Upload the case query page to RECAP
 AppellateDelegate.prototype.handleCaseQueryPage = async function () {
-  this.pacer_case_id = await APPELLATE.getCaseId(this.tabId, this.queryParameters, this.docId);
+  this.pacer_case_id = await APPELLATE.getCaseId(
+    this.tabId,
+    this.queryParameters,
+    this.docId
+  );
 
   if (!this.pacer_case_id) {
     return;
@@ -760,23 +805,25 @@ AppellateDelegate.prototype.handleCaseQueryPage = async function () {
   });
 
   const options = await getItemsFromStorage('options');
+  if (!options['recap_enabled']) return;
 
-  if (options['recap_enabled']) {
-    let callback = (ok) => {
-      if (ok) {
-        history.replaceState({ uploaded: true }, '');
-        this.notifier.showUpload('Case query page uploaded to the public RECAP Archive.', function () {});
-      }
-    };
+  const upload = await dispatchBackgroundFetch({
+    action: 'upload',
+    data: {
+      court: PACER.convertToCourtListenerCourt(this.court),
+      pacer_case_id: this.pacer_case_id,
+      upload_type: 'APPELLATE_CASE_QUERY_PAGE',
+      html: document.documentElement.innerHTML,
+    }
+  });
+  if (upload.error) return;
 
-    this.recap.uploadDocket(
-      this.court,
-      this.pacer_case_id,
-      document.documentElement.innerHTML,
-      'APPELLATE_CASE_QUERY_PAGE',
-      (ok) => callback(ok)
-    );
-  }
+  history.replaceState({ uploaded: true }, '');
+  await dispatchBackgroundNotifier({
+    action: 'showUpload',
+    title: 'Page Successfully Uploaded',
+    message: 'Case query page uploaded to the public RECAP Archive.',
+  });
 };
 
 // check every link in the document to see if RECAP has it
@@ -803,7 +850,12 @@ AppellateDelegate.prototype.attachRecapLinksToEligibleDocs = async function () {
 
   this.pacer_case_id = this.pacer_case_id
     ? this.pacer_case_id
-    : await APPELLATE.getCaseId(this.tabId, this.queryParameters, this.docId, this.docketNumber);
+    : await APPELLATE.getCaseId(
+        this.tabId,
+        this.queryParameters,
+        this.docId,
+        this.docketNumber
+      );
 
   if (this.pacer_case_id && this.docId) {
     docsToCases[this.docId] = this.pacer_case_id;
@@ -818,61 +870,67 @@ AppellateDelegate.prototype.attachRecapLinksToEligibleDocs = async function () {
   });
 
   let linkCount = links.length;
-  console.info(`RECAP: Attaching links to all eligible documents (${linkCount} found)`);
-  if (linkCount === 0) {
-    return;
-  }
-
-  // Ask the server whether any of these documents are available from RECAP.
-  this.recap.getAvailabilityForDocuments(
-    links,
-    this.court,
-    $.proxy(function (api_results) {
-      console.info(
-        `RECAP: Got results from API. Running callback on API results to ` + `attach links and icons where appropriate.`
-      );
-      for (let i = 0; i < this.links.length; i++) {
-        let pacer_doc_id = this.links[i].dataset.pacerDocId;
-        if (!pacer_doc_id) {
-          continue;
-        }
-        let result = api_results.results.filter(function (obj) {
-          return obj.pacer_doc_id === pacer_doc_id;
-        })[0];
-
-        if (!result) {
-          continue;
-        }
-        let href = `https://storage.courtlistener.com/${result.filepath_local}`;
-        let recap_link = $('<a/>', {
-          title: 'Available for free from the RECAP Archive.',
-          href: href,
-        });
-        recap_link.append(
-          $('<img/>').attr({
-            src: chrome.extension.getURL('assets/images/icon-16.png'),
-          })
-        );
-        let recap_div = $('<div>', {
-          class: 'recap-inline-appellate',
-        });
-        recap_div.append(recap_link);
-        recap_div.insertAfter(this.links[i]);
-      }
-      let spinner = document.getElementById('recap-button-spinner');
-      if (spinner) {
-        spinner.classList.add('recap-btn-spinner-hidden');
-      }
-    }, this)
+  console.info(
+    `RECAP: Attaching links to all eligible documents (${linkCount} found)`
   );
+  if (linkCount === 0) return;
+
+  let clCourt = PACER.convertToCourtListenerCourt(this.court);
+  // submit fetch request through background worker
+  const recapLinks = await dispatchBackgroundFetch({
+    action: 'getAvailabilityForDocuments',
+    data: {
+      docket_entry__docket__court: clCourt,
+      pacer_doc_id__in: links.join(','),
+    },
+  });
+
+  // return if there are no results
+  if (!recapLinks)
+    return console.error('RECAP: Failed getting availability for dockets.');
+
+  console.info(
+    'RECAP: Got results from API. Processing results to attach links and ' +
+      'icons where appropriate.'
+  );
+  for (let i = 0; i < this.links.length; i++) {
+    let pacer_doc_id = this.links[i].dataset.pacerDocId;
+    if (!pacer_doc_id) continue;
+
+    let result = recapLinks.results.filter(function (obj) {
+      return obj.pacer_doc_id === pacer_doc_id;
+    })[0];
+    if (!result) continue;
+
+    let href = `https://storage.courtlistener.com/${result.filepath_local}`;
+    let recap_link = $('<a/>', {
+      title: 'Available for free from the RECAP Archive.',
+      href: href,
+    });
+    recap_link.append(
+      $('<img/>').attr({
+        src: chrome.runtime.getURL('assets/images/icon-16.png'),
+      })
+    );
+    let recap_div = $('<div>', {
+      class: 'recap-inline-appellate',
+    });
+    recap_div.append(recap_link);
+    recap_div.insertAfter(this.links[i]);
+  }
+  let spinner = document.getElementById('recap-button-spinner');
+  if (spinner)spinner.classList.add('recap-btn-spinner-hidden');
 };
 
 AppellateDelegate.prototype.handleDocketDisplayPage = async function () {
-  this.pacer_case_id = await APPELLATE.getCaseId(this.tabId, this.queryParameters, this.docId, this.docketNumber);
+  this.pacer_case_id = await APPELLATE.getCaseId(
+    this.tabId,
+    this.queryParameters,
+    this.docId,
+    this.docketNumber
+  );
 
-  if (!this.pacer_case_id) {
-    return;
-  }
+  if (!this.pacer_case_id) return;
 
   // Query the first table with case data and insert the RECAP actions button
   let table = document.querySelectorAll('table')[3];
@@ -882,88 +940,104 @@ AppellateDelegate.prototype.handleDocketDisplayPage = async function () {
     table.after(button);
   }
 
-  this.recap.getAvailabilityForDocket(this.court, this.pacer_case_id, null, (result) => {
-    if (result.count === 0) {
-      console.warn('RECAP: Zero results found for docket lookup.');
-    } else if (result.count > 1) {
-      console.error(`RECAP: More than one result found for docket lookup. Found ${result.count}`);
-    } else {
-      addAlertButtonInRecapAction(this.court, this.pacer_case_id);
-      let cl_id = getClIdFromAbsoluteURL(result.results[0].absolute_url);
-      addSearchDocketInRecapAction(cl_id);
-    }
+  let docketData = await dispatchBackgroundFetch({
+    action: 'getAvailabilityForDocket',
+    data: {
+      court: PACER.convertToCourtListenerCourt(this.court),
+      pacer_case_id: this.pacer_case_id,
+    },
   });
 
-  // if you've already uploaded the page, return
-  if (history.state && history.state.uploaded) {
-    return;
+  if (docketData.count === 0) {
+    console.warn('RECAP: Zero results found for docket lookup.');
+  } else if (docketData.count > 1) {
+    console.error(
+      'RECAP: More than one result found for docket lookup. ' +
+        `Found ${result.count}`
+    );
+  } else {
+    addAlertButtonInRecapAction(this.court, this.pacer_case_id);
+    let cl_id = getClIdFromAbsoluteURL(docketData.results[0].absolute_url);
+    addSearchDocketInRecapAction(cl_id);
   }
+
+  // if you've already uploaded the page, return
+  if (history.state && history.state.uploaded) return;
 
   const options = await getItemsFromStorage('options');
 
-  if (options['recap_enabled']) {
-    let callback = (ok) => {
-      if (ok) {
-        addAlertButtonInRecapAction(this.court, this.pacer_case_id);
-        history.replaceState({ uploaded: true }, '');
-        this.notifier.showUpload('Docket uploaded to the public RECAP Archive.', function () {});
-      }
-    };
-
-    this.recap.uploadDocket(
-      this.court,
-      this.pacer_case_id,
-      document.documentElement.innerHTML,
-      'APPELLATE_DOCKET',
-      (ok) => callback(ok)
-    );
-  } else {
-    console.info(`RECAP: Not uploading docket. RECAP is disabled.`);
+  if (!options['recap_enabled']) {
+    console.info('RECAP: Not uploading docket. RECAP is disabled.');
+    return;
   }
+
+  const upload = await dispatchBackgroundFetch({
+    action: 'upload',
+    data: {
+      court: PACER.convertToCourtListenerCourt(this.court),
+      pacer_case_id: this.pacer_case_id,
+      upload_type: 'APPELLATE_DOCKET',
+      html: document.documentElement.innerHTML,
+    },
+  });
+  if (upload.error) return;
+
+  addAlertButtonInRecapAction(this.court, this.pacer_case_id);
+  await dispatchBackgroundNotifier({
+    action: 'showUpload',
+    title: 'Page Successfully Uploaded',
+    message: 'Docket page uploaded to the public RECAP Archive',
+  });
+  history.replaceState({ uploaded: true }, '');
 };
 
 AppellateDelegate.prototype.handleAttachmentPage = async function () {
-  this.pacer_case_id = await APPELLATE.getCaseId(this.tabId, this.queryParameters, this.docId);
+  this.pacer_case_id = await APPELLATE.getCaseId(
+    this.tabId,
+    this.queryParameters,
+    this.docId
+  );
 
-  if (!this.pacer_case_id) {
-    return;
-  }
+  if (!this.pacer_case_id) return;
 
-  if (history.state && history.state.uploaded) {
-    return;
-  }
+  if (history.state && history.state.uploaded) return;
 
   const options = await getItemsFromStorage('options');
   if (!options['recap_enabled']) {
-    console.info(`RECAP: Not uploading attachment page. RECAP is disabled.`);
+    console.info('RECAP: Not uploading attachment page. RECAP is disabled.');
     return;
   }
 
-  let callback = (ok) => {
-    if (ok) {
-      history.replaceState({ uploaded: true }, '');
-      this.notifier.showUpload('Attachment menu page uploaded to the public RECAP Archive.', function () {});
-    }
-  };
-
-  this.recap.uploadAttachmentMenu(
-    this.court,
-    this.pacer_case_id,
-    document.documentElement.innerHTML,
-    'APPELLATE_ATTACHMENT_PAGE',
-    (ok) => callback(ok)
-  );
+  const upload = await dispatchBackgroundFetch({
+    action: 'upload',
+    data: {
+      court: PACER.convertToCourtListenerCourt(this.court),
+      pacer_case_id: this.pacer_case_id,
+      upload_type: 'APPELLATE_ATTACHMENT_PAGE',
+      html: document.documentElement.innerHTML,
+    },
+  });
+  if (upload.error) return;
+  await dispatchBackgroundNotifier({
+    action: 'showUpload',
+    title: 'Page Successfully Uploaded',
+    message: 'Attachment menu page uploaded to the public RECAP Archive.',
+  });
+  history.replaceState({ uploaded: true }, '');
 };
 
 AppellateDelegate.prototype.handleCombinedPdfPageView = async function () {
-  let warning = combinedPdfWarning()
-  document.body.appendChild(warning)
+  let warning = combinedPdfWarning();
+  document.body.appendChild(warning);
 };
 
-// If this page offers a single document, intercept navigation to the document view page.
+// If this page offers a single document, intercept navigation to the document
+// view page.
 AppellateDelegate.prototype.handleSingleDocumentPageView = async function () {
   if (PACER.hasFilingCookie(document.cookie)) {
-    let button = createRecapButtonForFilers('Accept Charges and RECAP Document');
+    let button = createRecapButtonForFilers(
+      'Accept Charges and RECAP Document'
+    );
     button.addEventListener('click', (event) => {
       event.preventDefault();
       let form = event.target.parentNode;
@@ -974,10 +1048,14 @@ AppellateDelegate.prototype.handleSingleDocumentPageView = async function () {
     let form = document.querySelector('form');
     form.append(button);
   } else {
-    overwriteFormSubmitMethod();
+    await overwriteFormSubmitMethod();
   }
 
-  this.pacer_case_id = await APPELLATE.getCaseId(this.tabId, this.queryParameters, this.docId);
+  this.pacer_case_id = await APPELLATE.getCaseId(
+    this.tabId,
+    this.queryParameters,
+    this.docId
+  );
 
   let title = document.querySelectorAll('strong')[1].innerHTML;
   let dataFromTitle = APPELLATE.parseReceiptPageTitle(title);
@@ -992,23 +1070,35 @@ AppellateDelegate.prototype.handleSingleDocumentPageView = async function () {
 
   // When we receive the message from the above submit method, submit the form
   // via XHR so we can get the document before the browser does.
-  window.addEventListener('message', this.onDocumentViewSubmit.bind(this), false);
+  window.addEventListener(
+    'message',
+    this.onDocumentViewSubmit.bind(this),
+    false
+  );
 
-  let callback = $.proxy(function (api_results) {
-    console.info(`RECAP: Got results from API. Running callback on API results to ` + `insert banner`);
-    let result = api_results.results.filter((obj) => obj.pacer_doc_id == this.docId, this)[0];
+  let clCourt = PACER.convertToCourtListenerCourt(this.court);
+  // submit fetch request through background worker
+  const docData = await dispatchBackgroundFetch({
+    action: 'getAvailabilityForDocuments',
+    data: {
+      docket_entry__docket__court: clCourt,
+      pacer_doc_id__in: this.docId,
+    },
+  });
+  if (docData.Error) return;
 
-    if (!result) {
-      return;
-    }
+  console.info(
+    'RECAP: Got results from API. Processing results to insert banner'
+  );
+  let result = docData.results.filter(
+    (obj) => obj.pacer_doc_id == this.docId
+  )[0];
+  if (!result) return;
 
-    insertAvailableDocBanner(result.filepath_local, 'body');
-  }, this);
-
-  this.recap.getAvailabilityForDocuments([this.docId], this.court, callback);
+  insertAvailableDocBanner(result.filepath_local, 'body');
 };
 
-AppellateDelegate.prototype.onDocumentViewSubmit = function (event) {
+AppellateDelegate.prototype.onDocumentViewSubmit = async function (event) {
   // Security check to ensure message is from a PACER website.
   if (!PACER.getCourtFromUrl(event.origin)) {
     console.warn(
@@ -1024,7 +1114,10 @@ AppellateDelegate.prototype.onDocumentViewSubmit = function (event) {
   let title = document.querySelectorAll('strong')[1].innerHTML;
   let dataFromTitle = APPELLATE.parseReceiptPageTitle(title);
 
-  if (dataFromTitle.att_number == 0 && this.queryParameters.get('recapAttNum')) {
+  if (
+    dataFromTitle.att_number == 0 &&
+    this.queryParameters.get('recapAttNum')
+  ) {
     dataFromTitle.att_number = this.queryParameters.get('recapAttNum');
   }
 
@@ -1040,14 +1133,20 @@ AppellateDelegate.prototype.onDocumentViewSubmit = function (event) {
   }
   $('body').css('cursor', 'wait');
   let query_string = new URLSearchParams(new FormData(form)).toString();
-  httpRequest(
-    form.action,
-    query_string,
-    'application/x-www-form-urlencoded',
-    function (type, ab, xhr) {
-      let requestHandler = handleDocFormResponse.bind(this);
-      requestHandler(type, ab, xhr, previousPageHtml, dataFromTitle);
-    }.bind(this)
+  const resp = await window.fetch(form.action, {
+    method: form.method,
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: query_string
+  });
+  let helperMethod = handleDocFormResponse.bind(this);
+  helperMethod(
+    resp.headers.get('Content-Type'),
+    await resp.blob(),
+    null,
+    previousPageHtml,
+    dataFromTitle
   );
 };
 
@@ -1062,5 +1161,12 @@ AppellateDelegate.prototype.showPdfPage = async function (
   docket_number
 ) {
   let helperMethod = showAndUploadPdf.bind(this);
-  await helperMethod(html, previousPageHtml, document_number, attachment_number, docket_number, this.docId);
+  await helperMethod(
+    html,
+    previousPageHtml,
+    document_number,
+    attachment_number,
+    docket_number,
+    this.docId
+  );
 };

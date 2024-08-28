@@ -1,6 +1,6 @@
 {
   "name": "recap-chrome",
-  "version": "2.7.2",
+  "version": "2.8.0",
   "description": "RECAP improves the experience of using PACER, the online public acces system for the U.S. federal courts",
   "main": " ",
   "directories": {
@@ -8,7 +8,9 @@
   },
   "scripts": {
     "test": "./node_modules/.bin/karma start --single-run",
-    "postinstall": "vendor-copy"
+    "postinstall": "vendor-copy",
+    "release-chrome": "./scripts/build.sh chrome",
+    "release-firefox": "./scripts/build.sh firefox"
   },
   "repository": {
     "type": "git",

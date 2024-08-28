@@ -760,7 +760,7 @@ let PACER = {
     banner_icon_container.classList.add('banner-icon-container');
 
     let recap_icon = document.createElement('img');
-    recap_icon.src = chrome.extension.getURL('assets/images/icon-48.png');
+    recap_icon.src = chrome.runtime.getURL('assets/images/icon-48.png');
     recap_icon.style.width = '40px';
     recap_icon.style.height = '40px';
     banner_icon_container.appendChild(recap_icon);

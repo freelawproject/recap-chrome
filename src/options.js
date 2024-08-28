@@ -1,4 +1,5 @@
 // JavaScript for the options page/popup.
+import { updateToolbarButton } from './utils/toolbar_button.js';
 
 let inputs = document.getElementsByTagName('input');
 
