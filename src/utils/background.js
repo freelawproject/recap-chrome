@@ -140,7 +140,7 @@ export function overwriteSubmitMethod(req, sender, sendResponse){
       );
       // Check if there are any buttons found and if the button hasn't been
       // clicked yet (doesn't have the 'clicked' attribute).
-      if (filerButton.length && !fillerButton[0].hasAttribute('clicked')) {
+      if (filerButton.length && !filerButton[0].hasAttribute('clicked')) {
         // If the button exists but wasn't clicked, set a data attribute on the
         // form to prevent uploading the PDF document.
         this.dataset.stopUpload = true;
