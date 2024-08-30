@@ -571,6 +571,7 @@ footer #version {
 }
 
 .recap-bttn-for-filers {
+  cursor: pointer;
   margin-left: 5px;
   border-radius: 3px;
   border-style: solid;
