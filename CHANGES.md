@@ -11,10 +11,10 @@ Changes:
  - None yet
  
 Fixes:
- - None yet
+ - Disables notifications in Safari due to API limitations ([391](https://github.com/freelawproject/recap-chrome/pull/391)).
 
 For developers:
- - Nothing yet
+ - Preserves permissions during macOS and iOS release package creation ([391](https://github.com/freelawproject/recap-chrome/pull/391))
 
 ## 2.8.0 (2024-08-27)
 
