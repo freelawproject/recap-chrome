@@ -44,14 +44,6 @@ def update_manifest_files(operating_system: str) -> None:
         f"cd {operating_system}/Recap && xcrun agvtool new-marketing-version {manifest['version']}"
     )
 
-    manifest["permissions"] = [
-        "*://*.uscourts.gov/",
-        "notifications",
-        "storage",
-        "unlimitedStorage",
-        "activeTab",
-        "cookies",
-    ]
     # The main difference between iOS and macOS is the permissions.
     if operating_system == "iOS":
         manifest["background"]["persistent"] = False
