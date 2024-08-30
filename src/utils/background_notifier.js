@@ -29,6 +29,12 @@ const showNotification = function (title, message, cb) {
   console.info(
     'RECAP: Running showNotification function. Expect a notification.'
   );
+  // Avoid triggering notifications for Safari because the API is not supported
+  if (
+    /Safari/.test(navigator.userAgent) &&
+    !/Chrome|Chromium/.test(navigator.userAgent)
+  )
+    return;
   chrome.notifications.create(id, notificationOptions(title, message));
   // Make it go away when clicked.
   chrome.notifications.onClicked.addListener((id) =>
