@@ -98,10 +98,7 @@ const recapActionsButton = (court, pacerCaseId) => {
   mainDiv.classList.add('btn-group');
   mainDiv.setAttribute('id', 'recap-action-button');
 
-  const spinner = document.createElement('i');
-  spinner.classList.add('fa', 'fa-spinner', 'fa-spin');
-  spinner.setAttribute('id', 'recap-button-spinner');
-  spinner.classList.add('recap-btn-spinner-hidden');
+  const spinner = createRecapSpinner();
 
   const mainButton = document.createElement('a');
   mainButton.classList.add('btn', 'btn-primary', 'dropdown-toggle');

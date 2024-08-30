@@ -539,6 +539,7 @@ ContentDelegate.prototype.handleSingleDocumentPageView = async function () {
     // Create a new button for filers accounts and add onclick
     // event listener to intercept navigation to the PDF document
     let button = createRecapButtonForFilers('View and RECAP Document');
+    let spinner = createRecapSpinner();
     button.addEventListener('click', async (event) => {
       // Get the button element that was actually clicked (event.target)
       let button = event.target;
@@ -547,11 +548,16 @@ ContentDelegate.prototype.handleSingleDocumentPageView = async function () {
       // service. This attribute indicates that the user specifically clicked
       // this custom button, triggering the upload process.
       button.setAttribute('clicked','');
+      let spinner = document.getElementById('recap-button-spinner');
+      if (spinner) spinner.classList.remove('recap-btn-spinner-hidden');
+
       return true;
     });
     // add the new button inside the form
     let form = document.querySelector('form');
     form.append(button);
+    form.append(document.createTextNode('\u00A0'));
+    form.append(spinner);
   }
   await overwriteFormSubmitMethod();
 
@@ -694,9 +700,7 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
   loadingMessageWrapper.setAttribute('id', 'loading-message');
   loadingMessageWrapper.style.textAlign = 'center';
 
-  const spinner = document.createElement('i');
-  spinner.classList.add('fa', 'fa-spinner', 'fa-spin');
-  spinner.setAttribute('id', 'recap-button-spinner');
+  const spinner = createRecapSpinner(false);
 
   let spanText = document.createElement('span');
   spanText.style.fontFamily = 'helvetica,arial,serif';
