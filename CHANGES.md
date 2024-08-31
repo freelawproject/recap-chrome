@@ -5,7 +5,7 @@
 The following changes are not yet released, but are code complete:
 
 Features:
- - None yet
+ - Improve the user experience of the file account button by applying a custom cursor and adding a loading spinner next to it while the extension load the PDF document ([392](https://github.com/freelawproject/recap-chrome/pull/392)).
 
 Changes:
  - None yet

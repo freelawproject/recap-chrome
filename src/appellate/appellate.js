@@ -1038,15 +1038,22 @@ AppellateDelegate.prototype.handleSingleDocumentPageView = async function () {
     let button = createRecapButtonForFilers(
       'Accept Charges and RECAP Document'
     );
+    let spinner = createRecapSpinner();
     button.addEventListener('click', (event) => {
       event.preventDefault();
       let form = event.target.parentNode;
       form.id = 'form' + new Date().getTime();
+
+      let spinner = document.getElementById('recap-button-spinner');
+      if (spinner) spinner.classList.remove('recap-btn-spinner-hidden');
+
       window.postMessage({ id: form.id }, '*');
     });
 
     let form = document.querySelector('form');
     form.append(button);
+    form.append(document.createTextNode('\u00A0'));
+    form.append(spinner);
   } else {
     await overwriteFormSubmitMethod();
   }

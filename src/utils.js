@@ -338,3 +338,19 @@ function createRecapButtonForFilers(description) {
   button.classList.add('recap-bttn-for-filers', 'btn-primary');
   return button;
 }
+
+// Creates a spinner element to be used in the recap button.
+//
+// **Arguments:**
+//  - `hidden` (bool): Whether the spinner should be initially hidden.
+//
+// **Returns:**
+//  - The created spinner element.
+function createRecapSpinner(hidden = true) {
+  const spinner = document.createElement('i');
+  spinner.classList.add('fa', 'fa-spinner', 'fa-spin');
+  spinner.setAttribute('id', 'recap-button-spinner');
+  if (hidden) spinner.classList.add('recap-btn-spinner-hidden');
+
+  return spinner;
+}
