@@ -688,7 +688,7 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
     navigator.userAgent.indexOf('Safari') +
       navigator.userAgent.indexOf('Chrome') <
     0
-      ? content.fetch
+      ? fetch
       : window.fetch;
   const options = await getItemsFromStorage('options');
   const pacerCaseId = event.data.id.match(/caseid=(\d*)/)[1];
