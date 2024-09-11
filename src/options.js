@@ -21,7 +21,7 @@ async function load_options() {
         inputs[i].value = items.options[inputs[i].id] || '';
       }
     }
-    if ('option_dismiss_new_brand_info' in items.options) removeInfoBanner();
+    if ('option_dismiss_new_manifest_info' in items.options) removeInfoBanner();
   });
 }
 
@@ -38,7 +38,7 @@ function save_options() {
 
     let banner = document.getElementById('header-banner');
     if (!banner) {
-      options['option_dismiss_new_brand_info'] = true;
+      options['option_dismiss_new_manifest_info'] = true;
     }
 
     chrome.storage.local.set({ options: options }, function () {
