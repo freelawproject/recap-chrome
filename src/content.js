@@ -47,31 +47,6 @@ async function addRecapInformation(msg) {
       });
     }
 
-    const options = await getItemsFromStorage('options');
-    if (
-      'login_dismiss_new_brand_info' in options &&
-      options['login_dismiss_new_brand_info']
-    ) {
-      return;
-    }
-
-    let bannerMessage =
-      'Get ready for a new chapter! RECAP is getting a ' + 'fresh new look.';
-    let bannerLink = 'https://free.law/2024/07/05/new-branding-rip-flip';
-    PACER.addRecapBannerToLoginPage(bannerMessage, bannerLink);
-
-    let dismiss_button = document.getElementById('dismiss_recap_info_banner');
-    dismiss_button.addEventListener('click', async () => {
-      await PACER.removeBannerFromLoginPage();
-      return false;
-    });
-
-    let learn_more_btn = document.getElementById('learn_more_btn');
-    learn_more_btn.addEventListener('click', async () => {
-      await PACER.removeBannerFromLoginPage(event_from_btn = true);
-      return true;
-    });
-
     return;
   }
 

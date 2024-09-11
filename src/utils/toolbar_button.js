@@ -37,16 +37,9 @@ export function updateToolbarButton(tab) {
     ) {
       chrome.action.setBadgeText({ text: '' });
     } else {
-      if (
-        /Safari/.test(navigator.userAgent) &&
-        !/Chrome|Chromium/.test(navigator.userAgent)
-      ) {
-        // Detect Safari engine
-        chrome.action.setBadgeText({ text: '1' });
-      } else {
-        chrome.action.setBadgeText({ text: '🔔' });
-        chrome.action.setBadgeBackgroundColor({ color: '#404040' });
-      }
+      chrome.action.setBadgeText({ text: '1' });
+      chrome.action.setBadgeTextColor({ color: 'white' });
+      chrome.action.setBadgeBackgroundColor({ color: 'red' });
     }
 
     if (tab === null || tab === undefined) {
