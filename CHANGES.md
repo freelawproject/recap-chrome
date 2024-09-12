@@ -5,11 +5,22 @@
 The following changes are not yet released, but are code complete:
 
 Features:
- - Improve the user experience of the file account button by applying a custom cursor and adding a loading spinner next to it while the extension load the PDF document ([392](https://github.com/freelawproject/recap-chrome/pull/392)).
+ - None yet
 
 Changes:
  - None yet
  
+Fixes:
+ - None yet
+
+For developers:
+ - Nothing yet
+
+## 2.8.1 (2024-09-12)
+
+Features:
+ - Improve the user experience of the file account button by applying a custom cursor and adding a loading spinner next to it while the extension load the PDF document ([392](https://github.com/freelawproject/recap-chrome/pull/392)).
+
 Fixes:
  - Disables notifications in Safari due to API limitations ([391](https://github.com/freelawproject/recap-chrome/pull/391)).
  - Fix fetch on firefox ([393](https://github.com/freelawproject/recap-chrome/pull/393)).
@@ -17,6 +28,7 @@ Fixes:
 
 For developers:
  - Preserves permissions during macOS and iOS release package creation ([391](https://github.com/freelawproject/recap-chrome/pull/391))
+
 
 ## 2.8.0 (2024-08-27)
 
