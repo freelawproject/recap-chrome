@@ -13,6 +13,7 @@ Changes:
 Fixes:
  - Disables notifications in Safari due to API limitations ([391](https://github.com/freelawproject/recap-chrome/pull/391)).
  - Fix fetch on firefox ([393](https://github.com/freelawproject/recap-chrome/pull/393)).
+ - Adds logic to clean up storage after uploads ([395](https://github.com/freelawproject/recap-chrome/pull/395)).
 
 For developers:
  - Preserves permissions during macOS and iOS release package creation ([391](https://github.com/freelawproject/recap-chrome/pull/391))

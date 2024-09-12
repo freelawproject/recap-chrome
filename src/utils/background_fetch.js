@@ -100,6 +100,13 @@ async function triggerFetchRequest(url, options, sender, sendResponse) {
     const blob = await fetch(file).then((res) => res.blob());
     const body = buildFormData({ ...options.body, filepath_local: blob });
     await waitUntil(dispatchCallback(url, { ...options, body }));
+
+    // Remove the 'pdf_blob' and 'zip_blob' properties from the specified key
+    // in Chrome's local storage after uploading their content.
+    if (store[storeKey]['pdf_blob']) delete store[storeKey]['pdf_blob'];
+    if (store[storeKey]['zip_blob']) delete store[storeKey]['zip_blob'];
+    await chrome.storage.local.set({ [storeKey]: store[storeKey] });
+    console.info('Temporary file data removed from storage.');
   });
   // return true to allow for the async function to complete
   return true;
