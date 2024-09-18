@@ -605,17 +605,33 @@ ContentDelegate.prototype.attachRecapLinkToEligibleDocs = async function () {
     if (!result) continue;
 
     let href = `https://storage.courtlistener.com/${result.filepath_local}`;
-    let recap_link = $('<a/>', {
+    let recapLink = $('<a/>', {
       class: 'recap-inline',
       title: 'Available for free from the RECAP Archive.',
       href: href,
     });
-    recap_link.append(
+    recapLink.append(
       $('<img/>').attr({
         src: chrome.runtime.getURL('assets/images/icon-16.png'),
       })
     );
-    recap_link.insertAfter(this.links[i]);
+    recapLink.insertAfter(this.links[i]);
+
+    // Attaches the case ID to the entry link as a query parameter. This allows
+    // us to access it from the URL, even if it's not available in the
+    // subsequent page's DOM.
+    entryLink = this.links[i];
+    let url = new URL(entryLink.href);
+    url.searchParams.set('caseId', this.pacer_case_id);
+    entryLink.setAttribute('href', url.toString());
+
+    entryLink.removeAttribute('onclick');
+    entryLink.setAttribute('target', '_self');
+    entryLink.dataset.recap =
+      'Modified by RECAP Extension to add caseId' + 'attribute.';
+    // clone and replace anchor elements to remove all listeners
+    let clonedNode = entryLink.cloneNode(true);
+    entryLink.replaceWith(clonedNode);
   }
   let spinner = document.getElementById('recap-button-spinner');
   if (spinner) {

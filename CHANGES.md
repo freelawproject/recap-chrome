@@ -12,6 +12,7 @@ Changes:
  
 Fixes:
  - Corrected typo in build script, ensuring correct favicon path for Firefox releases([379](https://github.com/freelawproject/recap/issues/379), [397](https://github.com/freelawproject/recap-chrome/pull/397))
+ - Attaches the pacer_case_id as a query parameter to entry links in District Courts Reports ([369](https://github.com/freelawproject/recap/issues/369), [398](https://github.com/freelawproject/recap-chrome/pull/398)).
 
 For developers:
  - Nothing yet
