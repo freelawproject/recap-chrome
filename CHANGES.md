@@ -11,7 +11,7 @@ Changes:
  - None yet
  
 Fixes:
- - None yet
+ - Corrected typo in build script, ensuring correct favicon path for Firefox releases([379](https://github.com/freelawproject/recap/issues/379), [397](https://github.com/freelawproject/recap-chrome/pull/397))
 
 For developers:
  - Nothing yet
