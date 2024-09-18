@@ -17,7 +17,7 @@ zipName=$browserType-release.zip
 # 3. Rename base manifest file
 cd src/ && mv manifest.json manifest.base.json
 if [[ "$browserType" == "firefox" ]]; then
-    faviconUrl='assets/images/favicon.icon'
+    faviconUrl='assets/images/favicon.ico'
     # Remove unnecessary properties for Firefox manifest
     jq 'del(.background.service_worker)' manifest.base.json >manifest.json
 else
