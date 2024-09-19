@@ -536,9 +536,9 @@ let PACER = {
     //   https://ecf.flnd.uscourts.gov/lib/dls_url.js
     // as:
     //   function goDLS(hyperlink, de_caseid, de_seqno, got_receipt,
-    //                  pdf_header, pdf_toggle_possible, magic_num, hdr)
+    //                  pdf_header, pdf_toggle_possible, magic_num, hdr, psf_report)
     //
-    // Bankruptcy courts provide ten parameters, instead of eight. These can
+    // Bankruptcy courts provide ten parameters, instead of nine. These can
     // be found in unminified js:
     //   https://ecf.paeb.uscourts.gov/lib/dls_url.js
     // as:
@@ -548,7 +548,7 @@ let PACER = {
     // Δ:
     // - hdr
     // + claim_id, claim_num, claim_doc_seq
-    let goDlsDistrict = /^goDLS\('([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)'\)/.exec(goDLS_string);
+    let goDlsDistrict = /^goDLS\('([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)'\)/.exec(goDLS_string);
     let goDlsBankr= /^goDLS\('([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)','([^']*)'\)/.exec(goDLS_string);
     if (!goDlsDistrict && !goDlsBankr) {
       return null;
@@ -556,7 +556,7 @@ let PACER = {
     let r = {};
     if (goDlsDistrict){
       [, r.hyperlink, r.de_caseid, r.de_seqno, r.got_receipt, r.pdf_header,
-        r.pdf_toggle_possible, r.magic_num, r.hdr] = goDlsDistrict;
+        r.pdf_toggle_possible, r.magic_num, r.hdr, r.psf_report] = goDlsDistrict;
     } else {
       [, r.hyperlink, r.de_caseid, r.de_seqno, r.got_receipt, r.pdf_header,
         r.pdf_toggle_possible, r.magic_num, r.claim_id, r.claim_num,
