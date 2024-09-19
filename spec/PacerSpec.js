@@ -436,7 +436,7 @@ describe('The PACER module', function () {
   });
 
   describe('getDocumentIdFronForm', function () {
-    const goDLS = "goDLS('/doc1/09518360046','153992','264','','','1','','');";
+    const goDLS = "goDLS('/doc1/09518360046','153992','264','','','1','','','','');";
     let form;
     beforeEach(function () {
       form = document.createElement('form');
@@ -477,7 +477,7 @@ describe('The PACER module', function () {
   });
 
   describe('getCaseNumberFromInputs', function () {
-    const goDLS = "goDLS('/doc1/09518360046','153992','264','','','1','','');";
+    const goDLS = "goDLS('/doc1/09518360046','153992','264','','','1','','','');";
     const input = document.createElement('input');
 
     beforeEach(function () {
@@ -516,7 +516,7 @@ describe('The PACER module', function () {
 
   describe('parseGoDLSFunction', function () {
     it('gets the right values for an example DLS string', function () {
-      let goDLSSampleString = "goDLS('/doc1/09518360046','153992','264','','','1','',''); " + 'return(false);';
+      let goDLSSampleString = "goDLS('/doc1/09518360046','153992','264','','','1','','',''); " + 'return(false);';
       expect(PACER.parseGoDLSFunction(goDLSSampleString)).toEqual({
         hyperlink: '/doc1/09518360046',
         de_caseid: '153992',
@@ -526,6 +526,7 @@ describe('The PACER module', function () {
         pdf_toggle_possible: '1',
         magic_num: '',
         hdr: '',
+        psf_report: '',
       });
     });
 
