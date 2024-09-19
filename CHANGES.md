@@ -12,7 +12,9 @@ Changes:
  
 Fixes:
  - Corrected typo in build script, ensuring correct favicon path for Firefox releases([379](https://github.com/freelawproject/recap/issues/379), [397](https://github.com/freelawproject/recap-chrome/pull/397))
+ - Refines the generateFileName method to accurately compute zip file names ([366](https://github.com/freelawproject/recap/issues/366), [399](https://github.com/freelawproject/recap-chrome/pull/399)).
  - Improves the reliability of PACER case ID retrieval on attachment pages ([369](https://github.com/freelawproject/recap/issues/369), [400](https://github.com/freelawproject/recap-chrome/pull/400)).
+
 
 For developers:
  - Nothing yet

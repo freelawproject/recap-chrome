@@ -671,9 +671,34 @@ ContentDelegate.prototype.onDownloadAllSubmit = async function (event) {
         .concat('.zip');
     } else if (options.lawyer_style_filenames) {
       const firstTable = document.getElementsByTagName('table')[0];
+      // The download page's tables typically display transaction details.
+      // However, only certain rows contain relevant information:
+      //
+      // 1. Table Title.
+      // 2. Subtitle.
+      // 3. Date of Transaction
+      // 4. Pacer Login Data: Includes the Pacer login username and client code.
+      // 5. Description and Case Number.
+      // 6. Billable Pages and Cost.
+      //
+      // Additionally, if the document has more than 30 pages, an extra row is
+      // added to inform the user that they will only be billed for 30 pages.
       const firstTableRows = firstTable.querySelectorAll('tr');
-      // 4th from bottom
-      const matchedRow = firstTableRows[firstTableRows.length - 4];
+      // Remove rows from the querySelectorAll result that have no visible
+      // content.
+      const rowsWithContent = Array.from(firstTableRows).filter((row) =>
+        row.hasChildNodes()
+      );
+      const lastRow = rowsWithContent[rowsWithContent.length -1];
+      let matchedRow;
+      // Find the row containing the Description and Case Number. If the last
+      // row contains the billing message for documents exceeding 30 pages,
+      // adjusts the index accordingly.
+      if (lastRow.innerHTML.includes('You will only be billed for 30 pages')){
+        matchedRow = rowsWithContent[rowsWithContent.length - 3];
+      } else {
+        matchedRow = rowsWithContent[rowsWithContent.length - 2];
+      }
       const cells = matchedRow.querySelectorAll('td');
       const document_number = cells[0].innerText.match(/\d+(?=\-)/)[0];
       const docket_number = cells[1].innerText;
