@@ -12,6 +12,7 @@ Changes:
  
 Fixes:
  - Corrected typo in build script, ensuring correct favicon path for Firefox releases([379](https://github.com/freelawproject/recap/issues/379), [397](https://github.com/freelawproject/recap-chrome/pull/397))
+ - Refines the generateFileName method to accurately compute zip file names ([366](https://github.com/freelawproject/recap/issues/366), [399](https://github.com/freelawproject/recap-chrome/pull/399)).
 
 For developers:
  - Nothing yet
