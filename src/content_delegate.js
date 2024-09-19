@@ -367,6 +367,15 @@ ContentDelegate.prototype.handleAttachmentMenuPage = async function () {
     return;
   }
 
+  if (!this.pacer_case_id)
+    this.pacer_case_id = await getPacerCaseIdFromPacerDocId(
+      this.tabId,
+      this.pacer_doc_id
+    );
+
+  // If we don't have this.pacer_case_id at this point, punt.
+  if (!this.pacer_case_id) return;
+
   const upload = await dispatchBackgroundFetch({
     action: 'upload',
     data: {
