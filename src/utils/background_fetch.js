@@ -11,7 +11,7 @@ import { buildFormData, sources, authHeader, jsonHeader } from './recap.js';
 // **Returns:**
 //  - A string representing the complete CourtListener API URL.
 const courtListenerURL = (suffix) =>
-  'https://www.courtlistener.com/api/rest/v3/' + suffix + '/';
+  'https://www.courtlistener.com/api/rest/v4/' + suffix + '/';
 
 // Encodes Search Parameters for GET Requests
 //

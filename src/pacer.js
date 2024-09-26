@@ -740,11 +740,11 @@ let PACER = {
     return cleanNumber ? cleanNumber : 0;
   },
 
-  handleDocketAvailabilityMessages: (result) =>{
-    if (result.count === 0) {
+  handleDocketAvailabilityMessages: (resultCount) =>{
+    if (resultCount === 0) {
       console.warn('RECAP: Zero results found for docket lookup.');
-    } else if (result.count > 1) {
-      console.error(`RECAP: More than one result found for docket lookup. Found ${result.count}`);
+    } else if (resultCount > 1) {
+      console.error(`RECAP: More than one result found for docket lookup. Found ${resultCount}`);
     }
   },
 

@@ -282,18 +282,13 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
         pacer_case_id: this.pacer_case_id,
       },
     });
-
-    if (docketData.count === 0) {
-      console.warn('RECAP: Zero results found for docket lookup.');
-    } else if (docketData.count > 1) {
-      console.error(
-        'RECAP: More than one result found for docket lookup. Found' +
-          `${result.count}`
-      );
-    } else {
+    let docketDataCount = docketData.results.length;
+    if (docketDataCount == 1){
       addAlertButtonInRecapAction(this.court, this.pacer_case_id);
       let cl_id = getClIdFromAbsoluteURL(docketData.results[0].absolute_url);
       addSearchDocketInRecapAction(cl_id);
+    } else{
+      PACER.handleDocketAvailabilityMessages(docketDataCount);
     }
   };
 
@@ -654,7 +649,8 @@ AppellateDelegate.prototype.handleDocketReportFilter = async function () {
       docket_number_core: docketNumberCore,
     },
   });
-  if (docketData.count === 1 && docketData.results) {
+  let docketDataCount = docketData.results.length;
+  if (docketDataCount === 1) {
     let form = document.getElementsByTagName('form')[0];
     let banner = recapBanner(docketData.results[0]);
     form.after(banner);
@@ -667,7 +663,7 @@ AppellateDelegate.prototype.handleDocketReportFilter = async function () {
     );
     form.after(recapAlert);
   } else {
-    PACER.handleDocketAvailabilityMessages(docketData);
+    PACER.handleDocketAvailabilityMessages(docketDataCount);
   }
 };
 
@@ -713,7 +709,8 @@ AppellateDelegate.prototype.handleCaseSelectionPage = async function () {
         pacer_case_id: this.pacer_case_id,
       },
     });
-    if (appellateData.count === 1 && appellateData.results) {
+    let appellateDataCount = appellateData.results.length;
+    if (appellateDataCount == 1) {
       PACER.removeBanners();
 
       const footer = document.querySelector('div.noprint:last-of-type');
@@ -728,7 +725,7 @@ AppellateDelegate.prototype.handleCaseSelectionPage = async function () {
       const appellateLink = anchors[0];
       rIcon.insertAfter(appellateLink);
     } else {
-      PACER.handleDocketAvailabilityMessages(appellateData);
+      PACER.handleDocketAvailabilityMessages(appellateDataCount);
     }
 
     if (anchors.length == 3) {
@@ -743,13 +740,14 @@ AppellateDelegate.prototype.handleCaseSelectionPage = async function () {
           docket_number_core: districtLinkData.docket_number_core,
         },
       });
-      if (districtData.count === 1 && districtData.results) {
+      let districtDataCount = districtData.results.length;
+      if (districtDataCount == 1) {
         const rIcon = APPELLATE.makeRButtonForCases(
           districtData.results[0].absolute_url
         );
         rIcon.insertAfter(districtLink);
       } else {
-        PACER.handleDocketAvailabilityMessages(districtData);
+        PACER.handleDocketAvailabilityMessages(districtDataCount);
       }
     }
   } else {
@@ -947,18 +945,13 @@ AppellateDelegate.prototype.handleDocketDisplayPage = async function () {
       pacer_case_id: this.pacer_case_id,
     },
   });
-
-  if (docketData.count === 0) {
-    console.warn('RECAP: Zero results found for docket lookup.');
-  } else if (docketData.count > 1) {
-    console.error(
-      'RECAP: More than one result found for docket lookup. ' +
-        `Found ${result.count}`
-    );
-  } else {
+  let docketDataCount = docketData.results.length;
+  if (docketDataCount === 1) {
     addAlertButtonInRecapAction(this.court, this.pacer_case_id);
     let cl_id = getClIdFromAbsoluteURL(docketData.results[0].absolute_url);
     addSearchDocketInRecapAction(cl_id);
+  } else {
+    PACER.handleDocketAvailabilityMessages(docketDataCount);
   }
 
   // if you've already uploaded the page, return
