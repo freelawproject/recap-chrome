@@ -8,7 +8,7 @@ Features:
  - None yet
 
 Changes:
- - None yet
+ - Upgrade to CourtListener v4 API([380](https://github.com/freelawproject/recap/issues/380), [401](https://github.com/freelawproject/recap-chrome/pull/401))
  
 Fixes:
  - Corrected typo in build script, ensuring correct favicon path for Firefox releases([379](https://github.com/freelawproject/recap/issues/379), [397](https://github.com/freelawproject/recap-chrome/pull/397))

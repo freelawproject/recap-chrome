@@ -361,7 +361,9 @@ describe('The ContentDelegate class', function () {
     it('has no effect when on a docket query that has no RECAP', async function () {
       const cd = docketQueryContentDelegate;
       spyOn(PACER, 'hasPacerCookie').and.returnValue(true);
-      const mockResponse = {};
+      const mockResponse = {
+        results: []
+      };
       dispatchBackgroundFetch = jasmine.createSpy().and.resolveTo(mockResponse);
       await cd.handleDocketQueryUrl();
       const banner = document.querySelector('.recap-banner');
