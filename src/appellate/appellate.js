@@ -1048,6 +1048,50 @@ AppellateDelegate.prototype.handleCombinedPdfPageView = async function () {
     document.body.appendChild(warning);
     return;
   }
+
+  await this.checkSingleDocInCombinedPDFPage();
+};
+
+AppellateDelegate.prototype.checkSingleDocInCombinedPDFPage = async function(){
+  let clCourt = PACER.convertToCourtListenerCourt(this.court);
+  // Retrieves a partial document ID from the URL parameter named `"dls"`. It's
+  // important to note that this value might not be the complete document ID.
+  // It could potentially be a shortened version of the full ID.
+  let urlParams = new URLSearchParams(window.location.search);
+  let partialDocId = urlParams.get('dls').split(',')[0];
+
+  // If the `this.pacer_doc_id` property is not already set, attempt to retrieve
+  // it using the previously extracted partial document ID. The returned full
+  // document ID is then stored in the `this.pacer_doc_id` property for
+  // subsequent use.
+  if (!this.docId) {
+    this.docId = await getPacerDocIdFromPartialId(
+      this.tabId,
+      partialDocId
+    );
+  }
+
+  // If we don't have this.pacer_doc_id at this point, punt.
+  if (!this.docId) return;
+
+  const recapLinks = await dispatchBackgroundFetch({
+    action: 'getAvailabilityForDocuments',
+    data: {
+      docket_entry__docket__court: clCourt,
+      pacer_doc_id__in: this.docId,
+    },
+  });
+  if (!recapLinks.results.length) return;
+  console.info(
+    'RECAP: Got results from API. Processing results to insert link'
+  );
+  let result = recapLinks.results.filter(
+    (doc) => doc.pacer_doc_id === this.docId,
+    this
+  );
+  if (!result.length) return;
+
+  insertAvailableDocBanner(result[0].filepath_local, 'body');
 };
 
 // If this page offers a single document, intercept navigation to the document
