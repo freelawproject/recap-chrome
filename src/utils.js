@@ -315,11 +315,14 @@ const combinedPdfWarning = () => {
   return outerDiv;
 };
 
+async function getDocToCasesFromStorage(tabId){
+  const tabStorage = await getItemsFromStorage(tabId);
+  return tabStorage && tabStorage.docsToCases;
+}
+
 //Given a pacer_doc_id, return the pacer_case_id that it is associated with
 async function getPacerCaseIdFromPacerDocId(tabId, pacer_doc_id) {
-  const tabStorage = await getItemsFromStorage(tabId);
-
-  const docsToCases = tabStorage && tabStorage.docsToCases;
+  const docsToCases = await getDocToCasesFromStorage(tabId);
   if (!docsToCases) return;
 
   const caseId = docsToCases[pacer_doc_id];
@@ -337,9 +340,7 @@ async function getPacerCaseIdFromPacerDocId(tabId, pacer_doc_id) {
 // the attachment IDs to exclude. If there's only one remaining Pacer document
 // ID, it's returned. Otherwise, undefined is returned.
 async function getPacerDocIdFromExcludeList(tabId, excludeList){
-  const tabStorage = await getItemsFromStorage(tabId);
-
-  const docsToCases = tabStorage && tabStorage.docsToCases;
+  const docsToCases = await getDocToCasesFromStorage(tabId);
   if (!docsToCases) return;
 
   var pacerDocIds = Object.keys(docsToCases);
