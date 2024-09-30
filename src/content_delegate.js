@@ -166,9 +166,10 @@ ContentDelegate.prototype.findAndStorePacerDocIds = async function () {
   }
   // save JSON object in chrome storage under the tabId
   // append caseId if a docketQueryUrl
-  const payload = {
-    docsToCases: docsToCases,
-  };
+  const payload = {};
+  // Only update the `docsToCases` mapping in the storage if it contains data.
+  if (Object.keys(docsToCases).length) payload['docsToCases'] = docsToCases;
+
   if (!!this.pacer_doc_id) {
     payload['docId'] = this.pacer_doc_id;
   }

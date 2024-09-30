@@ -330,6 +330,27 @@ async function getPacerCaseIdFromPacerDocId(tabId, pacer_doc_id) {
   return caseId;
 }
 
+// Retrieves the Pacer document ID using an exclude list.
+//
+// This function fetches the stored documents-to-cases mapping from the current
+// tab's storage. It then filters out the Pacer document IDs using the array of
+// the attachment IDs to exclude. If there's only one remaining Pacer document
+// ID, it's returned. Otherwise, undefined is returned.
+async function getPacerDocIdFromExcludeList(tabId, excludeList){
+  const tabStorage = await getItemsFromStorage(tabId);
+
+  const docsToCases = tabStorage && tabStorage.docsToCases;
+  if (!docsToCases) return;
+
+  var pacerDocIds = Object.keys(docsToCases);
+  excludeList.forEach(
+    (attachmentId) =>
+      (pacerDocIds = pacerDocIds.filter((key) => !key.includes(attachmentId)))
+  );
+  if (pacerDocIds.length > 1) return;
+  return PACER.cleanPacerDocId(pacerDocIds[0]);
+}
+
 //Creates an extra button for filer accounts
 function createRecapButtonForFilers(description) {
   let button = document.createElement('input');
