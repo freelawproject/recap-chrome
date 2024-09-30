@@ -333,6 +333,22 @@ async function getPacerCaseIdFromPacerDocId(tabId, pacer_doc_id) {
   return caseId;
 }
 
+// Retrieves the full Pacer document ID from a partial ID.
+//
+// Fetches the stored documents-to-cases mapping from the current tab's storage
+// Filters out the Pacer document IDs using the provided partial ID. Returns
+// the full Pacer document ID if a single match is found; otherwise, returns
+// `undefined`.
+async function getPacerDocIdFromPartialId(tabId, partialId) {
+  const docsToCases = await getDocToCasesFromStorage(tabId);
+  if (!docsToCases) return;
+
+  let docIds = Object.keys(docsToCases);
+  let pacerDocId = docIds.filter((id) => id.includes(partialId));
+  if (pacerDocId.length === 0) return;
+  return PACER.cleanPacerDocId(pacerDocId[0]);
+}
+
 // Retrieves the Pacer document ID using an exclude list.
 //
 // This function fetches the stored documents-to-cases mapping from the current
