@@ -857,7 +857,7 @@ ContentDelegate.prototype.handleZipFilePageView = function () {
 
 // If the page offers a combined document, inserts a warning to let
 // the user know this document won't be uploaded.
-ContentDelegate.prototype.handleCombinedPDFView = function () {
+ContentDelegate.prototype.handleCombinedPDFView = async function () {
   if (!PACER.isCombinedPdfPage(this.url, document)) return false;
 
   // Find all center divs, which typically wrap receipt tables.
@@ -870,6 +870,51 @@ ContentDelegate.prototype.handleCombinedPDFView = function () {
     mainDiv.append(pdfWarning);
     return;
   }
+
+  await this.checkSingleDocInCombinedPDFPage();
+};
+
+
+// checks if a specific document within a combined PDF page is available in
+// the Recap archive. The document is identified by its PACER document ID.
+// If the document is found, it inserts a banner to inform the user of its
+// availability.
+ContentDelegate.prototype.checkSingleDocInCombinedPDFPage = async function (){
+  let clCourt = PACER.convertToCourtListenerCourt(this.court);
+  const urlParams = new URLSearchParams(window.location.search);
+  // The URL of multi-document pages often contains a list of documents that
+  // are excluded from purchase.
+  let excludeList = urlParams.get('exclude_attachments').split(',');
+  // If the `this.pacer_doc_id` property is not already set, attempt to retrieve
+  // it from the extracted `excludeList`.
+  if (!this.pacer_doc_id) {
+    this.pacer_doc_id = await getPacerDocIdFromExcludeList(
+      this.tabId,
+      excludeList
+    );
+  }
+
+  // If we don't have this.pacer_doc_id at this point, punt.
+  if (!this.pacer_doc_id) return;
+
+  const recapLinks = await dispatchBackgroundFetch({
+    action: 'getAvailabilityForDocuments',
+    data: {
+      docket_entry__docket__court: clCourt,
+      pacer_doc_id__in: this.pacer_doc_id,
+    },
+  });
+  if (!recapLinks.results.length) return;
+  console.info(
+    'RECAP: Got results from API. Processing results to insert link'
+  );
+  let result = recapLinks.results.filter(
+    (doc) => doc.pacer_doc_id === this.pacer_doc_id,
+    this
+  );
+  if (!result.length) return;
+
+  insertAvailableDocBanner(result[0].filepath_local, 'form:last');
 };
 
 ContentDelegate.prototype.handleClaimsPageView = async function () {
