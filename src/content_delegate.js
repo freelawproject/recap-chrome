@@ -859,10 +859,16 @@ ContentDelegate.prototype.handleZipFilePageView = function () {
 ContentDelegate.prototype.handleCombinedPDFView = function () {
   if (!PACER.isCombinedPdfPage(this.url, document)) return false;
 
-  // query the main div of the page
-  let mainDiv = document.getElementById((id = 'cmecfMainContent'));
-  pdfWarning = combinedPdfWarning();
-  mainDiv.append(pdfWarning);
+  // Find all center divs, which typically wrap receipt tables.
+  // Count the number of divs to determine how many documents are on the page.
+  // Display a warning if there's more than one document.
+  let transactionReceiptTables = document.querySelectorAll('center');
+  if (transactionReceiptTables.length > 1) {
+    let mainDiv = document.getElementById((id = 'cmecfMainContent'));
+    pdfWarning = combinedPdfWarning();
+    mainDiv.append(pdfWarning);
+    return;
+  }
 };
 
 ContentDelegate.prototype.handleClaimsPageView = async function () {
