@@ -238,17 +238,19 @@ let APPELLATE = {
     Array.from(nodeList).map((a) => {
       if (!PACER.isDoc1Url(a.href)) return;
 
-      let docNum = PACER.getDocNumberFromAnchor(a) || queryParameters.get('recapDocNum');
+      let docNum =
+        PACER.getDocNumberFromAnchor(a) || queryParameters.get('recapDocNum');
       let doDoc = PACER.parseDoDocPostURL(a.getAttribute('onclick'));
-      if (doDoc && doDoc.doc_id && doDoc.case_id) {
-        docsToCases[doDoc.doc_id] = doDoc.case_id;
+      let pacerCaseId =
+        (doDoc && doDoc.case_id) || queryParameters.get('caseId');
+      if (doDoc && doDoc.doc_id && pacerCaseId) {
+        docsToCases[doDoc.doc_id] = pacerCaseId;
       }
 
       a.removeAttribute('onclick');
       a.setAttribute('target', '_self');
 
       let url = new URL(a.href);
-      let pacerCaseId = (doDoc && doDoc.case_id) || queryParameters.get('caseId');
       url.searchParams.set('caseId', pacerCaseId);
 
       if (docNum) {
