@@ -1020,8 +1020,34 @@ AppellateDelegate.prototype.handleAttachmentPage = async function () {
 };
 
 AppellateDelegate.prototype.handleCombinedPdfPageView = async function () {
-  let warning = combinedPdfWarning();
-  document.body.appendChild(warning);
+  // Find all `center` divs, which typically wrap receipt tables in lower
+  // courts. However, in appellate courts, these divs can also wrap the entire
+  // page content. To ensure an accurate count, we filter out nodes with more
+  // than 3 child elements, as a full page container would likely have more
+  // content.
+  let transactionReceiptTables = Array.from(
+    document.querySelectorAll('center')
+  ).filter((row) => row.childElementCount <= 3);
+  if (transactionReceiptTables.length === 0) return;
+
+  // In appellate courts, we don't rely on an exclusion list like lower courts.
+  // Instead, we extract document IDs from the URL parameters (`dls` attribute).
+  // These IDs represent the files included on the current page.
+  const urlParams = new URLSearchParams(window.location.search);
+  let includeList = urlParams.get('dls') ? urlParams.get('dls').split(',') : [];
+
+  // Count the number of receipt tables (from `transactionReceiptTables`) and
+  // documents listed in the URL (`includeList`). If either count is greater
+  // than 1, it indicates multiple documents are present. In this case, display
+  // a warning message.
+  if (
+    transactionReceiptTables.length > 1 ||
+    (includeList && includeList.length > 1)
+  ) {
+    const warning = combinedPdfWarning();
+    document.body.appendChild(warning);
+    return;
+  }
 };
 
 // If this page offers a single document, intercept navigation to the document
