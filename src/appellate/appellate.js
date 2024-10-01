@@ -1049,6 +1049,38 @@ AppellateDelegate.prototype.handleCombinedPdfPageView = async function () {
     return;
   }
 
+  if (PACER.hasFilingCookie(document.cookie)) {
+    let button = createRecapButtonForFilers(
+      'Accept Charges and RECAP Document'
+    );
+    let spinner = createRecapSpinner();
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      let form = event.target.parentNode;
+      form.id = 'form' + new Date().getTime();
+
+      let spinner = document.getElementById('recap-button-spinner');
+      if (spinner) spinner.classList.remove('recap-btn-spinner-hidden');
+
+      window.postMessage({ id: form.id }, '*');
+    });
+
+    let form = document.querySelector('form');
+    form.append(button);
+    form.append(document.createTextNode('\u00A0'));
+    form.append(spinner);
+  } else {
+    await overwriteFormSubmitMethod();
+  }
+
+  // When we receive the message from the above submit method, submit the form
+  // via XHR so we can get the document before the browser does.
+  window.addEventListener(
+    'message',
+    this.onDocumentViewSubmit.bind(this),
+    false
+  );
+
   await this.checkSingleDocInCombinedPDFPage();
 };
 
@@ -1207,14 +1239,25 @@ AppellateDelegate.prototype.onDocumentViewSubmit = async function (event) {
   }
 
   $('body').css('cursor', 'wait');
-  let query_string = new URLSearchParams(new FormData(form)).toString();
-  const resp = await window.fetch(form.action, {
-    method: form.method,
-    headers: {
+  // The form method in multi-document pages is a GET request, while
+  // single-document pages use a POST request. By checking the method here, we
+  // can reuse this code to retrieve the PDF file and display it appropriately
+  // for both page types.
+  let queryString = new URLSearchParams(new FormData(form));
+  let url = new URL(form.action);;
+  let method = form.method.toUpperCase();
+  let options = {};
+  if (method == 'GET') {
+    // If the method is GET, append query parameters to the URL
+    queryString.forEach((value, key) => url.searchParams.append(key, value));
+  } else {
+    options['method'] = method;
+    options['headers'] = {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
-    body: query_string
-  });
+    options['body'] = queryString.toString();
+  }
+  const resp = await window.fetch(url, options);
   let helperMethod = handleDocFormResponse.bind(this);
   helperMethod(
     resp.headers.get('Content-Type'),
