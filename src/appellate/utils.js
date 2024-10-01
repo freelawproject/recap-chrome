@@ -374,6 +374,24 @@ let APPELLATE = {
     return r;
   },
 
+  // returns data from the table of the Receipt Page as an object
+  parseDataFromReceiptTable: () => {
+    // this method uses regex expressions to match that information from the
+    // receipt table and returns an object with the following attributes:
+    //  - docket_number
+    //  - doc_number
+    //  - att_number (if applicable).
+    let search_string = $('td:contains(Case)').text();
+    let regex =
+      /Case: (?<docket_number>[^']*), Document: (?<doc_number>\d+)(-(?<att_number>\d+))?/;
+    let matches = regex.exec(search_string);
+    // If no matches were found, return null.
+    if (!matches) return null;
+    // If an attachment number was not found, set it to 0.
+    if (!matches.groups.att_number) matches.groups.att_number = 0;
+    return matches.groups;
+  },
+
   // Returns an object with the court Id and docket number core extracted from a link to district court
   getDatafromDistrictLinkUrl: (url) => {
     // Converts links to district courts like:

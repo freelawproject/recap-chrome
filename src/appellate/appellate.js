@@ -1182,25 +1182,30 @@ AppellateDelegate.prototype.onDocumentViewSubmit = async function (event) {
   let form = document.getElementById(event.data.id);
 
   let title = document.querySelectorAll('strong')[1].innerHTML;
-  let dataFromTitle = APPELLATE.parseReceiptPageTitle(title);
+  let pdfData = APPELLATE.parseReceiptPageTitle(title);
 
-  if (
-    dataFromTitle.att_number == 0 &&
-    this.queryParameters.get('recapAttNum')
-  ) {
-    dataFromTitle.att_number = this.queryParameters.get('recapAttNum');
-  }
+  // For multi-document pages, the title alone doesn't provide sufficient
+  // information. Therefore, we need to extract additional data from the
+  // receipt table to accurately identify the PDF.
+  // Attempt to parse the necessary data from the receipt table.
+  if (!pdfData) pdfData = APPELLATE.parseDataFromReceiptTable();
 
-  if (dataFromTitle.doc_number.length > 9) {
-    // If the number is really big, it's probably a court that uses
-    // pacer_doc_id instead of regular docket entry numbering.
-    dataFromTitle.doc_number = PACER.cleanPacerDocId(dataFromTitle.doc_number);
-  }
-
-  if (!dataFromTitle) {
+  // If we still don't have enough data after parsing the receipt table,
+  // submit the form without retrieving the file.
+  if (!pdfData) {
     form.submit();
     return;
   }
+
+  if (pdfData.att_number == 0 && this.queryParameters.get('recapAttNum'))
+    pdfData.att_number = this.queryParameters.get('recapAttNum');
+
+  if (pdfData.doc_number.length > 9) {
+    // If the number is really big, it's probably a court that uses
+    // pacer_doc_id instead of regular docket entry numbering.
+    pdfData.doc_number = PACER.cleanPacerDocId(pdfData.doc_number);
+  }
+
   $('body').css('cursor', 'wait');
   let query_string = new URLSearchParams(new FormData(form)).toString();
   const resp = await window.fetch(form.action, {
@@ -1216,7 +1221,7 @@ AppellateDelegate.prototype.onDocumentViewSubmit = async function (event) {
     await resp.blob(),
     null,
     previousPageHtml,
-    dataFromTitle
+    pdfData
   );
 };
 
