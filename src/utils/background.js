@@ -123,7 +123,7 @@ export function getAndStoreVueData(req, sender, sendResponse) {
     .executeScript({
       target: { tabId: sender.tab.id },
       func: getVueDiv,
-      world: 'MAIN',
+      world: chrome.scripting.ExecutionWorld.MAIN,
     })
     .then((injectionResults) => sendResponse(injectionResults));
 }
@@ -154,7 +154,7 @@ export function overwriteSubmitMethod(req, sender, sendResponse){
     .executeScript({
       target: { tabId: sender.tab.id },
       func: _overwriteScript,
-      world: 'MAIN',
+      world: chrome.scripting.ExecutionWorld.MAIN,
     })
     .then((injectionResults) => sendResponse(injectionResults));
 }

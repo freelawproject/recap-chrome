@@ -15,6 +15,7 @@ Fixes:
  - Refines the generateFileName method to accurately compute zip file names ([366](https://github.com/freelawproject/recap/issues/366), [399](https://github.com/freelawproject/recap-chrome/pull/399)).
  - Improves the reliability of PACER case ID retrieval on attachment pages ([369](https://github.com/freelawproject/recap/issues/369), [400](https://github.com/freelawproject/recap-chrome/pull/400)).
  - Fix setDefaultOptions in updateToolbarButton([403](https://github.com/freelawproject/recap-chrome/pull/403))
+ - Use chrome.scripting.ExecutionWorld.MAIN for firefox compatibility ([404](https://github.com/freelawproject/recap-chrome/pull/404))
 
 
 For developers:
