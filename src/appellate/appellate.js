@@ -1020,8 +1020,110 @@ AppellateDelegate.prototype.handleAttachmentPage = async function () {
 };
 
 AppellateDelegate.prototype.handleCombinedPdfPageView = async function () {
-  let warning = combinedPdfWarning();
-  document.body.appendChild(warning);
+  // Find all `center` divs, which typically wrap receipt tables in lower
+  // courts. However, in appellate courts, these divs can also wrap the entire
+  // page content. To ensure an accurate count, we filter out nodes with more
+  // than 3 child elements, as a full page container would likely have more
+  // content.
+  let transactionReceiptTables = Array.from(
+    document.querySelectorAll('center')
+  ).filter((row) => row.childElementCount <= 3);
+  if (transactionReceiptTables.length === 0) return;
+
+  // In appellate courts, we don't rely on an exclusion list like lower courts.
+  // Instead, we extract document IDs from the URL parameters (`dls` attribute).
+  // These IDs represent the files included on the current page.
+  const urlParams = new URLSearchParams(window.location.search);
+  let includeList = urlParams.get('dls') ? urlParams.get('dls').split(',') : [];
+
+  // Count the number of receipt tables (from `transactionReceiptTables`) and
+  // documents listed in the URL (`includeList`). If either count is greater
+  // than 1, it indicates multiple documents are present. In this case, display
+  // a warning message.
+  if (
+    transactionReceiptTables.length > 1 ||
+    (includeList && includeList.length > 1)
+  ) {
+    const warning = combinedPdfWarning();
+    document.body.appendChild(warning);
+    return;
+  }
+
+  if (PACER.hasFilingCookie(document.cookie)) {
+    let button = createRecapButtonForFilers(
+      'Accept Charges and RECAP Document'
+    );
+    let spinner = createRecapSpinner();
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      let form = event.target.parentNode;
+      form.id = 'form' + new Date().getTime();
+
+      let spinner = document.getElementById('recap-button-spinner');
+      if (spinner) spinner.classList.remove('recap-btn-spinner-hidden');
+
+      window.postMessage({ id: form.id }, '*');
+    });
+
+    let form = document.querySelector('form');
+    form.append(button);
+    form.append(document.createTextNode('\u00A0'));
+    form.append(spinner);
+  } else {
+    await overwriteFormSubmitMethod();
+  }
+
+  // When we receive the message from the above submit method, submit the form
+  // via XHR so we can get the document before the browser does.
+  window.addEventListener(
+    'message',
+    this.onDocumentViewSubmit.bind(this),
+    false
+  );
+
+  await this.checkSingleDocInCombinedPDFPage();
+};
+
+AppellateDelegate.prototype.checkSingleDocInCombinedPDFPage = async function(){
+  let clCourt = PACER.convertToCourtListenerCourt(this.court);
+  // Retrieves a partial document ID from the URL parameter named `"dls"`. It's
+  // important to note that this value might not be the complete document ID.
+  // It could potentially be a shortened version of the full ID.
+  let urlParams = new URLSearchParams(window.location.search);
+  let partialDocId = urlParams.get('dls').split(',')[0];
+
+  // If the `this.pacer_doc_id` property is not already set, attempt to retrieve
+  // it using the previously extracted partial document ID. The returned full
+  // document ID is then stored in the `this.pacer_doc_id` property for
+  // subsequent use.
+  if (!this.docId) {
+    this.docId = await getPacerDocIdFromPartialId(
+      this.tabId,
+      partialDocId
+    );
+  }
+
+  // If we don't have this.pacer_doc_id at this point, punt.
+  if (!this.docId) return;
+
+  const recapLinks = await dispatchBackgroundFetch({
+    action: 'getAvailabilityForDocuments',
+    data: {
+      docket_entry__docket__court: clCourt,
+      pacer_doc_id__in: this.docId,
+    },
+  });
+  if (!recapLinks.results.length) return;
+  console.info(
+    'RECAP: Got results from API. Processing results to insert link'
+  );
+  let result = recapLinks.results.filter(
+    (doc) => doc.pacer_doc_id === this.docId,
+    this
+  );
+  if (!result.length) return;
+
+  insertAvailableDocBanner(result[0].filepath_local, 'body');
 };
 
 // If this page offers a single document, intercept navigation to the document
@@ -1112,41 +1214,57 @@ AppellateDelegate.prototype.onDocumentViewSubmit = async function (event) {
   let form = document.getElementById(event.data.id);
 
   let title = document.querySelectorAll('strong')[1].innerHTML;
-  let dataFromTitle = APPELLATE.parseReceiptPageTitle(title);
+  let pdfData = APPELLATE.parseReceiptPageTitle(title);
 
-  if (
-    dataFromTitle.att_number == 0 &&
-    this.queryParameters.get('recapAttNum')
-  ) {
-    dataFromTitle.att_number = this.queryParameters.get('recapAttNum');
-  }
+  // For multi-document pages, the title alone doesn't provide sufficient
+  // information. Therefore, we need to extract additional data from the
+  // receipt table to accurately identify the PDF.
+  // Attempt to parse the necessary data from the receipt table.
+  if (!pdfData) pdfData = APPELLATE.parseDataFromReceiptTable();
 
-  if (dataFromTitle.doc_number.length > 9) {
-    // If the number is really big, it's probably a court that uses
-    // pacer_doc_id instead of regular docket entry numbering.
-    dataFromTitle.doc_number = PACER.cleanPacerDocId(dataFromTitle.doc_number);
-  }
-
-  if (!dataFromTitle) {
+  // If we still don't have enough data after parsing the receipt table,
+  // submit the form without retrieving the file.
+  if (!pdfData) {
     form.submit();
     return;
   }
+
+  if (pdfData.att_number == 0 && this.queryParameters.get('recapAttNum'))
+    pdfData.att_number = this.queryParameters.get('recapAttNum');
+
+  if (pdfData.doc_number.length > 9) {
+    // If the number is really big, it's probably a court that uses
+    // pacer_doc_id instead of regular docket entry numbering.
+    pdfData.doc_number = PACER.cleanPacerDocId(pdfData.doc_number);
+  }
+
   $('body').css('cursor', 'wait');
-  let query_string = new URLSearchParams(new FormData(form)).toString();
-  const resp = await window.fetch(form.action, {
-    method: form.method,
-    headers: {
+  // The form method in multi-document pages is a GET request, while
+  // single-document pages use a POST request. By checking the method here, we
+  // can reuse this code to retrieve the PDF file and display it appropriately
+  // for both page types.
+  let queryString = new URLSearchParams(new FormData(form));
+  let url = new URL(form.action);;
+  let method = form.method.toUpperCase();
+  let options = {};
+  if (method == 'GET') {
+    // If the method is GET, append query parameters to the URL
+    queryString.forEach((value, key) => url.searchParams.append(key, value));
+  } else {
+    options['method'] = method;
+    options['headers'] = {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
-    body: query_string
-  });
+    options['body'] = queryString.toString();
+  }
+  const resp = await window.fetch(url, options);
   let helperMethod = handleDocFormResponse.bind(this);
   helperMethod(
     resp.headers.get('Content-Type'),
     await resp.blob(),
     null,
     previousPageHtml,
-    dataFromTitle
+    pdfData
   );
 };
 
