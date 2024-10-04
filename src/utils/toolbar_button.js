@@ -31,6 +31,13 @@ export function updateToolbarButton(tab) {
   };
 
   chrome.storage.local.get('options', function (items) {
+    if (!Object.keys(items).length) {
+      // Firefox 56 bug. The default settings didn't get created properly when
+      // upgrading from the legacy extension. This can be removed when everybody
+      // is safely beyond 56 (and the ESR)
+      setDefaultOptions({});
+    }
+
     if (
       'dismiss_news_badge' in items['options'] &&
       items['options']['dismiss_news_badge']
@@ -51,12 +58,6 @@ export function updateToolbarButton(tab) {
         38: 'assets/images/grey-38.png',
       });
       return;
-    }
-    if (!Object.keys(items).length) {
-      // Firefox 56 bug. The default settings didn't get created properly when
-      // upgrading from the legacy extension. This can be removed when everybody
-      // is safely beyond 56 (and the ESR)
-      setDefaultOptions({});
     }
 
     if (items && items['options'] && !items['options']['recap_enabled']) {
