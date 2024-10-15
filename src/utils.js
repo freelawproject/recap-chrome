@@ -315,11 +315,14 @@ const combinedPdfWarning = () => {
   return outerDiv;
 };
 
+async function getDocToCasesFromStorage(tabId){
+  const tabStorage = await getItemsFromStorage(tabId);
+  return tabStorage && tabStorage.docsToCases;
+}
+
 //Given a pacer_doc_id, return the pacer_case_id that it is associated with
 async function getPacerCaseIdFromPacerDocId(tabId, pacer_doc_id) {
-  const tabStorage = await getItemsFromStorage(tabId);
-
-  const docsToCases = tabStorage && tabStorage.docsToCases;
+  const docsToCases = await getDocToCasesFromStorage(tabId);
   if (!docsToCases) return;
 
   const caseId = docsToCases[pacer_doc_id];
@@ -328,6 +331,41 @@ async function getPacerCaseIdFromPacerDocId(tabId, pacer_doc_id) {
   const success = `RECAP: Got case number ${caseId} for docId ${pacer_doc_id}`;
   console.info(success);
   return caseId;
+}
+
+// Retrieves the full Pacer document ID from a partial ID.
+//
+// Fetches the stored documents-to-cases mapping from the current tab's storage
+// Filters out the Pacer document IDs using the provided partial ID. Returns
+// the full Pacer document ID if a single match is found; otherwise, returns
+// `undefined`.
+async function getPacerDocIdFromPartialId(tabId, partialId) {
+  const docsToCases = await getDocToCasesFromStorage(tabId);
+  if (!docsToCases) return;
+
+  let docIds = Object.keys(docsToCases);
+  let pacerDocId = docIds.filter((id) => id.includes(partialId));
+  if (pacerDocId.length === 0) return;
+  return PACER.cleanPacerDocId(pacerDocId[0]);
+}
+
+// Retrieves the Pacer document ID using an exclude list.
+//
+// This function fetches the stored documents-to-cases mapping from the current
+// tab's storage. It then filters out the Pacer document IDs using the array of
+// the attachment IDs to exclude. If there's only one remaining Pacer document
+// ID, it's returned. Otherwise, undefined is returned.
+async function getPacerDocIdFromExcludeList(tabId, excludeList){
+  const docsToCases = await getDocToCasesFromStorage(tabId);
+  if (!docsToCases) return;
+
+  var pacerDocIds = Object.keys(docsToCases);
+  excludeList.forEach(
+    (attachmentId) =>
+      (pacerDocIds = pacerDocIds.filter((key) => !key.includes(attachmentId)))
+  );
+  if (pacerDocIds.length > 1) return;
+  return PACER.cleanPacerDocId(pacerDocIds[0]);
 }
 
 //Creates an extra button for filer accounts

@@ -166,9 +166,10 @@ ContentDelegate.prototype.findAndStorePacerDocIds = async function () {
   }
   // save JSON object in chrome storage under the tabId
   // append caseId if a docketQueryUrl
-  const payload = {
-    docsToCases: docsToCases,
-  };
+  const payload = {};
+  // Only update the `docsToCases` mapping in the storage if it contains data.
+  if (Object.keys(docsToCases).length) payload['docsToCases'] = docsToCases;
+
   if (!!this.pacer_doc_id) {
     payload['docId'] = this.pacer_doc_id;
   }
@@ -856,13 +857,152 @@ ContentDelegate.prototype.handleZipFilePageView = function () {
 
 // If the page offers a combined document, inserts a warning to let
 // the user know this document won't be uploaded.
-ContentDelegate.prototype.handleCombinedPDFView = function () {
+ContentDelegate.prototype.handleCombinedPDFView = async function () {
   if (!PACER.isCombinedPdfPage(this.url, document)) return false;
 
-  // query the main div of the page
-  let mainDiv = document.getElementById((id = 'cmecfMainContent'));
-  pdfWarning = combinedPdfWarning();
-  mainDiv.append(pdfWarning);
+  // Find all center divs, which typically wrap receipt tables.
+  // Count the number of divs to determine how many documents are on the page.
+  // Display a warning if there's more than one document.
+  let transactionReceiptTables = document.querySelectorAll('center');
+  if (transactionReceiptTables.length > 1) {
+    let mainDiv = document.getElementById((id = 'cmecfMainContent'));
+    pdfWarning = combinedPdfWarning();
+    mainDiv.append(pdfWarning);
+    return;
+  }
+
+  // Extract the URL from the `onclick` attribute of one of the "Download
+  // Documents" buttons
+  const inputs = [...document.getElementsByTagName('input')];
+  const targetInputs = inputs.filter((input) => input.type === 'button');
+  const url = targetInputs[0]
+    .getAttribute('onclick')
+    .replace(/p.*\//, '') // remove parent.location='/cgi-bin/
+    .replace(/\'(?=$)/, ''); // remove endquote
+
+  // Manipulate the dom elements without injecting a script
+  if (PACER.hasFilingCookie(document.cookie)) {
+    const inputs = [
+      ...document.querySelectorAll("form > input[type='button']"),
+    ];
+    inputs.map((input) => {
+      let button = createRecapButtonForFilers('Download and RECAP Document');
+      let spinner = createRecapSpinner();
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+
+        let spinners = document.querySelectorAll('.recap-btn-spinner-hidden');
+        for (const spinner of spinners) {
+          // Access and process each process result element here
+          spinner.classList.remove('recap-btn-spinner-hidden');
+        }
+
+        window.postMessage({ id: url });
+      });
+      // insert new button next to the "Download Documents" button
+      input.after(spinner);
+      input.after(document.createTextNode('\u00A0'));
+      input.after(button);
+    });
+  } else {
+    const forms = [...document.querySelectorAll('form')];
+    forms.map((form) => {
+      form.removeAttribute('action');
+      const input = form.querySelector('input');
+      input.removeAttribute('onclick');
+      input.disabled = true;
+      form.hidden = true;
+      const div = document.createElement('div');
+      const button = document.createElement('button');
+      button.textContent = 'View Document';
+      button.addEventListener('click', () => window.postMessage({ id: url }));
+      div.appendChild(button);
+      const parentNode = form.parentNode;
+      parentNode.insertBefore(div, form);
+    });
+  }
+  // When we receive the message from the above submit method, submit the form
+  // via fetch so we can get the document before the browser does.
+  window.addEventListener('message', this.onDownloadSubmit.bind(this));
+
+  await this.checkSingleDocInCombinedPDFPage();
+};
+
+
+ContentDelegate.prototype.onDownloadSubmit = async function (event) {
+  // Make the Back button redisplay the previous page.
+  window.onpopstate = function (event) {
+    if (event.state.content) {
+      document.documentElement.innerHTML = event.state.content;
+    }
+  };
+  history.replaceState({ content: document.documentElement.innerHTML }, '');
+  // tell the user to wait
+  $('body').css('cursor', 'wait');
+
+  let previousPageHtml = copyPDFDocumentPage();
+  let pdfData = PACER.parseDataFromReceipt();
+
+  const browserSpecificFetch =
+    navigator.userAgent.indexOf('Safari') +
+      navigator.userAgent.indexOf('Chrome') <
+    0
+      ? fetch
+      : window.fetch;
+
+  const documentRequest = await browserSpecificFetch(event.data.id);
+  let documentBlob = await documentRequest.blob();
+
+  let requestHandler = handleDocFormResponse.bind(this);
+  requestHandler(
+    documentRequest.headers.get('Content-Type'),
+    documentBlob,
+    null,
+    previousPageHtml,
+    pdfData
+  );
+};
+
+// checks if a specific document within a combined PDF page is available in
+// the Recap archive. The document is identified by its PACER document ID.
+// If the document is found, it inserts a banner to inform the user of its
+// availability.
+ContentDelegate.prototype.checkSingleDocInCombinedPDFPage = async function (){
+  let clCourt = PACER.convertToCourtListenerCourt(this.court);
+  const urlParams = new URLSearchParams(window.location.search);
+  // The URL of multi-document pages often contains a list of documents that
+  // are excluded from purchase.
+  let excludeList = urlParams.get('exclude_attachments').split(',');
+  // If the `this.pacer_doc_id` property is not already set, attempt to retrieve
+  // it from the extracted `excludeList`.
+  if (!this.pacer_doc_id) {
+    this.pacer_doc_id = await getPacerDocIdFromExcludeList(
+      this.tabId,
+      excludeList
+    );
+  }
+
+  // If we don't have this.pacer_doc_id at this point, punt.
+  if (!this.pacer_doc_id) return;
+
+  const recapLinks = await dispatchBackgroundFetch({
+    action: 'getAvailabilityForDocuments',
+    data: {
+      docket_entry__docket__court: clCourt,
+      pacer_doc_id__in: this.pacer_doc_id,
+    },
+  });
+  if (!recapLinks.results.length) return;
+  console.info(
+    'RECAP: Got results from API. Processing results to insert link'
+  );
+  let result = recapLinks.results.filter(
+    (doc) => doc.pacer_doc_id === this.pacer_doc_id,
+    this
+  );
+  if (!result.length) return;
+
+  insertAvailableDocBanner(result[0].filepath_local, 'form:last');
 };
 
 ContentDelegate.prototype.handleClaimsPageView = async function () {
