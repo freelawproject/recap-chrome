@@ -64,8 +64,8 @@ export const handleBackgroundNotification = (req, sender, sendResponse) => {
       break;
     case 'showUpload':
       chrome.storage.local.get('options', (items) => {
-        if (!items || !items.options.show_notifications) return;
-        showNotification(title, message);
+        if (items && items.options.show_notifications)
+          showNotification(title, message);
         sendResponse({ status: 'success ' });
       });
       break;
