@@ -731,11 +731,11 @@ let PACER = {
       return 0;
     }
 
-    //  If the attachment page uses checkboxes, each row should have five child nodes and the attachment
+    //  If the attachment page uses checkboxes, each row should have five or six child nodes and the attachment
     //  number should be inside the second one(the first node has the checkbox). Attachment pages that does
     //  not have checkboxes shows the attachment number inside the first child node.
 
-    let rowNumber = row.childElementCount == 5 ? row.childNodes[1].innerHTML : row.childNodes[0].innerHTML;
+    let rowNumber = [5,6].includes(row.childElementCount) ? row.childNodes[1].innerHTML : row.childNodes[0].innerHTML;
     let cleanNumber = this.cleanDocLinkNumber(rowNumber);
     return cleanNumber ? cleanNumber : 0;
   },
