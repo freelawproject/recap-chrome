@@ -709,6 +709,7 @@ let PACER = {
     //   - The document Link
     //   - A description 
     //   - The number of pages
+    //   - File size (optional)
     //
     //  Each row of the docket report has the following information:
     //
@@ -719,7 +720,7 @@ let PACER = {
     //  We can use the number of elements per row to group the possible cases:
     //
     //  - Rows with 3 or less elements belong to a docket report. 
-    //  - Rows with four or five elements belong to an attachment menu.
+    //  - Rows with four, five or more elements belong to an attachment menu.
     //
     //  This method accesses the tr element that contains the document link, checks the number
     //  of elements inside this tag (we want to exclude rows from docket reports) and returns the 
@@ -731,11 +732,11 @@ let PACER = {
       return 0;
     }
 
-    //  If the attachment page uses checkboxes, each row should have five child nodes and the attachment
+    //  If the attachment page uses checkboxes, each row should have five or six child nodes and the attachment
     //  number should be inside the second one(the first node has the checkbox). Attachment pages that does
     //  not have checkboxes shows the attachment number inside the first child node.
 
-    let rowNumber = row.childElementCount == 5 ? row.childNodes[1].innerHTML : row.childNodes[0].innerHTML;
+    let rowNumber = [5,6].includes(row.childElementCount) ? row.childNodes[1].innerHTML : row.childNodes[0].innerHTML;
     let cleanNumber = this.cleanDocLinkNumber(rowNumber);
     return cleanNumber ? cleanNumber : 0;
   },

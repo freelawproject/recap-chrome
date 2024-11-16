@@ -17,6 +17,7 @@ Fixes:
  - Fix setDefaultOptions in updateToolbarButton([403](https://github.com/freelawproject/recap-chrome/pull/403))
  - Ensure we call sendResponse even when notifications are disabled([405](https://github.com/freelawproject/recap-chrome/pull/405))
  - Use chrome.scripting.ExecutionWorld.MAIN for firefox compatibility ([404](https://github.com/freelawproject/recap-chrome/pull/404))
+ - Improves getAttachmentNumberFromAnchor to accurately extract attachment numbers from tables with 5+ columns([406](https://github.com/freelawproject/recap-chrome/pull/406))
 
 
 For developers:
