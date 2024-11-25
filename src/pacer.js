@@ -729,7 +729,7 @@ let PACER = {
     let row = anchor.parentNode.parentNode;
     if (row.childElementCount <= 3) {
       // Attachment menu pages should have more than 3 element per row.
-      return 0;
+      return null;
     }
 
     //  If the attachment page uses checkboxes, each row should have five or six child nodes and the attachment
@@ -738,7 +738,7 @@ let PACER = {
 
     let rowNumber = [5,6].includes(row.childElementCount) ? row.childNodes[1].innerHTML : row.childNodes[0].innerHTML;
     let cleanNumber = this.cleanDocLinkNumber(rowNumber);
-    return cleanNumber ? cleanNumber : 0;
+    return cleanNumber ? cleanNumber : null;
   },
 
   handleDocketAvailabilityMessages: (resultCount) =>{

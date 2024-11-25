@@ -780,7 +780,7 @@ describe('The PACER module', function () {
   });
 
   describe('getAttachmentNumberFromAnchor', function () {
-    it('returns 0 if the table has less than four columns', function () {
+    it('returns null if the table has less than four columns', function () {
       let tr = document.createElement('tr');
       let anchor_td = document.createElement('td');
       let anchor = document.createElement('a');
@@ -788,7 +788,7 @@ describe('The PACER module', function () {
       tr.appendChild(document.createElement('td'));
       tr.appendChild(anchor_td);
       tr.appendChild(document.createElement('td'));
-      expect(PACER.getAttachmentNumberFromAnchor(anchor)).toBe(0);
+      expect(PACER.getAttachmentNumberFromAnchor(anchor)).toBeNull();
     });
 
     it('returns the attachment number if the table uses checkboxes', function () {
