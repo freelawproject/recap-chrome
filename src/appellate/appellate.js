@@ -489,7 +489,7 @@ AppellateDelegate.prototype.handleAcmsDownloadPage = async function () {
       att_number:
         downloadData.docketEntry.documentCount > 1
           ? dataFromTitle.att_number
-          : 0,
+          : null,
     };
 
     // Remove element from the page to show loading message
@@ -1114,10 +1114,7 @@ AppellateDelegate.prototype.onDocumentViewSubmit = async function (event) {
   let title = document.querySelectorAll('strong')[1].innerHTML;
   let dataFromTitle = APPELLATE.parseReceiptPageTitle(title);
 
-  if (
-    dataFromTitle.att_number == 0 &&
-    this.queryParameters.get('recapAttNum')
-  ) {
+  if (!dataFromTitle.att_number && this.queryParameters.get('recapAttNum')) {
     dataFromTitle.att_number = this.queryParameters.get('recapAttNum');
   }
 

@@ -261,9 +261,7 @@ let APPELLATE = {
 
       // if an attachment number is found, it adds it to the link href
       let attNumber = PACER.getAttachmentNumberFromAnchor(a);
-      if (attNumber != 0) {
-        url.searchParams.set('recapAttNum', attNumber);
-      }
+      if (attNumber) url.searchParams.set('recapAttNum', attNumber);
 
       a.setAttribute('href', url.toString());
 
@@ -290,7 +288,7 @@ let APPELLATE = {
       clonedNode.dataset.pacerCaseId = pacerCaseId;
       clonedNode.dataset.pacerTabId = tabId;
       clonedNode.dataset.documentNumber = docNum ? docNum : docId;
-      clonedNode.dataset.attachmentNumber = attNumber;
+      if (attNumber) clonedNode.dataset.attachmentNumber = attNumber;
 
       links.push(docId);
     });
@@ -367,7 +365,7 @@ let APPELLATE = {
       [, r.docket_number, r.doc_number, r.att_number] = dataFromAttachment;
     } else {
       [, r.docket_number, r.doc_number] = dataFromSingleDoc;
-      r.att_number = 0;
+      r.att_number = null;
     }
     return r;
   },

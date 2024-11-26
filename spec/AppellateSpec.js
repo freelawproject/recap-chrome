@@ -77,7 +77,7 @@ describe('The Appellate module', function () {
       );
       expect(titleData.docket_number).toBe('22-11187');
       expect(titleData.doc_number).toBe('49');
-      expect(titleData.att_number).toBe(0);
+      expect(titleData.att_number).toBeNull();
     });
 
     it('parses title with attachment number from download page', function () {
@@ -302,7 +302,7 @@ describe('The Appellate module', function () {
             expect(item.dataset.pacerDlsId).toBe(documentLinks[i]['dlsId']);
             expect(item.dataset.pacerCaseId).toBe('290338');
             expect(item.dataset.pacerTabId).toBe('3');
-            expect(item.dataset.attachmentNumber).toBe('0');
+            expect(item.dataset.attachmentNumber).toBeUndefined();
           }
         });
       });
