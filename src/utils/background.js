@@ -102,6 +102,10 @@ export function showNotificationTab(details) {
     chrome.tabs.create({
       url: 'https://donate.free.law/forms/11',
     });
+  } else if (details.reason === 'update' && currentVersion === '2.8.2') {
+    chrome.tabs.create({
+      url: 'https://free.law/fundraiser/2024/recap',
+    });
   }
 }
 
