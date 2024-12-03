@@ -5,7 +5,7 @@
 The following changes are not yet released, but are code complete:
 
 Features:
- - None yet
+ - Adds annual tab popup asking for support from all users([384](https://github.com/freelawproject/recap/issues/384), [408](https://github.com/freelawproject/recap-chrome/pull/408))
 
 Changes:
  - Upgrade to CourtListener v4 API([380](https://github.com/freelawproject/recap/issues/380), [401](https://github.com/freelawproject/recap-chrome/pull/401))
