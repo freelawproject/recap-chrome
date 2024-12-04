@@ -5,6 +5,20 @@
 The following changes are not yet released, but are code complete:
 
 Features:
+ - None yet
+
+Changes:
+ - None yet
+
+Fixes:
+ - None yet
+  
+For developers:
+ - Nothing yet
+
+## 2.8.2 (2024-12-04)
+
+Features:
  - Adds annual tab popup asking for support from all users([384](https://github.com/freelawproject/recap/issues/384), [408](https://github.com/freelawproject/recap-chrome/pull/408))
 
 Changes:
@@ -20,9 +34,6 @@ Fixes:
  - Improves getAttachmentNumberFromAnchor to accurately extract attachment numbers from tables with 5+ columns([406](https://github.com/freelawproject/recap-chrome/pull/406))
  - Refines attachment handling in appellate uploads to only send attachment_number when necessary([382](https://github.com/freelawproject/recap/issues/382),[406](https://github.com/freelawproject/recap-chrome/pull/407))
 
-
-For developers:
- - Nothing yet
 
 ## 2.8.1 (2024-09-12)
 
