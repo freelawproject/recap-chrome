@@ -8,16 +8,32 @@ Features:
  - Refines logic to accurately identify multi-document pages containing a single file ([349](https://github.com/freelawproject/recap/issues/349), [402](https://github.com/freelawproject/recap-chrome/pull/402)) 
 
 Changes:
+ - None yet
+
+Fixes:
+ - None yet
+  
+For developers:
+ - Nothing yet
+
+## 2.8.2 (2024-12-04)
+
+Features:
+ - Adds annual tab popup asking for support from all users([384](https://github.com/freelawproject/recap/issues/384), [408](https://github.com/freelawproject/recap-chrome/pull/408))
+
+Changes:
  - Upgrade to CourtListener v4 API([380](https://github.com/freelawproject/recap/issues/380), [401](https://github.com/freelawproject/recap-chrome/pull/401))
  
 Fixes:
  - Corrected typo in build script, ensuring correct favicon path for Firefox releases([379](https://github.com/freelawproject/recap/issues/379), [397](https://github.com/freelawproject/recap-chrome/pull/397))
  - Refines the generateFileName method to accurately compute zip file names ([366](https://github.com/freelawproject/recap/issues/366), [399](https://github.com/freelawproject/recap-chrome/pull/399)).
  - Improves the reliability of PACER case ID retrieval on attachment pages ([369](https://github.com/freelawproject/recap/issues/369), [400](https://github.com/freelawproject/recap-chrome/pull/400)).
+ - Fix setDefaultOptions in updateToolbarButton([403](https://github.com/freelawproject/recap-chrome/pull/403))
+ - Ensure we call sendResponse even when notifications are disabled([405](https://github.com/freelawproject/recap-chrome/pull/405))
+ - Use chrome.scripting.ExecutionWorld.MAIN for firefox compatibility ([404](https://github.com/freelawproject/recap-chrome/pull/404))
+ - Improves getAttachmentNumberFromAnchor to accurately extract attachment numbers from tables with 5+ columns([406](https://github.com/freelawproject/recap-chrome/pull/406))
+ - Refines attachment handling in appellate uploads to only send attachment_number when necessary([382](https://github.com/freelawproject/recap/issues/382),[406](https://github.com/freelawproject/recap-chrome/pull/407))
 
-
-For developers:
- - Nothing yet
 
 ## 2.8.1 (2024-09-12)
 

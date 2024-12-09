@@ -1,5 +1,10 @@
 import { getCourtFromUrl } from './url_and_cookie_helpers.js';
 
+let isSafari =
+  /Safari/.test(navigator.userAgent) &&
+  !/Chrome|Chromium/.test(navigator.userAgent);
+let executionWorld = isSafari ? 'MAIN' : chrome.scripting.ExecutionWorld.MAIN;
+
 export function chooseVariant(details) {
   const options = ['A-A', 'A-C', 'B-B', 'B-D'];
   const randomIndex = Math.floor(Math.random() * options.length);
@@ -97,6 +102,10 @@ export function showNotificationTab(details) {
     chrome.tabs.create({
       url: 'https://donate.free.law/forms/11',
     });
+  } else if (details.reason === 'update' && currentVersion === '2.8.2') {
+    chrome.tabs.create({
+      url: 'https://free.law/fundraiser/2024/recap',
+    });
   }
 }
 
@@ -123,13 +132,12 @@ export function getAndStoreVueData(req, sender, sendResponse) {
     .executeScript({
       target: { tabId: sender.tab.id },
       func: getVueDiv,
-      world: 'MAIN',
+      world: executionWorld,
     })
     .then((injectionResults) => sendResponse(injectionResults));
 }
 
-
-export function overwriteSubmitMethod(req, sender, sendResponse){
+export function overwriteSubmitMethod(req, sender, sendResponse) {
   const _overwriteScript = () => {
     document.createElement('form').__proto__.submit = function () {
       this.id = 'form' + new Date().getTime();
@@ -154,7 +162,7 @@ export function overwriteSubmitMethod(req, sender, sendResponse){
     .executeScript({
       target: { tabId: sender.tab.id },
       func: _overwriteScript,
-      world: 'MAIN',
+      world: executionWorld,
     })
     .then((injectionResults) => sendResponse(injectionResults));
 }

@@ -489,7 +489,7 @@ AppellateDelegate.prototype.handleAcmsDownloadPage = async function () {
       att_number:
         downloadData.docketEntry.documentCount > 1
           ? dataFromTitle.att_number
-          : 0,
+          : null,
     };
 
     // Remove element from the page to show loading message
@@ -1229,8 +1229,9 @@ AppellateDelegate.prototype.onDocumentViewSubmit = async function (event) {
     return;
   }
 
-  if (pdfData.att_number == 0 && this.queryParameters.get('recapAttNum'))
+  if (!pdfData.att_number && this.queryParameters.get('recapAttNum')) {
     pdfData.att_number = this.queryParameters.get('recapAttNum');
+  }
 
   if (pdfData.doc_number.length > 9) {
     // If the number is really big, it's probably a court that uses
