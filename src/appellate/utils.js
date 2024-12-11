@@ -235,6 +235,7 @@ let APPELLATE = {
   findDocLinksFromAnchors: function (nodeList, tabId, queryParameters, docketNumber) {
     let links = [];
     let docsToCases = {};
+    let docsToAttachmentNumbers = {};
     Array.from(nodeList).map((a) => {
       if (!PACER.isDoc1Url(a.href)) return;
 
@@ -290,11 +291,14 @@ let APPELLATE = {
       clonedNode.dataset.pacerCaseId = pacerCaseId;
       clonedNode.dataset.pacerTabId = tabId;
       clonedNode.dataset.documentNumber = docNum ? docNum : docId;
-      if (attNumber) clonedNode.dataset.attachmentNumber = attNumber;
+      if (attNumber) {
+        clonedNode.dataset.attachmentNumber = attNumber;
+        docsToAttachmentNumbers[docId] = attNumber;
+      }
 
       links.push(docId);
     });
-    return { links, docsToCases };
+    return { links, docsToCases , docsToAttachmentNumbers};
   },
 
   // get the docId from the servlet parameter of the attachment page or the single doc page

@@ -846,12 +846,13 @@ AppellateDelegate.prototype.attachRecapLinksToEligibleDocs = async function () {
   }
 
   // filter the links for the documents available on the page
-  let { links, docsToCases } = APPELLATE.findDocLinksFromAnchors(
-    this.links,
-    this.tabId,
-    this.queryParameters,
-    this.docketNumber
-  );
+  let { links, docsToCases, docsToAttachmentNumbers } =
+    APPELLATE.findDocLinksFromAnchors(
+      this.links,
+      this.tabId,
+      this.queryParameters,
+      this.docketNumber
+    );
 
   this.pacer_case_id = this.pacer_case_id
     ? this.pacer_case_id
@@ -871,6 +872,7 @@ AppellateDelegate.prototype.attachRecapLinksToEligibleDocs = async function () {
       caseId: this.pacer_case_id,
       docketNumber: this.docketNumber,
       docsToCases: docsToCases,
+      docsToAttachmentNumbers: docsToAttachmentNumbers,
     },
   });
 
