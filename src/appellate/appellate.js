@@ -605,8 +605,15 @@ AppellateDelegate.prototype.handleAcmsDownloadPage = async function () {
           console.info(
             'RECAP: Got results from API. Processing results to insert banner'
           );
+          // To accurately identify ACMS documents, we should prioritize the
+          // `ACMS document details ID` stored in browser sessionStorage over
+          // the docket entry ID. This is because ACMS often uses the same URL
+          // for different attachments, making it ambiguous for identification
+          // purposes.
+          let acms_doc_id =
+            downloadData.docketEntryDocuments[0].docketDocumentDetailsId;
           let result = recapLinks.results.filter(
-            (obj) => obj.pacer_doc_id == this.docId,
+            (obj) => obj.acms_document_guid == acms_doc_id,
             this
           )[0];
           if (!result) return;
@@ -1117,6 +1124,7 @@ AppellateDelegate.prototype.checkSingleDocInCombinedPDFPage = async function(){
   console.info(
     'RECAP: Got results from API. Processing results to insert link'
   );
+
   let result = recapLinks.results.filter(
     (doc) => doc.pacer_doc_id === this.docId,
     this
