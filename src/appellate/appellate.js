@@ -1028,6 +1028,32 @@ AppellateDelegate.prototype.handleAttachmentPage = async function () {
   history.replaceState({ uploaded: true }, '');
 };
 
+AppellateDelegate.prototype.overrideDefaultForm = async function () {
+  if (PACER.hasFilingCookie(document.cookie)) {
+    let button = createRecapButtonForFilers(
+      'Accept Charges and RECAP Document'
+    );
+    let spinner = createRecapSpinner();
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      let form = event.target.parentNode;
+      form.id = 'form' + new Date().getTime();
+
+      let spinner = document.getElementById('recap-button-spinner');
+      if (spinner) spinner.classList.remove('recap-btn-spinner-hidden');
+
+      window.postMessage({ id: form.id }, '*');
+    });
+
+    let form = document.querySelector('form');
+    form.append(button);
+    form.append(document.createTextNode('\u00A0'));
+    form.append(spinner);
+  } else {
+    await overwriteFormSubmitMethod();
+  }
+};
+
 AppellateDelegate.prototype.handleCombinedPdfPageView = async function () {
   // Find all `center` divs, which typically wrap receipt tables in lower
   // courts. However, in appellate courts, these divs can also wrap the entire
@@ -1058,29 +1084,7 @@ AppellateDelegate.prototype.handleCombinedPdfPageView = async function () {
     return;
   }
 
-  if (PACER.hasFilingCookie(document.cookie)) {
-    let button = createRecapButtonForFilers(
-      'Accept Charges and RECAP Document'
-    );
-    let spinner = createRecapSpinner();
-    button.addEventListener('click', (event) => {
-      event.preventDefault();
-      let form = event.target.parentNode;
-      form.id = 'form' + new Date().getTime();
-
-      let spinner = document.getElementById('recap-button-spinner');
-      if (spinner) spinner.classList.remove('recap-btn-spinner-hidden');
-
-      window.postMessage({ id: form.id }, '*');
-    });
-
-    let form = document.querySelector('form');
-    form.append(button);
-    form.append(document.createTextNode('\u00A0'));
-    form.append(spinner);
-  } else {
-    await overwriteFormSubmitMethod();
-  }
+  await this.overrideDefaultForm();
 
   // When we receive the message from the above submit method, submit the form
   // via XHR so we can get the document before the browser does.
@@ -1139,29 +1143,7 @@ AppellateDelegate.prototype.checkSingleDocInCombinedPDFPage = async function(){
 // If this page offers a single document, intercept navigation to the document
 // view page.
 AppellateDelegate.prototype.handleSingleDocumentPageView = async function () {
-  if (PACER.hasFilingCookie(document.cookie)) {
-    let button = createRecapButtonForFilers(
-      'Accept Charges and RECAP Document'
-    );
-    let spinner = createRecapSpinner();
-    button.addEventListener('click', (event) => {
-      event.preventDefault();
-      let form = event.target.parentNode;
-      form.id = 'form' + new Date().getTime();
-
-      let spinner = document.getElementById('recap-button-spinner');
-      if (spinner) spinner.classList.remove('recap-btn-spinner-hidden');
-
-      window.postMessage({ id: form.id }, '*');
-    });
-
-    let form = document.querySelector('form');
-    form.append(button);
-    form.append(document.createTextNode('\u00A0'));
-    form.append(spinner);
-  } else {
-    await overwriteFormSubmitMethod();
-  }
+  await this.overrideDefaultForm();
 
   this.pacer_case_id = await APPELLATE.getCaseId(
     this.tabId,
