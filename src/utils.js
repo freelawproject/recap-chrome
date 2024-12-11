@@ -333,6 +333,18 @@ async function getPacerCaseIdFromPacerDocId(tabId, pacer_doc_id) {
   return caseId;
 }
 
+// Retrieves the attachment number using the pacer_doc_id
+async function getAttachmentNumberFromPacerDocId(tabId, pacer_doc_id) {
+  const tabStorage = await getItemsFromStorage(tabId);
+  const docsToAttachmentNumbers =
+    tabStorage && tabStorage.docsToAttachmentNumbers;
+  if (!docsToAttachmentNumbers) return;
+
+  const attachmentNumber = docsToAttachmentNumbers[pacer_doc_id];
+  if (!attachmentNumber) return;
+  return attachmentNumber;
+}
+
 // Retrieves the full Pacer document ID from a partial ID.
 //
 // Fetches the stored documents-to-cases mapping from the current tab's storage

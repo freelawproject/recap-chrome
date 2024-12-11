@@ -1239,8 +1239,15 @@ AppellateDelegate.prototype.onDocumentViewSubmit = async function (event) {
     return;
   }
 
-  if (!pdfData.att_number && this.queryParameters.get('recapAttNum')) {
-    pdfData.att_number = this.queryParameters.get('recapAttNum');
+  if (!pdfData.att_number) {
+    if (this.queryParameters.get('recapAttNum')) {
+      pdfData.att_number = this.queryParameters.get('recapAttNum');
+    } else {
+      pdfData.att_number = await getAttachmentNumberFromPacerDocId(
+        this.tabId,
+        this.docId
+      );
+    }
   }
 
   if (pdfData.doc_number.length > 9) {
