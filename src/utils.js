@@ -404,3 +404,62 @@ function createRecapSpinner(hidden = true) {
 
   return spinner;
 }
+
+// checks if a specific document within a combined PDF page is available in
+// the Recap archive. The document is identified by its PACER document ID.
+// If the document is found, it inserts a banner to inform the user of its
+// availability.
+async function checkSingleDocInCombinedPDFPage(
+  tabId,
+  court,
+  docId,
+  isAppellate = false
+) {
+  let clCourt = PACER.convertToCourtListenerCourt(court);
+  const urlParams = new URLSearchParams(window.location.search);
+  if (isAppellate) {
+    // Retrieves a partial document ID from the URL parameter named `"dls"`.
+    // It's important to note that this value might not be the complete
+    // document ID. It could potentially be a shortened version of the full ID.
+    let partialDocId = urlParams.get('dls').split(',')[0];
+    // If the pacer_doc_id is not already set, attempt to retrieve it using the
+    // previously extracted partial document ID. The returned full document ID
+    // is then stored in the `this.pacer_doc_id` property for subsequent use.
+    if (!docId) {
+      docId = await getPacerDocIdFromPartialId(tabId, partialDocId);
+    }
+  } else {
+    // The URL of multi-document pages in district courts often contains a list
+    // of documents that are excluded from purchase.
+    let excludeList = urlParams.get('exclude_attachments').split(',');
+    // If the pacer_doc_id is not already set, attempt to retrieve it from the
+    // extracted `excludeList`.
+    if (!docId) {
+      docId = await getPacerDocIdFromExcludeList(tabId, excludeList);
+    }
+  }
+
+  // If we don't have this.pacer_doc_id at this point, punt.
+  if (!docId) return;
+
+  const recapLinks = await dispatchBackgroundFetch({
+    action: 'getAvailabilityForDocuments',
+    data: {
+      docket_entry__docket__court: clCourt,
+      pacer_doc_id__in: docId,
+    },
+  });
+  if (!recapLinks.results.length) return docId;
+  console.info(
+    'RECAP: Got results from API. Processing results to insert link'
+  );
+  let result = recapLinks.results.filter(
+    (doc) => doc.pacer_doc_id === docId,
+    this
+  );
+  if (!result.length) return docId;
+
+  let targetDiv = isAppellate ? 'body' : 'form:last';
+  insertAvailableDocBanner(result[0].filepath_local, targetDiv);
+  return docId;
+}
