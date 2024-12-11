@@ -30,6 +30,11 @@ const downloadDataFromIframe = async(match, tabId) => {
       ? fetch
       : window.fetch;
   const blob = await browserSpecificFetch(match[2]).then((res) => res.blob());
+  const fileType = blob.type;
+  // Allow only specific file types (e.g., PDF) to be stored in the tab storage.
+  // This ensures data integrity.
+  const allowedTypes = ['application/pdf'];
+  if (!allowedTypes.includes(fileType)) return;
   const dataUrl = await blobToDataURL(blob);
   // store the blob in chrome storage for the background worker
   await updateTabStorage({ [tabId]: { ['pdf_blob']: dataUrl } });
@@ -211,6 +216,7 @@ const showAndUploadPdf = async function (
   history.replaceState({ content: previousPageHtml }, '');
 
   let blob = await downloadDataFromIframe(match, this.tabId);
+  if (!blob) return document.documentElement.innerHTML = html_elements;
   let blobUrl = URL.createObjectURL(blob);
   let pacer_case_id;
 
