@@ -315,11 +315,14 @@ const combinedPdfWarning = () => {
   return outerDiv;
 };
 
+async function getDocToCasesFromStorage(tabId){
+  const tabStorage = await getItemsFromStorage(tabId);
+  return tabStorage && tabStorage.docsToCases;
+}
+
 //Given a pacer_doc_id, return the pacer_case_id that it is associated with
 async function getPacerCaseIdFromPacerDocId(tabId, pacer_doc_id) {
-  const tabStorage = await getItemsFromStorage(tabId);
-
-  const docsToCases = tabStorage && tabStorage.docsToCases;
+  const docsToCases = await getDocToCasesFromStorage(tabId);
   if (!docsToCases) return;
 
   const caseId = docsToCases[pacer_doc_id];
@@ -328,6 +331,53 @@ async function getPacerCaseIdFromPacerDocId(tabId, pacer_doc_id) {
   const success = `RECAP: Got case number ${caseId} for docId ${pacer_doc_id}`;
   console.info(success);
   return caseId;
+}
+
+// Retrieves the attachment number using the pacer_doc_id
+async function getAttachmentNumberFromPacerDocId(tabId, pacer_doc_id) {
+  const tabStorage = await getItemsFromStorage(tabId);
+  const docsToAttachmentNumbers =
+    tabStorage && tabStorage.docsToAttachmentNumbers;
+  if (!docsToAttachmentNumbers) return;
+
+  const attachmentNumber = docsToAttachmentNumbers[pacer_doc_id];
+  if (!attachmentNumber) return;
+  return attachmentNumber;
+}
+
+// Retrieves the full Pacer document ID from a partial ID.
+//
+// Fetches the stored documents-to-cases mapping from the current tab's storage
+// Filters out the Pacer document IDs using the provided partial ID. Returns
+// the full Pacer document ID if a single match is found; otherwise, returns
+// `undefined`.
+async function getPacerDocIdFromPartialId(tabId, partialId) {
+  const docsToCases = await getDocToCasesFromStorage(tabId);
+  if (!docsToCases) return;
+
+  let docIds = Object.keys(docsToCases);
+  let pacerDocId = docIds.filter((id) => id.includes(partialId));
+  if (pacerDocId.length === 0) return;
+  return PACER.cleanPacerDocId(pacerDocId[0]);
+}
+
+// Retrieves the Pacer document ID using an exclude list.
+//
+// This function fetches the stored documents-to-cases mapping from the current
+// tab's storage. It then filters out the Pacer document IDs using the array of
+// the attachment IDs to exclude. If there's only one remaining Pacer document
+// ID, it's returned. Otherwise, undefined is returned.
+async function getPacerDocIdFromExcludeList(tabId, excludeList){
+  const docsToCases = await getDocToCasesFromStorage(tabId);
+  if (!docsToCases) return;
+
+  var pacerDocIds = Object.keys(docsToCases);
+  excludeList.forEach(
+    (attachmentId) =>
+      (pacerDocIds = pacerDocIds.filter((key) => !key.includes(attachmentId)))
+  );
+  if (pacerDocIds.length > 1) return;
+  return PACER.cleanPacerDocId(pacerDocIds[0]);
 }
 
 //Creates an extra button for filer accounts
@@ -353,4 +403,63 @@ function createRecapSpinner(hidden = true) {
   if (hidden) spinner.classList.add('recap-btn-spinner-hidden');
 
   return spinner;
+}
+
+// checks if a specific document within a combined PDF page is available in
+// the Recap archive. The document is identified by its PACER document ID.
+// If the document is found, it inserts a banner to inform the user of its
+// availability.
+async function checkSingleDocInCombinedPDFPage(
+  tabId,
+  court,
+  docId,
+  isAppellate = false
+) {
+  let clCourt = PACER.convertToCourtListenerCourt(court);
+  const urlParams = new URLSearchParams(window.location.search);
+  if (isAppellate) {
+    // Retrieves a partial document ID from the URL parameter named `"dls"`.
+    // It's important to note that this value might not be the complete
+    // document ID. It could potentially be a shortened version of the full ID.
+    let partialDocId = urlParams.get('dls').split(',')[0];
+    // If the pacer_doc_id is not already set, attempt to retrieve it using the
+    // previously extracted partial document ID. The returned full document ID
+    // is then stored in the `this.pacer_doc_id` property for subsequent use.
+    if (!docId) {
+      docId = await getPacerDocIdFromPartialId(tabId, partialDocId);
+    }
+  } else {
+    // The URL of multi-document pages in district courts often contains a list
+    // of documents that are excluded from purchase.
+    let excludeList = urlParams.get('exclude_attachments').split(',');
+    // If the pacer_doc_id is not already set, attempt to retrieve it from the
+    // extracted `excludeList`.
+    if (!docId) {
+      docId = await getPacerDocIdFromExcludeList(tabId, excludeList);
+    }
+  }
+
+  // If we don't have this.pacer_doc_id at this point, punt.
+  if (!docId) return;
+
+  const recapLinks = await dispatchBackgroundFetch({
+    action: 'getAvailabilityForDocuments',
+    data: {
+      docket_entry__docket__court: clCourt,
+      pacer_doc_id__in: docId,
+    },
+  });
+  if (!recapLinks.results.length) return docId;
+  console.info(
+    'RECAP: Got results from API. Processing results to insert link'
+  );
+  let result = recapLinks.results.filter(
+    (doc) => doc.pacer_doc_id === docId,
+    this
+  );
+  if (!result.length) return docId;
+
+  let targetDiv = isAppellate ? 'body' : 'form:last';
+  insertAvailableDocBanner(result[0].filepath_local, targetDiv);
+  return docId;
 }

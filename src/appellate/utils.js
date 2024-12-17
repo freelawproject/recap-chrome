@@ -235,20 +235,23 @@ let APPELLATE = {
   findDocLinksFromAnchors: function (nodeList, tabId, queryParameters, docketNumber) {
     let links = [];
     let docsToCases = {};
+    let docsToAttachmentNumbers = {};
     Array.from(nodeList).map((a) => {
       if (!PACER.isDoc1Url(a.href)) return;
 
-      let docNum = PACER.getDocNumberFromAnchor(a) || queryParameters.get('recapDocNum');
+      let docNum =
+        PACER.getDocNumberFromAnchor(a) || queryParameters.get('recapDocNum');
       let doDoc = PACER.parseDoDocPostURL(a.getAttribute('onclick'));
-      if (doDoc && doDoc.doc_id && doDoc.case_id) {
-        docsToCases[doDoc.doc_id] = doDoc.case_id;
+      let pacerCaseId =
+        (doDoc && doDoc.case_id) || queryParameters.get('caseId');
+      if (doDoc && doDoc.doc_id && pacerCaseId) {
+        docsToCases[doDoc.doc_id] = pacerCaseId;
       }
 
       a.removeAttribute('onclick');
       a.setAttribute('target', '_self');
 
       let url = new URL(a.href);
-      let pacerCaseId = (doDoc && doDoc.case_id) || queryParameters.get('caseId');
       url.searchParams.set('caseId', pacerCaseId);
 
       if (docNum) {
@@ -288,11 +291,14 @@ let APPELLATE = {
       clonedNode.dataset.pacerCaseId = pacerCaseId;
       clonedNode.dataset.pacerTabId = tabId;
       clonedNode.dataset.documentNumber = docNum ? docNum : docId;
-      if (attNumber) clonedNode.dataset.attachmentNumber = attNumber;
+      if (attNumber) {
+        clonedNode.dataset.attachmentNumber = attNumber;
+        docsToAttachmentNumbers[docId] = attNumber;
+      }
 
       links.push(docId);
     });
-    return { links, docsToCases };
+    return { links, docsToCases , docsToAttachmentNumbers};
   },
 
   // get the docId from the servlet parameter of the attachment page or the single doc page
@@ -368,6 +374,24 @@ let APPELLATE = {
       r.att_number = null;
     }
     return r;
+  },
+
+  // returns data from the table of the Receipt Page as an object
+  parseDataFromReceiptTable: () => {
+    // this method uses regex expressions to match that information from the
+    // receipt table and returns an object with the following attributes:
+    //  - docket_number
+    //  - doc_number
+    //  - att_number (if applicable).
+    let search_string = $('td:contains(Case)').text();
+    let regex =
+      /Case: (?<docket_number>[^']*), Document: (?<doc_number>\d+)(-(?<att_number>\d+))?/;
+    let matches = regex.exec(search_string);
+    // If no matches were found, return null.
+    if (!matches) return null;
+    // If an attachment number was not found, set it to 0.
+    if (!matches.groups.att_number) matches.groups.att_number = 0;
+    return matches.groups;
   },
 
   // Returns an object with the court Id and docket number core extracted from a link to district court
