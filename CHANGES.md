@@ -5,7 +5,7 @@
 The following changes are not yet released, but are code complete:
 
 Features:
- - Refines logic to accurately identify multi-document pages containing a single file ([349](https://github.com/freelawproject/recap/issues/349), [402](https://github.com/freelawproject/recap-chrome/pull/402)) 
+ - None yet
 
 Changes:
  - None yet
@@ -15,6 +15,12 @@ Fixes:
   
 For developers:
  - Nothing yet
+
+## 2.8.3 (2024-12-30)
+
+Features:
+ - Refines logic to accurately identify multi-document pages containing a single file ([349](https://github.com/freelawproject/recap/issues/349), [402](https://github.com/freelawproject/recap-chrome/pull/402)) 
+
 
 ## 2.8.2 (2024-12-04)
 
