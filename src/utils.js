@@ -459,7 +459,7 @@ async function checkSingleDocInCombinedPDFPage(
   );
   if (!result.length) return docId;
 
-  let targetDiv = isAppellate ? 'body' : 'form:last';
+  let targetDiv = isAppellate ? 'body' : '#cmecfMainContent';
   insertAvailableDocBanner(result[0].filepath_local, targetDiv);
   return docId;
 }
