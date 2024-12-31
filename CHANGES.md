@@ -20,7 +20,7 @@ For developers:
 
 Features:
  - Refines logic to accurately identify multi-document pages containing a single file ([349](https://github.com/freelawproject/recap/issues/349), [402](https://github.com/freelawproject/recap-chrome/pull/402)) 
-
+ - Improve Banner Insertion Reliability ([411](https://github.com/freelawproject/recap-chrome/pull/411))
 
 ## 2.8.2 (2024-12-04)
 
