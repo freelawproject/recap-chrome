@@ -252,7 +252,8 @@ let APPELLATE = {
       a.setAttribute('target', '_self');
 
       let url = new URL(a.href);
-      url.searchParams.set('caseId', pacerCaseId);
+      // if a case id is found, it adds it to the link href
+      if (pacerCaseId) url.searchParams.set('caseId', pacerCaseId);
 
       if (docNum) {
         url.searchParams.set('recapDocNum', docNum);
