@@ -5,7 +5,7 @@
 The following changes are not yet released, but are code complete:
 
 Features:
- - None yet
+ - More robust guarding logic for missing `pacer_doc_id` in appellate courts ([388](https://github.com/freelawproject/recap/issues/388), [412](https://github.com/freelawproject/recap-chrome/pull/412))
 
 Changes:
  - None yet

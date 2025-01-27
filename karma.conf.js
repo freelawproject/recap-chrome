@@ -29,7 +29,8 @@ module.exports = function(config) {
       'src/utils/fetch.js',
       'src/utils/notifier.js',
       'src/pacer.js',
-      'src/toolbar_button.js',
+      { pattern: 'src/utils/url_and_cookie_helpers.js', type: 'module' },
+      { pattern: 'src/utils/toolbar_button.js', type: 'module' },
       'src/utils.js',
       'src/action_button.js',
       'src/pdf_upload.js',
@@ -73,7 +74,7 @@ module.exports = function(config) {
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['ChromeHeadless'],
+    browsers: ['CustomChromeHeadless'],
 
     // set these options to view logs in development
     // see https://github.com/karma-runner/karma/issues/2582#issuecomment-413660796
