@@ -1084,6 +1084,16 @@ AppellateDelegate.prototype.handleCombinedPdfPageView = async function () {
     return;
   }
 
+  this.docId = await checkSingleDocInCombinedPDFPage(
+    this.tabId,
+    this.court,
+    this.docId,
+    true
+  );
+  // If no pacer_doc_id is available, exit this block to prevent unnecessary
+  // page modifications intended for PDF retrieval.
+  if (!this.docId) return;
+
   await this.overrideDefaultForm();
 
   // When we receive the message from the above submit method, submit the form
@@ -1092,13 +1102,6 @@ AppellateDelegate.prototype.handleCombinedPdfPageView = async function () {
     'message',
     this.onDocumentViewSubmit.bind(this),
     false
-  );
-
-  this.docId = await checkSingleDocInCombinedPDFPage(
-    this.tabId,
-    this.court,
-    this.docId,
-    true
   );
 };
 
