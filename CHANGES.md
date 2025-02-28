@@ -11,7 +11,7 @@ Changes:
  - None yet
 
 Fixes:
- - None yet
+ - Improved handling of localStorage for district courts to avoid using staled docket number values ([392](https://github.com/freelawproject/recap/issues/392), [413](https://github.com/freelawproject/recap-chrome/pull/413))
   
 For developers:
  - Nothing yet

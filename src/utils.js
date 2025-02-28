@@ -72,6 +72,7 @@ const saveCaseIdinTabStorage = async (object, case_id) => {
   const { tabId } = object;
   const payload = {
     caseId: case_id,
+    docketNumber: '',
   };
   await updateTabStorage({
     [tabId]: payload,

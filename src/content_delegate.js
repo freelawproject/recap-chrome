@@ -175,6 +175,7 @@ ContentDelegate.prototype.findAndStorePacerDocIds = async function () {
   }
   if (PACER.isDocketQueryUrl(this.url) && page_pacer_case_id) {
     payload['caseId'] = page_pacer_case_id;
+    payload['docketNumber'] = '';
   }
 
   updateTabStorage({
