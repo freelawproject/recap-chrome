@@ -5,16 +5,24 @@
 The following changes are not yet released, but are code complete:
 
 Features:
- - More robust guarding logic for missing `pacer_doc_id` in appellate courts ([388](https://github.com/freelawproject/recap/issues/388), [412](https://github.com/freelawproject/recap-chrome/pull/412))
+ - None yet
 
 Changes:
  - None yet
 
 Fixes:
- - Improved handling of localStorage for district courts to avoid using staled docket number values ([392](https://github.com/freelawproject/recap/issues/392), [413](https://github.com/freelawproject/recap-chrome/pull/413))
+ - None yet
   
 For developers:
  - Nothing yet
+
+## 2.8.4 (2025-02-28)
+
+Features:
+ - More robust guarding logic for missing `pacer_doc_id` in appellate courts ([388](https://github.com/freelawproject/recap/issues/388), [412](https://github.com/freelawproject/recap-chrome/pull/412))
+
+Fixes:
+ - Improved handling of localStorage for district courts to avoid using staled docket number values ([392](https://github.com/freelawproject/recap/issues/392), [413](https://github.com/freelawproject/recap-chrome/pull/413))
 
 ## 2.8.3 (2024-12-30)
 
