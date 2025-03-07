@@ -1,0 +1,875 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		DE6D7F652D7B55AC002619ED /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6D7F642D7B55AC002619ED /* AppDelegate.swift */; };
+		DE6D7F692D7B55AC002619ED /* Main.html in Resources */ = {isa = PBXBuildFile; fileRef = DE6D7F672D7B55AC002619ED /* Main.html */; };
+		DE6D7F6B2D7B55AC002619ED /* Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = DE6D7F6A2D7B55AC002619ED /* Icon.png */; };
+		DE6D7F6D2D7B55AC002619ED /* Style.css in Resources */ = {isa = PBXBuildFile; fileRef = DE6D7F6C2D7B55AC002619ED /* Style.css */; };
+		DE6D7F6F2D7B55AC002619ED /* Script.js in Resources */ = {isa = PBXBuildFile; fileRef = DE6D7F6E2D7B55AC002619ED /* Script.js */; };
+		DE6D7F712D7B55AC002619ED /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6D7F702D7B55AC002619ED /* ViewController.swift */; };
+		DE6D7F742D7B55AC002619ED /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DE6D7F722D7B55AC002619ED /* Main.storyboard */; };
+		DE6D7F762D7B55AD002619ED /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DE6D7F752D7B55AD002619ED /* Assets.xcassets */; };
+		DE6D7F832D7B55AD002619ED /* RecapTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6D7F822D7B55AD002619ED /* RecapTests.swift */; };
+		DE6D7F8D2D7B55AD002619ED /* RecapUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6D7F8C2D7B55AD002619ED /* RecapUITests.swift */; };
+		DE6D7F8F2D7B55AD002619ED /* RecapUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6D7F8E2D7B55AD002619ED /* RecapUITestsLaunchTests.swift */; };
+		DE6D7F952D7B55AD002619ED /* Recap Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DE6D7F942D7B55AD002619ED /* Recap Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		DE6D7F9A2D7B55AD002619ED /* SafariWebExtensionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE6D7F992D7B55AD002619ED /* SafariWebExtensionHandler.swift */; };
+		DE6D7FBC2D7B55AE002619ED /* install_notifier.js in Resources */ = {isa = PBXBuildFile; fileRef = DE6D7FAD2D7B55AE002619ED /* install_notifier.js */; };
+		DE6D7FBD2D7B55AE002619ED /* options.js in Resources */ = {isa = PBXBuildFile; fileRef = DE6D7FAE2D7B55AE002619ED /* options.js */; };
+		DE6D7FBE2D7B55AE002619ED /* pacer.js in Resources */ = {isa = PBXBuildFile; fileRef = DE6D7FAF2D7B55AE002619ED /* pacer.js */; };
+		DE6D7FBF2D7B55AE002619ED /* appellate in Resources */ = {isa = PBXBuildFile; fileRef = DE6D7FB02D7B55AE002619ED /* appellate */; };
+		DE6D7FC02D7B55AE002619ED /* action_button.js in Resources */ = {isa = PBXBuildFile; fileRef = DE6D7FB12D7B55AE002619ED /* action_button.js */; };
+		DE6D7FC12D7B55AE002619ED /* utils in Resources */ = {isa = PBXBuildFile; fileRef = DE6D7FB22D7B55AE002619ED /* utils */; };
+		DE6D7FC22D7B55AE002619ED /* InjectManager.js in Resources */ = {isa = PBXBuildFile; fileRef = DE6D7FB32D7B55AE002619ED /* InjectManager.js */; };
+		DE6D7FC32D7B55AE002619ED /* manifest.json in Resources */ = {isa = PBXBuildFile; fileRef = DE6D7FB42D7B55AE002619ED /* manifest.json */; };
+		DE6D7FC42D7B55AE002619ED /* options.html in Resources */ = {isa = PBXBuildFile; fileRef = DE6D7FB52D7B55AE002619ED /* options.html */; };
+		DE6D7FC52D7B55AE002619ED /* utils.js in Resources */ = {isa = PBXBuildFile; fileRef = DE6D7FB62D7B55AE002619ED /* utils.js */; };
+		DE6D7FC62D7B55AE002619ED /* content.js in Resources */ = {isa = PBXBuildFile; fileRef = DE6D7FB72D7B55AE002619ED /* content.js */; };
+		DE6D7FC72D7B55AE002619ED /* assets in Resources */ = {isa = PBXBuildFile; fileRef = DE6D7FB82D7B55AE002619ED /* assets */; };
+		DE6D7FC82D7B55AE002619ED /* content_delegate.js in Resources */ = {isa = PBXBuildFile; fileRef = DE6D7FB92D7B55AE002619ED /* content_delegate.js */; };
+		DE6D7FC92D7B55AE002619ED /* service_worker.js in Resources */ = {isa = PBXBuildFile; fileRef = DE6D7FBA2D7B55AE002619ED /* service_worker.js */; };
+		DE6D7FCA2D7B55AE002619ED /* pdf_upload.js in Resources */ = {isa = PBXBuildFile; fileRef = DE6D7FBB2D7B55AE002619ED /* pdf_upload.js */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		DE6D7F7F2D7B55AD002619ED /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DE6D7F592D7B55AC002619ED /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DE6D7F602D7B55AC002619ED;
+			remoteInfo = Recap;
+		};
+		DE6D7F892D7B55AD002619ED /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DE6D7F592D7B55AC002619ED /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DE6D7F602D7B55AC002619ED;
+			remoteInfo = Recap;
+		};
+		DE6D7F962D7B55AD002619ED /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DE6D7F592D7B55AC002619ED /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DE6D7F932D7B55AD002619ED;
+			remoteInfo = "Recap Extension";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		DE6D7FA22D7B55AD002619ED /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				DE6D7F952D7B55AD002619ED /* Recap Extension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		DE6D7F612D7B55AC002619ED /* Recap.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Recap.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DE6D7F642D7B55AC002619ED /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		DE6D7F682D7B55AC002619ED /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = Base; path = Base.lproj/Main.html; sourceTree = "<group>"; };
+		DE6D7F6A2D7B55AC002619ED /* Icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Icon.png; sourceTree = "<group>"; };
+		DE6D7F6C2D7B55AC002619ED /* Style.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = Style.css; sourceTree = "<group>"; };
+		DE6D7F6E2D7B55AC002619ED /* Script.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = Script.js; sourceTree = "<group>"; };
+		DE6D7F702D7B55AC002619ED /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		DE6D7F732D7B55AC002619ED /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		DE6D7F752D7B55AD002619ED /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		DE6D7F772D7B55AD002619ED /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		DE6D7F782D7B55AD002619ED /* Recap.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Recap.entitlements; sourceTree = "<group>"; };
+		DE6D7F792D7B55AD002619ED /* Recap.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Recap.entitlements; sourceTree = "<group>"; };
+		DE6D7F7E2D7B55AD002619ED /* RecapTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RecapTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		DE6D7F822D7B55AD002619ED /* RecapTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecapTests.swift; sourceTree = "<group>"; };
+		DE6D7F882D7B55AD002619ED /* RecapUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RecapUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		DE6D7F8C2D7B55AD002619ED /* RecapUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecapUITests.swift; sourceTree = "<group>"; };
+		DE6D7F8E2D7B55AD002619ED /* RecapUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecapUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		DE6D7F942D7B55AD002619ED /* Recap Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Recap Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DE6D7F992D7B55AD002619ED /* SafariWebExtensionHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariWebExtensionHandler.swift; sourceTree = "<group>"; };
+		DE6D7F9B2D7B55AD002619ED /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		DE6D7F9C2D7B55AD002619ED /* Recap_Extension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Recap_Extension.entitlements; sourceTree = "<group>"; };
+		DE6D7FAD2D7B55AE002619ED /* install_notifier.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = install_notifier.js; path = Resources/install_notifier.js; sourceTree = "<group>"; };
+		DE6D7FAE2D7B55AE002619ED /* options.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = options.js; path = Resources/options.js; sourceTree = "<group>"; };
+		DE6D7FAF2D7B55AE002619ED /* pacer.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = pacer.js; path = Resources/pacer.js; sourceTree = "<group>"; };
+		DE6D7FB02D7B55AE002619ED /* appellate */ = {isa = PBXFileReference; lastKnownFileType = folder; name = appellate; path = Resources/appellate; sourceTree = "<group>"; };
+		DE6D7FB12D7B55AE002619ED /* action_button.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = action_button.js; path = Resources/action_button.js; sourceTree = "<group>"; };
+		DE6D7FB22D7B55AE002619ED /* utils */ = {isa = PBXFileReference; lastKnownFileType = folder; name = utils; path = Resources/utils; sourceTree = "<group>"; };
+		DE6D7FB32D7B55AE002619ED /* InjectManager.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = InjectManager.js; path = Resources/InjectManager.js; sourceTree = "<group>"; };
+		DE6D7FB42D7B55AE002619ED /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = manifest.json; path = Resources/manifest.json; sourceTree = "<group>"; };
+		DE6D7FB52D7B55AE002619ED /* options.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = options.html; path = Resources/options.html; sourceTree = "<group>"; };
+		DE6D7FB62D7B55AE002619ED /* utils.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = utils.js; path = Resources/utils.js; sourceTree = "<group>"; };
+		DE6D7FB72D7B55AE002619ED /* content.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = content.js; path = Resources/content.js; sourceTree = "<group>"; };
+		DE6D7FB82D7B55AE002619ED /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = Resources/assets; sourceTree = "<group>"; };
+		DE6D7FB92D7B55AE002619ED /* content_delegate.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = content_delegate.js; path = Resources/content_delegate.js; sourceTree = "<group>"; };
+		DE6D7FBA2D7B55AE002619ED /* service_worker.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = service_worker.js; path = Resources/service_worker.js; sourceTree = "<group>"; };
+		DE6D7FBB2D7B55AE002619ED /* pdf_upload.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = pdf_upload.js; path = Resources/pdf_upload.js; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		DE6D7F5E2D7B55AC002619ED /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DE6D7F7B2D7B55AD002619ED /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DE6D7F852D7B55AD002619ED /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DE6D7F912D7B55AD002619ED /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		DE6D7F582D7B55AC002619ED = {
+			isa = PBXGroup;
+			children = (
+				DE6D7F632D7B55AC002619ED /* Recap */,
+				DE6D7F812D7B55AD002619ED /* RecapTests */,
+				DE6D7F8B2D7B55AD002619ED /* RecapUITests */,
+				DE6D7F982D7B55AD002619ED /* Recap Extension */,
+				DE6D7F622D7B55AC002619ED /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		DE6D7F622D7B55AC002619ED /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				DE6D7F612D7B55AC002619ED /* Recap.app */,
+				DE6D7F7E2D7B55AD002619ED /* RecapTests.xctest */,
+				DE6D7F882D7B55AD002619ED /* RecapUITests.xctest */,
+				DE6D7F942D7B55AD002619ED /* Recap Extension.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		DE6D7F632D7B55AC002619ED /* Recap */ = {
+			isa = PBXGroup;
+			children = (
+				DE6D7F642D7B55AC002619ED /* AppDelegate.swift */,
+				DE6D7F702D7B55AC002619ED /* ViewController.swift */,
+				DE6D7F722D7B55AC002619ED /* Main.storyboard */,
+				DE6D7F752D7B55AD002619ED /* Assets.xcassets */,
+				DE6D7F772D7B55AD002619ED /* Info.plist */,
+				DE6D7F782D7B55AD002619ED /* Recap.entitlements */,
+				DE6D7F792D7B55AD002619ED /* Recap.entitlements */,
+				DE6D7F662D7B55AC002619ED /* Resources */,
+			);
+			path = Recap;
+			sourceTree = "<group>";
+		};
+		DE6D7F662D7B55AC002619ED /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				DE6D7F672D7B55AC002619ED /* Main.html */,
+				DE6D7F6A2D7B55AC002619ED /* Icon.png */,
+				DE6D7F6C2D7B55AC002619ED /* Style.css */,
+				DE6D7F6E2D7B55AC002619ED /* Script.js */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		DE6D7F812D7B55AD002619ED /* RecapTests */ = {
+			isa = PBXGroup;
+			children = (
+				DE6D7F822D7B55AD002619ED /* RecapTests.swift */,
+			);
+			path = RecapTests;
+			sourceTree = "<group>";
+		};
+		DE6D7F8B2D7B55AD002619ED /* RecapUITests */ = {
+			isa = PBXGroup;
+			children = (
+				DE6D7F8C2D7B55AD002619ED /* RecapUITests.swift */,
+				DE6D7F8E2D7B55AD002619ED /* RecapUITestsLaunchTests.swift */,
+			);
+			path = RecapUITests;
+			sourceTree = "<group>";
+		};
+		DE6D7F982D7B55AD002619ED /* Recap Extension */ = {
+			isa = PBXGroup;
+			children = (
+				DE6D7FAC2D7B55AE002619ED /* Resources */,
+				DE6D7F992D7B55AD002619ED /* SafariWebExtensionHandler.swift */,
+				DE6D7F9B2D7B55AD002619ED /* Info.plist */,
+				DE6D7F9C2D7B55AD002619ED /* Recap_Extension.entitlements */,
+			);
+			path = "Recap Extension";
+			sourceTree = "<group>";
+		};
+		DE6D7FAC2D7B55AE002619ED /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				DE6D7FAD2D7B55AE002619ED /* install_notifier.js */,
+				DE6D7FAE2D7B55AE002619ED /* options.js */,
+				DE6D7FAF2D7B55AE002619ED /* pacer.js */,
+				DE6D7FB02D7B55AE002619ED /* appellate */,
+				DE6D7FB12D7B55AE002619ED /* action_button.js */,
+				DE6D7FB22D7B55AE002619ED /* utils */,
+				DE6D7FB32D7B55AE002619ED /* InjectManager.js */,
+				DE6D7FB42D7B55AE002619ED /* manifest.json */,
+				DE6D7FB52D7B55AE002619ED /* options.html */,
+				DE6D7FB62D7B55AE002619ED /* utils.js */,
+				DE6D7FB72D7B55AE002619ED /* content.js */,
+				DE6D7FB82D7B55AE002619ED /* assets */,
+				DE6D7FB92D7B55AE002619ED /* content_delegate.js */,
+				DE6D7FBA2D7B55AE002619ED /* service_worker.js */,
+				DE6D7FBB2D7B55AE002619ED /* pdf_upload.js */,
+			);
+			name = Resources;
+			path = "Recap Extension";
+			sourceTree = SOURCE_ROOT;
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		DE6D7F602D7B55AC002619ED /* Recap */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DE6D7FA32D7B55AD002619ED /* Build configuration list for PBXNativeTarget "Recap" */;
+			buildPhases = (
+				DE6D7F5D2D7B55AC002619ED /* Sources */,
+				DE6D7F5E2D7B55AC002619ED /* Frameworks */,
+				DE6D7F5F2D7B55AC002619ED /* Resources */,
+				DE6D7FA22D7B55AD002619ED /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DE6D7F972D7B55AD002619ED /* PBXTargetDependency */,
+			);
+			name = Recap;
+			packageProductDependencies = (
+			);
+			productName = Recap;
+			productReference = DE6D7F612D7B55AC002619ED /* Recap.app */;
+			productType = "com.apple.product-type.application";
+		};
+		DE6D7F7D2D7B55AD002619ED /* RecapTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DE6D7FA62D7B55AD002619ED /* Build configuration list for PBXNativeTarget "RecapTests" */;
+			buildPhases = (
+				DE6D7F7A2D7B55AD002619ED /* Sources */,
+				DE6D7F7B2D7B55AD002619ED /* Frameworks */,
+				DE6D7F7C2D7B55AD002619ED /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DE6D7F802D7B55AD002619ED /* PBXTargetDependency */,
+			);
+			name = RecapTests;
+			packageProductDependencies = (
+			);
+			productName = RecapTests;
+			productReference = DE6D7F7E2D7B55AD002619ED /* RecapTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		DE6D7F872D7B55AD002619ED /* RecapUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DE6D7FA92D7B55AD002619ED /* Build configuration list for PBXNativeTarget "RecapUITests" */;
+			buildPhases = (
+				DE6D7F842D7B55AD002619ED /* Sources */,
+				DE6D7F852D7B55AD002619ED /* Frameworks */,
+				DE6D7F862D7B55AD002619ED /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DE6D7F8A2D7B55AD002619ED /* PBXTargetDependency */,
+			);
+			name = RecapUITests;
+			packageProductDependencies = (
+			);
+			productName = RecapUITests;
+			productReference = DE6D7F882D7B55AD002619ED /* RecapUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		DE6D7F932D7B55AD002619ED /* Recap Extension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DE6D7F9F2D7B55AD002619ED /* Build configuration list for PBXNativeTarget "Recap Extension" */;
+			buildPhases = (
+				DE6D7F902D7B55AD002619ED /* Sources */,
+				DE6D7F912D7B55AD002619ED /* Frameworks */,
+				DE6D7F922D7B55AD002619ED /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Recap Extension";
+			packageProductDependencies = (
+			);
+			productName = "Recap Extension";
+			productReference = DE6D7F942D7B55AD002619ED /* Recap Extension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		DE6D7F592D7B55AC002619ED /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1610;
+				LastUpgradeCheck = 1610;
+				TargetAttributes = {
+					DE6D7F602D7B55AC002619ED = {
+						CreatedOnToolsVersion = 16.1;
+					};
+					DE6D7F7D2D7B55AD002619ED = {
+						CreatedOnToolsVersion = 16.1;
+						TestTargetID = DE6D7F602D7B55AC002619ED;
+					};
+					DE6D7F872D7B55AD002619ED = {
+						CreatedOnToolsVersion = 16.1;
+						TestTargetID = DE6D7F602D7B55AC002619ED;
+					};
+					DE6D7F932D7B55AD002619ED = {
+						CreatedOnToolsVersion = 16.1;
+					};
+				};
+			};
+			buildConfigurationList = DE6D7F5C2D7B55AC002619ED /* Build configuration list for PBXProject "Recap" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = DE6D7F582D7B55AC002619ED;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = DE6D7F622D7B55AC002619ED /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				DE6D7F602D7B55AC002619ED /* Recap */,
+				DE6D7F7D2D7B55AD002619ED /* RecapTests */,
+				DE6D7F872D7B55AD002619ED /* RecapUITests */,
+				DE6D7F932D7B55AD002619ED /* Recap Extension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		DE6D7F5F2D7B55AC002619ED /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DE6D7F6B2D7B55AC002619ED /* Icon.png in Resources */,
+				DE6D7F742D7B55AC002619ED /* Main.storyboard in Resources */,
+				DE6D7F6F2D7B55AC002619ED /* Script.js in Resources */,
+				DE6D7F692D7B55AC002619ED /* Main.html in Resources */,
+				DE6D7F762D7B55AD002619ED /* Assets.xcassets in Resources */,
+				DE6D7F6D2D7B55AC002619ED /* Style.css in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DE6D7F7C2D7B55AD002619ED /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DE6D7F862D7B55AD002619ED /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DE6D7F922D7B55AD002619ED /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DE6D7FCA2D7B55AE002619ED /* pdf_upload.js in Resources */,
+				DE6D7FC52D7B55AE002619ED /* utils.js in Resources */,
+				DE6D7FC62D7B55AE002619ED /* content.js in Resources */,
+				DE6D7FC12D7B55AE002619ED /* utils in Resources */,
+				DE6D7FBE2D7B55AE002619ED /* pacer.js in Resources */,
+				DE6D7FBF2D7B55AE002619ED /* appellate in Resources */,
+				DE6D7FC02D7B55AE002619ED /* action_button.js in Resources */,
+				DE6D7FC82D7B55AE002619ED /* content_delegate.js in Resources */,
+				DE6D7FC32D7B55AE002619ED /* manifest.json in Resources */,
+				DE6D7FC92D7B55AE002619ED /* service_worker.js in Resources */,
+				DE6D7FBC2D7B55AE002619ED /* install_notifier.js in Resources */,
+				DE6D7FBD2D7B55AE002619ED /* options.js in Resources */,
+				DE6D7FC72D7B55AE002619ED /* assets in Resources */,
+				DE6D7FC22D7B55AE002619ED /* InjectManager.js in Resources */,
+				DE6D7FC42D7B55AE002619ED /* options.html in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		DE6D7F5D2D7B55AC002619ED /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DE6D7F712D7B55AC002619ED /* ViewController.swift in Sources */,
+				DE6D7F652D7B55AC002619ED /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DE6D7F7A2D7B55AD002619ED /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DE6D7F832D7B55AD002619ED /* RecapTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DE6D7F842D7B55AD002619ED /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DE6D7F8F2D7B55AD002619ED /* RecapUITestsLaunchTests.swift in Sources */,
+				DE6D7F8D2D7B55AD002619ED /* RecapUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DE6D7F902D7B55AD002619ED /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DE6D7F9A2D7B55AD002619ED /* SafariWebExtensionHandler.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		DE6D7F802D7B55AD002619ED /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DE6D7F602D7B55AC002619ED /* Recap */;
+			targetProxy = DE6D7F7F2D7B55AD002619ED /* PBXContainerItemProxy */;
+		};
+		DE6D7F8A2D7B55AD002619ED /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DE6D7F602D7B55AC002619ED /* Recap */;
+			targetProxy = DE6D7F892D7B55AD002619ED /* PBXContainerItemProxy */;
+		};
+		DE6D7F972D7B55AD002619ED /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DE6D7F932D7B55AD002619ED /* Recap Extension */;
+			targetProxy = DE6D7F962D7B55AD002619ED /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		DE6D7F672D7B55AC002619ED /* Main.html */ = {
+			isa = PBXVariantGroup;
+			children = (
+				DE6D7F682D7B55AC002619ED /* Base */,
+			);
+			name = Main.html;
+			sourceTree = "<group>";
+		};
+		DE6D7F722D7B55AC002619ED /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				DE6D7F732D7B55AC002619ED /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		DE6D7F9D2D7B55AD002619ED /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.1;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		DE6D7F9E2D7B55AD002619ED /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.1;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		DE6D7FA02D7B55AD002619ED /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "Recap Extension/Recap_Extension.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2.8.4;
+				DEVELOPMENT_TEAM = GZ26746782;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Recap Extension/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "RECAP Uploader Extension";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MARKETING_VERSION = 2.8.4;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = free.law.recap.Extension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		DE6D7FA12D7B55AD002619ED /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "Recap Extension/Recap_Extension.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2.8.4;
+				DEVELOPMENT_TEAM = GZ26746782;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Recap Extension/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "RECAP Uploader Extension";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MARKETING_VERSION = 2.8.4;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = free.law.recap.Extension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		DE6D7FA42D7B55AD002619ED /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Recap/Recap.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 2.8.4;
+				DEVELOPMENT_TEAM = GZ26746782;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Recap/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "RECAP Uploader";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMainStoryboardFile = Main;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MARKETING_VERSION = 2.8.4;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+					"-framework",
+					WebKit,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = free.law.recap;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		DE6D7FA52D7B55AD002619ED /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Recap/Recap.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 2.8.4;
+				DEVELOPMENT_TEAM = GZ26746782;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Recap/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "RECAP Uploader";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMainStoryboardFile = Main;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MARKETING_VERSION = 2.8.4;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+					"-framework",
+					WebKit,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = free.law.recap;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		DE6D7FA72D7B55AD002619ED /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2.8.4;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = free.law.RecapTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Recap.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Recap";
+			};
+			name = Debug;
+		};
+		DE6D7FA82D7B55AD002619ED /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2.8.4;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = free.law.RecapTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Recap.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Recap";
+			};
+			name = Release;
+		};
+		DE6D7FAA2D7B55AD002619ED /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2.8.4;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = free.law.RecapUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = Recap;
+			};
+			name = Debug;
+		};
+		DE6D7FAB2D7B55AD002619ED /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2.8.4;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = free.law.RecapUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TEST_TARGET_NAME = Recap;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		DE6D7F5C2D7B55AC002619ED /* Build configuration list for PBXProject "Recap" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DE6D7F9D2D7B55AD002619ED /* Debug */,
+				DE6D7F9E2D7B55AD002619ED /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DE6D7F9F2D7B55AD002619ED /* Build configuration list for PBXNativeTarget "Recap Extension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DE6D7FA02D7B55AD002619ED /* Debug */,
+				DE6D7FA12D7B55AD002619ED /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DE6D7FA32D7B55AD002619ED /* Build configuration list for PBXNativeTarget "Recap" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DE6D7FA42D7B55AD002619ED /* Debug */,
+				DE6D7FA52D7B55AD002619ED /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DE6D7FA62D7B55AD002619ED /* Build configuration list for PBXNativeTarget "RecapTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DE6D7FA72D7B55AD002619ED /* Debug */,
+				DE6D7FA82D7B55AD002619ED /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DE6D7FA92D7B55AD002619ED /* Build configuration list for PBXNativeTarget "RecapUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DE6D7FAA2D7B55AD002619ED /* Debug */,
+				DE6D7FAB2D7B55AD002619ED /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = DE6D7F592D7B55AC002619ED /* Project object */;
+}

@@ -1,0 +1,200 @@
+{
+  "manifest_version": 3,
+  "name": "RECAP",
+  "author": "Free Law Project and the Center for Information Technology and Policy at Princeton",
+  "description": "RECAP improves the experience of using PACER, the online public access system for the U.S. federal courts.",
+  "homepage_url": "https://free.law/recap/",
+  "version": "2.8.4",
+  "icons": {
+    "16": "assets/images/icon-16.png",
+    "19": "assets/images/icon-19.png",
+    "32": "assets/images/icon-32.png",
+    "38": "assets/images/icon-38.png",
+    "48": "assets/images/icon-48.png",
+    "128": "assets/images/icon-128.png"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "info@recapthelaw.org",
+      "strict_min_version": "58.0"
+    }
+  },
+  "permissions": [
+    "notifications",
+    "storage",
+    "unlimitedStorage",
+    "activeTab",
+    "tabs",
+    "cookies",
+    "scripting"
+  ],
+  "host_permissions": [
+    "*://*.uscourts.gov/",
+    "*://ca1-showdoc.azurewebsites.us/",
+    "*://ca2-showdoc.azurewebsites.us/",
+    "*://ca3-showdoc.azurewebsites.us/",
+    "*://ca4-showdoc.azurewebsites.us/",
+    "*://ca5-showdoc.azurewebsites.us/",
+    "*://ca6-showdoc.azurewebsites.us/",
+    "*://ca7-showdoc.azurewebsites.us/",
+    "*://ca8-showdoc.azurewebsites.us/",
+    "*://ca9-showdoc.azurewebsites.us/",
+    "*://ca10-showdoc.azurewebsites.us/",
+    "*://ca11-showdoc.azurewebsites.us/",
+    "*://cafc-showdoc.azurewebsites.us/",
+    "*://cadc-showdoc.azurewebsites.us/",
+    "*://ca1-showdocservices.azurewebsites.us/",
+    "*://ca2-showdocservices.azurewebsites.us/",
+    "*://ca3-showdocservices.azurewebsites.us/",
+    "*://ca4-showdocservices.azurewebsites.us/",
+    "*://ca5-showdocservices.azurewebsites.us/",
+    "*://ca6-showdocservices.azurewebsites.us/",
+    "*://ca7-showdocservices.azurewebsites.us/",
+    "*://ca8-showdocservices.azurewebsites.us/",
+    "*://ca9-showdocservices.azurewebsites.us/",
+    "*://ca10-showdocservices.azurewebsites.us/",
+    "*://ca11-showdocservices.azurewebsites.us/",
+    "*://cafc-showdocservices.azurewebsites.us/",
+    "*://cadc-showdocservices.azurewebsites.us/",
+    "*://ca1-portal.powerappsportals.us/",
+    "*://ca2-portal.powerappsportals.us/",
+    "*://ca3-portal.powerappsportals.us/",
+    "*://ca4-portal.powerappsportals.us/",
+    "*://ca5-portal.powerappsportals.us/",
+    "*://ca6-portal.powerappsportals.us/",
+    "*://ca7-portal.powerappsportals.us/",
+    "*://ca8-portal.powerappsportals.us/",
+    "*://ca9-portal.powerappsportals.us/",
+    "*://ca10-portal.powerappsportals.us/",
+    "*://ca11-portal.powerappsportals.us/",
+    "*://cafc-portal.powerappsportals.us/",
+    "*://cadc-portal.powerappsportals.us/",
+    "*://ca1.fedcourts.us/",
+    "*://ca2.fedcourts.us/",
+    "*://ca3.fedcourts.us/",
+    "*://ca4.fedcourts.us/",
+    "*://ca5.fedcourts.us/",
+    "*://ca6.fedcourts.us/",
+    "*://ca7.fedcourts.us/",
+    "*://ca8.fedcourts.us/",
+    "*://ca9.fedcourts.us/",
+    "*://ca10.fedcourts.us/",
+    "*://ca11.fedcourts.us/",
+    "*://cafc.fedcourts.us/",
+    "*://cadc.fedcourts.us/"
+  ],
+  "background": {
+    "scripts": [
+      "service_worker.js"
+    ],
+    "service_worker": "service_worker.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.uscourts.gov/*"
+      ],
+      "include_globs": [
+        "*://ecf.*",
+        "*://ecf-train.*",
+        "*://pacer.*"
+      ],
+      "css": [
+        "assets/css/style.css",
+        "assets/css/font-awesome.css"
+      ],
+      "run_at": "document_end"
+    },
+    {
+      "matches": [
+        "*://ca1-showdoc.azurewebsites.us/*",
+        "*://ca2-showdoc.azurewebsites.us/*",
+        "*://ca3-showdoc.azurewebsites.us/*",
+        "*://ca4-showdoc.azurewebsites.us/*",
+        "*://ca5-showdoc.azurewebsites.us/*",
+        "*://ca6-showdoc.azurewebsites.us/*",
+        "*://ca7-showdoc.azurewebsites.us/*",
+        "*://ca8-showdoc.azurewebsites.us/*",
+        "*://ca9-showdoc.azurewebsites.us/*",
+        "*://ca10-showdoc.azurewebsites.us/*",
+        "*://ca11-showdoc.azurewebsites.us/*",
+        "*://cafc-showdoc.azurewebsites.us/*",
+        "*://cadc-showdoc.azurewebsites.us/*",
+        "*://ca1-showdocservices.azurewebsites.us/*",
+        "*://ca2-showdocservices.azurewebsites.us/*",
+        "*://ca3-showdocservices.azurewebsites.us/*",
+        "*://ca4-showdocservices.azurewebsites.us/*",
+        "*://ca5-showdocservices.azurewebsites.us/*",
+        "*://ca6-showdocservices.azurewebsites.us/*",
+        "*://ca7-showdocservices.azurewebsites.us/*",
+        "*://ca8-showdocservices.azurewebsites.us/*",
+        "*://ca9-showdocservices.azurewebsites.us/*",
+        "*://ca10-showdocservices.azurewebsites.us/*",
+        "*://ca11-showdocservices.azurewebsites.us/*",
+        "*://cafc-showdocservices.azurewebsites.us/*",
+        "*://cadc-showdocservices.azurewebsites.us/*",
+        "*://ca1-portal.powerappsportals.us/*",
+        "*://ca2-portal.powerappsportals.us/*",
+        "*://ca3-portal.powerappsportals.us/*",
+        "*://ca4-portal.powerappsportals.us/*",
+        "*://ca5-portal.powerappsportals.us/*",
+        "*://ca6-portal.powerappsportals.us/*",
+        "*://ca7-portal.powerappsportals.us/*",
+        "*://ca8-portal.powerappsportals.us/*",
+        "*://ca9-portal.powerappsportals.us/*",
+        "*://ca10-portal.powerappsportals.us/*",
+        "*://ca11-portal.powerappsportals.us/*",
+        "*://cafc-portal.powerappsportals.us/*",
+        "*://cadc-portal.powerappsportals.us/*",
+        "*://ca1.fedcourts.us/*",
+        "*://ca2.fedcourts.us/*",
+        "*://ca3.fedcourts.us/*",
+        "*://ca4.fedcourts.us/*",
+        "*://ca5.fedcourts.us/*",
+        "*://ca6.fedcourts.us/*",
+        "*://ca7.fedcourts.us/*",
+        "*://ca8.fedcourts.us/*",
+        "*://ca9.fedcourts.us/*",
+        "*://ca10.fedcourts.us/*",
+        "*://ca11.fedcourts.us/*",
+        "*://cafc.fedcourts.us/*",
+        "*://cadc.fedcourts.us/*"
+      ],
+      "css": [
+        "assets/css/style.css",
+        "assets/css/font-awesome.css"
+      ],
+      "run_at": "document_end"
+    },
+    {
+      "matches": [
+        "https://www.courtlistener.com/*"
+      ],
+      "js": [
+        "install_notifier.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_icon": {
+      "19": "assets/images/grey-19.png",
+      "38": "assets/images/grey-38.png"
+    },
+    "default_title": "RECAP: Not at a PACER site",
+    "default_popup": "options.html"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "assets/images/*.png",
+        "assets/fonts/fontawesome-webfont.woff",
+        "assets/fonts/fontawesome-webfont.woff2"
+      ],
+      "matches": [
+        "*://*/*"
+      ]
+    }
+  ]
+}

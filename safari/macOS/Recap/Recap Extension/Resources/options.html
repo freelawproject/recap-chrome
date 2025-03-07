@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>RECAP Options</title>
+  <link rel="stylesheet" href="assets/css/font-awesome.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link href="assets/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body id="options-body">
+  <div id="container" class="grid-with-banner">
+    <!-- Main Tab Content + Donation plea -->
+    <header>
+      <div class="d-flex flex-column">
+        <div id="header-banner" class="info-banner d-flex flex-column">
+          <div id="message-section" class="d-flex">
+            <div class="flex align-items-center banner-icon-container">
+              <div id="banner-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 1 1 0-9h.75c.704 0 1.402-.03 2.09-.09m0 9.18c.253.962.584 1.892.985 2.783.247.55.06 1.21-.463 1.511l-.657.38c-.551.318-1.26.117-1.527-.461a20.845 20.845 0 0 1-1.44-4.282m3.102.069a18.03 18.03 0 0 1-.59-4.59c0-1.586.205-3.124.59-4.59m0 9.18a23.848 23.848 0 0 1 8.835 2.535M10.34 6.66a23.847 23.847 0 0 0 8.835-2.535m0 0A23.74 23.74 0 0 0 18.795 3m.38 1.125a23.91 23.91 0 0 1 1.014 5.395m-1.014 8.855c-.118.38-.245.754-.38 1.125m.38-1.125a23.91 23.91 0 0 0 1.014-5.395m0-3.46c.495.413.811 1.035.811 1.73 0 .695-.316 1.317-.811 1.73m0-3.46a24.347 24.347 0 0 1 0 3.46" />
+                </svg>
+              </div>
+            </div>
+            <p id="info-banner-message">
+              <b>RECAP is using Manifest Version 3 now</b>. Enjoy improved features and performance.
+            <div id="dismiss-banner" class="d-flex align-items-start justify-content-end">
+              <button type="button" class="close" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+          </div>
+          <div class="input-group-append d-flex justify-content-center">
+            <a class="btn btn-primary" id="learn-more-button" target="_blank" rel="noopener"
+              href="https://github.com/freelawproject/recap-chrome/releases/tag/2.8.0">
+              &nbsp;Learn More
+            </a>
+          </div>
+        </div>
+        <div>
+          <nav>
+            <div class="nav nav-tabs" id="nav-recap-tab" role="tablist">
+              <a id="nav-recap-tab" class="col-sm text-center nav-item nav-link active" data-toggle="tab" role="tab"
+                href="#nav-recap" aria-controls="nav-recap" aria-selected="true">
+                RECAP Archive
+              </a>
+              <a id="nav-settings-tab" class="col-sm text-center nav-item nav-link" data-toggle="tab" role="tab"
+                href="#nav-settings" aria-controls="nav-settings" aria-selected="false">
+                Settings
+              </a>
+              <a id="nav-donate-tab" class="col-sm text-center nav-item nav-link" data-toggle="tab" role="tab"
+                href="#nav-donate" aria-controls="nav-donate" aria-selected="false">
+                Donate
+              </a>
+            </div>
+          </nav>
+        </div>
+      </div>
+      <!-- Navigation Tabs -->
+    </header>
+
+    <main>
+      <div class="tab-content" id="nav-recap-tabContent">
+
+        <!-- The Search Tab -->
+        <div id="nav-recap" class="tab-pane fade show active" role="tabpanel" aria-labelledby="nav-recap-tab">
+
+          <h4 class="text-center">Search millions of PACER<br />documents and dockets.</h4>
+
+          <form action="https://www.courtlistener.com/?type=r" method="get" target="_blank" id="search-form"
+            class="form-inline" role="form">
+            <input type="hidden" name="type" value="r" />
+            <div id="search-container" class="text-center">
+              <div class="input-group input-group-lg">
+                <input id="id_q" class="form-control" value="" name="q" autocomplete="off" type="text">
+                <div class="input-group-append">
+                  <button type="submit" class="btn btn-primary" name="search" id="search-button">
+                    <i class="fa fa-search"></i>&nbsp;Search
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div id="more-search-buttons">
+              <a href="https://www.courtlistener.com/recap/" target="_blank" rel="noopener"
+                class="btn btn-primary btn-sm" role="button">Advanced Search</a>
+              <a href="https://www.courtlistener.com/help/search-operators/" target="_blank" rel="noopener"
+                class="btn btn-primary btn-sm" role="button">Search Help</a>
+            </div>
+          </form>
+
+        </div>
+
+        <!-- The Settings Tab -->
+        <div id="nav-settings" class="tab-pane fade" role="tabpanel" aria-labelledby="nav-settings-tab">
+
+          <fieldset>
+            <legend>Notifications and popups</legend>
+            <label for="show_notifications"
+              title="Show a notification whenever an item is uploaded to the RECAP Archive on CourtListener.com">
+              <div class="item">
+                <span class="icon">
+                  <input id="show_notifications" type="checkbox">
+                </span>
+                Notify me when RECAP uploads a file to the Archive
+              </div>
+            </label>
+          </fieldset>
+
+          <fieldset>
+            <legend>PDF Files</legend>
+            <div>
+              <label class="hidden" id="external_pdf_label"
+                title="Tells RECAP to save PDFs as downloaded files, rather than set up for in-browser viewing. If you see filenames with random characters, check this box.">
+                <input type="checkbox" id="external_pdf">
+                Force external PDF viewing (download PDFs)<br></label>
+            </div>
+            <div id="filename_style_container">
+              <p><strong>Naming Style</strong> (e.g. <code
+                  id="filename_example">gov.uscourts.cand.201881.46.0.pdf</code>)</p>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input position-relative" type="radio" id="ia_style_filenames"
+                  name="filename_style" value="ia_style_filenames">
+                <label class="form-check-label" for="ia_style_filenames">Internet Archive style</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input position-relative" type="radio" id="lawyer_style_filenames"
+                  name="filename_style" value="lawyer_style_filenames">
+                <label class="form-check-label" for="lawyer_style_filenames">Lawyer style</label>
+              </div>
+            </div>
+          </fieldset>
+          <!-- TBD: Optimize PACER.
+              See https://github.com/freelawproject/recap/issues/207 -->
+          <fieldset class="hidden">
+            <legend>Optimize PACER</legend>
+            <div>
+              <input id="uncheck_parties" type="checkbox">
+              <label for="uncheck_parties">Uncheck parties and counsel, automatically</label>
+            </div>
+            <div>
+              <input id="mike_stuff" type="checkbox">
+              <label for="mike_stuff">Some other stuff Mike likes.</label>
+            </div>
+          </fieldset>
+        </div>
+
+        <div id="nav-donate" class="tab-pane fade" role="tabpanel" aria-labelledby="nav-settings-tab">
+          <div class="container">
+            <div class="row">
+              <div class="col-xs-12">
+                <h2>Donate to Free Law Project</h2>
+                <p>Support our efforts to make high quality legal data widely available.
+                  Help us reform and enhance the legal ecosystem.</p>
+
+                <p><a target="_blank" rel="noopener" href="https://www.courtlistener.com">CourtListener</a> and
+                  <a target="_blank" rel="noopener" href="https://free.law/recap/">RECAP</a> are run by
+                  <a target="_blank" rel="noopener" href="https://free.law/">Free Law Project</a>, a U.S. 501(c)(3)
+                  non-profit,
+                  tax id #46-3342480.
+                </p>
+
+                <div class="d-flex justify-content-around mt-2 mb-4">
+                  <a href="https://donate.free.law/forms/supportflp" target="_blank"
+                    class="recap-btn btn btn-primary"><i class="fa fa-heart"></i>&nbsp;Donate to Free.law</a>
+                </div>
+
+                <h2>Review RECAP</h2>
+
+                <div class="mt-2">
+                  <p>If you have a minute, please review RECAP using the link below. Your feedback helps us promote
+                    RECAP and improve our products.</p>
+                </div>
+                <div class="d-flex justify-content-around">
+                  <a href="https://chromewebstore.google.com/detail/recap/oiillickanjlaeghobeeknbddaonmjnc"
+                    target="_blank" rel="noopener" class="btn btn-primary hidden" role="button"
+                    id="chrome_store_button">
+                    Chrome Web Store
+                  </a>
+                  <a href="https://addons.mozilla.org/en-US/firefox/addon/recap-195534/" target="_blank" rel="noopener"
+                    class="btn btn-primary hidden" role="button" id="firefox_store_button">
+                    Firefox Add-Ons
+                  </a>
+                  <a href="https://apps.apple.com/us/app/recap/id1600281788/" target="_blank" rel="noopener"
+                    class="btn btn-primary hidden" role="button" id="safari_store_button">
+                    Apple App Store
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Everything below this point is intended to remain in view at all times. -->
+
+      <p id="receipts_disabled" class="alert hidden">
+        <i class="fa fa-warning gold"></i>&nbsp;Receipts are disabled in your PACER profile. While receipts are
+        disabled, we are unable to upload PDFs that you purchase. To change this setting, please go to the billing
+        preferences in your PACER account.
+      </p>
+
+    </main>
+
+    <footer>
+      <div id="disable_recap_toggle" class="custom-control custom-switch d-flex flex-row-reverse">
+        <input type="checkbox" class="custom-control-input" id="recap_enabled">
+        <label class="custom-control-label" for="recap_enabled">Enable Uploads</label>
+      </div>
+
+      <div id="version" class="text-center gray"></div>
+
+      <div id="badges" class="text-center">
+        <a href="https://twitter.com/freelawproject" class="fa-stack fa-lg" target="_blank" rel="noopener">
+          <i class="fa fa-circle fa-stack-2x gray"></i>
+          <i class="fa fa-twitter fa-stack-1x fa-inverse"></i>
+        </a>
+        <a href="https://donate.free.law/np/clients/freelawproject/subscribe.jsp?subscription=9" class="fa-stack fa-lg" target="_blank" rel="noopener">
+          <i class="fa fa-circle fa-stack-2x gray"></i>
+          <i class="fa fa-newspaper-o fa-stack-1x fa-inverse"></i>
+        </a>
+      </div>
+
+    </footer>
+  </div>
+
+  <script src="pacer.js"></script>
+  <script type="module" src="options.js"></script>
+  <script type="module" src="utils/toolbar_button.js"></script>
+  <script src="assets/js/jquery.js"></script>
+  <script src="assets/js/bootstrap.bundle.js"></script>
+</body>
+</html>
