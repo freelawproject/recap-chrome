@@ -116,6 +116,7 @@ export function setDefaultOptions(details) {
       recap_enabled: true,
       recap_link_popups: true,
       show_notifications: true,
+      dismiss_news_badge: true,
 
       // Radio button
       ia_style_filenames: false,
