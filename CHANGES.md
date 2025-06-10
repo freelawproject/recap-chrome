@@ -8,7 +8,7 @@ Features:
  - None yet
 
 Changes:
- - None yet
+ - Cleaned up the UI by removing the banner about manifest update ([395](https://github.com/freelawproject/recap/issues/395), [415](https://github.com/freelawproject/recap-chrome/pull/415))
 
 Fixes:
  - None yet
