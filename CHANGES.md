@@ -5,7 +5,7 @@
 The following changes are not yet released, but are code complete:
 
 Features:
- - None yet
+ - Adds annual tab popup asking for support from all users ([400](https://github.com/freelawproject/recap/issues/400), [418](https://github.com/freelawproject/recap-chrome/pull/418))
 
 Changes:
  - None yet
