@@ -106,6 +106,10 @@ export function showNotificationTab(details) {
     chrome.tabs.create({
       url: 'https://free.law/fundraiser/2024/recap',
     });
+  } else if (details.reason === 'update' && currentVersion === '2.8.6') {
+    chrome.tabs.create({
+      url: 'https://free.law/fundraiser/recap',
+    });
   }
 }
 
