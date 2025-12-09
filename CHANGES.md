@@ -5,7 +5,7 @@
 The following changes are not yet released, but are code complete:
 
 Features:
- - Adds annual tab popup asking for support from all users ([400](https://github.com/freelawproject/recap/issues/400), [418](https://github.com/freelawproject/recap-chrome/pull/418))
+ - None yet
 
 Changes:
  - None yet
@@ -15,6 +15,11 @@ Fixes:
   
 For developers:
  - Nothing yet
+
+### 2.8.6 (2025-12-09)
+
+Features:
+ - Adds annual tab popup asking for support from all users ([400](https://github.com/freelawproject/recap/issues/400), [418](https://github.com/freelawproject/recap-chrome/pull/418))
 
 ## 2.8.5 (2025-06-16)
 
