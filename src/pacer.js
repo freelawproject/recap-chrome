@@ -776,8 +776,8 @@ let PACER = {
 
     let banner_button = document.createElement('a');
     banner_button.id = 'learn_more_btn';
-    banner_button.classList.add('btn');
-    banner_button.classList.add('btn-primary');
+    banner_button.classList.add('recap-btn');
+    banner_button.classList.add('recap-btn-primary');
     banner_button.classList.add('banner-open-btn');
     banner_button.innerHTML = 'Learn More';
     banner_button.href = link;
