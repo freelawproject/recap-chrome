@@ -40,7 +40,7 @@
   height: 600px;
 }
 
-#options-body .btn-primary {
+#options-body .recap-btn-primary {
   background-color: #5064ad;
   border-color: #3a4c8f;
 }
@@ -307,7 +307,7 @@ footer #version {
   border-left: 4px solid transparent;
 }
 
-.btn{
+.recap-btn{
   display: inline-block;
   margin-bottom: 0;
   font-weight: normal;
@@ -337,40 +337,40 @@ footer #version {
   margin-left: 5px;
 }
 
-.btn-primary {
+.recap-btn-primary {
   color: #fff;
   background-color: #5064ad;
   border-color: #3a4c8f;
 }
 
-.btn-primary:hover,
-.btn-primary:focus,
-.btn-primary.focus,
-.btn-primary:active,
-.btn-primary.active{
+.recap-btn-primary:hover,
+.recap-btn-primary:focus,
+.recap-btn-primary.focus,
+.recap-btn-primary:active,
+.recap-btn-primary.active{
   color: #ffffff;
   background-color: #3a4c8f;
   border-color: #303f77;
 }
 
-.btn-primary:active,
-.btn-primary.active{
+.recap-btn-primary:active,
+.recap-btn-primary.active{
   background-image: none;
 }
 
-.btn-group>.btn+.dropdown-toggle {
+.btn-group>.btn+.recap-dropdown-toggle {
   padding-left: 8px;
   padding-right: 8px;
 }
 
-.btn-group>.btn:last-child:not(:first-child), .btn-group>.dropdown-toggle:not(:first-child) {
+.btn-group>.btn:last-child:not(:first-child), .btn-group>.recap-dropdown-toggle:not(:first-child) {
   border-bottom-left-radius: 0;
   border-top-left-radius: 0;
 }
 
-.btn-group .btn+.btn, 
-.btn-group .btn+.btn-group, 
-.btn-group .btn-group+.btn, 
+.btn-group .btn+.btn,
+.btn-group .btn+.btn-group,
+.btn-group .btn-group+.btn,
 .btn-group .btn-group+.btn-group {
   margin-left: -1px;
 }
@@ -380,7 +380,7 @@ footer #version {
   float: left;
 }
 
-.btn-group>.btn:first-child:not(:last-child):not(.dropdown-toggle) {
+.btn-group>.btn:first-child:not(:last-child):not(.recap-dropdown-toggle) {
   border-bottom-right-radius: 0;
   border-top-right-radius: 0;
 }
@@ -397,7 +397,7 @@ footer #version {
 .dropdown {
   position: relative;
 }
-.dropdown-toggle:focus {
+.recap-dropdown-toggle:focus {
   outline: 0;
 }
 .dropdown-menu {
@@ -476,7 +476,7 @@ footer #version {
   outline: 0;
 }
 
-.open > .dropdown-toggle.btn-primary {
+.open > .recap-dropdown-toggle.recap-btn-primary {
   background-image: none;
 }
 
@@ -508,11 +508,11 @@ footer #version {
 }
 
 .full-page-iframe{
-  position: absolute; 
-  left: 0; 
-  right: 0; 
-  bottom: 0; 
-  top: 0; 
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
 }
 
 .recap-inline-appellate{
