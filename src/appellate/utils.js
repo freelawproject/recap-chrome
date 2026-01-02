@@ -458,9 +458,9 @@ let APPELLATE = {
   },
 
   // Adds the vue data attributes to the session storage
-  storeVueDataInSession: () => {
+  storeMetaDataInSession: () => {
     return new Promise((resolve, reject) =>
-      chrome.runtime.sendMessage({ message: 'getVueData' }, (res) => {
+      chrome.runtime.sendMessage({ message: 'getMetaData' }, (res) => {
         if (res == null) reject('Response cannot be null');
         resolve(res);
       })
