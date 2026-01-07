@@ -257,6 +257,15 @@ AppellateDelegate.prototype.handleAcmsAttachmentPage = async function () {
 };
 
 AppellateDelegate.prototype.handleAcmsDocket = async function () {
+  const getACMSCaseIdFromSession = async () => {
+    // Retrieves the pacer_case_id from the ACMS metadata stored in
+    // sessionStorage
+    let caseData = JSON.parse(sessionStorage.recapDocViewModel);
+    const { caseDetails } = caseData;
+    const docketDetails = caseDetails[0];
+    return docketDetails.caseId;
+  };
+
   const processDocket = async () => {
     const caseSummary = JSON.parse(sessionStorage.caseSummary);
     const caseId = caseSummary.caseDetails.caseId;
@@ -422,45 +431,8 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
     if (spinner) spinner.classList.add('recap-btn-spinner-hidden');
   };
 
-  // Since this page uses Vue.js for dynamic data rendering and shows a loader
-  // during API requests, an observer is necessary to monitor DOM changes and
-  // update the component accordingly.
-  const footerObserver = async (mutationList, observer) => {
-    for (const r of mutationList) {
-      // We could restrict this to div#box, but that feels overspecific
-      for (const a of r.addedNodes) {
-        // We use the the footer element as an indicator that the entire page
-        // has finished loading.
-        if (a.localName === 'footer') {
-          if ('caseSummary' in sessionStorage) {
-            processDocket();
-            attachLinkToDocs();
-            insertRecapButton();
-            observer.disconnect();
-          } else {
-            console.log(
-              'We observed a <footer> being added, but no ' +
-                'sessionStorage.caseSummary; this is unexpected.'
-            );
-          }
-        }
-      }
-    }
-  };
-
-  const footer = document.querySelector('footer');
-  // Checks whether the footer is rendered or not, indicating that the page
-  // has fully loaded. Once confirmed, proceed with reloading the RECAP icons.
-  // This check is particularly useful when users click the 'Refresh RECAP
-  // links' option in the RECAP button, because the page is not reloaded and
-  // there are no changes being made to the DOM.
-  if (footer){
-    attachLinkToDocs();
-  } else {
-    const body = document.querySelector('body');
-    const observer = new MutationObserver(footerObserver);
-    observer.observe(body, { subtree: true, childList: true });
-  }
+  await APPELLATE.storeMetaDataInSession();
+  this.pacer_case_id = await getACMSCaseIdFromSession();
 };
 
 AppellateDelegate.prototype.handleAcmsDownloadPage = async function () {
