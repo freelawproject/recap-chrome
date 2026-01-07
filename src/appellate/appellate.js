@@ -49,12 +49,42 @@ AppellateDelegate.prototype.regularAppellatePageHandler = function () {
 };
 
 AppellateDelegate.prototype.ACMSPageHandler = function () {
-  if (this.path.startsWith('/download-confirmation/')) {
-    this.handleAcmsDownloadPage();
-  } else if (this.path.startsWith('/documents-list/')) {
-    this.handleAcmsAttachmentPage();
-  } else if (this.path.match(/^\/[0-9\-]+$/)) {
+  // ACMS pages use HTMX for partial page updates, which means content loads
+  // asynchronously and replaces sections of the DOM without reloading the full
+  // page. Because of this, we use a MutationObserver to detect when specific
+  // ACMS components are injected into the DOM and trigger the appropriate
+  // handlers at the right time.
+  //
+  // The observer watches for additions to the DOM and runs the correct handler
+  // whenever a known ACMS page structure appears.
+  const pageObserver = async (mutationList, observer) => {
+    for (const r of mutationList) {
+      // We could restrict this to div#box, but that feels overspecific
+      for (const node of r.addedNodes) {
+        if (node.tagName !== 'DIV') continue;
+        if (node.id === 'indexContent') {
+          this.handleAcmsDocket();
+        }
+        if (node.classList.contains('documents-list-wrapper')) {
+          this.handleAcmsAttachmentPage();
+        }
+      }
+    }
+  };
+
+  // If ACMS has already rendered the main content container (indexContent),
+  // we can immediately initialize the docket handler without waiting for
+  // HTMX updates. This prevents unnecessary observer creation and avoids
+  // double-handling when navigating back/forward.
+  if (document.getElementById('indexContent')) {
     this.handleAcmsDocket();
+  } else {
+    // Otherwise, the page is still loading partial content via HTMX.
+    // Set up a MutationObserver on <body> to detect when ACMS injects
+    // the relevant sections.
+    const body = document.querySelector('body');
+    const observer = new MutationObserver(pageObserver);
+    observer.observe(body, { subtree: true, childList: true });
   }
 };
 
