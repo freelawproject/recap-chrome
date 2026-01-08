@@ -98,6 +98,26 @@ AppellateDelegate.prototype.dispatchPageHandler = function () {
 };
 
 AppellateDelegate.prototype.handleAcmsAttachmentPage = async function () {
+  const getDocketEntryId = async () => {
+    // Retrieves the docketEntryId associated with the currently
+    // displayed ACMS document viewer modal.
+    //
+    // This works by:
+    // 1. Reading the `docsToEntries` mapping stored in tab storage,
+    //    which maps document IDs to docket entry IDs.
+    // 2. Locating the document viewer modal.
+    // 3. Extracting the `data-doc-id` from the first `.entry-link`
+    //    element in the modal.
+    // 4. Returning the corresponding docketEntryId.
+    const tabStorage = await getItemsFromStorage(this.tabId);
+    const docsToEntries = tabStorage && tabStorage.docsToEntries;
+
+    const modal = document.getElementById('document-viewer-modal');
+    const links = modal.querySelectorAll('.entry-link');
+
+    return docsToEntries[links[0].dataset.docId];
+  };
+
   const processAttachmentPage = async () => {
     let caseSummary = JSON.parse(sessionStorage.caseSummary);
     this.pacer_case_id = caseSummary.caseDetails.caseId;
@@ -243,7 +263,7 @@ AppellateDelegate.prototype.handleAcmsAttachmentPage = async function () {
         let isTargetingH4Div = n.parentElement.localName === 'h4';
         if (isTitle && isTargetingH4Div) {
           // Insert script to retrieve and store Vue data in the storage
-          await APPELLATE.storeVueDataInSession();
+          let entryId = await getDocketEntryId();
           processAttachmentPage();
           attachLinkToDocs();
         }
