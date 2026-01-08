@@ -181,53 +181,37 @@ AppellateDelegate.prototype.handleAcmsAttachmentPage = async function () {
 
   };
 
-  const attachLinkToDocs = async () => {
+  const attachLinkToDocs = async (entryId) => {
     // This function attaches links to available RECAP documents for each entry
     // on the current page. It performs the following steps:
     //
     // 1. Retrieves docket entry and document data from session storage.
-    // 2. Selects all elements with the class "entry-link" on the page.
-    // 3. Loops through each link:
-    //    - Extracts the document number from the previous sibling element.
-    //    - Finds the corresponding document data object using the document
-    //      number.
-    //    - Embeds the document's `docketDocumentDetailsId` as a
-    //      `data-document-guid` attribute in the link.
-    // 4. Queries the server for the availability of these documents from RECAP.
-    // 5. Iterates through the response:
-    //    - Extracts the `acms_document_guid` for each available document.
-    //    - Finds the corresponding link element using the previously attached
-    //     `data-document-guid` attribute.
-    //    - Creates a link element
-    //    - Inserts the RECAP icon element next to the original entry link.
-    const attachmentsData = JSON.parse(sessionStorage.recapVueData);
-    const documentsData = attachmentsData.docketEntryDocuments;
+    // 2. Collects all document entry links within the document viewer modal.
+    // 3. Queries the RECAP backend to check which documents are available.
+    // 4. Matches available documents using the `data-doc-id` attribute.
+    // 5. Inserts a RECAP icon linking to the free document next to
+    //    each corresponding entry link.
+    let caseData = JSON.parse(sessionStorage.recapDocViewModel);
+    const { docketEntries } = caseData;
+    const docketEntryData = docketEntries.find(
+      (entry) => entry.docketEntryId == entryId
+    );
+
+    // Scope all DOM queries to the document viewer modal to avoid
+    // accidentally matching links elsewhere on the page.
+    const modal = document.getElementById('document-viewer-modal');
 
     // Get all the entry links on the page. We use the "entry-link"
     // class as a selector because all rows on the page
     // consistently use this class.
-    this.links = document.body.querySelectorAll('.entry-link');
-    if (!links.length) return;
+    this.links = modal.querySelectorAll('.entry-link');
+    if (!this.links.length) return;
 
-    // Go through the array of links and embed the document_guid
-    for (link of this.links) {
-      // The document number and the link are enclosed within the
-      // same span tag and are located adjacent to each other.
-      // Therefore, to retrieve the document number, we need to use
-      //  the previousSibling property.
-      let documentNumberText = link.previousSibling.innerHTML.trim();
-      const docData = documentsData.find(
-        (document) => document.documentNumber == documentNumberText
-      );
-
-      // Embed the document_guid as a data attribute within the anchor tag
-      // to facilitate subsequent retrieval based on this identifier.
-      link.dataset.documentGuid = docData.docketDocumentDetailsId;
-    }
-
-    let docIds = [attachmentsData.docketEntry.docketEntryId];
+    let docIds = [docketEntryData.docketEntryId];
     let clCourt = PACER.convertToCourtListenerCourt(this.court);
-    // Ask the server whether any of these documents are available from RECAP.
+
+    // Ask the server which documents for this docket entry
+    // are available from the RECAP Archive.
     const recapLinks = await dispatchBackgroundFetch({
       action: 'getAvailabilityForDocuments',
       data: {
@@ -237,12 +221,13 @@ AppellateDelegate.prototype.handleAcmsAttachmentPage = async function () {
     });
     for (result of recapLinks.results) {
       let doc_guid = result.acms_document_guid;
-      // Query the docket entry link using the data attribute
-      // attached previously
+      // Query the docket entry link using the
+      // `data-doc-id` attribute embedded by ACMS.
       let anchor = document.querySelector(
-        `[data-document-guid="${doc_guid}"]`
+        `[data-doc-id="${doc_guid}"]`
       );
-      // Create the RECAP icon
+
+      // Create the RECAP icon and link to the document.
       let href = `https://storage.courtlistener.com/${result.filepath_local}`;
       let recap_link = $('<a/>', {
         title: 'Available for free from the RECAP Archive.',
@@ -257,7 +242,8 @@ AppellateDelegate.prototype.handleAcmsAttachmentPage = async function () {
         class: 'recap-inline-appellate',
       });
       recap_div.append(recap_link);
-      // Insert the RECAP icon next to the docket entry link
+      // Insert the RECAP icon immediately after the
+      // corresponding ACMS document link.
       recap_div.insertAfter(anchor);
     }
   };
