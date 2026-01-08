@@ -345,44 +345,37 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
   };
 
   const attachLinkToDocs = async () => {
-    // This function analyzes docket entries on the docket report and adds RECAP
-    // RECAP availability information. It performs the following steps:
+    // Adds RECAP availability indicators to each docket entry link displayed
+    // in the ACMS docket view. It perform the following steps:
     //
     // 1. Data Retrieval:
-    //    - Fetches the case summary object from from session storage.
-    //    - Extracts the docket entries array from the case summary.
-    //    - Retrieves all anchor elements with the class "entry-link".
+    //    - Reads the full `recapDocViewModel` from sessionStorage.
+    //    - Extract the array of `docketEntries`, each containing documents.
+    //    - Query all `.entry-link` anchor tags rendered by ACMS.
     //
-    // 2. Processing Docket Entries:
-    //    - Iterates through the retrieved links:
-    //       - Extracts the docket entry number from the link text.
-    //       - Searches the docket entries array to find the corresponding
-    //         entry data (based on entry number).
-    //       - If a match is found, embeds the pacer_doc_id as a data attribute
-    //         within the anchor tag for later retrieval.
-    //       - Extracts the docket entry ID and adds it to an array of doc IDs.
+    // 2. Docket Entry Mapping:
+    //    - For each link, read its `data-docket-entry-id`.
+    //    - Look up the matching docketEntry in the `docketEntries` array.
+    //    - Collect all docketEntryIds to be checked for RECAP availability.
+    //    - Build a `docsToEntries` map that associates each ACMS document ID
+    //      (`docketDocumentDetailsId`) with its parent docketEntryId.
+    //      This mapping is later used by attachment pages and related workflows
     //
     // 3. RECAP Availability Check:
-    //    - Queries the server to check if any of the collected doc IDs are
-    //      available in the RECAP archive.
+    //    - Query RECAP via the background worker, requesting availability for
+    //      all collected docketEntryIds.
     //    - The court information is also included in the request.
     //
     // 4. Enriching Links with RECAP Information:
-    //    - Iterates through the response from CL:
-    //       - Extracts the pacer_doc_id from each response object.
-    //       - Finds the corresponding anchor element using the previously
-    //         attached data attribute.
-    //       - Creates a new anchor element with a link to the RECAP archive
-    //         based on the filepath provided in the response and Adds a RECAP
-    //         icon using the extension's image asset.
-    //       - Wraps both the icon and the link within a dedicated container div
-    //         with the class "recap-inline-appellate", this class ensures that
-    //         the icon is hidden when printing the document.
-    //       - Inserts the div container next to the original docket entry link.
+    //    For each available document:
+    //       - Finds the matching anchor via its data attribute.
+    //       - Creates a RECAP link pointing to the stored PDF.
+    //       - Wraps the icon and link in a `.recap-inline-appellate` div.
+    //       - Appends the div next to the docket entry’s link.
 
     // Get the docket info from the sessionStorage obj
-    const caseSummary = JSON.parse(sessionStorage.caseSummary);
-    const docketEntries = caseSummary.docketInfo.docketEntries;
+    const recapDocViewModel = JSON.parse(sessionStorage.recapDocViewModel);
+    const docketEntries = recapDocViewModel.docketEntries;
 
     // Get all the entry links on the page. We use the "entry-link"
     // class as a selector because we observed that all non-restricted
@@ -393,20 +386,19 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
     // Go through the array of links and collect the doc IDs of
     // the entries that are not restricted.
     let docIds = [];
+    let docsToEntries = {};
     for (link of this.links) {
-      const docketEntryText = link.innerHTML.trim();
+      const docketEntryId = link.dataset.docketEntryId;
       const docketEntryData = docketEntries.find(
-        (entry) => entry.entryNumber == parseInt(docketEntryText)
+        (entry) => entry.docketEntryId == docketEntryId
       );
 
-      // Embed the pacer_doc_id as a data attribute within the anchor tag
-      // to facilitate subsequent retrieval based on this identifier.
-      link.dataset.pacerDocId = docketEntryData.docketEntryId;
-
       // add the id to the array of doc ids
-      docIds.push(docketEntryData.docketEntryId);
+      docIds.push(docketEntryId);
+      for (const doc of docketEntryData.docketEntryDocuments) {
+        docsToEntries[doc.docketDocumentDetailsId] = docketEntryId;
+      }
     }
-
     let clCourt = PACER.convertToCourtListenerCourt(this.court);
     // submit fetch request through background worker
     const recapLinks = await dispatchBackgroundFetch({
@@ -421,7 +413,7 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
       let doc_id = result.pacer_doc_id;
       // Query the docket entry link using the data attribute
       // attached previously
-      let anchor = document.querySelector(`[data-pacer-doc-id="${doc_id}"]`);
+      let anchor = document.querySelector(`[data-docket-entry-id="${doc_id}"]`);
       // Create the RECAP icon
       let href = `https://storage.courtlistener.com/${result.filepath_local}`;
       let recap_link = $('<a/>', {
@@ -437,15 +429,29 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
         class: 'recap-inline-appellate',
       });
       recap_div.append(recap_link);
-      // Insert the RECAP icon next to the docket entry link
-      recap_div.insertAfter(anchor);
+
+      // Target the table row (<tr>) corresponding to this docket entry
+      let parent_tr = anchor.closest(`tr[data-docket-entry-id="${doc_id}"]`);
+
+      // Within that row, locate the span that contains the document links
+      const parent_span = parent_tr.querySelector("span.document-controls");
+
+      // Append the generated RECAP element to the controls area
+      parent_span.appendChild(recap_div[0]);
+
     }
     let spinner = document.getElementById('recap-button-spinner');
     if (spinner) spinner.classList.add('recap-btn-spinner-hidden');
+    await updateTabStorage({
+      [this.tabId]: {
+        docsToEntries: docsToEntries,
+      },
+    });
   };
 
   await APPELLATE.storeMetaDataInSession();
   this.pacer_case_id = await getACMSCaseIdFromSession();
+  await attachLinkToDocs();
   processDocket();
 };
 
