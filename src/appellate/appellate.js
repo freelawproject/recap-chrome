@@ -248,29 +248,34 @@ AppellateDelegate.prototype.handleAcmsAttachmentPage = async function () {
     }
   };
 
-  // This following logic monitors for specific DOM changes using
-  // MutationObserver. It iterates through mutations and checks for added nodes
-  // that meet two criteria:
-  //   1. The node's text content (lowercase) includes "documents are attached
-  //      to this filing".
-  //   2. The node's parent element is an h4 element.
-  // If both conditions are true, it triggers these actions:
-  //   - Stores relevant Vue data in session storage.
-  //   - Processes the current page as an attachment page.
-  //   - Attaches links to entries on the page.
   const wrapperMutationObserver = async (mutationList, observer) => {
+    // Observes the ACMS attachment page for DOM changes and detects
+    // when the attachments section becomes available.
+    //
+    // The observer looks for an H4 element containing the text
+    // "documents are attached to this filing". Once detected:
+    // 1. The active docketEntryId is resolved from the document modal.
+    // 2. The attachment page is processed and uploaded to RECAP.
+    // 3. RECAP availability icons are attached to document links.
+    // 4. The observer disconnects to prevent duplicate work.
     for (const r of mutationList) {
       for (const n of r.addedNodes) {
-        let isTitle = n.textContent
+        // Look for the H4 either on the node itself or inside it
+        let h4 = n.tagName === 'H4' ? n : n.querySelector('h4');
+        if (!h4) continue;
+
+        let isAttachmentsTitle = n.textContent
           .toLowerCase()
           .includes('documents are attached to this filing');
-        let isTargetingH4Div = n.parentElement.localName === 'h4';
-        if (isTitle && isTargetingH4Div) {
-          // Insert script to retrieve and store Vue data in the storage
-          let entryId = await getDocketEntryId();
-          processAttachmentPage();
-          attachLinkToDocs();
-        }
+        if (!isAttachmentsTitle) continue;
+
+        let entryId = await getDocketEntryId();
+        processAttachmentPage(entryId);
+        attachLinkToDocs(entryId);
+
+        // Disconnect after the first successful match to avoid
+        // repeated uploads or duplicate icon insertion.
+        observer.disconnect();
       }
     }
   };
