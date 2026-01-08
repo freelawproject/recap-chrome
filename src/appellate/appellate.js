@@ -267,9 +267,22 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
   };
 
   const processDocket = async () => {
-    const caseSummary = JSON.parse(sessionStorage.caseSummary);
-    const caseId = caseSummary.caseDetails.caseId;
-    this.pacer_case_id = caseId;
+    // Uploads the ACMS docket JSON metadata to the RECAP archive.
+    //
+    // Steps performed:
+    //  1. Reads `recapDocViewModel` from sessionStorage, which contains both
+    //     caseDetails and docketInfo as provided by ACMS.
+    //  2. Extracts only the fields required for RECAP.
+    //  3. Skips upload if the page was already uploaded in this session
+    //  4. Respects user preferences by checking if RECAP uploads are disabled.
+    //  5. Sends the structured docket metadata to the background worker for
+    //     upload.
+    //  6. Displays a success notification if the upload completes without error
+    const caseData = JSON.parse(sessionStorage.recapDocViewModel);
+
+    // Only keep what we need
+    const { caseDetails, docketInfo } = caseData;
+    const docketDetails = caseDetails[0];
 
     if (history.state && history.state.uploaded) return;
 
@@ -285,7 +298,7 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
         court: PACER.convertToCourtListenerCourt(this.court),
         pacer_case_id: this.pacer_case_id,
         upload_type: 'ACMS_DOCKET_JSON',
-        html: sessionStorage.caseSummary,
+        html: JSON.stringify({ caseDetails: docketDetails, docketInfo }),
       },
     });
     if (upload.error) return;
@@ -433,6 +446,7 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
 
   await APPELLATE.storeMetaDataInSession();
   this.pacer_case_id = await getACMSCaseIdFromSession();
+  processDocket();
 };
 
 AppellateDelegate.prototype.handleAcmsDownloadPage = async function () {
