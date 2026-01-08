@@ -311,14 +311,17 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
   };
 
   const insertRecapButton = async () => {
-    // Injects a "RECAP actions" button near the first table containing data.
-    // It first checks for an existing button with the ID "recap-action-button",
-    // If none exists, it creates a new button using the `recapActionsButton`
-    // function and inserts it before the table. The function then queries the
-    // RECAP service for case data availability using the `this.court` and
-    //`this.pacer_case_id` properties.
-
-    // Query the first table with case data and insert the RECAP actions button
+    // Inserts the "RECAP actions" button at the top of the docket view.
+    // This function performs the following steps:
+    //  1. Locates the primary case-information table rendered by ACMS.
+    //  2. Checks whether a RECAP action button is already present to
+    //     avoid duplicates.
+    //  3. If not present, creates a new RECAP actions button using
+    //     the `recapActionsButton` function.
+    //  4. Queries RECAP for docket availability information.
+    //  5. If a single docket record exists:
+    //     - Adds an alert button to the buttons dropdown menu.
+    //     - Adds a search-in-RECAP link using the CL docket ID.
     let caseInformationTable = document.querySelector('table.case-information');
     // Get a reference to the parent node
     const parentDiv = caseInformationTable.parentNode;
@@ -451,8 +454,9 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
 
   await APPELLATE.storeMetaDataInSession();
   this.pacer_case_id = await getACMSCaseIdFromSession();
-  await attachLinkToDocs();
   processDocket();
+  await insertRecapButton();
+  await attachLinkToDocs();
 };
 
 AppellateDelegate.prototype.handleAcmsDownloadPage = async function () {
