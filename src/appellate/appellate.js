@@ -118,9 +118,21 @@ AppellateDelegate.prototype.handleAcmsAttachmentPage = async function () {
     return docsToEntries[links[0].dataset.docId];
   };
 
-  const processAttachmentPage = async () => {
-    let caseSummary = JSON.parse(sessionStorage.caseSummary);
-    this.pacer_case_id = caseSummary.caseDetails.caseId;
+  const processAttachmentPage = async (entryId) => {
+    // Processes the ACMS attachment page by building a RECAP upload
+    // payload and sending it to the background for upload.
+    //
+    // Steps performed:
+    // 1. Reads the ACMS document view model from session storage.
+    // 2. Extracts the relevant case details and docket entry data.
+    // 3. Separates docket entry metadata from its documents to keep
+    //    the payload structure consistent with existing RECAP uploads.
+    // 4. Sends the attachment page data to the background for upload.
+    // 5. Displays a success or failure notification to the user.
+    let caseData = JSON.parse(sessionStorage.recapDocViewModel);
+    const { caseDetails, docketEntries } = caseData;
+    const docketDetails = caseDetails[0];
+    this.pacer_case_id = docketDetails.caseId;
 
     const options = await getItemsFromStorage('options');
     if (!options['recap_enabled']) {
@@ -129,11 +141,17 @@ AppellateDelegate.prototype.handleAcmsAttachmentPage = async function () {
       );
     }
 
-    let vueData = JSON.parse(sessionStorage.recapVueData);
+    const docketEntryData = docketEntries.find(
+      (entry) => entry.docketEntryId == entryId
+    );
+    // Remove documents from the docketEntry object and send them
+    // separately to avoid nesting document data twice.
+    const { docketEntryDocuments, ...docketEntry } = docketEntryData;
+
     let requestBody = {
-      caseDetails: caseSummary.caseDetails,
-      docketEntry: vueData.docketEntry,
-      docketEntryDocuments: vueData.docketEntryDocuments,
+      caseDetails: docketDetails,
+      docketEntry,
+      docketEntryDocuments,
     };
 
     const upload = await dispatchBackgroundFetch({
