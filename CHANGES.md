@@ -5,14 +5,14 @@
 The following changes are not yet released, but are code complete:
 
 Features:
- - None yet
+ - Tweaks ACMS logic to support HTMX partial content updates and enhances metadata extraction ([#420](https://github.com/freelawproject/recap-chrome/pull/420))
 
 Changes:
- - None yet
+ - Namespace RECAP button CSS to avoid Bootstrap overrides
 
 Fixes:
  - None yet
-  
+
 For developers:
  - Nothing yet
 
