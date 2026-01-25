@@ -17,6 +17,7 @@
 import {
   areTransactionReceiptsDisabled,
   getCourtFromUrl,
+  isACMSWebsite,
 } from './url_and_cookie_helpers.js';
 
 export function getTabById(tabId, cb) {
@@ -73,6 +74,12 @@ export function updateToolbarButton(tab) {
         setTitleIcon('Not at a PACER site', {
           19: 'assets/images/grey-19.png',
           38: 'assets/images/grey-38.png',
+        });
+      } else if (isACMSWebsite(tab.url)) {
+        // ACMS website. Show warning.
+        setTitleIcon('ACMS has partial support in this version', {
+          '19': 'assets/images/warning-19.png',
+          '38': 'assets/images/warning-38.png'
         });
       } else {
         // It's a valid PACER URL. Therefore either show the nice blue icon or
