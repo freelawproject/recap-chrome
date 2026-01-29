@@ -3,6 +3,11 @@ export function areTransactionReceiptsDisabled(cookie) {
   return cookie && cookie.value.match(/receipt=N/);
 }
 
+export function isACMSWebsite(url){
+  // Checks if the given URL belongs to ACMS
+  return url.toLowerCase().includes('azurewebsites.us');
+}
+
 export function getCourtFromUrl(url) {
   // This function is used as a security check to ensure that no components of
   // RECAP are being used outside of PACER/ECF/ACMS. Be sure tests pass

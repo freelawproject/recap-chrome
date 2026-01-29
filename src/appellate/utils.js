@@ -458,9 +458,9 @@ let APPELLATE = {
   },
 
   // Adds the vue data attributes to the session storage
-  storeVueDataInSession: () => {
+  storeMetaDataInSession: () => {
     return new Promise((resolve, reject) =>
-      chrome.runtime.sendMessage({ message: 'getVueData' }, (res) => {
+      chrome.runtime.sendMessage({ message: 'getMetaData' }, (res) => {
         if (res == null) reject('Response cannot be null');
         resolve(res);
       })
@@ -518,7 +518,7 @@ let APPELLATE = {
   },
 
   // Creates a div with a spinner and a loading message
-  createsLoadingMessage: (downloadData) => {
+  createsLoadingMessage: (caseNumber) => {
     let loadingTextDiv = document.createElement('div');
     loadingTextDiv.classList.add('box', 'mt-2');
 
@@ -529,9 +529,13 @@ let APPELLATE = {
     let spanText = document.createElement('span');
     spanText.innerHTML =
       'Download in progress for case number ' +
-      `${downloadData.caseSummary.caseDetails.caseNumber}`;
+      `${caseNumber}`;
+
+    // Add a non-breaking space between spinner and text
+    const space = document.createTextNode('\u00A0');
 
     loadingTextElement.appendChild(spinner);
+    loadingTextElement.appendChild(space);
     loadingTextElement.appendChild(spanText);
     loadingTextDiv.appendChild(loadingTextElement);
     return loadingTextDiv;

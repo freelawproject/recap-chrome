@@ -386,7 +386,7 @@ function createRecapButtonForFilers(description) {
   let button = document.createElement('input');
   button.type = 'submit';
   button.value = description;
-  button.classList.add('recap-bttn-for-filers', 'btn-primary');
+  button.classList.add('recap-bttn-for-filers', 'recap-btn-primary');
   return button;
 }
 

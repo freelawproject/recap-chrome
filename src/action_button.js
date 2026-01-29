@@ -101,7 +101,11 @@ const recapActionsButton = (court, pacerCaseId) => {
   const spinner = createRecapSpinner();
 
   const mainButton = document.createElement('a');
-  mainButton.classList.add('btn', 'btn-primary', 'dropdown-toggle');
+  mainButton.classList.add(
+    'recap-btn',
+    'recap-btn-primary',
+    'recap-dropdown-toggle'
+  );
   mainButton.innerHTML = `${spinner.outerHTML} RECAP Actions`;
   mainButton.setAttribute('data-toggle', 'dropdown');
   mainButton.setAttribute('aria-haspopup', true);
