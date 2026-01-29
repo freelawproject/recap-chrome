@@ -416,7 +416,7 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
     // class as a selector because we observed that all non-restricted
     // entries consistently use this class.
     this.links = document.body.querySelectorAll('.entry-link');
-    if (!links.length) return;
+    if (!this.links.length) return;
 
     // Go through the array of links and collect the doc IDs of
     // the entries that are not restricted.
