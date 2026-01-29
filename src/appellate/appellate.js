@@ -62,7 +62,7 @@ AppellateDelegate.prototype.ACMSPageHandler = function () {
       // We could restrict this to div#box, but that feels overspecific
       for (const node of r.addedNodes) {
         if (node.tagName !== 'DIV') continue;
-        if (node.id === 'indexContent') {
+        if (node.id === 'indexContent' || node.id === 'fullDocketContent') {
           this.handleAcmsDocket();
         }
         if (node.classList.contains('documents-list-wrapper')) {
@@ -76,7 +76,10 @@ AppellateDelegate.prototype.ACMSPageHandler = function () {
   // we can immediately initialize the docket handler without waiting for
   // HTMX updates. This prevents unnecessary observer creation and avoids
   // double-handling when navigating back/forward.
-  if (document.getElementById('indexContent')) {
+  if (
+    document.getElementById('indexContent') ||
+    document.getElementById('fullDocketContent')
+  ) {
     this.handleAcmsDocket();
   } else {
     // Otherwise, the page is still loading partial content via HTMX.
