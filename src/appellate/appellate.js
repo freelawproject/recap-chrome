@@ -1,3 +1,5 @@
+let acmsPageObserver = null;
+
 //  Abstraction of scripts related to Appellate PACER to make them modular and
 // testable.
 let AppellateDelegate = function (tabId, court, url, path, links) {
@@ -74,21 +76,24 @@ AppellateDelegate.prototype.ACMSPageHandler = function () {
 
   // If ACMS has already rendered the main content container (indexContent),
   // we can immediately initialize the docket handler without waiting for
-  // HTMX updates. This prevents unnecessary observer creation and avoids
-  // double-handling when navigating back/forward.
+  // HTMX updates. This handles cases where the page loads fully before
+  // the extension runs or when navigating back/forward.
   if (
     document.getElementById('indexContent') ||
     document.getElementById('fullDocketContent')
   ) {
     this.handleAcmsDocket();
-  } else {
-    // Otherwise, the page is still loading partial content via HTMX.
-    // Set up a MutationObserver on <body> to detect when ACMS injects
-    // the relevant sections.
-    const body = document.querySelector('body');
-    const observer = new MutationObserver(pageObserver);
-    observer.observe(body, { subtree: true, childList: true });
   }
+
+  if (acmsPageObserver) return;
+
+  // Always set up the observer to watch for HTMX updates, even if content
+  // is already present. HTMX can trigger partial page updates at any time,
+  // and we need to respond to those changes in both Chrome (node-by-node
+  // loading) and Firefox (full page already loaded).
+  const body = document.querySelector('body');
+  acmsPageObserver = new MutationObserver(pageObserver.bind(this));
+  acmsPageObserver.observe(body, { subtree: true, childList: true });
 };
 
 // Identify and handle pages from Appellate courts.
