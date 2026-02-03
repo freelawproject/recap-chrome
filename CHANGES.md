@@ -23,6 +23,7 @@ Features:
 
 Changes:
  - Namespace RECAP button CSS to avoid Bootstrap overrides
+ - Updates ACMS page observer to handle Firefox page load timing ([#422](https://github.com/freelawproject/recap-chrome/pull/422))
 
 ### 2.8.6 (2025-12-09)
 
