@@ -119,13 +119,9 @@ export function getAndStoreMetaData(req, sender, sendResponse) {
     // global scope. Rather than traversing the DOM or inspecting framework
     // internals, we read directly from this object to efficiently capture the
     // data needed for RECAP.
-    //
-    // Sensitive fields (e.g. authentication tokens) are explicitly
-    // excluded before persisting the data to sessionStorage.
-    const { authTokenResult, ...sanitized } = window.showDocViewModel;
     sessionStorage.setItem(
       'recapDocViewModel',
-      JSON.stringify(sanitized)
+      JSON.stringify(window.showDocViewModel)
     );
     return true;
   };
