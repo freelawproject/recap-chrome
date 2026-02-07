@@ -435,6 +435,7 @@ AppellateDelegate.prototype.handleAcmsDocket = async function () {
       const docketEntryData = docketEntries.find(
         (entry) => entry.docketEntryId == docketEntryId
       );
+      if (!docketEntryData) continue;
 
       // add the id to the array of doc ids
       docIds.push(docketEntryId);
