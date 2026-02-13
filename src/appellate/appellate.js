@@ -684,7 +684,7 @@ AppellateDelegate.prototype.handleAcmsDownloadPage = async function () {
     // Remove element from the page to show loading message
     let mainDiv = modal.querySelector('.modal-body');
     mainDiv.innerHTML = '';
-    loadingTextMessage = APPELLATE.createsLoadingMessage(caseNumber);
+    let loadingTextMessage = APPELLATE.createsLoadingMessage(caseNumber);
     mainDiv.append(loadingTextMessage);
 
     // Get the pacer_case_id and document GUID from the sessionStorage object
