@@ -169,7 +169,7 @@ export function getDocumentDataFromDownloadModal(req, sender, sendResponse) {
         'recapDownloadDocumentData',
         JSON.stringify({
           docketEntryId: null,
-          documentName: null,
+          docketEntryDocuments: [],
           error: e.message,
         })
       );
