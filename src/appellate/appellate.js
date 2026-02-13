@@ -574,7 +574,7 @@ AppellateDelegate.prototype.handleAcmsDownloadPage = async function () {
       },
     });
 
-    if (!recapLinks) {
+    if (!recapLinks?.results?.length) {
       console.error('RECAP: Failed getting availability for dockets.');
       return;
     }
@@ -583,16 +583,9 @@ AppellateDelegate.prototype.handleAcmsDownloadPage = async function () {
       'RECAP: Got results from API. Processing results to insert banner'
     );
 
-    // For entries with multiple documents, match on the specific ACMS
-    // document GUID. Otherwise use the single result.
-    let result;
-    if (recapLinks.results.length > 1) {
-      result = recapLinks.results.find(
-        (obj) => obj.acms_document_guid == documentData.docketDocumentDetailsId
-      );
-    } else {
-      result = recapLinks.results[0];
-    }
+    const result = recapLinks.results.find(
+      (obj) => obj.acms_document_guid === documentData.docketDocumentDetailsId
+    );
     if (!result) return;
 
     // Create a centered wrapper div to hold the RECAP banner
