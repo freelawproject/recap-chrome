@@ -558,7 +558,10 @@ AppellateDelegate.prototype.handleAcmsDownloadPage = async function () {
     return { docketEntryData, documentData };
   };
 
-  insertRecapBannerIfAvailable = async (docketEntryData, documentData) => {
+  const insertRecapBannerIfAvailable = async (
+    docketEntryData,
+    documentData
+  ) => {
     // Queries the RECAP archive for the document and inserts a download
     // banner if a copy is available.
     const clCourt = PACER.convertToCourtListenerCourt(this.court);
@@ -605,7 +608,7 @@ AppellateDelegate.prototype.handleAcmsDownloadPage = async function () {
 
     // Insert the banner inside the centered wrapper
     insertAvailableDocBanner(result.filepath_local, wrapper);
-  };;
+  };
 
   async function startUploadProcess() {
     // This function initiates the upload process for a PDF document
