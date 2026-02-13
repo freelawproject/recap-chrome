@@ -538,14 +538,14 @@ AppellateDelegate.prototype.handleAcmsDownloadPage = async function () {
       (entry) => entry.docketEntryId == downloadData.docketEntryId
     );
 
-    if (!docketEntryData.docketEntryDocuments.length) {
+    if (!docketEntryData?.docketEntryDocuments?.length) {
       return { docketEntryData: null, documentData: null };
     }
 
     // For entries with multiple attachments, match on the specific document
     // that was clicked. For single-document entries, use the only document.
     let documentData;
-    if (docketEntryData.docketEntryDocuments.length > 1) {
+    if (docketEntryData?.docketEntryDocuments?.length > 1) {
       documentData = docketEntryData.docketEntryDocuments.find(
         (doc) =>
           doc.docketDocumentDetailsId ==
@@ -655,13 +655,13 @@ AppellateDelegate.prototype.handleAcmsDownloadPage = async function () {
       (entry) => entry.docketEntryId == downloadData.docketEntryId
     );
 
-    if (!docketEntryData.docketEntryDocuments.length) return;
+    if (!docketEntryData?.docketEntryDocuments?.length) return;
 
     const pdfFileRequestBody =
       APPELLATE.createAcmsDocumentRequestBody(downloadData);
 
     let docData = null;
-    if (docketEntryData.docketEntryDocuments.length > 1) {
+    if (docketEntryData?.docketEntryDocuments?.length > 1) {
       docData = docketEntryData.docketEntryDocuments.find(
         (doc) =>
           doc.docketDocumentDetailsId ==
