@@ -708,7 +708,7 @@ AppellateDelegate.prototype.handleAcmsDownloadPage = async function () {
     );
   }
 
-  const replaceAcceptChargesButton = (modal, docketEntryData, documentData) => {
+  const replaceAcceptChargesButton = (modal) => {
     // Removes the original "Accept Charges and Retrieve" button and replaces
     // it with a RECAP button that intercepts the download flow.
     //
@@ -731,7 +731,7 @@ AppellateDelegate.prototype.handleAcmsDownloadPage = async function () {
 
     newButton.addEventListener(
       'click',
-      startUploadProcess.bind(this, modal, docketEntryData, documentData)
+      startUploadProcess.bind(this)
     );
   };
 
@@ -762,7 +762,7 @@ AppellateDelegate.prototype.handleAcmsDownloadPage = async function () {
   // the download. The original button's handler fetches a one-time-use PDF URL
   // and navigates to it. We need to intercept before that happens so we can
   // download the PDF as a blob for RECAP upload.
-  replaceAcceptChargesButton(modal, docketEntryData, documentData);
+  replaceAcceptChargesButton(modal);
 
   // Check the RECAP archive for an existing copy of this document
   // and display a banner if one is available.
