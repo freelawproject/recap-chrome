@@ -457,13 +457,26 @@ let APPELLATE = {
     );
   },
 
-  // Adds the vue data attributes to the session storage
+  // Adds data attributes to the session storage
   storeMetaDataInSession: () => {
     return new Promise((resolve, reject) =>
       chrome.runtime.sendMessage({ message: 'getMetaData' }, (res) => {
         if (res == null) reject('Response cannot be null');
         resolve(res);
       })
+    );
+  },
+
+  // Sends message to background to fetch document data from download modal
+  storeDocumentDataFromDownloadModal: () => {
+    return new Promise((resolve, reject) =>
+      chrome.runtime.sendMessage(
+        { message: 'getDocumentDataFromDownloadModal' },
+        (res) => {
+          if (res == null) reject('Response cannot be null');
+          resolve(res);
+        }
+      )
     );
   },
 

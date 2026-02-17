@@ -119,13 +119,9 @@ export function getAndStoreMetaData(req, sender, sendResponse) {
     // global scope. Rather than traversing the DOM or inspecting framework
     // internals, we read directly from this object to efficiently capture the
     // data needed for RECAP.
-    //
-    // Sensitive fields (e.g. authentication tokens) are explicitly
-    // excluded before persisting the data to sessionStorage.
-    const { authTokenResult, ...sanitized } = window.showDocViewModel;
     sessionStorage.setItem(
       'recapDocViewModel',
-      JSON.stringify(sanitized)
+      JSON.stringify(window.showDocViewModel)
     );
     return true;
   };
@@ -133,6 +129,57 @@ export function getAndStoreMetaData(req, sender, sendResponse) {
     .executeScript({
       target: { tabId: sender.tab.id },
       func: getViewMetaData,
+      world: executionWorld,
+    })
+    .then((injectionResults) => sendResponse(injectionResults));
+}
+
+export function getDocumentDataFromDownloadModal(req, sender, sendResponse) {
+  const getDocumentData = () => {
+    try {
+      // Access the DownloadConfirmation instance via the global
+      // ShowDocPageInitializer -> DocumentModalManager -> currentComponent.
+      // chain currentComponent holds the DownloadConfirmation object that was
+      // created when the user clicked a document link in the docket.
+      const component =
+        window.showDocPageInitializer.modalManager.currentComponent;
+
+      const detail = {
+        // The docket entry ID that triggered the modal. This is the unique
+        // identifier (GUID) from the clicked link's data-docket-entry-id
+        // attribute.
+        docketEntryId: component.docketEntryId || null,
+        // The full array of document objects associated with this download.
+        // Each object contains properties like name, documentUrl,
+        // docketDocumentDetailsId, pageCount, billablePages, cost, etc.
+        docketEntryDocuments: component.docketEntryDocuments,
+      };
+
+      // Store the result in sessionStorage so it can be read back by
+      // the content scripts. Using sessionStorage as a bridge between
+      // the page context and the extension context.
+      sessionStorage.setItem(
+        'recapDownloadDocumentData',
+        JSON.stringify(detail)
+      );
+    } catch (e) {
+      // If the modal isn't open or the component chain is unavailable,
+      // store an error result instead.
+      sessionStorage.setItem(
+        'recapDownloadDocumentData',
+        JSON.stringify({
+          docketEntryId: null,
+          docketEntryDocuments: [],
+          error: e.message,
+        })
+      );
+    }
+    return true;
+  };
+  chrome.scripting
+    .executeScript({
+      target: { tabId: sender.tab.id },
+      func: getDocumentData,
       world: executionWorld,
     })
     .then((injectionResults) => sendResponse(injectionResults));
