@@ -11,11 +11,16 @@ Changes:
  - None yet
 
 Fixes:
- - Add support to upload PDFs from the new ACMS download modal to the RECAP Archive ([#401](https://github.com/freelawproject/recap/issues/401), [#423](https://github.com/freelawproject/recap-chrome/pull/423))
- - Skip document links on the ACMS docket page that have no matching docket entry to prevent errors during metadata extraction ([#423](https://github.com/freelawproject/recap-chrome/pull/423))
+ - None yet
 
 For developers:
  - Nothing yet
+
+### 2.8.8 (2026-02-18)
+
+Fixes:
+ - Add support to upload PDFs from the new ACMS download modal to the RECAP Archive ([#401](https://github.com/freelawproject/recap/issues/401), [#423](https://github.com/freelawproject/recap-chrome/pull/423))
+ - Skip document links on the ACMS docket page that have no matching docket entry to prevent errors during metadata extraction ([#423](https://github.com/freelawproject/recap-chrome/pull/423))
 
 ### 2.8.7 (2026-01-30)
 
