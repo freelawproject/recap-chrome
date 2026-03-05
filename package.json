@@ -41,7 +41,7 @@
     "karma-jasmine": "^5.1.0",
     "karma-jasmine-ajax": "^0.1.13",
     "karma-jquery": "^0.2.4",
-    "puppeteer": "^19.6.2",
+    "puppeteer": "^19.11.1",
     "vendor-copy": "^3.0.1",
     "whatwg-fetch": "^3.6.2"
   },
