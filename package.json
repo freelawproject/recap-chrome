@@ -43,7 +43,7 @@
     "karma-jquery": "^0.2.4",
     "puppeteer": "^19.11.1",
     "vendor-copy": "^3.0.1",
-    "whatwg-fetch": "^3.6.2"
+    "whatwg-fetch": "^3.6.20"
   },
   "vendorCopy": [
     {
