@@ -8,6 +8,7 @@
   },
   "scripts": {
     "test": "./node_modules/.bin/karma start --single-run",
+    "validate": "./node_modules/.bin/karma start --single-run",
     "postinstall": "vendor-copy",
     "release-chrome": "./scripts/build.sh chrome",
     "release-firefox": "./scripts/build.sh firefox"
@@ -23,7 +24,7 @@
   },
   "homepage": "https://github.com/freelawproject/recap-chrome#readme",
   "dependencies": {
-    "bootstrap": "^5.2.3",
+    "bootstrap": "^5.3.8",
     "entr": "^0.0.0",
     "file-saver": "2.0.5",
     "jquery": "~3.6.3",
