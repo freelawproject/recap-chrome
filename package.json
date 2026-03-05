@@ -8,6 +8,7 @@
   },
   "scripts": {
     "test": "./node_modules/.bin/karma start --single-run",
+    "validate": "./node_modules/.bin/karma start --single-run",
     "postinstall": "vendor-copy",
     "release-chrome": "./scripts/build.sh chrome",
     "release-firefox": "./scripts/build.sh firefox"
@@ -23,26 +24,26 @@
   },
   "homepage": "https://github.com/freelawproject/recap-chrome#readme",
   "dependencies": {
-    "bootstrap": "^5.2.3",
+    "bootstrap": "^5.3.8",
     "entr": "^0.0.0",
     "file-saver": "2.0.5",
-    "jquery": "~3.6.3",
-    "moment": "~2.29.4",
-    "web-ext": "^7.5.0"
+    "jquery": "~3.7.1",
+    "moment": "~2.30.1",
+    "web-ext": "^7.12.0"
   },
   "devDependencies": {
-    "eslint": "^8.5.0",
-    "jasmine": "^4.5.0",
-    "karma": "^6.4.1",
-    "karma-chrome-launcher": "^3.1.1",
-    "karma-coverage": "^2.2.0",
-    "karma-firefox-launcher": "^2.1.0",
+    "eslint": "^8.57.1",
+    "jasmine": "^4.6.0",
+    "karma": "^6.4.4",
+    "karma-chrome-launcher": "^3.2.0",
+    "karma-coverage": "^2.2.1",
+    "karma-firefox-launcher": "^2.1.3",
     "karma-jasmine": "^5.1.0",
     "karma-jasmine-ajax": "^0.1.13",
     "karma-jquery": "^0.2.4",
-    "puppeteer": "^19.6.2",
+    "puppeteer": "^19.11.1",
     "vendor-copy": "^3.0.1",
-    "whatwg-fetch": "^3.6.2"
+    "whatwg-fetch": "^3.6.20"
   },
   "vendorCopy": [
     {
