@@ -95,6 +95,64 @@ function pacerDateFormat(date) {
   return date.replace(/(\d+)-(\d+)-(\d+)/, '$2/$3/$1');
 }
 
+const relativeTimeFormatter = new Intl.RelativeTimeFormat(undefined, {
+  numeric: 'auto',
+});
+let relativeTimeRefreshHandle = null;
+
+function parseRelativeDate(dateString) {
+  const timestamp = Date.parse(dateString);
+  if (Number.isNaN(timestamp)) {
+    return null;
+  }
+  return new Date(timestamp);
+}
+
+function formatRelativeTime(date, now = new Date()) {
+  const elapsedSeconds = Math.round((date.getTime() - now.getTime()) / 1000);
+  const units = [
+    ['year', 60 * 60 * 24 * 365],
+    ['month', 60 * 60 * 24 * 30],
+    ['day', 60 * 60 * 24],
+    ['hour', 60 * 60],
+    ['minute', 60],
+  ];
+
+  for (const [unit, secondsPerUnit] of units) {
+    if (Math.abs(elapsedSeconds) >= secondsPerUnit) {
+      return relativeTimeFormatter.format(
+        Math.round(elapsedSeconds / secondsPerUnit),
+        unit
+      );
+    }
+  }
+
+  return relativeTimeFormatter.format(elapsedSeconds, 'second');
+}
+
+function refreshRelativeTimes(root = document) {
+  const times = root.querySelectorAll('time[data-recap-relative-time]');
+  times.forEach((timeElement) => {
+    const dateString = timeElement.dataset.recapRelativeTime;
+    const parsedDate = parseRelativeDate(dateString);
+    if (!parsedDate) {
+      timeElement.textContent = dateString;
+      return;
+    }
+
+    timeElement.textContent = formatRelativeTime(parsedDate);
+  });
+}
+
+function ensureRelativeTimeUpdates() {
+  refreshRelativeTimes();
+  if (relativeTimeRefreshHandle) {
+    return;
+  }
+
+  relativeTimeRefreshHandle = window.setInterval(refreshRelativeTimes, 60000);
+}
+
 
 const blobToDataURL = (blob) => {
   return new Promise((resolve, reject) => {
@@ -217,9 +275,13 @@ const recapBanner = (result) => {
   anchor.href = `https://www.courtlistener.com${result.absolute_url}`;
 
   const time = document.createElement('time');
-  time.dataset.livestamp = result.date_modified;
+  time.dataset.recapRelativeTime = result.date_modified;
   time.setAttribute('title', result.date_modified);
-  time.innerHTML = result.date_modified;
+  time.textContent = result.date_modified;
+  const parsedDate = parseRelativeDate(result.date_modified);
+  if (parsedDate) {
+    time.dateTime = parsedDate.toISOString();
+  }
 
   let message =
     'View and Search this docket as of ' +
@@ -234,6 +296,7 @@ const recapBanner = (result) => {
   div.appendChild(anchor);
   div.appendChild(document.createElement('br'));
   div.appendChild(small);
+  ensureRelativeTimeUpdates();
   return div;
 };
 

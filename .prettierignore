@@ -1,1 +1,5 @@
-*.json
+coverage/
+node_modules/
+src/assets/js/
+test/Blob.js
+test/mock-ajax.js

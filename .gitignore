@@ -7,3 +7,7 @@ coverage
 /.idea/
 .vscode/
 build/
+
+src/assets/js/FileSaver.js
+src/assets/js/bootstrap.bundle.js
+src/assets/js/jquery.js

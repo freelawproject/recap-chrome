@@ -51,8 +51,6 @@ export async function injectContentScript(tabId, status, url) {
             { file: 'InjectManager.js' },
             { file: 'assets/js/jquery.js' },
             { file: 'assets/js/FileSaver.js' },
-            { file: 'assets/js/moment.js' },
-            { file: 'assets/js/livestamp.js' },
             { file: 'assets/js/bootstrap.bundle.js' },
             { file: 'action_button.js' },
             { file: 'pdf_upload.js' },
