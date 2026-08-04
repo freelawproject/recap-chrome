@@ -508,6 +508,27 @@ describe('The ContentDelegate class', function () {
           await cd.handleDocketDisplayPage();
           expect(dispatchBackgroundFetch).not.toHaveBeenCalled();
         });
+
+        it('when a fresh tab has no storage entry at all', async function () {
+          const cd = new ContentDelegate(
+            tabId,
+            docketDisplayUrl,
+            undefined,
+            'canb',
+            undefined,
+            undefined,
+            []
+          );
+          // A tab that never stored anything yields undefined, not {}.
+          window.chrome.storage.local.get = jasmine
+            .createSpy()
+            .and.callFake((_, cb) => {
+              cb({ options: { recap_enabled: true } });
+            });
+          dispatchBackgroundFetch = jasmine.createSpy();
+          await cd.handleDocketDisplayPage();
+          expect(dispatchBackgroundFetch).not.toHaveBeenCalled();
+        });
       });
 
       describe('when the history state is already set', function () {
@@ -596,6 +617,16 @@ describe('The ContentDelegate class', function () {
       });
 
       describe('when the docket page is not an interstitial page', function () {
+        const makeLink = (caseId, docId) => {
+          const a = document.createElement('a');
+          a.href = `https://ecf.canb.uscourts.gov/doc1/${docId}`;
+          a.setAttribute(
+            'onclick',
+            `goDLS('/doc1/${docId}','${caseId}','5','','','1','','','');` +
+              'return(false);'
+          );
+          return a;
+        };
         beforeEach(function () {
           clearDocumentBody();
           table = document.createElement('table');
@@ -668,6 +699,133 @@ describe('The ContentDelegate class', function () {
           );
           const button = document.querySelectorAll('#create-alert-button');
           expect(button.length).toBe(1);
+        });
+
+        it('prefers the goDLS case id over a stale tab id', async function () {
+          // The tab's cached caseId ('531591' in the storage mock)
+          // belongs to another case; the page's goDLS links must win.
+          const link = makeLink('177277', '034031424909');
+          const cd = new ContentDelegate(
+            tabId,
+            docketDisplayUrl,
+            docketDisplayPath,
+            'canb',
+            undefined, // no case id derived from url/referrer/inputs
+            undefined,
+            [link]
+          );
+          dispatchBackgroundNotifier = jasmine.createSpy();
+          dispatchBackgroundFetch = jasmine
+            .createSpy()
+            .and.callFake(fakeBackgroundFetch);
+          spyOn(history, 'replaceState');
+          await cd.handleDocketDisplayPage();
+          expect(dispatchBackgroundFetch).toHaveBeenCalledWith(
+            jasmine.objectContaining({
+              action: 'upload',
+              data: jasmine.objectContaining({ pacer_case_id: '177277' }),
+            })
+          );
+          expect(dispatchBackgroundFetch).not.toHaveBeenCalledWith(
+            jasmine.objectContaining({
+              data: jasmine.objectContaining({ pacer_case_id: '531591' }),
+            })
+          );
+          // the stale cached id is corrected for later pages in this tab
+          expect(window.chrome.storage.local.set).toHaveBeenCalledWith(
+            jasmine.objectContaining({
+              1234: jasmine.objectContaining({ caseId: '177277' }),
+            }),
+            jasmine.any(Function)
+          );
+        });
+
+        it('never overrides a context-derived case id', async function () {
+          // On a consolidated MEMBER docket the document links point at
+          // the LEAD case, so an id the page context provided (url,
+          // inputs, referrer) always beats the goDLS majority.
+          const link = makeLink('177277', '034031424909'); // lead case
+          const cd = new ContentDelegate(
+            tabId,
+            docketDisplayUrl,
+            docketDisplayPath,
+            'canb',
+            '531591', // the member case, from the page context
+            undefined,
+            [link]
+          );
+          dispatchBackgroundNotifier = jasmine.createSpy();
+          dispatchBackgroundFetch = jasmine
+            .createSpy()
+            .and.callFake(fakeBackgroundFetch);
+          spyOn(history, 'replaceState');
+          await cd.handleDocketDisplayPage();
+          expect(dispatchBackgroundFetch).toHaveBeenCalledWith(
+            jasmine.objectContaining({
+              action: 'upload',
+              data: jasmine.objectContaining({ pacer_case_id: '531591' }),
+            })
+          );
+        });
+
+        it('uses the majority goDLS id on merged sheets', async function () {
+          // Consolidated/MDL dockets legitimately link member cases'
+          // documents — a stray link must not outvote the sheet.
+          const cd = new ContentDelegate(
+            tabId,
+            docketDisplayUrl,
+            docketDisplayPath,
+            'canb',
+            undefined,
+            undefined,
+            [
+              makeLink('177277', '034031424909'),
+              makeLink('177277', '034031424910'),
+              makeLink('177277', '034031424911'),
+              makeLink('999999', '034031424912'), // stray member-case link
+            ]
+          );
+          dispatchBackgroundNotifier = jasmine.createSpy();
+          dispatchBackgroundFetch = jasmine
+            .createSpy()
+            .and.callFake(fakeBackgroundFetch);
+          spyOn(history, 'replaceState');
+          await cd.handleDocketDisplayPage();
+          expect(dispatchBackgroundFetch).toHaveBeenCalledWith(
+            jasmine.objectContaining({
+              action: 'upload',
+              data: jasmine.objectContaining({ pacer_case_id: '177277' }),
+            })
+          );
+        });
+
+        it('falls back when the goDLS ids are tied', async function () {
+          // Equal votes for two ids: don't guess; use the cached id
+          // ('531591' in the storage mock) as before.
+          const cd = new ContentDelegate(
+            tabId,
+            docketDisplayUrl,
+            docketDisplayPath,
+            'canb',
+            undefined,
+            undefined,
+            [
+              makeLink('177277', '034031424909'),
+              makeLink('888888', '034031424910'),
+            ]
+          );
+          dispatchBackgroundNotifier = jasmine.createSpy();
+          dispatchBackgroundFetch = jasmine
+            .createSpy()
+            .and.callFake(fakeBackgroundFetch);
+          spyOn(history, 'replaceState');
+          await cd.handleDocketDisplayPage();
+          expect(dispatchBackgroundFetch).toHaveBeenCalledWith(
+            jasmine.objectContaining({
+              action: 'upload',
+              data: jasmine.objectContaining({ pacer_case_id: '531591' }),
+            })
+          );
         });
 
         it('calls uploadDocket and responds to a negative result', async function () {

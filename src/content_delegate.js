@@ -269,12 +269,30 @@ ContentDelegate.prototype.handleDocketDisplayPage = async function () {
   // check if appellate
   // let isAppellate = PACER.isAppellateCourt(this.court);
 
-  // if the content_delegate didn't pull the case Id on initialization,
-  // check the page for a lead case dktrpt url.
-  const tabStorage = await getItemsFromStorage(this.tabId);
-  this.pacer_case_id = this.pacer_case_id
-    ? this.pacer_case_id
-    : tabStorage.caseId;
+  // If initialization yielded no case id, derive it from the page itself:
+  // the sheet's goDLS document links carry it. The per-tab cached id is
+  // the LAST resort — it can belong to a different case viewed earlier in
+  // this tab. An id the page context already provided is never overridden:
+  // consolidated member dockets legitimately link the lead case's
+  // documents, so the goDLS plurality only speaks when nothing else does.
+  if (!this.pacer_case_id) {
+    const pageCaseId = PACER.getCaseIdFromDocketDisplayLinks(this.links);
+    const tabStorage = (await getItemsFromStorage(this.tabId)) || {};
+    if (pageCaseId) {
+      if (tabStorage.caseId && tabStorage.caseId !== pageCaseId) {
+        console.warn(
+          `RECAP: Ignoring cached case id ${tabStorage.caseId}: the ` +
+            `docket's own links say it belongs to case ${pageCaseId}.`
+        );
+      }
+      this.pacer_case_id = pageCaseId;
+      // Seed the tab's cached case ID so a later docket-report load in this
+      // same tab starts with the correct case ID instead of a stale one.
+      await saveCaseIdinTabStorage({ tabId: this.tabId }, pageCaseId);
+    } else {
+      this.pacer_case_id = tabStorage.caseId;
+    }
+  }
 
   // If we don't have this.pacer_case_id at this point, punt.
   if (!this.pacer_case_id) return;

@@ -462,6 +462,44 @@ let PACER = {
     }
   },
 
+  // Returns the most common (plurality) `de_caseid` across the page's
+  // document links' `goDLS()` handlers. Plurality is intentional because
+  // consolidated/MDL docket sheets can legitimately link documents from
+  // multiple member cases. Returns `undefined` when there is no `goDLS`
+  // evidence or when the most common case IDs are tied.
+  getCaseIdFromDocketDisplayLinks: function (links) {
+    // Count how many document links point to each case ID. The case ID
+    // appearing most often is likely the case represented by the docket page.
+    const caseIdCounts = {};
+    for (const link of Array.from(links)) {
+      if (!PACER.isDoc1Url(link.href)) continue;
+
+      const goDLS = PACER.parseGoDLSFunction(link.getAttribute('onclick'));
+      if (goDLS && goDLS.de_caseid && goDLS.de_caseid !== '0') {
+        caseIdCounts[goDLS.de_caseid] =
+          (caseIdCounts[goDLS.de_caseid] ?? 0) + 1;
+      }
+    }
+
+    // Convert the counts object into an array of [caseId, count] pairs
+    // and sort descending so the most frequently linked case is first.
+    const sortedCaseIds = Object.entries(caseIdCounts).sort(
+      (a, b) => b[1] - a[1]
+    );
+
+    // No valid case IDs were found.
+    if (sortedCaseIds.length === 0) return undefined;
+
+    const [mostLinkedCaseId, mostLinkedCount] = sortedCaseIds[0];
+    const [, secondMostLinkedCount] = sortedCaseIds[1] ?? [];
+
+    // If multiple case IDs have the same highest count, we cannot determine
+    // which case is the correct one, so avoid returning an arbitrary result.
+    const hasTieForFirst = mostLinkedCount === secondMostLinkedCount;
+
+    return hasTieForFirst ? undefined : mostLinkedCaseId;
+  },
+
   // Given a URL that satisfies isDocketQueryUrl, gets its case number.
   getCaseNumberFromUrls: function (urls) {
     // Iterate over an array of URLs and get the case number from the
