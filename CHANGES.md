@@ -11,15 +11,20 @@ Changes:
  - None yet
 
 Fixes:
+ - None yet
+
+For developers:
+ - Nothing yet
+
+### 2.8.9 (2026-08-04)
+
+Fixes:
  - Stop attributing district docket report uploads to the per-tab cached
    case id when the page context yields none: derive the id from the
    sheet's own goDLS document links first. The cached id can belong to a
    different case viewed earlier in the same tab, which uploaded one
    case's entire docket sheet under another case's `pacer_case_id` and
    merged it into the wrong archive docket.
-
-For developers:
- - Nothing yet
 
 ### 2.8.8 (2026-02-18)
 
